@@ -1,0 +1,30 @@
+<Update label="2025-10-06" description="Platform Simplification, New Conversational Metrics, and Major Usability Upgrades">
+## Platform Simplification and SDK v3.0
+
+We've undertaken a major simplification of our core concepts to make the platform more intuitive. `Evaluation Tasks` are now simply **[Evaluations](/concepts/product/version/session/evaluation)**, and `Metric Types` have been renamed to **[Metrics](/concepts/metric)**. The old parent `Evaluations` entity has been removed entirely. These changes streamline the workflow and clarify the relationship between different parts of Galtea.
+
+To support this, we've released a new major version of our SDK. Please see the **[Migration to v3.0 guide](/migration-to-v3)** for detailed instructions on updating your projects.
+
+## New Conversational Metrics
+
+We're excited to introduce two new metrics designed specifically for evaluating conversational AI:
+
+- **[User Objective Accomplished](/concepts/metric/user-objective-accomplished):** Evaluates whether the user's stated goal was successfully and correctly achieved during the conversation.
+- **[User Satisfaction](/concepts/metric/user-satisfaction):** Assesses the user's overall experience, focusing on efficiency and sentiment, to gauge their satisfaction with the interaction.
+
+## Enhanced Test Case Feedback and Management
+
+Improving test quality is now a more collaborative process. When upvoting or downvoting a **[Test Case](/concepts/product/test/case)**, you can now add a `user_score_reason` to provide valuable context for your feedback.
+
+Additionally, you can now filter test cases by their score directly via the SDK using the `user_score` parameter in the **[`test_cases.list()`](/sdk/api/test-case/list)** method.
+
+## Dashboard and SDK Usability Improvements
+
+We've rolled out several updates to make your workflow smoother and more efficient:
+
+- **Improved Dashboard Navigation:** Navigating between related entities like Tests, Test Cases, and Evaluations is now more intuitive. We've also adjusted table interactions—you can now single-click a row to select and copy text without navigating away. To see an entity's details, simply right-click the row.
+- **Efficient Batch Fetching in SDK:** The SDK now allows you to fetch objects by providing a list of IDs (e.g., fetching all [Test Cases](/sdk/api/test-case/list) for a list of Test IDs at once), significantly improving usability for batch operations.
+
+## General Improvements
+This release also includes numerous performance optimizations and minor UI/UX enhancements across the entire platform to provide a faster and more polished experience.
+</Update>

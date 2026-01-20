@@ -1,0 +1,131 @@
+---
+title: 'start_trace'
+sidebarTitle: 'Start trace'
+description: "Context manager for creating traces with fine-grained control."
+---
+
+## Returns
+Yields a `GalteaSpan` object with helper methods for setting trace data dynamically.
+
+## Example
+
+```python
+from galtea import start_trace
+
+def process_query(query: str):
+    with start_trace(
+        "database_query",
+        type="TOOL",
+        description="Executes database query and returns results",
+        input={"query": query}
+    ) as span:
+        result = db.query(query)
+        span.update(output={"rows": len(result), "data": result})
+        return result
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the trace.
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 32KB.
+</ResponseField>
+<ResponseField name="input" type="any" optional>
+  Input data for the trace. Accepts any value (non-serializable objects are converted to string). Maximum size: 128KB.
+</ResponseField>
+<ResponseField name="metadata" type="any" optional>
+  Metadata for the trace. Accepts any value (non-serializable objects are converted to string). Maximum size: 128KB.
+</ResponseField>
+<ResponseField name="attributes" type="dict" optional>
+  Custom OpenTelemetry attributes to add to the span.
+</ResponseField>
+
+## GalteaSpan Methods
+
+The yielded `GalteaSpan` object provides these methods:
+
+<ResponseField name="update(input, output, metadata, type)" type="method">
+  Update trace attributes. All parameters are optional and accept any value (non-serializable objects are converted to string).
+</ResponseField>
+<ResponseField name="set_attribute(key, value)" type="method">
+  Set a custom attribute on the span.
+</ResponseField>
+<ResponseField name="record_exception(exception)" type="method">
+  Manually record an exception on the span.
+</ResponseField>
+
+## When to Use
+
+Use `start_trace()` instead of `@trace` when you need:
+
+1. **Fine-grained control** over specific code blocks rather than entire functions
+2. **Dynamic attributes** that are only known at runtime
+3. **Conditional tracing** based on runtime conditions
+4. **Tracing third-party code** that you can't decorate
+
+## Complete Example
+
+```python
+from galtea import Galtea, start_trace, set_context, clear_context
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+def rag_pipeline(query: str, inference_result_id: str):
+    token = set_context(inference_result_id=inference_result_id)
+    
+    try:
+        # Retrieval step
+        with start_trace(
+            "retrieve_documents",
+            type="RETRIEVER",
+            description="Searches vector store for relevant documents",
+            input={"query": query}
+        ) as span:
+            docs = vector_store.search(query, top_k=5)
+            span.update(output={"doc_count": len(docs), "docs": docs})
+        
+        # Generation step
+        with start_trace(
+            "generate_response",
+            type="GENERATION",
+            description="Generates final response using retrieved context",
+            input={"query": query}
+        ) as span:
+            response = llm.generate(query, context=docs)
+            span.update(
+                output={"response": response.content},
+                metadata={"tokens_used": response.usage.total_tokens, "model": "gpt-4"}
+            )
+        
+        return response.content
+    finally:
+        clear_context(token)
+```
+
+## Nested Traces
+
+Traces automatically form a parent-child hierarchy when nested:
+
+```python
+with start_trace("parent_operation", type="CHAIN", input={"task": "process_all"}) as parent:
+    # First child
+    with start_trace("child_step_1", type="TOOL") as span:
+        step1_result = process_step1()
+        span.update(output=step1_result)
+    
+    # Second child
+    with start_trace("child_step_2", type="TOOL") as span:
+        step2_result = process_step2()
+        span.update(output=step2_result)
+    
+    parent.update(output={"total_steps": 2, "status": "completed"})
+```
+
+<Note>
+  Like `@trace`, traces created with `start_trace()` are automatically exported to Galtea API when `clear_context()` is called.
+</Note>
+

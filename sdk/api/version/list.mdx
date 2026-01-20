@@ -1,0 +1,32 @@
+---
+title: 'Listing Versions'
+sidebarTitle: "List"
+description: "List all versions associated with a specific product."
+---
+
+## Returns
+Returns a list of [Version](/concepts/product/version) objects for the given product.
+
+## Example
+```python
+versions = galtea.versions.list(product_id="YOUR_PRODUCT_ID")
+```
+
+## Parameters
+<ResponseField name="product_id" type="string | list[string]" required>
+  The ID or IDs of the product(s) for which you want to list versions.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort versions by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of versions to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="1000" optional>
+  Maximum number of versions to return in a single request.
+  
+  **Default:** `1000`
+</ResponseField>

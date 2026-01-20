@@ -1,0 +1,64 @@
+---
+title: "Conversation Simulator"
+sidebarTitle: "Overview"
+description: "Test your conversational AI by simulating realistic user interactions with a synthetic user."
+---
+
+## What is the Conversation Simulator?
+
+The Conversation Simulator, also known as the **Synthetic User**, is a Galtea feature for testing conversational AI systems. It programmatically generates realistic user messages to simulate multi-turn dialogues, helping you evaluate your AI's ability to handle complex interactions, maintain context, and achieve user goals.
+
+You can run simulations programmatically using the Galtea SDK. Each simulation is guided by a [Scenario](/concepts/product/test/scenario-tests) attached to a [Test Case](/concepts/product/test/case).
+
+---
+
+## Typical Uses
+
+- **Dialogue flow testing:** Does your AI produce coherent conversations?
+- **Role adherence:** Does your AI stay in character?
+- **Task completion:** Can your AI achieve user-defined goals?
+- **Robustness:** How does your AI handle varied or unexpected user behavior?
+
+## Simulation Result Structure
+
+The simulator returns a result object containing the complete conversation history and metadata:
+
+| Field             | Type    | Description                                                           |
+|-------------------|---------|-----------------------------------------------------------------------|
+| `session_id`      | str     | The identifier for the simulation session.                            |
+| `total_turns`     | int     | Total number of conversation turns in the simulation.                 |
+| `messages`        | list    | The full message history as a list of conversation messages.          |
+| `finished`        | bool    | Whether the simulation ended naturally (true) or was stopped (false). |
+| `stopping_reason` | str/None| If stopped, the reason why the simulation ended.                      |
+| `metadata`        | dict/None | Any additional metadata for the simulation.                         |
+
+### Example Output
+
+```json
+{
+  "session_id": "abc123",
+  "total_turns": 5,
+  "messages": [
+    {"role": "user", "content": "I need to book a flight."},
+    {"role": "agent", "content": "Where are you flying to?"},
+    ...
+  ],
+  "finished": true,
+  "stopping_reason": null,
+  "metadata": {"scenario": "Flight booking scenario"}
+}
+```
+
+---
+
+## SDK Integration
+
+Use the Galtea SDK to [automate conversation simulations](/sdk/api/simulator/service) and integrate them into your testing pipelines.
+
+---
+
+## See Also
+
+- [Scenarios](/concepts/product/test/scenario-tests)
+- [Test Cases](/concepts/product/test/case)
+- [Simulate Conversation (SDK)](/sdk/api/simulator/service)

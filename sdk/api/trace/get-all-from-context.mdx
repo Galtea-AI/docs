@@ -1,0 +1,20 @@
+---
+title: 'Get All From Context'
+sidebarTitle: "Get All From Context"
+description: "Retrieve all traces collected in the current context."
+---
+
+## Returns
+Returns a list of trace dictionaries containing `id`, `name`, `node_type`, `input_data`, `output_data`, `error`, `latency_ms`, `start_time`, `end_time`, and `parent_trace_id`.
+
+## Example
+```python
+traces = galtea.traces.get_all_from_context()
+```
+
+## Parameters
+This method takes no parameters.
+
+<Note>
+  If `start_collection_context()` has not been called, this method returns an empty list.
+</Note>

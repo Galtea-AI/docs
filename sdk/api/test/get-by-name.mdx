@@ -1,0 +1,28 @@
+---
+title: 'Retrieving Test By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific test by its name."
+---
+
+## Returns
+Returns a [Test](/concepts/product/test) object for the given product and test name.
+
+## Example
+```python
+# If type is needed for disambiguation
+test = galtea.tests.get_by_name(product_id="YOUR_PRODUCT_ID", test_name="YOUR_TEST_NAME", type="QUALITY")
+
+# If type is not needed
+test = galtea.tests.get_by_name(product_id="YOUR_PRODUCT_ID", test_name="YOUR_TEST_NAME")
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product for which you want to retrieve the test.
+</ResponseField>
+<ResponseField name="test_name" type="string" required>
+  The name of the test you want to retrieve.
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  The type of the test (e.g., `QUALITY`, `RED_TEAMING`). This is needed if multiple tests share the same name but have different types.
+</ResponseField>

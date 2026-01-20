@@ -1,0 +1,49 @@
+---
+title: "Inference Result"
+sidebarTitle: "Overview"
+description: "A single turn in a conversation between a user and an AI system"
+---
+
+import SDKInferenceResultServiceCard from '/snippets/cards/inference-result-card.mdx';
+
+## What is an Inference Result?
+
+An inference result in Galtea represents a single turn in a conversation between a user and an AI system. It captures the user's input and the AI's corresponding output, along with other optional metadata such as latency and token usage.
+
+You can **create**, view and manage your inference results programmatically using the [Galtea SDK](/sdk/api/inference-result/service).
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage inference results programmatically. This is particularly useful for logging production data or for evaluating complex conversational flows.
+
+<SDKInferenceResultServiceCard />
+
+## Inference Result Properties
+
+<ResponseField name="Session" type="Session" required>
+  The session to which the inference result belongs.
+</ResponseField>
+
+<ResponseField name="Input" type="string" optional>
+  The input text or prompt for the inference result.
+</ResponseField>
+
+<ResponseField name="Output" type="string" optional>
+  The generated output or response for the inference result.
+</ResponseField>
+
+<ResponseField name="Retrieval Context" type="string" optional>
+  The context retrieved by a RAG system, if applicable.
+</ResponseField>
+
+<ResponseField name="Latency" type="float" optional>
+  The latency in milliseconds for the model's response.
+</ResponseField>
+
+<ResponseField name="Usage Info" type="dict" optional>
+  Token usage information for the inference result.
+</ResponseField>
+
+<ResponseField name="Cost Info" type="dict" optional>
+  Cost information for the inference result.
+</ResponseField>

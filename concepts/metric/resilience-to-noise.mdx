@@ -1,0 +1,48 @@
+---
+title: "Resilience To Noise"
+description: "Measures a language model's robustness to input noise such as typos, OCR/ASR errors, grammatical mistakes, and distracting content."
+---
+
+The **Resilience To Noise** metric is one of several [RAG Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to maintain response accuracy and coherence when faced with noisy or corrupted input. This includes:
+
+- Typographical errors.
+- Optically Character Recognition (OCR) errors.
+- Automatic Speech Recognition (ASR) errors.
+- Grammatical mistakes. 
+- Irrelevant or distracting content.
+
+This metric is essential for assessing how well your product performs in real-world scenarios where user input may not always be clean or well-formed.
+
+---
+
+## Evaluation Parameters
+
+To compute the `resilience_to_noise` metric, the following parameters are required in every turn of the conversation:
+
+- **`input`**: The user message in the conversation, which is assumed to contain some form of noise or irrelevant information.
+- **`actual_output`**: The chatbot's corresponding response. This metric specifically evaluates the model's ability to handle noisy input, so it is not meaningful to apply it to clean or noise-free data.
+
+---
+
+## How Is It Calculated?
+
+The `resilience_to_noise` score is determined through a nuanced evaluation process that considers both the nature of the input and the chatbot's ability to respond effectively. The assessment involves:
+
+1. **Identification of Input Noise**: The evaluator first considers what types of noise—such as typos, recognition errors, or irrelevant content—are present in the user's message.
+2. **Response Handling Analysis**: Attention is given to how the chatbot interprets and manages these noisy elements, focusing on whether its reply remains accurate, coherent, and relevant.
+3. **Impact Assessment**: The evaluation reflects on whether the presence of noise led to any misunderstandings, errors, or loss of information in the chatbot's response.
+
+Based on this analysis, a binary score is assigned:
+- A score of **1** indicates the chatbot's response was robust, maintaining clarity and correctness despite the noisy input.
+- A score of **0** indicates the response was disrupted, with accuracy or relevance compromised due to the noise.
+
+This approach helps monitor and improve your model's resilience in practical, noisy environments.
+
+<Note>This metric is inspired by best practices in the open source community and is implemented natively in the Galtea platform.</Note>
+
+---
+
+## Related Topics
+
+- [Factual Accuracy](/concepts/metric/factual-accuracy)
+- [Faithfulness](/concepts/metric/faithfulness)

@@ -1,0 +1,113 @@
+---
+title: '@trace Decorator'
+description: "Automatically trace function calls with OpenTelemetry."
+---
+
+## Returns
+Returns the decorated function with automatic tracing enabled.
+
+## Example
+```python
+from galtea import trace, TraceType
+
+# Basic usage - function name is used as span name
+@trace
+def my_function():
+    return "result"
+
+# With type annotation
+@trace(type=TraceType.TOOL)
+def fetch_user(user_id: str) -> dict:
+    return {"name": "John Doe", "id": user_id}
+
+# Full configuration
+@trace(
+    name="gpt4_completion",
+    type=TraceType.GENERATION,
+    log_args=True,
+    log_results=True,
+    attributes={"model": "gpt-4", "temperature": 0.7}
+)
+def generate_response(prompt: str) -> str:
+    return openai.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    ).choices[0].message.content
+
+# Include function docstring as trace description
+@trace(type=TraceType.TOOL, include_docstring=True)
+def calculate_discount(price: float, percentage: float) -> float:
+    """Calculates the discounted price based on the given percentage."""
+    return price * (1 - percentage / 100)
+
+# Async functions are supported
+@trace(type=TraceType.RETRIEVER)
+async def search_documents(query: str) -> list:
+    return await vector_db.search(query)
+```
+
+## Parameters
+<ResponseField name="name" type="string" optional>
+  Custom span name. Defaults to the function name.
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
+</ResponseField>
+<ResponseField name="log_args" type="bool" optional>
+  Whether to log function arguments as input data. Default: `True`.
+</ResponseField>
+<ResponseField name="log_results" type="bool" optional>
+  Whether to log return value as output data. Default: `True`.
+</ResponseField>
+<ResponseField name="attributes" type="dict" optional>
+  Custom attributes to add to the span (e.g., model name, configuration).
+</ResponseField>
+<ResponseField name="include_docstring" type="bool" optional>
+  If `True`, the function's docstring is automatically used as the trace description (max 32KB). Default: `False`.
+</ResponseField>
+
+## Features
+
+### Automatic Exception Recording
+Exceptions are always recorded in traces for debugging, regardless of `log_args` and `log_results` settings:
+
+```python
+@trace(type=TraceType.TOOL)
+def risky_operation():
+    raise ValueError("Something went wrong")
+    
+# The trace will include the error message and stack trace
+```
+
+### Input/Output Serialization
+Function arguments and return values are automatically serialized to JSON. Non-serializable objects are converted to string representation:
+
+```python
+@trace
+def process_data(user: User, config: dict) -> Response:
+    # user object will be converted to str(user)
+    # config dict will be serialized as JSON
+    return Response(...)
+```
+
+### Context Propagation
+Traces automatically inherit the context set by `set_context()`:
+
+```python
+token = set_context(inference_result_id="inf_123")
+
+@trace(type=TraceType.AGENT)
+def agent_workflow():
+    # This trace is automatically linked to inf_123
+    return process_request()
+
+try:
+    agent_workflow()
+finally:
+    clear_context(token)
+```
+
+<Note>
+  The `@trace` decorator uses OpenTelemetry under the hood. Traces are automatically exported to Galtea API when `clear_context()` is called or when the batch processor flushes.
+</Note>
+

@@ -1,0 +1,207 @@
+---
+title: "Test"
+sidebarTitle: "Overview"
+description: "A set of test cases for evaluating product performance"
+---
+
+import SDKTestServiceCard from '/snippets/cards/sdk-test-service-card.mdx';
+
+## What is a Test?
+
+**A test in Galtea is a group of test cases** designed to evaluate the performance of a [product](/concepts/product). A test file provides simulations of interactions with the product (and, in [quality tests](/concepts/product/test/quality-tests), expected outcomes for each interaction).
+
+You can **create**, view and manage your tests on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/test/service).
+
+## Test Origin
+
+When creating a test in the Galtea dashboard, you'll be asked to specify the test origin:
+
+<CardGroup cols={2}>
+  <Card title="Generated" icon="wand-magic-sparkles">
+    Galtea will take the knowledge base file and generate a set of test cases that will define the test.
+  </Card>
+  <Card title="Uploaded" icon="file-arrow-up">
+    The test is uploaded by you as a complete set of test cases.
+  </Card>
+</CardGroup>
+
+Your selection will determine whether you need to provide a *Knowledge Base File* or a *Test File*.
+
+<Info>
+  The SDK parameter `variants` is used to specify "Threats" for Red Teaming tests. Similarly, the `strategies` parameter is used for Red Teaming tests to apply different attack modifications.
+</Info>
+
+<Info>
+  More information on how to create tests can be found in the [Create Quality Tests](/concepts/product/test/quality-tests) and [Create Red Teaming Tests](/concepts/product/test/red-teaming-tests) documentation.
+</Info>
+
+<Note>
+  It is important to note that the information you provide during **product onboarding**, such as the product's description and intended use, plays a valuable role when generating test cases. Galtea can leverage this metadata to generate more targeted and context-aware test cases when creating both quality and red teaming tests, leading to more effective and insightful evaluations.
+</Note>
+
+## Test Types
+
+Galtea supports three main types of tests:
+
+<CardGroup cols={3}>
+  <Card title="Quality Tests" icon="star" href="/concepts/product/test/quality-tests">
+    Tests that evaluate the quality and correctness of outputs.
+  </Card>
+  <Card title="Red Teaming Tests" icon="shield-halved" href="/concepts/product/test/red-teaming-tests">
+    Tests that evaluate security, safety, and bias aspects, often by generating adversarial inputs based on defined threats and applying various strategies to make them more challenging.
+  </Card>
+  <Card title="Scenario Based Tests" icon="user-group" href="/concepts/product/test/scenario-tests">
+    Tests that evaluate multi-turn dialogue capabilities of an agent, through the use scenarios which are based on user personas and specific goals.
+  </Card>
+</CardGroup>
+
+## Using Tests in Evaluations
+
+The [Test Cases](/concepts/product/test/case) of a Test are used in [evaluations](/concepts/product/version/session/evaluation) to assess the performance of specific [versions](/concepts/product/version) of your product. These evaluations are grouped within [sessions](/concepts/product/version/session).
+
+<Warning>
+  The [Test Cases](/concepts/product/test/case) of a Test should be reused across multiple [sessions](/concepts/product/version/session) of distinct [versions](/concepts/product/version) to ensure consistent comparison between different [product](/concepts/product) [versions](/concepts/product/version).
+</Warning>
+
+<Card title="Using Tests in Evaluations" icon="badge-check" iconType="solid" href="/concepts/product/version/session/evaluation">
+  Learn how to use tests with evaluations
+</Card>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage tests programmatically.
+
+<CardGroup cols={2}>
+  <SDKTestServiceCard />
+  <Card title="Create a Custom Test" icon="clipboard-list" href="/sdk/tutorials/create-test">
+    See how to create and upload custom tests using the SDK.
+  </Card>
+</CardGroup>
+
+<Note>
+  When creating Quality Tests, you can use **Evolutions** to generate variations of your test cases. Learn more in the [Quality Test Evolutions](/concepts/product/test/quality-evolutions) documentation.
+</Note>
+
+## Test Properties
+
+<ResponseField name="Test Name" type="Text" required>
+  The name of the test. **Example**: "Legal Document Quality Test" or "Customer Support Safety Evaluation"
+</ResponseField>
+
+<ResponseField name="Type" type="Enum" required>
+  The type of the test. 
+  Possible values:
+  - [Quality](/concepts/product/test/quality-tests): Tests that evaluate the quality and correctness of outputs
+  - [Red Teaming](/concepts/product/test/red-teaming-tests): Tests that evaluate security, safety, and bias aspects
+  - [Scenarios](/concepts/product/test/scenario-tests): Tests that use conversation simulation to evaluate multi-turn dialogue interactions
+</ResponseField>
+
+<Tabs>
+  <Tab title="Generated">
+    <ResponseField name="Few Shot Examples" type="Text">
+      Optional few-shot examples to provide more context to our system about how the test cases should be generated. This can help our system better understand the expected format and style wanted for the test cases.
+      **Example**: 
+      ```
+      Q: What is the capital of France?
+      A: The capital of France is Paris.
+      Q: What is the capital of Germany?
+      A: The capital of Germany is Berlin.
+      ```
+      <Note>This field only applies if tests are generated by Galtea and are of type `QUALITY`.</Note>
+    </ResponseField>
+    <ResponseField name="Language" type="Text">
+      The language for generating synthetic test cases if `Knowledge Base File` is provided (e.g., 'english', 'spanish'). This should be the English name of the language. If not provided, Galtea attempts to infer the language from the knowledge base file. Supported languages include English, Spanish, Catalan, French, German, Portuguese, Italian, Dutch, Polish, Chinese, Korean, and Japanese.
+      <Note>This field only applies if tests are generated by Galtea (using `Knowledge Base File`).</Note>
+    </ResponseField>
+    <ResponseField name="Max Test Cases" type="Number">
+      The maximum number of test cases generated by Galtea. This helps control the size of the test dataset and associated costs.
+    </ResponseField>
+    <Tabs>
+      <Tab title="Quality">
+        <ResponseField name="Knowledge Base File" type="File" required>
+          The path to a local file (e.g., PDF, TXT, JSON, HTML, Markdown) containing the knowledge base. This file is uploaded to Galtea, which then generates test cases based on its content. Required if the test cases are to be generated by Galtea. **Example**: "path/to/your/knowledge_base.pdf"
+        </ResponseField>
+      </Tab>
+      <Tab title="Red Teaming">
+        <ResponseField name="Threats" type="List[Enum]" required>
+          Specifies which [threat categories](/concepts/product/test/red-teaming-threats) to generate test cases for. This corresponds to the `variants` parameter in the SDK.
+        </ResponseField>
+        <ResponseField name="Strategies" type="List[Enum]">
+          A list of [red teaming strategies](/concepts/product/test/red-teaming-strategies) to modify prompts for each threat. This corresponds to the `strategies` parameter in the SDK.
+        </ResponseField>
+      </Tab>
+      <Tab title="Scenarios">
+        <ResponseField name="Knowledge Base File" type="File" optional>
+          Optional file containing context or domain knowledge to help generate more realistic conversation scenarios. **Example**: "path/to/your/domain_context.pdf"
+        </ResponseField>
+        <ResponseField name="custom_user_focus" type="Text" optional>
+          Narrow down the scope of generated scenarios by describing a specific type of user, context, or situation. This helps ensure test cases align with your most relevant goals and flows. **Example**: "A medical professional specialized in dementia with more than 15 years in the field."
+        </ResponseField>
+        <ResponseField name="Max Test Cases" type="Number">
+          The maximum number of conversation scenarios generated by Galtea. This helps control the size of the test dataset.
+        </ResponseField>
+      </Tab>
+    </Tabs>
+
+  </Tab>
+  <Tab title="Uploaded">
+    <ResponseField name="Test File" type="File" required>
+      The path to a local CSV file containing predefined test cases. This file is uploaded to Galtea. Required if you are providing your own set of test cases instead of having Galtea generate them. **Example**: "path/to/your/test_file.csv"
+      
+      **File Format Requirements:**
+      - **Quality/Red Teaming Tests**: Must include `input`, `expected_output`, `tag`, `source` columns
+      - **Scenarios Tests**: Must include conversation simulation columns (see Scenarios Test File Format below)
+    </ResponseField>
+  </Tab>
+</Tabs>
+
+## Test File Formats
+
+The format of your test file depends on the test type you're creating.
+
+<Tabs>
+  <Tab title="Quality">
+    For Quality tests, use the standard CSV format with these columns:
+
+    | Column | Required | Description |
+    |--------|----------|-------------|
+    | `input` | Yes | The question or prompt for the test case |
+    | `expected_output` | Yes | The expected response from your AI model |
+    | `expected_tools` | No | List of tools expected to be used by the synthetic user, separated by `;`. **Example**: "book_flight;cancel_flight" |
+    | `context` | No | The ground truth context for the test case |
+    | `tag` | No | A categorization label (e.g., "original", "paraphrased") |
+    | `source` | No | The origin of the test case information |
+  </Tab>
+  
+  <Tab title="Red Teaming">
+    For Red Teaming tests, use the standard CSV format with these columns:
+
+    | Column | Required | Description |
+    |--------|----------|-------------|
+    | `input` | Yes | The adversarial input to test system resilience |
+    | `expected_output` | No | Typically "N/A" for red teaming tests |
+    | `expected_tools` | No | List of tools expected to be used by the synthetic user, separated by `;`. **Example**: "book_flight;cancel_flight" |
+    | `context` | No | The ground truth context for the test case |
+    | `tag` | No | A categorization label (e.g., "adversarial_inputs") |
+    | `source` | No | The source of the adversarial input |
+  </Tab>
+  
+  <Tab title="Scenarios">
+    For Scenarios tests that use the [Conversation Simulator](/concepts/conversation-simulator), use this specialized CSV format:
+
+    | Column | Required | Description |
+    |--------|----------|-------------|
+    | `goal` | Yes | The objective the synthetic user is trying to achieve. **Example**: "Book a flight to New York" |
+    | `user_persona` | Yes | The personality of the synthetic user. **Example**: "A busy professional who values efficiency" |
+    | `initial_prompt` | No | The first message from the synthetic user. **Example**: "I need to book a flight" |
+    | `stopping_criterias` | No | Conversation end conditions, separated by `;` or `\|`. **Example**: "Booking confirmed\|Unable to fulfill request" |
+    | `max_iterations` | No | Maximum conversation turns. **Example**: 10 |
+    | `scenario` | No | Scenario description. **Example**: "Flight booking scenario" |
+    | `expected_tools` | No | List of tools expected to be used by the synthetic user, separated by `;`. **Example**: "book_flight;cancel_flight" |
+    | `context` | No | The ground truth context for the test case |
+
+    <Note>
+      Only `goal` and `user_persona` are mandatory for conversation simulation. See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for complete implementation examples.
+    </Note>
+  </Tab>
+</Tabs>

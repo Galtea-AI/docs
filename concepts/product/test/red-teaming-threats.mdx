@@ -1,0 +1,40 @@
+---
+title: "Threats"
+description: "Galtea platform tests the robustness of your product against multiple types of threats"
+icon: ""
+---
+
+## What is a threat?
+
+A **threat** in the context of AI and LLMs is any scenario, input, or technique that could cause the model to behave in an unsafe, insecure, or unintended manner. Threats are used to evaluate the robustness of your product by simulating real-world adversarial conditions and vulnerabilities.
+
+<Info>
+  **SDK Parameter Note:** In the Galtea SDK, "Threats" are specified using the `variants` parameter in the [`galtea.tests.create()`](/sdk/api/test/create) method when creating `RED_TEAMING` tests. For example: `galtea.tests.create(..., type="RED_TEAMING", variants=["Toxicity", "Misuse", "data_leakage"])`.
+</Info>
+
+## Threat Types
+
+Below are the main threat types evaluated by Galtea, with references to industry standards:
+
+| **Attack Type** | **Description** | **Related Frameworks** | **Suggested Metrics** |
+|-----------------|-----------------|---------------------------------------|-----------------------|
+| **Data Leakage** | Unintentional exposure of sensitive data through model outputs. | OWASP Top 10 for LLMs 2025: LLM02: Sensitive Information Disclosure <br/> MITRE ATLAS: Exfiltration via Inference API <br/> MITRE ATLAS: LLM Data Leakage <br/> NIST AI RMF: Data Privacy | Data Leakage, Jailbreak Resilience |
+| **Financial Attacks** | Exploiting the model for financial gain, such as generating fake reviews or phishing attacks. | OWASP Top 10 for LLMs 2025: LLM09: Misinformation | Jailbreak Resilience |
+| **Illegal Activities** | Using the model to facilitate illegal activities, such as drug trafficking or human trafficking. | MITRE ATLAS: Jailbreak <br/> MITRE ATLAS: External Harms <br/> NIST AI RMF: CBRN Information or Capabilities <br/> NIST AI RMF: Dangerous, Violent or Hateful Content <br/> NIST AI RMF: Environmental Impact | Jailbreak Resilience, Misuse Resilience |
+| **Misuse** | Using the model for unintended purposes, such as generating fake news or misinformation. | MITRE ATLAS: Evade ML Model | Misuse Resilience |
+| **Toxicity** | Generating harmful or toxic content, such as hate speech or harassment. | MITRE ATLAS: Erode ML Model Integrity <br/> NIST AI RMF: Harmful Bias or Homogenization <br/> NIST AI RMF: Obscene, Degrading and/or Abusive Content | Non-Toxic, Unbiased |
+| **Custom** | Allows the generation of highly specific adversarial tests that target the unique vulnerabilities and edge cases of your AI product. | - | - |
+
+## Why Evaluate Against Threats?
+
+Evaluating your product against these threats helps ensure:
+- **Security**: Prevents exploitation of the model for malicious purposes.
+- **Privacy**: Reduces the risk of leaking sensitive or private information.
+- **Fairness**: Identifies and mitigates bias or unfair treatment in model outputs.
+- **Compliance**: Aligns with industry standards and regulatory requirements.
+
+## References
+
+- [OWASP Top 10 for LLMs 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- [MITRE ATLAS](https://atlas.mitre.org/)
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)

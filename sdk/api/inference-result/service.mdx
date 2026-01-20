@@ -1,0 +1,54 @@
+---
+title: 'Inference Result Service'
+sidebarTitle: "Service"
+description: "Inference Result Service API methods in the Galtea SDK"
+---
+
+import InferenceResultCard from '/snippets/cards/inference-result-card.mdx';
+
+The Inference Result Service in the Galtea SDK allows you to manage [inference results](/concepts/product/version/session/inference-result) for evaluating your products.
+This Service is exposed by the `galtea.inference_results` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+```python
+from galtea import Galtea, Agent, AgentInput, AgentResponse
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Define a simple agent
+class MyAgent(Agent):
+    def call(self, input: AgentInput) -> AgentResponse:
+        return AgentResponse(content="Hello from my agent!")
+
+# Create a session
+session = galtea.sessions.create(version_id="YOUR_VERSION_ID")
+
+# Generate inference result with automatic trace collection (recommended)
+inference_result = galtea.inference_results.generate(
+    agent=MyAgent(),
+    session=session,
+    user_input="Hello!"
+)
+
+# Retrieve the result
+retrieved = galtea.inference_results.get(id=inference_result.id)
+print(f"Output: {retrieved.actual_output}")
+print(f"Latency: {retrieved.latency}ms")
+```
+
+## Service Methods
+- [Generate Inference Result](/sdk/api/inference-result/generate) - **Recommended** for automatic trace collection
+- [Create Inference Result](/sdk/api/inference-result/create)
+- [Create Inference Result Batch](/sdk/api/inference-result/create-batch)
+- [Update Inference Result](/sdk/api/inference-result/update)
+- [List Inference Results](/sdk/api/inference-result/list)
+- [Get Inference Result](/sdk/api/inference-result/get)
+- [Delete Inference Result](/sdk/api/inference-result/delete)
+
+## Related Concepts
+<InferenceResultCard />

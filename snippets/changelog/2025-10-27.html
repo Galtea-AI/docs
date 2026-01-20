@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-10-27</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">Simplified Metric Creation, Smarter Simulations, and UX Polish</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-10-27">2025-10-27</a>
+
+                <h3 style="color: #171717">Introducing Partial Prompts: Create Custom Metrics Faster</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We're making it easier than ever to create custom judge <a href="https://docs.galtea.ai/concepts/metric" style="color: #5286ff">Metrics</a> with our new <strong>Partial Prompt</strong> method. Now, you can focus solely on defining your evaluation criteria and simply select the data
+                  parameters you need—like <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444">input</code> or
+                  <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444">retrieval_context</code>. Galtea automatically constructs the full judge prompt for you, saving you time and reducing complexity.
+                </p>
+                <div style="text-align: center; margin: 10px 0">
+                  <img src="https://mintlify.s3.us-west-1.amazonaws.com/galtea/images/changelog/2025-10-27_partial-prompt-metric.png" alt="Creating a metric with the new Partial Prompt method" style="max-width: 100%; height: auto; border-radius: 8px" />
+                </div>
+
+                <h3 style="color: #171717">Quality Generator with Improved Language Handling</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The LLM language confusion is now patched for the quality generator. Languages are formally detected for the whole document, and test cases are ensured to be generated with the correct language. This ensures more accurate and contextually appropriate test case generation across
+                  different language inputs.
+                </p>
+
+                <h3 style="color: #171717">Improved Long Context Processing for Quality Test Cases</h3>
+                <p style="color: #171717; font-size: 16px">
+                  Our quality generator now intelligently processes long documents, ensuring optimal context is provided for the best quality generation of test cases. This enhancement streamlines the evaluation process and improves the reliability of generated test cases for comprehensive quality
+                  assessments.
+                </p>
+
+                <h3 style="color: #171717">Platform Experience Enhancements</h3>
+                <p style="color: #171717; font-size: 16px">We've also rolled out several quality-of-life improvements and bug fixes. Notably, tables across the platform now refresh instantly after you delete an item with a right-click, making data management more fluid and intuitive.</p>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack channel.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">Here's a sneak peek at what we're working on:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>Dynamic Export of Test Cases (via a CSV file) instead of the original static one.</li>
+                  <li>General UX improvements, including turning edit/create pages into dialogs for easier navigation.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

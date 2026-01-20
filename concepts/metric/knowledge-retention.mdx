@@ -1,0 +1,46 @@
+---
+title: "Knowledge Retention"
+description: "Checks if your product can follow a multi-turn conversation without losing information."
+---
+
+The **Knowledge Retention** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to retain and consistently apply factual information shared earlier in a conversation. It analyzes the entire conversational history to determine whether the model recalls and reuses relevant facts when generating new responses.
+
+This is particularly useful for long, multi-turn dialogues where context accumulation and memory play a crucial role in the user experience.
+
+---
+
+## Evaluation Parameters
+
+To compute the `knowledge_retention` metric, the following parameters are required in every turn of the conversation:
+
+- **`input`**: The user message in the conversation.
+- **`actual_output`**: The LLM-generated response to the user message.
+
+This metric will evaluate the whole conversation, including all turns, to simulate a memory-check process across multiple turns.
+
+---
+
+## How Is It Calculated?
+
+The `knowledge_retention` score is based on a two-step LLM-driven process:
+
+1. **Knowledge Extraction**: An LLM is used to extract key facts, assertions, and informational snippets from the previous `conversational_turns`.
+2. **Retention Evaluation**: For each subsequent LLM response, the system assesses whether the model has retained the relevant knowledge or has exhibited information attrition (e.g., contradictions, omissions, or inconsistencies).
+
+The final score is calculated as:
+
+$$
+\text{Knowledge Retention} = \frac{\text{Number of turns without information attrition}}{\text{Total number of evaluated turns}}
+$$
+
+This yields a score between **0** (no retention) and **1** (perfect retention), where higher values indicate stronger memory consistency over the course of the conversation.
+
+<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-knowledge-retention).</Note>
+
+
+---
+
+## Related Topics
+
+- [Conversation Completeness](/concepts/metric/conversation-completeness)
+- [Role Adherence](/concepts/metric/role-adherence)

@@ -1,0 +1,30 @@
+---
+title: 'Downloading Test'
+sidebarTitle: "Download"
+description: "Download the file associated with a specific test."
+---
+
+## Returns
+Returns the local file path to the downloaded test file.
+
+## Example
+```python
+# First, get a Test object
+test = galtea.tests.get(test_id="YOUR_TEST_ID")
+# Or
+# test = galtea.tests.get_by_name(product_id="YOUR_PRODUCT_ID", test_name="YOUR_TEST_NAME")
+
+if test and test.uri: # Check if the test has an associated file URI
+    downloaded_file_path = galtea.tests.download(test=test, output_directory="downloaded_tests")
+    print(f"Test file downloaded to: {downloaded_file_path}")
+else:
+    print("Test does not have a downloadable file or test not found.")
+```
+
+## Parameters
+<ResponseField name="test" type="Test object" required>
+  The Test object (retrieved via `get` or `get_by_name`) for which you want to download the associated file. The test must have a `uri` attribute.
+</ResponseField>
+<ResponseField name="output_directory" type="string" required>
+  The local directory path where the test file will be saved.
+</ResponseField>

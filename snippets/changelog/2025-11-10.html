@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-11-10</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">Social Logins, Metric Versioning, and Test Generation Improvements</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-11-10">2025-11-10</a>
+
+                <h3 style="color: #171717">Flexible Sign-In with Google, GitHub, and GitLab</h3>
+                <p style="color: #171717; font-size: 16px">
+                  You can now sign in to Galtea using your Google, GitHub, or GitLab accounts! This makes accessing your workspace faster and more secure, providing a seamless single sign-on (SSO) experience alongside our traditional email and password login.
+                </p>
+                <div style="text-align: center; margin: 10px 0">
+                  <img src="https://mintlify.s3.us-west-1.amazonaws.com/galtea/images/changelog/2025-11-10_social-logins.png" alt="New social login options" style="max-width: 100%; height: auto; border-radius: 8px" />
+                </div>
+
+                <h3 style="color: #171717">Simplified Metric Versioning with "Legacy" Tag</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We've introduced a new way to handle updated <a href="https://docs.galtea.ai/concepts/metric" style="color: #5286ff">Metrics</a>. Galtea metrics might be marked as "Legacy," allowing us to improve them over time with the same name. This approach simplifies versioning by removing
+                  the need to embed version numbers in metric names, ensuring that your historical evaluations remain linked to the correct metric version.
+                </p>
+
+                <h3 style="color: #171717">Test Generation Transparency and Enhancements</h3>
+                <p style="color: #171717; font-size: 16px">We're bringing more transparency and efficiency to our test generation process:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>See What's Under the Hood:</strong> The models used to generate a <a href="https://docs.galtea.ai/concepts/product/test" style="color: #5286ff">Test</a> are now listed in the test's details section, providing clearer insight into how your test cases were created.</li>
+                  <li><strong>Faster Test Generation:</strong> We've significantly sped up the processing of multiple files within ZIP archives when generating tests from a knowledge base.</li>
+                  <li>
+                    <strong>Smarter Test Case Handling:</strong> The engine for generating <a href="https://docs.galtea.ai/concepts/product/test/quality-tests" style="color: #5286ff">Quality Tests</a> now handles the
+                    <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444">max_test_cases</code> parameter more effectively.
+                  </li>
+                </ul>
+
+                <h3 style="color: #171717">Fixes & Improvements</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>Fixed a bug where file names from ZIP archives were not displayed correctly in the UI.</li>
+                  <li>
+                    Resolved an issue that prevented the processing of ZIP files containing two files with the same name (e.g.,
+                    <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444">folder1/file.txt</code> and
+                    <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444">folder2/file.txt</code>).
+                  </li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack channel.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">We're not stopping here! Here's what's coming soon:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Documentation Overhaul:</strong> We're revamping our docs to make them even more helpful and easier to navigate.</li>
+                  <li><strong>Dynamic Export of Test Cases:</strong> Soon you'll be able to export your test cases dynamically.</li>
+                  <li><strong>Improved Platform Robustness:</strong> We're continuing to make behind-the-scenes improvements to enhance platform stability and performance.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

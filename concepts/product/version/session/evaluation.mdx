@@ -1,0 +1,129 @@
+---
+title: "Evaluation"
+sidebarTitle: "Overview"
+description: "An evaluation that assesses inference results from a session using a metric"
+---
+
+import MetricCard from '/snippets/cards/metric-card.mdx';
+import SDKEvaluationServiceCard from '/snippets/cards/sdk-evaluation-service-card.mdx';
+import TestCard from '/snippets/cards/test-card.mdx';
+import TestCaseCard from '/snippets/cards/test-case-card.mdx';
+import SessionCard from '/snippets/cards/session-card.mdx';
+
+## What is an Evaluation?
+
+An evaluation in Galtea represents the assessment of inference results from a [session](/concepts/product/version/session) using the evaluation criteria of a [metric](/concepts/metric). Evaluations are now directly linked to sessions, allowing for comprehensive evaluation of full sessions containing multiple inference results for multi-turn dialogues.
+
+<Note>Evaluations don't perform inference on the LLM [product](/concepts/product) themselves. Rather, they evaluate outputs that have already been generated. You should perform inference on your product first, then trigger the evaluation.</Note>
+
+The only way to **create** evaluations is programmatically by using the [Galtea SDK](/sdk/api/evaluation/service) but they can be viewed and managed on the [Galtea dashboard](https://platform.galtea.ai/).
+
+## Evaluation Lifecycle
+
+Evaluations follow a specific lifecycle:
+
+<Steps>
+  <Step title="Creation">[Trigger an evaluation](/sdk/tutorials/create-evaluation). It will appear in the session's details page with the status "pending"</Step>
+  <Step title="Processing">Galtea's evaluation system processes the evaluation using the evaluation criteria of the selected [metric](/concepts/metric)</Step>
+  <Step title="Completion">Once processed, the status changes to "completed" and the [results](/concepts/product/version/session/evaluation#evaluation-properties) are available</Step>
+</Steps>
+
+## Related Concepts
+
+<CardGroup cols={2}>
+  <TestCard />
+  <TestCaseCard />
+  <SessionCard />
+  <MetricCard />
+</CardGroup>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage evaluations programmatically. This is particularly useful for organizations that want to automate their versioning process or integrate it into their CI/CD pipeline.
+
+<CardGroup cols={2}>
+  <SDKEvaluationServiceCard />
+  <Card title="GitHub Actions" icon="code-compare" href="/sdk/integrations/github-actions">
+    Learn how to set up GitHub Actions to automatically evaluate new versions
+  </Card>
+</CardGroup>
+
+## Evaluation Properties
+
+The properties required for an evaluation depend on which method you use:
+
+### For `create_single_turn()` (Single-Turn Evaluations)
+
+<ResponseField name="Version ID" type="string" required>
+  The ID of the version you want to evaluate.
+</ResponseField>
+
+<ResponseField name="Session ID" type="string" required>
+  The ID of the session containing the inference results to be evaluated.
+</ResponseField>
+
+<ResponseField name="Metrics IDs" type="list[Metrics]" required>
+  A list of the metrics used for the evaluation.
+</ResponseField>
+
+<ResponseField name="Actual Output" type="Text" required>
+  The actual output produced by the product's version. **Example**: "The iPhone 16 costs $950."
+</ResponseField>
+
+<ResponseField name="Test Case ID" type="Test Case" optional>
+  The test case to be evaluated. Required for non-production evaluations.
+</ResponseField>
+
+<ResponseField name="Input" type="Text" optional>
+  The user query that your model needs to answer. Required for production evaluations where no `test_case_id` is provided.
+</ResponseField>
+
+<ResponseField name="Is Production" type="boolean" optional>
+  Set to `True` to indicate the evaluation is from a production environment. Defaults to `False`.
+</ResponseField>
+
+<ResponseField name="Retrieval Context" type="Text" optional>
+  The context retrieved by your RAG system that was used to generate the actual output.
+  <Note>
+    Including retrieval context enables more comprehensive evaluation of RAG systems.
+  </Note>
+</ResponseField>
+
+<ResponseField name="Latency" type="float" optional>
+  Time lapsed (in ms) from the moment the request was sent to the LLM to the moment the response was received.
+</ResponseField>
+
+<ResponseField name="Usage Info" type="Object" optional>
+  Token count information of the LLM call. Use snake_case keys: `input_tokens`, `output_tokens`, `cache_read_input_tokens`.
+</ResponseField>
+
+<ResponseField name="Cost Info" type="Object" optional>
+  The costs associated with the LLM call. Keys may include `cost_per_input_token`, `cost_per_output_token`, etc.
+  <Warning>
+    If cost information is properly configured in the [Model](/concepts/model) selected by the [Version](/concepts/product/version), the system will automatically calculate the cost. Provided values will override the system's calculation.
+  </Warning>
+</ResponseField>
+
+### Evaluation Results Properties
+
+Once an evaluation is created, you can access the following information:
+
+<ResponseField name="Status" type="Enum">
+  The current status of the evaluation.
+  Possible values:
+  - **Pending**: The evaluation has been created but not yet processed.
+  - **Success**: The evaluation was processed successfully.
+  - **Failed**: The evaluation encountered an error during processing.
+</ResponseField>
+
+<ResponseField name="Score" type="Number">
+  The score assigned to the output by the metric's evaluation criteria. **Example**: 0.85
+</ResponseField>
+
+<ResponseField name="Reason" type="Text">
+  The explanation of the score assigned to the output by the [metric's](/concepts/metric) evaluation criteria.
+</ResponseField>
+
+<ResponseField name="Error" type="Text">
+  The error message if the evaluation failed during processing.
+</ResponseField>

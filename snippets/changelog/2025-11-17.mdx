@@ -1,0 +1,23 @@
+<Update label="2025-11-17" description="Simplified Metric Creation, Binarized Scores, and Performance Boosts">
+## Simplified and More Powerful Metric Creation with Partial Prompts
+
+We've upgraded how custom judge [Metrics](/concepts/metric) are created by introducing a new **Partial Prompt** method. This approach simplifies the process by letting you focus on the core evaluation logic while Galtea handles the final prompt construction. This not only makes creating custom metrics faster but also significantly increases the quality and consistency of the evaluation results. [Learn more about the new method](/concepts/metric#creating-custom-metrics-via-partial-prompt-llm).
+
+## Clearer Pass/Fail with Binarized Metric Scores
+
+To provide more decisive validation, we've updated three of our key metrics to return a clear binary score (0 for fail, 1 for pass). This change eliminates ambiguous 0.5 scores, making it easier to determine success or failure for critical test cases. The updated metrics are:
+
+- [Factual Accuracy](/concepts/metric/factual-accuracy)
+- [Jailbreak Resilience](/concepts/metric/jailbreak-resilience)
+- [Data Leakage](/concepts/metric/data-leakage)
+
+## More Robust Quality Test Generation
+
+When creating [Quality Tests](/concepts/product/test/quality-tests) from the dashboard, we now validate your uploaded files to ensure they are in the expected format. This proactive check helps prevent errors during test generation, leading to a smoother and more reliable workflow.
+
+## Platform Enhancements
+
+We're always working to improve the core platform experience. This week's updates include:
+- **Improved Performance:** We've optimized our underlying LLM usage for better concurrency, scalability, and robustness, resulting in a faster and more reliable platform.
+- **Enhanced Email Validation:** The process for validating user emails has been made more robust to ensure better security and deliverability.
+</Update>

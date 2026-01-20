@@ -1,0 +1,46 @@
+---
+title: "Conversation Relevancy"
+description: "Checks if your product consistently responds in a contextually relevant way during a multi-turn conversation."
+---
+
+The **Conversation Relevancy** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to generate contextually appropriate and relevant responses across the course of a multi-turn dialogue. It assesses whether each response aligns with the user's intent, prior inputs, and the evolving context of the conversation.
+
+This metric is particularly useful for ensuring coherent, on-topic conversations that maintain engagement and avoid misunderstandings or irrelevant diversions.
+
+---
+
+## Evaluation Parameters
+
+To compute the `conversation_relevancy` metric, the following parameters are required in every turn of the conversation:
+
+- **`input`**: The user message in the conversation.
+- **`actual_output`**: The chatbot's corresponding response.
+
+This metric will evaluate the whole conversation, including all turns, to evaluate the relevance of the response in context, not just in isolation.
+
+---
+
+## How Is It Calculated?
+
+The `conversation_relevancy` score is derived using an LLM-as-a-judge approach:
+
+1. **Contextual Analysis**: An LLM is used to analyze the full conversation history.
+2. **Relevancy Judgment**: The LLM determines whether the `actual_output` directly addresses the user's intent and fits naturally within the flow of the dialogue.
+
+The score is based on the ratio of contextually relevant responses to the total number of evaluated responses:
+
+$$
+\text{Conversation Relevancy} = \frac{\text{Number of turns with relevant statements}}{\text{Total number of statements}}
+$$
+
+Scores range from **0** (entirely off-topic) to **1** (fully relevant throughout), helping you monitor and improve conversational quality at scale.
+
+<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-conversation-relevancy).</Note>
+
+
+---
+
+## Related Topics
+
+- [Knowledge Retention](/concepts/metric/knowledge-retention)
+- [Conversation Completeness](/concepts/metric/conversation-completeness)

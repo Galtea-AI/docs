@@ -1,0 +1,175 @@
+---
+title: 'Generate Inference Result'
+sidebarTitle: "Generate"
+description: "Execute an agent and automatically capture traces, latency, and metadata"
+---
+
+## Overview
+
+The `generate()` method is the recommended way to execute your agent when you want automatic trace collection, timing, and inference result creation. It handles the complete lifecycle:
+
+1. Initializes trace collection
+2. Executes your agent with timing measurement
+3. Creates/updates the inference result with all metadata
+4. Saves collected traces to the platform
+5. Cleans up trace context (prevents memory leaks)
+
+<Info>
+  This is the recommended method for production use as it handles all trace lifecycle management automatically.
+</Info>
+
+## Method Signature
+
+```python
+galtea.inference_results.generate(
+    agent: Agent,
+    session: Session,
+    user_input: Optional[str] = None,
+    throw_if_empty_agent_response: bool = False
+) -> InferenceResult
+```
+
+## Parameters
+
+<ParamField path="agent" type="Agent" required>
+  An instance of a class that extends `galtea.Agent`. Must implement the `call()` method.
+</ParamField>
+
+<ParamField path="session" type="Session" required>
+  The session object to associate the inference result with. Obtain via `galtea.sessions.create()` or `galtea.sessions.get()`.
+</ParamField>
+
+<ParamField path="user_input" type="string" optional>
+  The user's input message to send to the agent. If not provided and the session is test-based, the test case input will be used automatically. Required for production/monitoring sessions.
+</ParamField>
+
+<ParamField path="throw_if_empty_agent_response" type="bool" optional>
+  If `True`, raises a `ValueError` when the agent returns an empty response. Defaults to `False`.
+</ParamField>
+
+## Returns
+
+Returns an `InferenceResult` object with all captured data.
+
+## Example
+
+```python
+from galtea import Galtea, Agent, AgentInput, AgentResponse, trace, TraceType
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Define your agent with traced operations
+class MyAgent(Agent):
+    @trace(name="search", type=TraceType.RETRIEVER)
+    def search(self, query: str) -> list:
+        return [{"doc": "relevant content"}]
+    
+    @trace(name="generate", type=TraceType.GENERATION)
+    def generate_response(self, context: list, query: str) -> str:
+        return f"Based on the context: {context}"
+    
+    @trace(name="main", type=TraceType.AGENT)
+    def call(self, input: AgentInput) -> AgentResponse:
+        query = input.last_user_message_str()
+        context = self.search(query)
+        response = self.generate_response(context, query)
+        return AgentResponse(
+            content=response,
+            retrieval_context=str(context)
+        )
+
+# Create resources
+product = galtea.products.get_by_name("My Product")
+version = galtea.versions.create(name="v1.0", product_id=product.id)
+session = galtea.sessions.create(version_id=version.id)
+
+# Create agent and run with automatic trace collection
+agent = MyAgent()
+
+inference_result = galtea.inference_results.generate(
+    agent=agent,
+    session=session,
+    user_input="What's the product pricing?"
+)
+
+print(f"Response: {inference_result.actual_output}")
+print(f"Latency: {inference_result.latency}ms")
+# Traces are automatically saved to the platform!
+```
+
+## What Gets Captured
+
+The `generate()` method automatically captures and saves:
+
+| Data | Source | Description |
+|------|--------|-------------|
+| **Input** | `user_input` parameter | The user's message |
+| **Output** | `AgentResponse.content` | The agent's response |
+| **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG) |
+| **Latency** | Measured | End-to-end execution time in ms |
+| **Usage Info** | `AgentResponse.usage_info` | Token counts (if provided) |
+| **Cost Info** | `AgentResponse.cost_info` | Cost data (if provided) |
+| **Traces** | `@trace` decorators | All traced operations |
+
+## Providing Usage and Cost Information
+
+Your agent can return usage and cost information in the `AgentResponse`:
+
+```python
+class MyAgent(Agent):
+    @trace(name="main")
+    def call(self, input: AgentInput) -> AgentResponse:
+        # Your agent logic...
+        
+        return AgentResponse(
+            content="Response content",
+            usage_info={
+                "input_tokens": 150,
+                "output_tokens": 75,
+                "cache_read_input_tokens": 50
+            },
+            cost_info={
+                "cost_per_input_token": 0.00001,
+                "cost_per_output_token": 0.00003,
+                "cost_per_cache_read_input_token": 0.000001
+            }
+        )
+```
+
+## Comparison with Manual Approach
+
+| Feature | `generate()` | Manual with `set_context()` |
+|---------|-------------|-----------------------------|
+| Context initialization | Automatic | `set_context()` |
+| Agent execution | Automatic | Manual call |
+| Timing measurement | Automatic | Manual |
+| Inference result | Auto-created | `inference_results.create()` |
+| Trace export | Automatic | Automatic on `clear_context()` |
+| Memory cleanup | Automatic | `clear_context()` |
+| Error handling | Built-in | Manual try/finally |
+
+<Tip>
+  Use `generate()` for most use cases. Use manual `set_context()`/`clear_context()` only when you need to manage inference result creation separately or have complex multi-step workflows.
+</Tip>
+
+## Error Handling
+
+If the agent raises an exception, `generate()` ensures trace context is cleaned up:
+
+```python
+try:
+    result = galtea.inference_results.generate(
+        agent=agent,
+        session=session,
+        user_input="test"
+    )
+except Exception as e:
+    # Trace context is automatically cleaned up
+    print(f"Agent failed: {e}")
+```
+
+## Related Methods
+
+- [Create Inference Result](/sdk/api/inference-result/create) - Manual creation
+- [Trace Service](/sdk/api/trace/service) - Manual trace management
+- [Simulating Conversations](/sdk/tutorials/simulating-conversations) - Multi-turn simulations

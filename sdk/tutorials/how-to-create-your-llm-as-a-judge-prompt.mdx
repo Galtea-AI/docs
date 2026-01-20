@@ -1,0 +1,138 @@
+---
+title: 'How to create your judge prompt?'
+description: "A practical guide for writing LLM-as-a-judge prompts: define objective evaluation criteria, unambiguous scoring rubrics, and machine-friendly outputs."
+icon: "gavel"
+iconType: "solid"
+---
+
+You can use Galtea to [Evaluate with Custom Metrics](/sdk/tutorials/create-evaluation-with-custom-scores) and tailor your evaluation with full flexibility. However, this can be highly complex or even impossible in some cases. In this guide we will explain how to translate the idea you want to evaluate into an effective, usable prompt so an LLM can do the judging.
+
+## Key Components of a Judge Prompt
+
+### 1. **Role (Optional)**
+
+Clearly state what the evaluator is assessing:
+
+*Example Structure:*
+```
+**Role:** You are evaluating the _thing to evaluate_ of the _ACTUAL_OUTPUT_.
+```
+
+### 2. **Evaluation Criteria (Essential)**
+
+Evaluation criteria are the clear rules or checkpoints you want the judge to use when reviewing an output. They help make your evaluation process fair, repeatable, and easy to understand.
+
+**Recommendations:**
+- **Be specific:** Do not use vague terms like "good quality." Instead, explain exactly what quality means for your use case.
+- **Break it down (itemization):** Break down your criteria into separate, clearly defined points. Make them easier to check, score, and understand. Each criterion should focus on one thing at a time.
+- **Use objective signals:** Look for things you can see or measure, not just opinions or feelings.
+- **Give examples:** Show what a good answer looks like, and what a bad answer looks like, for each criterion.
+- **Number your criteria:** This makes them easier to reference and ensures nothing important is missed.
+
+*Example Structure:*
+```
+For each [unit of analysis]:
+1. Check that [specific condition A]
+2. Verify that [specific condition B]
+3. Ensure that [specific condition C]
+```
+
+### 3. **Scoring Rubric (Essential)**
+
+The scoring rubric is how you decide what score to give for each output. It sets the rules for what counts as a pass or fail, and helps make your evaluation fair and consistent.
+
+Here are the main things to keep in mind:
+
+**A. Define clear thresholds.** Make your scoring rules easy to understand and apply. For example, if using binary scoring (either a 0 or a 1), specify exactly what counts as a pass or a fail.
+
+**B. Cover edge cases:** Think about what happens if criteria conflict, if data is missing, or if something is unclear. Make sure your rubric explains how to handle these situations.
+
+<Info>
+**All-or-nothing logic**: recommended for direct system validation. Use this when you want a strict pass/fail: score 1 only when *every* requirement is satisfied; otherwise score 0.
+</Info>
+
+*Example Structure for Binary:*
+```
+- Score 1: The ACTUAL_OUTPUT meets all the evaluation criteria you listed above. For example, it is accurate, complete, and follows all instructions.
+- Score 0: The ACTUAL_OUTPUT fails one or more of the evaluation criteria. For example, it is missing key information, contains errors, or does not follow specific instructions.
+```
+
+You can also use graded rubrics (for example, 0-2 or 0-5). When using graded rubrics, define each numeric level explicitly and include a short example for each level so the judge behaves consistently.
+
+## Common Pitfalls to Avoid
+
+1. **Vague criteria:** "Check if response is good" → Instead: "Check if response addresses all parts of the user's question"
+2. **Ambiguous thresholds:** "Mostly correct" → Instead: "At least 3 out of 4 criteria met"
+3. **Missing edge cases:** Not specifying what happens with partial matches or ambiguous data
+4. **Subjective language:** "Natural" or "appropriate" without defining what that means
+5. **Overlapping criteria:** Multiple criteria testing the same thing differently
+
+<Note>
+  The key is: If you can't program it as a rule-based system, your criteria aren't specific enough for an LLM judge either.
+</Note>
+
+## Template
+
+```
+**Role:** You are evaluating [aspect] of [parameter].
+
+**Evaluation Criteria:**
+
+For each [unit of analysis], verify:
+
+1. **[Criterion name]:** [Specific, measurable condition with examples]
+2. **[Criterion name]:** [Specific, measurable condition with examples]
+3. **[Criterion name]:** [Specific, measurable condition with examples]
+
+**Scoring Rubric:**
+
+- **Score 1:** [Clear threshold for success, e.g., "All evaluation criteria are met."]
+- **Score 0:** [Clear threshold for failure, e.g., "One or more evaluation criteria are not met."]
+```
+
+<Note>
+  This template serves as a starting skeleton that you can adapt and modify based on your specific evaluation needs. Feel free to add more criteria, adjust the scoring scale, or restructure sections to better fit your use case.
+</Note>
+
+## How to implement it with Galtea?
+
+You can create your custom metric in Galtea using the [Dashboard ](https://platform.galtea.ai/metric-new) or the SDK.
+
+Here's an example of how to create a custom metric using the SDK with the template shown above:
+
+```python
+from galtea import Galtea
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
+
+# Create a new metric
+metric = galtea.metrics.create(
+    name="Generic Metric",
+    test_type="QUALITY",  # or "RED_TEAMING", "SCENARIO"
+    source="partial_prompt",
+    judge_prompt="""
+    **Role:** You are evaluating the [aspect] of the ACTUAL_OUTPUT.
+
+    **Evaluation Criteria:**
+
+    For each [unit of analysis], verify:
+
+    1. **[Criterion name]:** [Specific, measurable condition with examples]
+    2. **[Criterion name]:** [Specific, measurable condition with examples]
+    3. **[Criterion name]:** [Specific, measurable condition with examples]
+
+    **Scoring Rubric:**
+
+    - **Score 1:** [Clear threshold for success, e.g., "All evaluation criteria are met."]
+    - **Score 0:** [Clear threshold for failure, e.g., "One or more evaluation criteria are not met."]
+    """,
+    evaluator_model_name="GPT-4o",
+    evaluation_params=["input", "actual_output"],
+    description="Generic Metric",
+    tags=["quality"],
+)
+``` 

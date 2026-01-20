@@ -1,0 +1,44 @@
+---
+title: 'Create Inference Result Batch'
+sidebarTitle: "Create Batch"
+description: "Create a batch of inference results in a session."
+---
+
+## Returns
+Returns a list of [InferenceResult](/concepts/product/version/session/inference-result) objects.
+
+## Example
+```python
+conversation = [
+    {'role': 'user', 'content': 'Hi'},
+    {'role': 'assistant', 'content': 'Hello!'},
+    {'role': 'user', 'content': 'How are you?'},
+    {'role': 'assistant', 'content': 'I am a bot, I have no feelings.'}
+]
+inference_results = galtea.inference_results.create_batch(
+    session_id="YOUR_SESSION_ID",
+    conversation_turns=conversation
+)
+```
+
+## Parameters
+<ResponseField name="session_id" type="string" required>
+  The session ID to log the inference results to.
+</ResponseField>
+<ResponseField name="conversation_turns" type="list[dict]" required>
+  A list of dictionaries, where each dictionary represents a **conversation turn** with `role` and `content` keys as mandatory and an optional `retrieval_context` key.
+  The `role` key can only have these values: `user` or `assistant`.
+  <Note>
+    The `retrieval_context` key is optional and can be sent to our platform if you have used it when calling your AI product.
+    For this reason, it only makes sense to send it when we have a message with role `assistant`.
+  </Note>
+
+    <Warning>
+    Maximum batch size recommended: **100 turns**. For longer conversations, split into 
+    multiple batches or use the individual `create()` method.
+  </Warning>
+</ResponseField>
+
+<ResponseField name="conversation_simulator_version" type="string" optional>
+  The version of Galtea's conversation simulator used to generate the user messages. This should only be provided when logging a conversation that was generated using the simulator. This parameter helps with traceability and analytics for conversations created through Galtea's simulation capabilities.
+</ResponseField>

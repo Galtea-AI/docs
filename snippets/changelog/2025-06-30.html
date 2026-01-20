@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-06-30</title>
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Poppins, Arial, sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f7fa; text-align: left; margin: 20px; padding: 20px; border: 1px solid #d1d3db; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center; margin-top: 20px">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galteaLogo.png" style="width: 100px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #333; font-size: 26px; margin-top: 30px; margin-bottom: 0px">New Metric, More Red Teaming Strategies and Better Usability</h1>
+                <a style="color: #5c5bdd; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-06-30">2025-06-30</a>
+
+                <h3 style="color: #333">Introducing the Factual Accuracy Metric</h3>
+                <p style="color: #444; font-size: 16px">
+                  We've added a new <strong>Factual Accuracy</strong> metric to our evaluation toolkit! This metric measures whether the information in your model's output is factually correct when compared to a trusted reference answer. It's particularly valuable for RAG and question answering
+                  systems where accuracy is paramount.
+                </p>
+                <p style="color: #444; font-size: 16px">
+                  The metric uses an LLM-as-a-judge approach to compare key facts between your model's output and the expected answer, helping you catch hallucinations and ensure your AI provides reliable information to users.
+                  <a href="https://docs.galtea.ai/concepts/metric/factual-accuracy" style="color: #5c5bdd">Read the full documentation here</a>.
+                </p>
+
+                <h3 style="color: #333">Enhanced Red Teaming with New Attack Strategies</h3>
+                <p style="color: #444; font-size: 16px">Our red teaming capabilities just got more sophisticated! We've added two powerful new attack strategies:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Biblical Strategy:</strong> Transforms adversarial prompts into biblical/ancient scripture style to disguise malicious intent. <a href="https://docs.galtea.ai/concepts/product/test/red-teaming-strategies" style="color: #5c5bdd">Learn more</a></li>
+                  <li><strong>Math Prompt Strategy:</strong> Encodes harmful requests into formal mathematical notation to obscure intent from standard text analysis. <a href="https://docs.galtea.ai/concepts/product/test/red-teaming-strategies" style="color: #5c5bdd">See all strategies</a></li>
+                </ul>
+                <p style="color: #444; font-size: 16px">
+                  These strategies join our existing arsenal to help you test your AI's defenses against increasingly creative attack vectors that real-world adversaries might use.
+                  <a href="https://docs.galtea.ai/concepts/product/test/red-teaming-strategies" style="color: #5c5bdd">Explore all red teaming strategies</a>.
+                </p>
+
+                <h3 style="color: #333">Smarter Red Teaming Test Generation</h3>
+                <p style="color: #444; font-size: 16px">We've significantly improved how red teaming tests are generated. Our system now takes even more factors into account when creating adversarial test cases:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Product-Aware Generation:</strong> Tests are now more precisely tailored to your specific product's strengths and boundaries.</li>
+                  <li><strong>Context-Sensitive Attacks:</strong> Better understanding of your product's intended use cases to craft more relevant scenarios.</li>
+                  <li><strong>Enhanced Threat Modeling:</strong> Broader consideration of factors when determining the most effective attack vectors.</li>
+                </ul>
+                <p style="color: #444; font-size: 16px">
+                  This means your red teaming tests will be more effective at uncovering real vulnerabilities specific to your product. <a href="https://docs.galtea.ai/concepts/product/test/red-teaming-tests" style="color: #5c5bdd">Read more about red teaming tests</a>.
+                </p>
+
+                <h3 style="color: #333">Better Metric Source Visibility and Management</h3>
+                <p style="color: #444; font-size: 16px">Understanding where your metrics come from is now easier than ever! We've enhanced the platform to provide clearer visibility into metric sources:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Source Classification:</strong> All metrics are clearly labeled with their source and origin.</li>
+                  <li><strong>Enhanced Filtering:</strong> Filter metrics by their source to find the right evaluation criteria.</li>
+                  <li><strong>Improved Descriptions:</strong> More detailed information about origins and implementation with documentation links.</li>
+                </ul>
+                <div style="text-align: center; margin: 10px 0">
+                  <img src="https://mintlify.s3.us-west-1.amazonaws.com/galtea/images/changelog/2025-06-30_metrics-source-table.png" alt="Enhanced Metrics Table with Source Visibility" style="max-width: 100%; height: auto; border-radius: 8px" />
+                </div>
+                <p style="color: #444; font-size: 16px">The three main metric sources you'll see are:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Galtea:</strong> Custom metrics designed specifically for your needs, like our new Factual Accuracy metric</li>
+                  <li><strong>G-Eval:</strong> Framework-based metrics that use evaluation criteria or steps for assessment</li>
+                  <li><strong>Established Frameworks:</strong> Metrics adapted from proven evaluation libraries and methodologies</li>
+                </ul>
+
+                <h3 style="color: #333">Platform Usability Improvements</h3>
+                <br />
+                <p style="color: #444; font-size: 16px">Enjoy these improvements!</p>
+                <p style="color: #444; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack/Discord channel.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #d1d3db" />
+
+                <h3 style="color: #333; margin-top: 40px">Coming Next</h3>
+                <p style="color: #444; font-size: 16px">We're not stopping here! Here's what's coming soon:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Custom Prompts for Test Case Generation:</strong> You'll soon be able to define custom prompts to guide how test cases are generated, giving you more control over the evaluation scenarios.</li>
+                  <li><strong>Synthetic Scenario Conversations:</strong> Generate and evaluate complete conversations with synthetic scenarios and real user interactions, perfect for testing multi-turn dialogue systems.</li>
+                  <li><strong>Advanced Conversation Analytics:</strong> Deeper insights into conversational performance with enhanced metrics for multi-turn interactions.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #444; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

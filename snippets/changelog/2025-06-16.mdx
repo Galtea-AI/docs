@@ -1,0 +1,51 @@
+<Update label="2025-06-16" description="Major Platform Overhaul & SDK v2">
+
+## Major Platform Overhaul
+
+We've been hard at work reorganizing and expanding the Galtea platform to handle more use cases and prepare for exciting future features. This release brings significant improvements to the [dashboard](https://platform.galtea.ai/), [SDK](/sdk/introduction), and test generation.
+
+## Dashboard Enhancements
+
+- **Reorganized [Version](/concepts/product/version), [Test](/concepts/product/test), and [Evaluation](/concepts/product/version/session/evaluation) Views:**  
+  Detailed views have been streamlined and improved for clearer insights.
+
+- **New [Sessions](/concepts/product/version/session) Visualizations:**  
+  Easily organize and navigate conversations through our new Sessions feature.
+
+- **Evaluations Visualization Removed:**  
+  The dashboard now focuses on **Sessions** and **Evaluations** as the primary elements.
+
+- **Better Filters Across Tables:**  
+  Quickly find what you need with improved filtering capabilities on the dashboard.
+
+- **General Bug Fixes & UX Improvements:**  
+  Enjoy smoother interactions, clearer tooltips, and more intuitive code snippets.
+
+## SDK v2 Released
+
+The new Galtea SDK v2 is here! It includes breaking changes to simplify workflows and add session support. Check out the [migration guide](/migration-to-v2) for a smooth transition.
+
+- **Implicit Session Creation:**  
+  Sessions are created automatically when needed for evaluations.
+
+- **Repurposed [evaluations.create()](/sdk/api/evaluation/create):**  
+  The old method is replaced by `create_single_turn()` for test-based evaluations, while `create()` now exclusively handles [session-based](/sdk/api/session) evaluations.
+
+- **New [evaluations.create_single_turn()](/sdk/api/evaluation/create-single-turn) Method:**  
+  Use this for single-turn [test cases](/sdk/api/test-case). It now requires `version_id` instead of `evaluation_id`.
+
+- **Simplified [Version Creation](/sdk/api/version/create):**  
+  The `galtea.versions.create()` method now accepts all properties directly, no need for an `optional_props` dictionary.
+
+- **[Sessions Support](/sdk/api/session/service):**  
+  Group multiple inference results under a single session for better multi-turn tracking using `galtea.sessions.create()`.
+
+## Improved Test Case Generation
+
+- **Smarter Test Coverage:**  
+  [Test cases](/concepts/product/test/case) are now distributed more intelligently across your documents for better coverage based on the number of questions you choose to generate.
+
+- **Single Threat per Red Teaming Test:**  
+  Red Teaming Tests now only allow a single threat per test, ensuring clearer results.
+
+</Update>

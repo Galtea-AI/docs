@@ -1,0 +1,45 @@
+---
+title: 'List Sessions'
+sidebarTitle: "List"
+description: "List sessions with optional filtering."
+---
+
+## Returns
+Returns a list of [Session](/concepts/product/version/session) objects.
+
+## Example
+```python
+# List all sessions for a specific version
+sessions = galtea.sessions.list(version_id="YOUR_VERSION_ID")
+```
+
+## Parameters
+<ResponseField name="version_id" type="string | list[string]" optional>
+  The ID or IDs of the version(s) to filter sessions by.
+</ResponseField>
+<ResponseField name="test_case_id" type="string | list[string]" optional>
+  The ID or IDs of the test case(s) to filter sessions by.
+</ResponseField>
+<ResponseField name="custom_id" type="string | list[string]" optional>
+  The custom ID or IDs to filter sessions by.
+</ResponseField>
+<ResponseField name="test_id" type="string | list[string]" optional>
+  The ID or IDs of the test(s) to filter sessions by.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort sessions by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<Note>
+  At least one of the 3 parameters (filters) described above must be passed to the method
+</Note>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of sessions to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="1000" optional>
+  Maximum number of sessions to return in a single request.
+  
+  **Default:** `1000`
+</ResponseField>

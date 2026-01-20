@@ -1,0 +1,49 @@
+---
+title: "Contextual Precision"
+description: "Evaluates whether relevant documents in the retrieval context are ranked higher than irrelevant ones."
+---
+
+The **Contextual Precision** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to assess how well your RAG pipeline's retriever prioritizes relevant content. Specifically, it checks whether relevant items in the `retrieval_context` are ranked higher than irrelevant ones, based on their contribution to answering the user's query.
+
+High contextual precision means that the retriever is efficiently surfacing the most useful information near the top.
+
+---
+
+## Evaluation Parameters
+
+To compute the `contextual_precision` metric, the following are required:
+
+- **`input`**: The user's query.
+- **`retrieval_context`**: The list of retrieved documents or nodes, in ranked order.
+
+This setup allows for a rank-sensitive evaluation of retrieval effectiveness.
+
+---
+
+## How Is It Calculated?
+
+The score is calculated as follows:
+
+1. **Relevance Annotation**: An LLM identifies which items in the `retrieval_context` are relevant to the `input`.
+2. **Ranking Evaluation**: It checks whether relevant items appear near the top of the list.
+
+The metric is computed using a simplified formula:
+
+$$
+\text{Contextual Precision} = \frac{1}{\text{Number of relevant items}}\sum_{k=1}^{n}\left( \frac{\text{Number of relevant items in top-k}}{k}\right)
+$$
+
+Where **k** is a configurable cutoff (e.g., top 5 or top 10). This helps gauge whether the most useful content is easily accessible to the generator.
+
+<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-contextual-precision).</Note>
+
+## Suggested Test Case Types
+
+The Contextual Precision metric is effective for evaluating quality test cases in Galtea for products that use RAG, since it measures the whether the model was able to gather useful information in retrieval for accurate and efficient response generation.
+
+---
+
+## Related Topics
+
+- [Contextual Relevancy](/concepts/metric/contextual-relevancy)
+- [Faithfulness](/concepts/metric/faithfulness)

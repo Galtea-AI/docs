@@ -1,0 +1,107 @@
+---
+title: "Test Case"
+sidebarTitle: "Overview"
+description: "A single challenge for evaluating product performance"
+---
+
+import SDKTestCaseServiceCard from '/snippets/cards/sdk-test-case-service-card.mdx';
+
+## What is a Test Case?
+
+A test case in Galtea is a challenge designed to evaluate the performance of a particular [version](/concepts/product/version) of a [product](/concepts/product).
+
+It represents a specific set of *inputs* that must be sent to the product's AI model to generate an output. It also can define an *expected output* that can be used to assess the product's capabilities.
+
+<Info>
+  Test cases are part of a [test](/concepts/product/test), so you'll need to create a test first. You can do this in the Galtea dashboard or using the SDK.
+</Info>
+
+You can **create**, view and manage your test cases on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/test-case/service).
+
+## Using Test Cases in Evaluations
+
+Test cases are used with [evaluations](/concepts/product/version/session/evaluation). Sessions are created automatically when running evaluations.
+
+<Card title="Create an Evaluation" icon="badge-check" iconType="solid" href="/concepts/product/version/session/evaluation">
+  Learn how to use tests in evaluations
+</Card>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage test cases programmatically. 
+
+<SDKTestCaseServiceCard />
+
+## Test Case Properties
+
+<ResponseField name="Input" type="Text" required>
+  The input data used for inference on the LLM product's version. This is the question or prompt that will be sent to your AI model. **Example**: "What is the operating system of the Samsung Galaxy A8?"
+</ResponseField>
+
+<ResponseField name="Expected Output" type="Text">
+  The expected output for the evaluation. This represents the ideal response you want your AI model to provide. **Example**: "The operating system of the Samsung Galaxy A8 is Android 8.1."
+</ResponseField>
+
+<ResponseField name="Context" type="Text">
+  Test case-specific context that provides context to the model. It can be the past conversation or any other relevant information. Do not mistake for the system prompt/few-shot examples; those should be defined in the product's [version](/concepts/product/version) unless they change on an interaction basis.
+</ResponseField>
+
+<ResponseField name="Variant" type="Text">
+  A label that helps categorize the test case (e.g., "original", "paraphrased", "incorrect"). This corresponds to the `tag` column in an uploaded test CSV file and is used for organizing and filtering test cases.
+</ResponseField>
+
+<ResponseField name="Source" type="Text">
+  The original source text used to create the test case. This can be helpful for tracing where test cases originated from, especially when generating test cases from documentation or other reference materials.
+</ResponseField>
+
+<ResponseField name="Human Reviewed" type="Boolean">
+  Indicates if a test case has been manually reviewed and approved by a user. This is useful for tracking which test cases are considered reliable and validated. The system stores the ID of the user who reviewed the test case, upon creation or update, the one who created or updated the test case is set as the reviewer.
+</ResponseField>
+
+<ResponseField name="User Score" type="Integer" optional>
+  User vote for the test case quality. Possible values are `1` (upvote), `-1` (downvote), or `0` (unreviewed).
+</ResponseField>
+
+<ResponseField name="User Score Reason" type="Text" optional>
+  A justification for the user score, providing context on why a test case was downvoted (or upvoted).
+</ResponseField>
+
+<ResponseField name="Confidence" type="Float" optional>
+  The confidence level of the test case.
+</ResponseField>
+
+<ResponseField name="Confidence Reason" type="Text" optional>
+  A justification for the confidence level of the test case.
+</ResponseField>
+
+## Scenario-Based Test Case Properties
+
+The following properties apply specifically to test cases of type `SCENARIOS` used with the [Conversation Simulator](/concepts/conversation-simulator):
+
+<ResponseField name="Goal" type="Text">
+  The objective the synthetic user is trying to achieve in a conversation scenario. This defines what the synthetic user wants to accomplish during the interaction. **Example**: "Book a flight to New York"
+</ResponseField>
+
+<ResponseField name="User Persona" type="Text">
+  The personality of the synthetic user for a conversation scenario. This shapes how the synthetic user will behave and communicate during the conversation. **Example**: "A busy professional who values efficiency"
+</ResponseField>
+
+<ResponseField name="Scenario" type="Text">
+  A description of the specific scenario or situation in which the conversation takes place. This provides additional context for the interaction. **Example**: "Flight booking scenario"
+</ResponseField>
+
+<ResponseField name="Initial Prompt" type="Text">
+  The first message from the synthetic user that starts the conversation. If not provided, the simulator will generate an appropriate opening message based on the goal and persona. **Example**: "I need to book a flight"
+</ResponseField>
+
+<ResponseField name="Stopping Criterias" type="Text">
+  Conditions that determine when the conversation should end, separated by `;` or `|`. The conversation will stop when any of these criteria are met. **Example**: "Booking confirmed|Unable to fulfill request"
+</ResponseField>
+
+<ResponseField name="Max Iterations" type="Number">
+  The maximum number of conversation turns allowed in the simulation. This prevents conversations from running indefinitely. **Example**: 10
+</ResponseField>
+
+<Note>
+  For Scenarios test cases, only `Goal` and `User Persona` are mandatory. All other scenario properties are optional but can help create more realistic and controlled conversation simulations.
+</Note>

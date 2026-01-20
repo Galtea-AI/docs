@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-06-16</title>
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Poppins, Arial, sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f7fa; text-align: left; margin: 20px; padding: 20px; border: 1px solid #d1d3db; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center; margin-top: 20px">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galteaLogo.png" style="width: 100px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #333; font-size: 26px; margin-top: 30px; margin-bottom: 0px">Major Platform Overhaul & SDK v2</h1>
+                <a style="color: #5c5bdd; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-06-16">2025-06-16</a>
+
+                <h3 style="color: #333">Major Platform Overhaul</h3>
+                <p style="color: #444; font-size: 16px">
+                  We've been hard at work reorganizing and expanding the Galtea platform to handle more use cases and prepare for exciting future features. This release brings significant improvements to the <a href="https://platform.galtea.ai/" style="color: #5c5bdd">dashboard</a>,
+                  <a href="https://docs.galtea.ai/sdk/introduction" style="color: #5c5bdd">SDK</a>, and test generation.
+                </p>
+
+                <h3 style="color: #333">Dashboard Enhancements</h3>
+                <ul style="color: #444; font-size: 16px">
+                  <li>
+                    <strong>Reorganized <a href="https://docs.galtea.ai/concepts/product/version" style="color: #5c5bdd">Version</a>, <a href="https://docs.galtea.ai/concepts/product/test" style="color: #5c5bdd">Test</a>, and
+                    <a href="https://docs.galtea.ai/concepts/product/version/session/evaluation" style="color: #5c5bdd">Evaluation</a> Views:</strong> Detailed views have been streamlined and improved for clearer insights.
+                  </li>
+                  <li>
+                    <strong>New <a href="https://docs.galtea.ai/concepts/product/version/session" style="color: #5c5bdd">Sessions</a> Visualizations:</strong> Easily organize and navigate conversations through our new Sessions feature.
+                  </li>
+                  <li>
+                    <strong>Evaluations Visualization Removed:</strong> The dashboard now focuses on <strong>Sessions</strong> and <strong>Evaluations</strong> as the primary elements.
+                  </li>
+                  <li><strong>Better Filters Across Tables:</strong> Quickly find what you need with improved filtering capabilities on the dashboard.</li>
+                  <li><strong>General Bug Fixes & UX Improvements:</strong> Enjoy smoother interactions, clearer tooltips, and more intuitive code snippets.</li>
+                </ul>
+
+                <h3 style="color: #333">SDK v2 Released</h3>
+                <p style="color: #444; font-size: 16px">
+                  The new Galtea SDK v2 is here! It includes breaking changes to simplify workflows and add session support. Check out the
+                  <a href="https://docs.galtea.ai/migration-to-v2" style="color: #5c5bdd">migration guide</a> for a smooth transition.
+                </p>
+                <ul style="color: #444; font-size: 16px">
+                  <li>
+                    <strong>Implicit Session Creation:</strong> Sessions are created automatically when needed for evaluations.
+                  </li>
+                  <li>
+                    <strong
+                      >Repurposed <a href="https://docs.galtea.ai/sdk/api/evaluation/create" style="color: #5c5bdd">evaluations.create()</a>:</strong
+                    >
+                    The old method is replaced by <i>create_single_turn()</i> for test-based evaluations, while <i>create()</i> now exclusively handles <a href="https://docs.galtea.ai/sdk/api/session" style="color: #5c5bdd">session-based</a> evaluations.
+                  </li>
+                  <li>
+                    <strong>New <a href="https://docs.galtea.ai/sdk/api/evaluation/create-single-turn" style="color: #5c5bdd">evaluations.create_single_turn()</a> Method:</strong> Use this for single-turn <a href="https://docs.galtea.ai/sdk/api/test-case" style="color: #5c5bdd">test cases</a>. It now requires <i>version_id</i> instead of <i>evaluation_id</i>.
+                  </li>
+                  <li>
+                    <strong>Simplified <a href="https://docs.galtea.ai/sdk/api/version/create" style="color: #5c5bdd">Version Creation</a>:</strong> The <i>galtea.versions.create()</i> method now accepts all properties directly, no need for an <i>optional_props</i> dictionary.
+                  </li>
+                  <li>
+                    <strong><a href="https://docs.galtea.ai/sdk/api/session/service" style="color: #5c5bdd">Sessions Support</a>:</strong> Group multiple inference results under a single session for better multi-turn tracking using <i>galtea.sessions.create()</i>.
+                  </li>
+                </ul>
+
+                <h3 style="color: #333">Improved Test Case Generation</h3>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Smarter Test Coverage:</strong> <a href="https://docs.galtea.ai/concepts/product/test/case" style="color: #5c5bdd">Test cases</a> are now distributed more intelligently across your documents for better coverage based on the number of questions you choose to generate.</li>
+                  <li>
+                    <strong>Single Threat per Red Teaming Test:</strong> Red Teaming Tests now only allow a single threat per test, ensuring clearer results.
+                  </li>
+                </ul>
+
+                <br />
+                <p style="color: #444; font-size: 16px">Enjoy the upgrade!</p>
+                <p style="color: #444; font-size: 16px"><strong>We'd love your feedback!</strong> Reply to this email or reach out via Slack/Discord anytime.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #d1d3db" />
+
+                <h3 style="color: #333; margin-top: 40px">Coming Next</h3>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>More sophisticated product context</strong> for Red Teaming threats.</li>
+                  <li><strong>Few-shot examples</strong> for improved quality test case generation.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #444; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+    </table>
+  </body>
+</html>

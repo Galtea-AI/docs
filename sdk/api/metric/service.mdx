@@ -1,0 +1,53 @@
+---
+title: 'Metrics Service'
+sidebarTitle: "Service"
+description: "Metrics Service API methods in the Galtea SDK"
+---
+
+import MetricCard from '/snippets/cards/metric-card.mdx';
+
+The Metrics Service in the Galtea SDK allows you to manage [metrics](/concepts/metric) for evaluating your products.
+This Service is exposed by the `galtea.metrics` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+```python
+from galtea import Galtea
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Create a custom metric (LLM-as-a-Judge)
+metric = galtea.metrics.create(
+    name="custom-accuracy",
+    test_type="QUALITY",
+    evaluator_model_name="GPT-4.1",
+    source="full_prompt",
+    judge_prompt='Determine if output equals expected. Output: "{actual_output}". Expected: "{expected_output}".',
+    description="Custom accuracy metric"
+)
+
+print(f"Created metric: {metric.name} (ID: {metric.id})")
+
+# List all metrics
+metrics = galtea.metrics.list()
+print(f"Total metrics: {len(metrics)}")
+
+# Retrieve a built-in metric by name
+role_adherence = galtea.metrics.get_by_name(name="Role Adherence")
+print(f"Found metric: {role_adherence.name}")
+```
+
+## Service Methods
+- [Create Metric](/sdk/api/metrics/create)
+- [Listing Metrics](/sdk/api/metrics/list)
+- [Retrieving Metric](/sdk/api/metrics/get)
+- [Retrieving Metric By Name](/sdk/api/metrics/get-by-name)
+- [Deleting Metric](/sdk/api/metrics/delete)
+
+## Related Concepts
+
+<MetricCard />

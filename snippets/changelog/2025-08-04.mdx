@@ -1,0 +1,24 @@
+<Update label="2025-08-04" description="Create Custom Judges via Own Prompts in Metric Creation, New Deterministic Metrics and UI Improvements">
+## Create Custom Judges via Your Own Prompts
+
+You can now define **Custom Judge** metrics by crafting your own evaluation prompts during metric creation. This allows you to encode your domain-specific rubrics, product constraints, or behavioral guidelines directly into the metric—giving you precise control over how LLM outputs are assessed. Simply write your prompt, specify the scoring logic, and Galtea will leverage LLM-as-a-judge techniques to evaluate outputs according to your standards.
+
+## New Deterministic Metrics
+
+Four new deterministic metrics are now available:
+
+- **Text Similarity**: Quantifies how closely two texts resemble each other using character-level fuzzy matching.
+- **Text Match**: Checks if generated text is sufficiently similar to a reference string, returning a pass/fail based on a threshold.
+- **Spatial Match**: Verifies if a predicted box aligns with a reference box using IoU scoring, producing a pass/fail result.
+- **IoU (Intersection over Union)**: Computes the overlap ratio between predicted and reference boxes for alignment and detection tasks.
+
+These new metrics complement our existing evaluation suite and are perfect for scenarios requiring deterministic, rule-based scoring.
+
+## Dashboard Redesign: Second Iteration
+
+We've launched the second iteration of our redesigned dashboard with a refreshed visual language focused on clarity and usability. Key improvements include:
+
+- **Modern Forms**: Forms have been modernized to provide a more intuitive and visually appealing user experience, as well as giving a more professional look to the Dashboard.
+
+This redesign represents our commitment to delivering a more intuitive and visually appealing user experience while maintaining the powerful functionality you rely on.
+</Update>

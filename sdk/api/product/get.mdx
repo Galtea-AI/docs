@@ -1,0 +1,18 @@
+---
+title: 'Retrieving Product'
+sidebarTitle: "Get"
+description: "Retrieve a specific product by its ID."
+---
+
+## Returns
+Returns a [Product](/concepts/product) object for the given product ID.
+
+## Example
+```python
+product = galtea.products.get(product_id="YOUR_PRODUCT_ID")
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product you want to retrieve.
+</ResponseField>

@@ -1,0 +1,187 @@
+---
+title: 'Simulating User Conversations'
+description: "Learn how to use Galtea's Conversation Simulator to test your AI with a synthetic user."
+icon: "user-group"
+---
+
+Galtea's [Conversation Simulator](/concepts/conversation-simulator) allows you to test your conversational AI products by simulating realistic user interactions. The recommended way to integrate your AI is via the **Agent interface** and the simulation agent wrapper. This guide walks you through implementing your agent, configuring scenarios, and running a complete simulation.
+
+## Agent-Based Conversation Simulation Workflow
+
+<Steps>
+  <Step title="1. Implement Your Agent">
+    Extend the abstract <code>Agent</code> class with your conversational AI logic. Your agent receives the full conversation state and must return a response for each turn.
+  </Step>
+  <Step title="2. Prepare Scenario Data">
+    Create a CSV file with scenario data. Each row is a test case describing the user goal, persona, and initial prompt.
+  </Step>
+  <Step title="3. Create a Test and Sessions">
+    Upload your scenario CSV to create a test. The platform generates a session for each scenario.
+  </Step>
+  <Step title="4. Run the Simulator with Your Agent">
+    Use <code>SimulatorService.simulate()</code> to execute the conversation between your agent and the synthetic user, for each session.
+  </Step>
+  <Step title="5. Evaluate the Results">
+    After simulation, analyze results and optionally trigger evaluations via <code>evaluations.create()</code>.
+  </Step>
+</Steps>
+
+---
+
+### Example: Agent-Based Simulation Workflow
+
+#### 1. Implement Your Agent
+
+Create a Python class that extends `galtea.Agent`. Your agent should implement the `call` method, which receives an `AgentInput` (including conversation history and context) and returns an `AgentResponse`.
+
+```python
+import galtea
+
+@galtea.trace(name="main_agent")
+def my_agent(user_message: str) -> str:
+    """Your main agent logic"""
+    return "useful_response"
+
+class MyGalteaAgent(galtea.Agent):
+    @galtea.trace(name="main")
+    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
+        # Access the latest user message
+        user_message = input_data.last_user_message_str()
+
+        # Generate a response using your own logic/model
+        response = my_agent(user_message)
+
+        # Return a structured response (optionally with metadata and retrieval context)
+        return galtea.AgentResponse(
+            content=response,
+            retrieval_context=None,  # Optional: context retrieved by the agent (e.g., for RAG)
+            metadata=None  # Optional: additional metadata
+        )
+```
+
+<Info>
+    You can optionally use the `@trace` decorator to capture internal operations during simulation. Traces are automatically collected and saved per turn.
+    See the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) guide for more details on using the `@trace` decorator.
+</Info>
+
+#### 2. Create a Test and Sessions
+
+In order to run simulations of conversations we need to have different scenarios and user persones. The easiest way to create these scenarios is to use the scenario based test creation feature of the platform.
+
+```python
+# Initialize the Galtea client
+galtea_client = galtea.Galtea(api_key="YOUR_API_KEY")
+
+# Call the product and version you want to evaluate
+product = galtea_client.products.get_by_name("Financial advisor agent")
+version_name = "v1.0"
+try:
+    # Get the version if it exists
+    print(f'Getting version {version_name}')
+    version = galtea_client.versions.get_by_name(
+        product_id=product.id,
+        version_name=version_name
+    )
+except:
+    # Create the version if it doesn't exist
+    print(f'Version doesn\'t exist, creating version {version_name}')
+    version = galtea_client.versions.create(
+        name=version_name,
+        product_id=product.id,
+        description="Version created from the tutorial"
+    )
+
+# Create a test suite using the scenarios options
+test = galtea_client.tests.create(
+    product_id=product.id,
+    name="Multi-turn Conversation Test",
+    type="SCENARIOS",
+    max_test_cases=5
+)
+
+# Get your test scenarios
+test_cases = galtea_client.test_cases.list(test_id=test.id)
+```
+
+After some time you should see the resulting generated test cases in your dashboard. Another option is to upload a csv file with the necessary fields, for more information on the fields see [Scenario-based Tests](/concepts/product/test/scenario-tests) for more details.
+
+#### 3. Run the Conversation Simulator
+
+For each test case/session, use the simulator wrapper to run the full simulation with your agent:
+
+```python
+# Create your agent instance
+agent = MyGalteaAgent()
+
+# Run simulations
+for test_case in test_cases:
+    session = galtea_client.sessions.create(
+        version_id=version.id,
+        test_case_id=test_case.id
+    )
+
+    result = galtea_client.simulator.simulate(
+        session_id=session.id,
+        agent=agent,
+        max_turns=10,
+        log_inference_results=True
+    )
+
+    # Analyze results
+    print(f"Scenario: {test_case.scenario}")
+    print(f"Completed {result.total_turns} turns")
+    print(f"Success: {result.finished}")
+    if result.stopping_reason:
+        print(f"Ended because: {result.stopping_reason}")
+```
+
+#### 4. Evaluate the Session
+
+```python
+evaluations = galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[{"name": "Role Adherence"}],  # Replace with your metrics
+)
+for evaluation in evaluations:
+    print(f"Evaluation created: {evaluation.id}")
+```
+
+---
+
+## Advanced Usage: RAG Agents with Retrieval Context
+
+For Retrieval-Augmented Generation (RAG) agents, you can return the context that was retrieved and used to generate the response. This context will be logged with the inference result, enabling powerful evaluations with metrics like `Faithfulness` and `Contextual Relevancy`.
+
+```python
+class MyRAGAgent(galtea.Agent):
+    def __init__(self, vector_store, llm):
+        self.vector_store = vector_store
+        self.llm = llm
+
+    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
+        user_message = input_data.last_user_message_str()
+        
+        # Your RAG logic to retrieve context and generate a response
+        retrieved_docs = self.vector_store.search(user_message)
+        response_content = self.llm.generate(
+            prompt=user_message,
+            context=retrieved_docs
+        )
+        
+        return galtea.AgentResponse(
+            content=response_content,
+            retrieval_context=retrieved_docs,
+            metadata={"docs_retrieved": len(retrieved_docs)}
+        )
+```
+
+The `retrieval_context` field is optional and can contain:
+- Retrieved document snippets or full documents
+- Formatted context strings
+- JSON-serializable data structures
+
+By providing retrieval context, you enable Galtea to evaluate the faithfulness of your model's responses relative to the retrieved information, which is crucial for assessing RAG system quality.
+
+---
+
+By using the agent wrapper and simulation method, you can quickly evaluate your conversational AI models in realistic, repeatable conditions, leveraging Galtea's powerful simulation and analytics tools.

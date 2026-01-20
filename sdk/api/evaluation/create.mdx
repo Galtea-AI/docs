@@ -1,0 +1,193 @@
+---
+title: 'Create Evaluations'
+sidebarTitle: "Create"
+description: "Create evaluations for all inference results within a session using specified metrics."
+---
+
+This method evaluates an entire conversation stored in a [Session](/concepts/product/version/session) by creating evaluations for each of its [Inference Results](/concepts/product/version/session/inference-result).
+
+## Returns
+Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric and each inference result in the session.
+
+
+## Usage
+This method evaluates all inference results within a session using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
+
+### Example: Using the MetricInput Dictionary Format (Recommended)
+
+**Option 1: Pre-computed scores**
+```python
+from galtea import Galtea
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# First, create a session and log inference results
+session = galtea.sessions.create(version_id="YOUR_VERSION_ID")
+galtea.inference_results.create_batch(
+    session_id=session.id,
+    conversation_turns=[
+        {"role": "user", "content": "Hi"},
+        {"role": "assistant", "content": "Hello!"},
+        {"role": "user", "content": "How are you?"},
+        {"role": "assistant", "content": "I am fine, thank you."}
+    ]
+)
+
+# Pre-compute your custom score
+def check_politeness(output: str) -> float:
+    polite_words = ["please", "thank you", "you're welcome"]
+    return 1.0 if any(word in output.lower() for word in polite_words) else 0.0
+
+# Get the latest output from the session to calculate score
+# (In production, you would fetch this from your session data)
+custom_score = check_politeness("I am fine, thank you.")
+
+# Create the metric in the platform if it doesn't exist yet
+galtea.metrics.create(
+    name="politeness-check",
+    source="self_hosted",
+    description="Checks if polite words appear in the output"
+)
+
+# Now, evaluate the entire session
+evaluations = galtea.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},                     # Galtea-hosted metric
+        {"name": "Conversation Relevancy"},             # Galtea-hosted metric
+        {"name": "politeness-check", "score": custom_score}  # Self-hosted with pre-computed score
+    ]
+)
+```
+
+**Option 2: CustomScoreEvaluationMetric for dynamic scoring**
+```python
+from galtea import Galtea, CustomScoreEvaluationMetric
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# First, create a session and log inference results
+session = galtea.sessions.create(version_id="YOUR_VERSION_ID")
+galtea.inference_results.create_batch(
+    session_id=session.id,
+    conversation_turns=[
+        {"role": "user", "content": "Hi"},
+        {"role": "assistant", "content": "Hello!"},
+        {"role": "user", "content": "How are you?"},
+        {"role": "assistant", "content": "I am fine, thank you."}
+    ]
+)
+
+# Define scoring logic as a class
+class PolitenessCheck(CustomScoreEvaluationMetric):
+    def __init__(self):
+        super().__init__(name="politeness-check")
+        
+    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
+        if actual_output is None:
+            return 0.0
+        polite_words = ["please", "thank you", "you're welcome"]
+        return 1.0 if any(word in actual_output.lower() for word in polite_words) else 0.0
+
+# Create the metric in the platform if it doesn't exist yet
+galtea.metrics.create(
+    name="politeness-check",
+    source="self_hosted",
+    description="Checks if polite words appear in the output"
+)
+
+# Now, evaluate the entire session
+evaluations = galtea.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},         # Galtea-hosted metric
+        {"name": "Conversation Relevancy"}, # Galtea-hosted metric
+        {"score": PolitenessCheck()}        # Self-hosted with dynamic scoring
+        # Note: No 'name' or 'id' in dict - it comes from PolitenessCheck(name="...")
+    ]
+)
+```
+
+<Note>
+  Both options are equally valid for self-hosted metrics. Choose based on your preference: pre-compute for simplicity, or use CustomScoreEvaluationMetric for encapsulation and reusability.
+</Note>
+
+### Example: Legacy Format (Not Recommended)
+
+<Warning>
+  The following format is maintained for backward compatibility only. New code should use the MetricInput dictionary format shown above.
+</Warning>
+
+```python
+from galtea import Galtea, CustomScoreEvaluationMetric
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# First, create a session and log inference results
+session = galtea.sessions.create(version_id="YOUR_VERSION_ID")
+galtea.inference_results.create_batch(
+    session_id=session.id,
+    conversation_turns=[
+        {"role": "user", "content": "Hi"},
+        {"role": "assistant", "content": "Hello!"},
+        {"role": "user", "content": "How are you?"},
+        {"role": "assistant", "content": "I am fine, thank you."}
+    ]
+)
+
+# Define your custom metric
+class PolitenessCheck(CustomScoreEvaluationMetric):
+    def __init__(self):
+        super().__init__(name="politeness-check")
+    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
+        if actual_output is None:
+            return 0.0
+        polite_words = ["please", "thank you", "you're welcome"]
+        return 1.0 if any(word in actual_output.lower() for word in polite_words) else 0.0
+
+custom_score_politeness = PolitenessCheck()
+
+# Legacy format - passing directly without MetricInput dict wrapper
+evaluations = galtea.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        "Role Adherence",           # Legacy: string format
+        "Conversation Relevancy",   # Legacy: string format
+        custom_score_politeness     # Legacy: CustomScoreEvaluationMetric directly
+    ]
+)
+```
+
+## Parameters
+<ResponseField name="session_id" type="string" required>
+  The ID of the session containing the inference results to be evaluated.
+</ResponseField>
+<ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" required>
+  A list of metrics to use for the evaluation. 
+  
+  **Recommended:** `MetricInput` dictionary format:
+  ```python
+  metrics=[
+      {"name": "Role Adherence"},              # Galtea-hosted metric by name
+      {"id": "metric_xyz"},                    # Galtea-hosted metric by ID
+      {"name": "custom", "score": 0.95},       # Self-hosted with pre-computed score
+      {"score": CustomScoreEvaluationMetric(name="custom")}  # Self-hosted with dynamic scoring
+  ]
+  ```
+  
+  **Also supported (legacy):**
+  - **By name** (string): `metrics=["Role Adherence"]`
+  - **By custom class** (top-level): `metrics=[MyCustomMetric()]`
+  
+  The `MetricInput` dictionary supports the following keys:
+  - `id` (string, optional): The ID of an existing metric
+  - `name` (string, optional): The name of the metric
+  - `score` (float | CustomScoreEvaluationMetric, optional): For self-hosted metrics only
+    - If `float`: Pre-computed score (0.0 to 1.0). Requires `id` or `name` in the dict.
+    - If `CustomScoreEvaluationMetric`: Score will be calculated dynamically. The CustomScoreEvaluationMetric instance must be initialized with `name` or `id`. Do NOT provide `id` or `name` in the dict when using this option.
+  
+  <Note>
+    For self-hosted metrics, both score options are equally valid: pre-compute as a float, or use CustomScoreEvaluationMetric for dynamic calculation. Galtea-hosted metrics automatically compute scores and should not include a `score` field.
+  </Note>
+
+</ResponseField>

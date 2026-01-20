@@ -1,0 +1,38 @@
+---
+title: "Session"
+sidebarTitle: "Overview"
+description: "A group of inference results that make up a full conversation"
+---
+
+import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx';
+
+## What is a Session?
+
+A session in Galtea is a container for a sequence of interactions that form a complete conversation between a user and an AI product. It groups together multiple [inference results](/concepts/product/version/session/inference-result), allowing for the evaluation of multi-turn dialogues and the analysis of production data.
+
+You can **create**, view and manage your sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage sessions programmatically. This is particularly useful for logging production data or for evaluating complex conversational flows.
+
+<SDKSessionServiceCard />
+
+## Session Properties
+
+<ResponseField name="Custom ID" type="Text" required>
+  The custom ID associated with the session.
+  This is usually a client-side generated ID that identifies the conversation session between a user and a LLM app.
+</ResponseField>
+
+<ResponseField name="Version" type="Version" required>
+  The version associated with the session.
+</ResponseField>
+
+<ResponseField name="Test Case" type="Test Case" optional>
+  The test case associated with the session. This is typically used for non-production evaluations.
+</ResponseField>
+
+<ResponseField name="Context" type="Text" optional>
+  The context provided to the AI product during the session.
+</ResponseField>

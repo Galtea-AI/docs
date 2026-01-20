@@ -1,0 +1,141 @@
+---
+title: 'Monitor Production Responses'
+description: "Learn how to log and evaluate user queries from your production environment."
+icon: "users"
+---
+
+You can use Galtea to log and evaluate real user interactions from your production environment. This helps you monitor your product's performance over time.
+
+### Single-Turn Production Monitoring
+
+For simple, single-turn interactions, you can send the details to Galtea using `create_single_turn` with `is_production=True`.
+
+```python
+from galtea import Galtea
+import os
+
+galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
+VERSION_ID = "YOUR_ACTIVE_VERSION_ID"
+
+# In your application's request handler...
+def handle_user_query(user_query, retrieval_context=None):
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query, retrieval_context)
+    
+    # Log and evaluate the interaction in Galtea
+    galtea.evaluations.create_single_turn(
+      version_id=VERSION_ID,
+      is_production=True,
+      metrics=[
+          {"name": "Role Adherence"}, 
+          {"name": "Answer Relevancy"}, 
+          {"name": "Faithfulness"}
+      ],
+      input=user_query,
+      actual_output=model_response,
+      retrieval_context=retrieval_context
+    )
+    
+    return model_response
+```
+
+### Multi-Turn Production Monitoring (Conversations)
+
+For multi-turn conversations, use the session-based workflow to log the entire interaction first and then evaluate it.
+
+<Steps>
+<Step title="1. Create a Session">
+First, create a session at the start of the conversation. For production monitoring, make sure to set `is_production=True`.
+
+```python
+from galtea import Galtea
+import os
+
+galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
+VERSION_ID = "YOUR_ACTIVE_VERSION_ID"
+METRICS_TO_EVALUATE = [
+    {"name": "Conversation Relevancy"},
+    {"name": "Knowledge Retention"}
+]
+
+# Use is_production=True for real user interactions
+session = galtea.sessions.create(
+    custom_id="CLIENT_PROVIDED_SESSION_ID",  # Optional: a custom ID to associate this session in Galtea Platform to the one in your real application.
+    version_id=VERSION_ID,
+    is_production=True
+)
+```
+</Step>
+
+<Step title="2. Log Conversation Turns">
+Next, log the user-assistant interactions. You can do this individually as each turn happens or in a single batch after the conversation ends.
+
+<Tabs>
+<Tab title="Log Turns Individually">
+This approach is useful for logging interactions in real-time in a live application.
+
+```python
+def get_model_response(user_input):
+    # Replace this with your actual model call
+    model_output = f"This is a simulated response to '{user_input}'"
+    return model_output
+
+# This would happen dynamically in your application.
+user_questions = [
+    "What are some lower-risk investment strategies?",
+    "With age, should the investment strategy change?",
+    "Great, thanks!"
+]
+
+for question in user_questions:
+    model_response = get_model_response(question)
+    # Log the turn to Galtea right after it happens
+    inference_result = galtea.inference_results.create(
+        session_id=session.id,
+        input=question,
+        output=model_response
+    )
+```
+
+</Tab>
+<Tab title="Log Turns in a Batch">
+If you have the entire conversation history, you can log all turns at once for efficiency.
+
+```python
+# The conversation must be in the standard format: a list of role/content dictionaries
+conversation_turns = [
+    {'role': 'user', 'content': "What are some lower-risk investment strategies?"},
+    {'role': 'assistant', 'content': "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities."},
+    {'role': 'user', 'content': "With age, should the investment strategy change?"},
+    {'role': 'assistant', 'content': "Yes, many advisors recommend shifting to more conservative investments as you approach retirement."},
+    {'role': 'user', 'content': "Great, thanks!"},
+    {'role': 'assistant', 'content': "You're welcome!"}
+]
+
+galtea.inference_results.create_batch(
+    session_id=session.id,
+    conversation_turns=conversation_turns
+)
+```
+</Tab>
+</Tabs>
+</Step>
+
+<Step title="3. Evaluate the Session">
+Finally, once the conversation is complete and all turns are logged, you can run an evaluation on the entire session.
+
+```python
+galtea.evaluations.create(
+    session_id=session.id,
+    metrics=METRICS_TO_EVALUATE
+)
+
+print(f"Logged and evaluated production session {session.id}")
+```
+
+</Step>
+</Steps>
+
+<Info>
+For more details on evaluating multi-turn conversations, see the [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) guide.
+</Info>

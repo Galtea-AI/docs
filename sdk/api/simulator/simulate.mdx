@@ -1,0 +1,86 @@
+---
+title: 'Simulate Conversation'
+sidebarTitle: "Simulate"
+description: "Run a full conversation simulation between your agent and a synthetic user using the Galtea SDK."
+---
+
+## Returns
+It returns a result object from the [Conversation Simulator](/concepts/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
+
+In order to run the simulation you need to use Galtea's Agent. This agent manages your conversations with our simulation service so you don't have to worry about it.
+
+## Example
+```python
+import galtea
+
+# Define your agent
+class MyAgent(galtea.Agent):
+    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
+        user_message = input_data.last_user_message_str()
+        return galtea.AgentResponse(
+            content=f"Echo: {user_message}",
+            retrieval_context=None,  # Optional: context retrieved by the agent (e.g., for RAG)
+            metadata=None  # Optional: additional metadata
+        )
+
+# Create a session and run the simulation
+session = galtea.sessions.create(version_id="your_version_id")
+result = galtea.simulator.simulate(
+    session_id=session.id,
+    agent=MyAgent(),
+    max_turns=5,
+    log_inference_results=True,
+    enable_last_inference=True,
+    include_metadata=True
+)
+
+print(result.total_turns)
+for message in result.messages:
+    print(message.role, message.content)
+```
+
+## Parameters
+
+<ResponseField name="session_id" type="str" required>
+  The session identifier for this simulation.
+</ResponseField>
+
+<ResponseField name="agent" type="Agent" required>
+  Your implementation of the Agent class, containing your conversational logic.
+</ResponseField>
+
+<ResponseField name="max_turns" type="int">
+  Maximum number of conversation turns. Defaults to the Test Case's max turns if not provided.
+</ResponseField>
+
+<ResponseField name="log_inference_results" type="bool">
+  Whether to log inference results to the platform. Default: True
+</ResponseField>
+
+<ResponseField name="enable_last_inference" type="bool">
+  Whether to call your agent one final time after the simulated user sends their last message. Default: True.
+  When enabled, your agent will have the opportunity to respond to the conversation's final user message, ensuring complete dialogue coverage for evaluation purposes.
+</ResponseField>
+
+<ResponseField name="include_metadata" type="bool">
+  Whether to include metadata in the simulation result. Default: False
+</ResponseField>
+
+<ResponseField name="agent_goes_first" type="bool">
+  If True, the agent will generate the first message before any user messages are generated. Default: False
+  <Note>
+    When `agent_goes_first` is set to `True`:
+    - Any `initial_prompt` defined on the associated `TestCase` will be ignored.
+    - The first call to your agent will have an empty `messages` list in the `AgentInput`. Ensure your agent's `call` method can handle cases where `input_data.last_user_message_str()` returns `None`.
+  </Note>
+</ResponseField>
+
+<ResponseField name="stop_when_agent_returns_empty_response" type="bool">
+  If True, the simulation will stop when the agent returns an empty (`""` / `None`) response. Default: True
+  <Note>
+    When `stop_when_agent_returns_empty_response` is set to `False`:
+    - The simulation will continue even if the agent returns a response that is empty (`""`) or `None`.
+    - This allows for more flexible conversation flows where you want to capture all agent interactions regardless of content.
+    - Be careful when using this option, as it may lead to further credit consumption if the agent keeps returning empty responses. To mitigate this, you can also make use of the `max_turns` parameter to set an upper limit on the number of turns.
+  </Note>
+</ResponseField>

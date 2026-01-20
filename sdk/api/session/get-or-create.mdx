@@ -1,0 +1,38 @@
+---
+title: 'Get Or Create Session'
+sidebarTitle: "Get Or Create"
+description: "Get an existing session or create a new one if it doesn't exist."
+---
+
+## Returns
+Returns a [Session](/concepts/product/version/session) object.
+
+## Example
+```python
+# Tries to get a session with custom_id "existing-session-id", creates it if not found.
+session = galtea.sessions.get_or_create(
+    custom_id="existing-session-id",
+    version_id="YOUR_VERSION_ID",
+    test_case_id="YOUR_TEST_CASE_ID"
+)
+```
+
+## Parameters
+<ResponseField name="custom_id" type="string" required>
+  The Custom ID of the session to fetch or create.
+  <Note>
+    This is useful to associate sessions in the Galtea platform with those in your application.
+  </Note>
+</ResponseField>
+<ResponseField name="version_id" type="string" required>
+  The ID of the version to associate with this session if it needs to be created.
+</ResponseField>
+<ResponseField name="test_case_id" type="string" optional>
+  The test case ID. Required for non-production sessions.
+</ResponseField>
+<ResponseField name="context" type="dict" optional>
+  A flexible key-value context.
+</ResponseField>
+<ResponseField name="is_production" type="boolean" optional>
+  A flag to indicate if the session is from a production environment. Defaults to `False`.
+</ResponseField>

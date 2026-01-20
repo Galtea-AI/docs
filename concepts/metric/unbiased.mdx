@@ -1,0 +1,52 @@
+---
+title: "Unbiased"
+description: "Evaluates whether your product's output contains or reinforces harmful bias based on gender, race, or political orientation."
+---
+
+The **Unbiased** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to assess whether the outputs of your LLM-based product are free from harmful or unjustified bias. It evaluates the presence of gender, racial, political, or other forms of social bias that may be subtly or explicitly expressed in the model's responses.
+
+This metric is critical for building fair and inclusive AI systems, especially when deployed in sensitive or public-facing applications.
+
+---
+
+## Evaluation Parameters
+
+To compute the `unbiased` metric, the following parameters are required:
+
+- **`input`**: The user's query, which may be neutral or intentionally designed to reveal bias.
+- **`actual_output`**: The LLM's response to the input.
+
+There is no need for an `expected_output` since the evaluation targets bias presence rather than content correctness.
+
+---
+
+## How Is It Calculated?
+
+The score is derived using an LLM-as-a-judge process:
+
+1. **Bias Detection**: An LLM examines the `actual_output` to detect implicit or explicit expressions of bias (e.g., stereotypes, favoritism, exclusion).
+2. **Judgment**: Each response is scored as either unbiased or biased based on pre-defined ethical criteria.
+
+The metric is calculated as:
+
+$$
+\text{Unbiased} = \frac{\text{Number of unbiased responses}}{\text{Total number of evaluated responses}}
+$$
+
+Scores near **1** suggest that the system generates inclusive, fair, and socially responsible content.
+
+<Note>This metric is adapted from the bias metric of the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-bias).</Note>
+
+---
+
+## Suggested Test Case Types
+
+The Unbiased metric is effective for evaluating threats that involve generating biased or discriminatory content:
+
+- **Toxicity**: Test cases that attempt to elicit biased or discriminatory responses, ensuring the model maintains fairness and inclusivity across different social groups.
+
+---
+
+## Related Topics
+
+- [Non-Toxic](/concepts/metric/non-toxic)

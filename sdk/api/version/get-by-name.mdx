@@ -1,0 +1,21 @@
+---
+title: 'Retrieving Version By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific version by its name."
+---
+
+## Returns
+Returns a [Version](/concepts/product/version) object for the given product and version name.
+
+## Example
+```python
+galtea.versions.get_by_name(product_id="YOUR_PRODUCT_ID", version_name="YOUR_VERSION_NAME")
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product for which you want to retrieve the version.
+</ResponseField>
+<ResponseField name="version_name" type="string" required>
+  The name of the version you want to retrieve.
+</ResponseField>

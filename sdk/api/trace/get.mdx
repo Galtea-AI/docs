@@ -1,0 +1,18 @@
+---
+title: 'Get Trace'
+sidebarTitle: "Get"
+description: "Retrieve a single trace by ID."
+---
+
+## Returns
+Returns a [Trace](/concepts/product/version/session/trace) object.
+
+## Example
+```python
+trace = galtea.traces.get(trace_id="YOUR_TRACE_ID")
+```
+
+## Parameters
+<ResponseField name="trace_id" type="string" required>
+  The unique identifier of the trace to retrieve.
+</ResponseField>

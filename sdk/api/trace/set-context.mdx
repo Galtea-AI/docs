@@ -1,0 +1,49 @@
+---
+title: 'Set Context'
+description: "Set Galtea context values for trace correlation."
+---
+
+## Returns
+Returns a context token that must be passed to `clear_context()` for cleanup.
+
+## Example
+```python
+from galtea import Galtea, trace, set_context, clear_context, TraceType
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Create an inference result first
+inference_result = galtea.inference_results.create(
+    session_id="YOUR_SESSION_ID",
+    input="User question"
+)
+
+# Set context before running traced functions
+token = set_context(
+    inference_result_id=inference_result.id
+)
+
+try:
+    # All @trace decorated functions will now be associated with this inference result
+    result = my_traced_function()
+finally:
+    # Always clear context in a finally block
+    clear_context(token)
+```
+
+## Parameters
+<ResponseField name="inference_result_id" type="string">
+  The inference result ID to associate traces with. All subsequent traces will be linked to this ID.
+</ResponseField>
+
+<Tip>
+  **Best Practice:** Always use `set_context()` with a `try/finally` block to ensure `clear_context()` is called even if an exception occurs.
+</Tip>
+
+## How It Works
+
+When you call `set_context()`, it attaches the provided ID to the current OpenTelemetry context. Any traces created by `@trace` decorated functions or `start_trace()` will automatically include this ID as an attribute, enabling:
+
+1. **Trace Correlation** - All traces are linked to the same inference result
+2. **Automatic Export** - Traces are batched and exported to Galtea API
+

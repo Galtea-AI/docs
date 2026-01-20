@@ -1,0 +1,59 @@
+---
+title: 'Session Service'
+sidebarTitle: "Service"
+description: "Session Service API methods in the Galtea SDK"
+---
+
+import SessionCard from '/snippets/cards/session-card.mdx';
+
+The Session Service in the Galtea SDK allows you to manage [sessions](/concepts/product/version/session) for evaluating your products.
+This Service is exposed by the `galtea.sessions` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+```python
+from galtea import Galtea
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Create a test-based session
+session = galtea.sessions.create(
+    version_id="YOUR_VERSION_ID",
+    test_case_id="YOUR_TEST_CASE_ID",
+    is_production=False
+)
+
+print(f"Created session: {session.id}")
+
+# Create a production session
+prod_session = galtea.sessions.create(
+    version_id="YOUR_VERSION_ID",
+    custom_id="user-session-123",
+    is_production=True
+)
+
+# Get or create session (idempotent operation)
+session = galtea.sessions.get_or_create(
+    version_id="YOUR_VERSION_ID",
+    custom_id="user-session-123"
+)
+
+# List all sessions for a version
+sessions = galtea.sessions.list(version_id="YOUR_VERSION_ID")
+print(f"Total sessions: {len(sessions)}")
+```
+
+## Service Methods
+- [Create Session](/sdk/api/session/create)
+- [Get Or Create Session](/sdk/api/session/get-or-create)
+- [List Sessions](/sdk/api/session/list)
+- [Get Session](/sdk/api/session/get)
+- [Get Session By Custom ID](/sdk/api/session/get-by-custom-id)
+- [Delete Session](/sdk/api/session/delete)
+
+## Related Concepts
+<SessionCard />

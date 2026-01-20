@@ -1,0 +1,28 @@
+<Update label="2025-07-14" description="Conversation Simulation, New Metric, and Credit Management">
+## Test Your Chatbots with Realistic Conversation Simulation
+
+You can now evaluate your conversational AI with our new **[Conversation Simulator](/concepts/conversation-simulator)**. This powerful feature allows you to test multi-turn interactions by simulating realistic user conversations, complete with specific goals and personas. It's the perfect way to assess your product's dialogue flow, context handling, and task completion abilities.
+
+Get started with our step-by-step guide on **[Simulating User Conversations](/sdk/tutorials/simulating-conversations)**.
+
+## New Metric: Resilience To Noise
+
+We've expanded our RAG metrics with **[Resilience To Noise](/concepts/metric/resilience-to-noise)**. This metric evaluates your product's ability to maintain accuracy and coherence when faced with "noisy" input, such as:
+- Typographical errors
+- OCR/ASR mistakes
+- Grammatical errors
+- Irrelevant or distracting content
+
+This is essential for ensuring your AI performs reliably in real-world scenarios where user input isn't always perfect. [Learn more about how it's calculated](/concepts/metric/resilience-to-noise).
+
+## Stay in Control with Enhanced Credit Management
+
+We've rolled out a new and improved credit management system to give you better visibility and control over your usage. The system now includes proactive warnings that notify you when you are approaching your allocated credit limits, helping you avoid unexpected service interruptions and manage your resources more effectively.
+
+## Streamlined Conversation Logging with OpenAI-Aligned Format
+
+Logging entire conversations is now easier and more intuitive. We've updated our batch creation method to align with the widely-used `messages` format from OpenAI, consisting of `role` and `content` pairs. This makes sending multi-turn interaction data to Galtea simpler than ever.
+
+See the new format in action in the **[Inference Result Batch Creation docs](/sdk/api/inference-result/create-batch)**.
+
+</Update>

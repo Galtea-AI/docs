@@ -1,0 +1,190 @@
+---
+title: 'Tracing Agent Operations'
+description: "Learn how to capture and analyze the internal operations of your AI agent with the @trace decorator"
+icon: "diagram-project"
+---
+
+Galtea's tracing feature captures every operation your agent performs—tool calls, retrieval operations, LLM invocations—with minimal code changes. This tutorial shows you how to instrument your agent and collect traces.
+
+<Info>
+  For detailed information about trace properties, node types, and hierarchy, see the [Trace concept page](/concepts/product/version/session/trace).
+</Info>
+
+---
+
+## 1. The `@trace` Decorator
+
+Add the `@trace` decorator to any function you want to track. It automatically captures: name, inputs, outputs, timing, errors, and parent-child relationships.
+
+```python
+from galtea import trace, TraceType
+
+@trace(name="db_call", type=TraceType.TOOL)
+def my_function(query: str) -> str:
+    result = db.query(query)
+    return result
+```
+
+---
+
+## 2. The `start_trace` Context Manager
+
+For fine-grained control over specific code blocks, use `start_trace`.
+
+```python
+from galtea import start_trace, TraceType
+
+def get_user(user_id: str):
+    with start_trace("database_query", type=TraceType.TOOL, input={"user_id": user_id}) as span:
+        query = f"SELECT * FROM users WHERE id = {user_id}"
+        result = db.query(query)
+        span.update(output=result, metadata={"query": query})
+    return result
+```
+
+The `span.update()` method lets you add output, metadata, or change the type after execution.
+
+
+<Info>
+  Both `@trace` and `start_trace` automatically capture parent-child relationships between operations when they are nested inside each other, giving you a full hierarchical view of your agent’s behavior.
+</Info>
+---
+
+## 3. Collect and Send Traces to Galtea
+
+Traces are built locally. To send them to Galtea, you need to associate them with an `inference_result_id`. There are two approaches:
+
+### Automatic Collection
+
+Use `inference_results.generate()` or `simulator.simulate()` for hands-free trace management. These methods automatically:
+1. Set the trace context with the correct IDs
+2. Execute your agent
+3. Flush all collected traces to Galtea
+4. Clean up the context
+
+#### Single-Turn with `generate()`
+
+Requires implementing the `Agent` abstract class:
+
+```python
+from galtea import Galtea, Agent, AgentInput, AgentResponse, trace, TraceType
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+class MyAgent(Agent):
+    @trace(type=TraceType.RETRIEVER)
+    def search(self, query: str) -> list[dict]:
+        return [{"id": "doc_1", "content": "..."}]
+    
+    @trace(type=TraceType.GENERATION)
+    def generate(self, context: list, query: str) -> str:
+        return "Based on the context..."
+    
+    @trace(type=TraceType.AGENT)
+    def call(self, input: AgentInput) -> AgentResponse:
+        query = input.last_user_message_str()
+        docs = self.search(query)
+        response = self.generate(docs, query)
+        return AgentResponse(content=response, retrieval_context=str(docs))
+
+# Setup
+session = galtea.sessions.create(version_id=version.id)
+agent = MyAgent()
+
+# Everything is handled automatically
+inference_result = galtea.inference_results.generate(
+    agent=agent,
+    session=session,
+    user_input="What's the price?"
+)
+# Traces are collected, associated with inference_result.id, and flushed automatically
+```
+
+#### Multi-Turn with `simulate()`
+
+When using the [Conversation Simulator](/sdk/tutorials/simulating-conversations), tracing works out-of-the-box. Decorate your agent methods with `@trace` and run:
+
+```python
+result = galtea.simulator.simulate(
+    session_id=session.id,
+    agent=agent,
+    max_turns=10
+)
+# Traces are saved automatically for each turn
+```
+
+### Manual Collection
+
+For full control, use `set_context()` and `clear_context()` to manually manage the trace lifecycle:
+
+```python
+from galtea import Galtea, trace, set_context, clear_context, TraceType
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Define traced functions
+@trace(type=TraceType.RETRIEVER)
+def search(query: str) -> list[dict]:
+    return [{"id": "doc_1", "content": "..."}]
+
+@trace(type=TraceType.GENERATION)
+def generate(context: list, query: str) -> str:
+    return "Based on the context..."
+
+@trace(type=TraceType.AGENT)
+def run_agent(query: str) -> str:
+    docs = search(query)
+    return generate(docs, query)
+
+# Setup
+session = galtea.sessions.create(version_id=version.id)
+user_input = "What's the price?"
+
+# 1. Create inference result first (to get the ID)
+inference_result = galtea.inference_results.create(
+    session_id=session.id,
+    input=user_input,
+    output=None  # Will update later
+)
+
+# 2. Set trace context with the inference result ID
+token = set_context(inference_result_id=inference_result.id)
+
+try:
+    # 3. Run your logic - all @trace calls will be associated with this inference result
+    response = run_agent(user_input)
+    
+    # 4. Update inference result with the output
+    galtea.inference_results.update(
+        inference_result_id=inference_result.id,
+        output=response
+    )
+finally:
+    # 5. Clear context and flush traces to Galtea
+    clear_context(token)  # flush=True by default
+```
+
+<Info>
+  `clear_context(token, flush=True)` automatically flushes all pending traces for the inference result before clearing. Set `flush=False` if you want to discard traces without sending them.
+</Info>
+
+---
+
+## Summary
+
+| Method | Control | Best For |
+|--------|---------|----------|
+| **Automatic** (`generate()`) | Simplified | Production single-turn inference |
+| **Automatic** (`simulate()`) | Built-in | Multi-turn conversation testing |
+| **Manual** (`set_context`/`clear_context`) | Full | Custom workflows, debugging, testing |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Trace Concept" icon="diagram-project" href="/concepts/product/version/session/trace">
+    Node types, hierarchy, and best practices.
+  </Card>
+  <Card title="Trace API Reference" icon="code" href="/sdk/api/trace/service">
+    All trace service methods.
+  </Card>
+</CardGroup>

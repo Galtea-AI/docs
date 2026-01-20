@@ -1,0 +1,56 @@
+---
+title: 'Evaluation Service'
+sidebarTitle: "Service"
+description: "Evaluation Service API methods in the Galtea SDK"
+---
+
+import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
+
+The Evaluation Service in the Galtea SDK allows you to manage [evaluations](/concepts/product/version/session/evaluation) for assessing your products.
+This Service is exposed by the `galtea.evaluations` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+```python
+from galtea import Galtea
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Create a single-turn evaluation
+evaluations = galtea.evaluations.create_single_turn(
+    version_id="YOUR_VERSION_ID",
+    test_case_id="YOUR_TEST_CASE_ID",
+    actual_output="Paris is the capital of France.",
+    metrics=[
+        {"name": "Faithfulness"},
+        {"name": "Answer Relevancy"}
+    ]
+)
+
+print(f"Created {len(evaluations)} evaluations")
+for evaluation in evaluations:
+    print(f"Metric: {evaluation.metric_name}")
+    print(f"Score: {evaluation.score}")
+    print(f"Reason: {evaluation.reason}")
+
+# List all evaluations for a session
+session_evaluations = galtea.evaluations.list(
+    session_id="YOUR_SESSION_ID"
+)
+print(f"Total evaluations: {len(session_evaluations)}")
+```
+
+## Service Methods
+- [Create Single-Turn Evaluation](/sdk/api/evaluation/create-single-turn)
+- [Create Evaluations](/sdk/api/evaluation/create)
+- [Listing Evaluations](/sdk/api/evaluation/list)
+- [Retrieving Evaluation](/sdk/api/evaluation/get)
+- [Deleting Evaluation](/sdk/api/evaluation/delete)
+
+## Related Concepts
+
+<EvaluationCard />

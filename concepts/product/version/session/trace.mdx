@@ -1,0 +1,237 @@
+---
+title: "Trace"
+sidebarTitle: "Overview"
+description: "Track and visualize the internal operations of your AI agent during inference"
+---
+
+import SDKTraceServiceCard from '/snippets/cards/trace-service-card.mdx';
+
+## What is a Trace?
+
+A trace in Galtea represents a single operation or function call that occurs during an AI agent's execution. Traces capture the internal workings of your agent—such as tool calls, retrieval operations, chain orchestrations, and LLM invocations—providing deep visibility into how your agent processes requests.
+
+Traces are **always linked to an [inference result](/concepts/product/version/session/inference-result)**, enabling you to understand not just *what* your agent responded, but *how* it arrived at that response. Every trace must belong to a specific inference result.
+
+## Why Use Traces?
+
+<CardGroup cols={2}>
+  <Card title="Debugging" icon="bug">
+    Identify exactly where and why your agent failed or produced unexpected results.
+  </Card>
+  <Card title="Performance Optimization" icon="gauge-high">
+    Pinpoint slow operations with latency tracking at every step.
+  </Card>
+  <Card title="Compliance & Auditing" icon="clipboard-check">
+    Maintain a complete audit trail of all operations for regulatory requirements.
+  </Card>
+  <Card title="Cost Analysis" icon="chart-line">
+    Understand which operations consume the most resources.
+  </Card>
+</CardGroup>
+
+## Trace Hierarchy
+
+Traces support parent-child relationships, allowing you to visualize the complete execution flow of your agent. When a traced function calls another traced function, the hierarchy is automatically captured.
+
+```
+Agent Call (root)
+├── Route Query (CHAIN)
+├── Retrieve Context (RETRIEVER)
+│   └── Vector Search (TOOL)
+├── Fetch Product Data (TOOL)
+└── Calculate Discount (TOOL)
+```
+
+Each trace includes:
+- **`id`**: Unique identifier for the trace
+- **`parent_trace_id`**: Reference to the parent trace (null for root traces)
+- **`name`**: The operation name
+- **`type`**: Classification of the operation (TraceType)
+- **`description`**: Human-readable description of what the operation does
+
+## Trace Types
+
+Traces are classified by type to help you understand the nature of each operation and debug issues more effectively.
+
+| Type | Definition | Why This Matters for Tracing |
+|-----------|-----------|-----|
+| **SPAN** | Generic durations of work in a trace. | Default type for general operations that don't fit other categories. Useful for grouping related work. |
+| **GENERATION** | AI model generations including prompts, token usage, and costs. | This is where cost (tokens) and latency come from. Clearly see these operations and identify expensive calls and bottlenecks. |
+| **EVENT** | Discrete point-in-time events. | Capture important moments without duration, like user interactions or state changes. |
+| **AGENT** | Agent that orchestrates flow and uses tools with LLM guidance. | High-level orchestration nodes that coordinate multiple operations and make decisions. |
+| **TOOL** | Tool/function calls (e.g., external APIs, calculations). | Deterministic or external calls where inputs, outputs, and side effects determine correctness. |
+| **CHAIN** | Links between different application steps. | Composite orchestration nodes that run multiple internal steps and pass data between stages. |
+| **RETRIEVER** | Data retrieval steps (vector store, database). | Operations that fetch contextual data which directly affect prompt relevance and the context window. |
+| **EVALUATOR** | Functions that assess LLM outputs. | Operations that evaluate quality, safety, or correctness of generated content. |
+| **EMBEDDING** | Embedding model calls. | Vector embedding operations for semantic search or similarity. |
+| **GUARDRAIL** | Components that protect against malicious content. | Safety checks that filter or validate inputs/outputs. |
+
+## The `@trace` Decorator
+
+The `@trace` decorator automatically captures function inputs, outputs, timing, errors, and parent-child relationships.
+
+### Syntax Options
+
+```python
+from galtea import trace, TraceType
+
+# Full specification
+@trace(name="my_operation", type=TraceType.TOOL)
+def my_function(): ...
+
+# Name only (type defaults to None, for unclassified operations)
+@trace(name="custom_name")
+def my_function(): ...
+
+# Include function docstring as trace description
+@trace(type=TraceType.TOOL, include_docstring=True)
+def fetch_user_data(user_id: str):
+    """Fetches user data from the database by ID."""
+    return db.get_user(user_id)
+
+# Bare decorator (uses function name)
+@trace
+def my_function(): ...
+
+# Empty parentheses
+@trace()
+def my_function(): ...
+```
+
+### Error Tracking
+
+The decorator automatically captures exceptions. When an error occurs, the trace records:
+- The error message in the `error` field
+- The execution time until the error
+- Input data that caused the error
+
+```python
+@trace(name="risky_operation", type=TraceType.TOOL)
+def risky_call(self, data: str) -> str:
+    if not data:
+        raise ValueError("Data cannot be empty")
+    return f"Processed: {data}"
+```
+
+### Viewing Trace Hierarchy
+
+After collecting traces, you can visualize the execution flow:
+
+```python
+traces = galtea.traces.list(inference_result_id=inference_result.id)
+
+def print_trace_tree(traces, parent_id=None, indent=0):
+    for trace in traces:
+        if trace.parent_trace_id == parent_id:
+            prefix = "  " * indent + ("└─ " if indent > 0 else "")
+            print(f"{prefix}{trace.name} ({trace.type}) - {trace.latency_ms:.2f}ms")
+            print_trace_tree(traces, trace.id, indent + 1)
+
+print_trace_tree(traces)
+```
+
+**Example output:**
+```
+main_agent (AGENT) - 245.30ms
+└─ route_query (CHAIN) - 0.15ms
+└─ search_documents (RETRIEVER) - 120.50ms
+└─ call_llm (GENERATION) - 124.20ms
+```
+
+## SDK Integration
+
+<Card title="Tracing Tutorial" icon="graduation-cap" href="/sdk/tutorials/tracing-agent-operations">
+  Step-by-step guide to instrumenting your agent and collecting traces.
+</Card>
+
+<SDKTraceServiceCard />
+
+## Trace Properties
+
+<ResponseField name="Inference Result" type="InferenceResult" required>
+  The inference result this trace belongs to. Every trace must be linked to an inference result.
+</ResponseField>
+
+<ResponseField name="Name" type="string" required>
+  The name of the traced operation (e.g., function name).
+</ResponseField>
+
+<ResponseField name="Type" type="TraceType" optional>
+  The type of operation: SPAN, GENERATION, EVENT, AGENT, TOOL, CHAIN, RETRIEVER, EVALUATOR, EMBEDDING, or GUARDRAIL.
+</ResponseField>
+
+<ResponseField name="Description" type="string" optional>
+  A human-readable description of the operation. Can be set manually via `start_trace(description=...)` or automatically from function docstrings using `@trace(include_docstring=True)`. Maximum size: 32KB.
+</ResponseField>
+
+<ResponseField name="Parent Trace ID" type="string" optional>
+  The ID of the parent trace for hierarchical relationships.
+</ResponseField>
+
+<ResponseField name="Input Data" type="any" optional>
+  The input parameters passed to the operation. Maximum size: 128KB.
+</ResponseField>
+
+<ResponseField name="Output Data" type="any" optional>
+  The result returned by the operation. Maximum size: 128KB.
+</ResponseField>
+
+<ResponseField name="Error" type="string" optional>
+  Error message if the operation failed.
+</ResponseField>
+
+<ResponseField name="Latency (ms)" type="float" optional>
+  The execution time of the operation in milliseconds.
+</ResponseField>
+
+<ResponseField name="Start Time" type="string" optional>
+  ISO 8601 timestamp when the operation started.
+</ResponseField>
+
+<ResponseField name="End Time" type="string" optional>
+  ISO 8601 timestamp when the operation completed.
+</ResponseField>
+
+<ResponseField name="Metadata" type="any" optional>
+  Additional custom metadata about the trace. Maximum size: 128KB.
+</ResponseField>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use meaningful trace names">
+    ```python
+    # ✅ Good - descriptive
+    @trace(name="fetch_customer_orders", type=TraceType.TOOL)
+    
+    # ❌ Bad - generic
+    @trace(name="step_1", type=TraceType.TOOL)
+    ```
+  </Accordion>
+  
+  <Accordion title="Trace at meaningful boundaries">
+    Trace operations that represent logical units of work, not every single function:
+    ```python
+    # ✅ Good - meaningful operation
+    @trace(name="search_products", type=TraceType.RETRIEVER)
+    def search_products(self, query):
+        results = self._query_vector_db(query)  # Internal, not traced
+        return self._format_results(results)     # Internal, not traced
+    ```
+  </Accordion>
+  
+  <Accordion title="Select appropriate node types">
+    Classify operations correctly to enable better filtering and analysis in the dashboard.
+  </Accordion>
+  
+  <Accordion title="Keep input/output data reasonable">
+    The decorator captures function arguments automatically. Consider what's useful for debugging:
+    ```python
+    @trace(name="process_document", type=TraceType.TOOL)
+    def process(self, doc_id: str) -> dict:
+        # Only doc_id is captured as input, not the full document
+        doc = self.fetch_document(doc_id)
+        return {"summary": doc.summary, "status": "processed"}
+    ```
+  </Accordion>
+</AccordionGroup>

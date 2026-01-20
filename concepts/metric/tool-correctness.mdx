@@ -1,0 +1,48 @@
+---
+title: "Tool Correctness"
+description: "Measures whether the agent called exactly the expected set of tools for a test case, penalizing missing required tools or using any unnecessary ones."
+---
+
+The Tool Correctness metric is one of the [Deterministic Metric](/concepts/metric) Galtea exposes to objectively verify that an agent used the correct tools for a test case. It is most appropriate when you expect the agent to call a specific set of tools (e.g., function/tool-calling workflows), and you want to penalize missing required tools or the use of any unnecessary ones.
+
+---
+## Evaluation Parameters
+
+To compute the `Tool Correctness` metric, the following parameters are required:
+
+- **`tools_used`**: The tools used by the agent. This evaluation parameter is automatically extracted from the `traces` parameter.
+- **`expected_tools`**: The reference (or gold) list of tools to compare against.
+
+---
+## How Is It Calculated?
+
+Conceptually, Tool Correctness is computed as:
+
+1. **Parse Inputs**  
+   Read `tools_used` (the tools the agent actually called) and `expected_tools` (the tools required by the test case). Typically, `expected_tools` is specified by the user when creating the test case, while `tools_used` is populated automatically from execution traces captured via Galtea’s [@trace](/sdk/tutorials/tracing-agent-operations) decorator.
+
+2. **Normalize and Dedupe Tool Names**  
+   Normalize tool identifiers (e.g., sanitize formatting and strip equivalent prefixes) and deduplicate by canonical name so repeated calls do not affect the result.
+
+3. **Final Score**  
+   Tool Correctness returns a value of **0** or **1** in this implementation:
+   - **1** – The agent called all expected tools and no unnecessary ones (order and duplicates ignored).
+   - **0** – The agent missed at least one expected tool or called at least one extra tool.
+
+
+---
+## Suggested Test Case Types
+
+Use Tool Correctness when you want to verify tool-calling behavior, such as:
+
+- **Tool-Required Tasks** where specific tools must be invoked.
+- **Agent Workflow Validation** where using an extra tool is considered incorrect or risky.
+- **Regression Tests** for agents to ensure they keep calling the same required tools after prompt/model changes.
+- **Safety/Policy-Gated Flows** where unexpected tool usage should fail the evaluation.
+
+
+---
+## Related Topics
+
+- [BLEU](/concepts/metric/bleu)
+- [METEOR](/concepts/metric/meteor)

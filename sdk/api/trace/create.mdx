@@ -1,0 +1,56 @@
+---
+title: 'Create Trace'
+sidebarTitle: "Create"
+description: "Create a single trace directly via the API."
+---
+
+## Returns
+Returns a [Trace](/concepts/product/version/session/trace) object.
+
+## Example
+```python
+trace = galtea.traces.create(
+    inference_result_id="YOUR_INFERENCE_RESULT_ID",
+    name="fetch_user_data",
+    type="TOOL",
+    description="Fetches user profile data from the database by user ID",
+    input_data={"user_id": "user_123"},
+    output_data={"name": "John Doe", "email": "john@example.com"},
+    latency_ms=150.5
+)
+```
+
+## Parameters
+<ResponseField name="inference_result_id" type="string" required>
+  The ID of the inference result this trace belongs to.
+</ResponseField>
+<ResponseField name="name" type="string" required>
+  The name of the tool or function that was called.
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 32KB.
+</ResponseField>
+<ResponseField name="input_data" type="any" optional>
+  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 128KB.
+</ResponseField>
+<ResponseField name="output_data" type="any" optional>
+  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 128KB.
+</ResponseField>
+<ResponseField name="error" type="string" optional>
+  Error message if the tool call failed.
+</ResponseField>
+<ResponseField name="latency_ms" type="float" optional>
+  The time in milliseconds the tool call took.
+</ResponseField>
+<ResponseField name="metadata" type="any" optional>
+  Additional metadata about the trace. Accepts any JSON-serializable value. Maximum size: 128KB.
+</ResponseField>
+<ResponseField name="start_time" type="string" optional>
+  ISO 8601 timestamp when the trace started.
+</ResponseField>
+<ResponseField name="end_time" type="string" optional>
+  ISO 8601 timestamp when the trace ended.
+</ResponseField>

@@ -1,0 +1,20 @@
+---
+title: 'Get Current ID From Context'
+sidebarTitle: "Get Current ID From Context"
+description: "Get the current active trace_id from the context."
+---
+
+## Returns
+Returns the current trace_id as a `string`, or `None` if no trace is currently active.
+
+## Example
+```python
+current_trace_id = galtea.traces.get_current_id_from_context()
+```
+
+## Parameters
+This method takes no parameters.
+
+<Note>
+  This is an advanced method for debugging. When using `add_to_context()`, the parent-child relationship is established automatically.
+</Note>

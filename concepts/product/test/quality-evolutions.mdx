@@ -1,0 +1,44 @@
+---
+title: "Evolutions"
+description: "Galtea platform generates variations of test cases to enhance test coverage and robustness"
+icon: ""
+---
+
+## Understanding Quality Test Evolutions
+
+When Galtea generates Quality Tests from a `ground_truth_file_path`, it can also create variations of the base test cases to enhance test coverage and robustness. This is controlled by the `variants` parameter in the SDK and API.
+
+<Info>
+    In the [SDK](/sdk/api/test/create), the evolutions are known as `variants`, and the same parameter is used for both Quality Tests and Red Teaming Tests. However, the available options differ between the two types of tests.
+</Info>
+
+### What Are Quality Test Evolutions?
+
+Quality test evolutions (also called "variants") are systematic modifications of test cases that help evaluate your product's robustness against a wide range of real-world user behaviors and edge cases. By selecting different evolution types, you can generate test case variations that probe for weaknesses and ensure your product performs reliably under diverse conditions.
+
+### Available Evolution Types
+
+Below is the full list of evolution types you can select, along with their descriptions and suggested metrics:
+
+| Evolution Type              | Description | Suggested Metrics |
+|-----------------------------|-------------|-------------------|
+| **Paraphrased**             | Rephrase the question to maintain the same meaning but use different wording. | Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Expanded Question**       | Expand the query by adding more details or making it broader. | Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Specific Focus Question** | Focus on a specific part of the context to generate a more detailed query. | Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Ambiguous**               | Lack of clarity or specificity in the query. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Incorrect**               | Factual inaccuracies or misunderstandings in the query. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Incomplete**              | Missing key details in the query. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Typos**                   | Misspelled words or accidental letter swaps in the query. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Slang**                   | Use of colloquial or informal expressions. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Abbreviations**           | Shortened forms of words or acronyms. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Unconventional Phrasing** | Rearranging words or using uncommon sentence structures. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Combined Topics**         | Combine multiple related topics into a single query. | Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Novel Phrasing**          | Use creative or novel phrasing not typically seen in training data. | Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Hypothetical Scenarios**  | Introduce hypothetical or edge-case scenarios related to the original query. | Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Informal**                | Incorporate vernacular, text speak, and abbreviations. Use informal, everyday language specific to a region or community, including slang and shorthand. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Linguistic Diverse**      | Mix languages or dialects within the same query, reflecting the user's bilingual or dialectal background. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Typographic Error**       | Introduce grammatical errors, misspellings, or unconventional sentence structures, including phonetic spellings and mixed-up letters. Considers neurodivergent forms of writing such as those associated with dyslexia or learning disabilities. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+| **Cognitively Diverse**     | Present thoughts in a non-linear fashion, with rapid shifts in topics or ideas, reflecting variable attention spans. | Resilience To Noise, Factual Accuracy, Answer Relevancy, Faithfulness |
+> **Note:** The available options in the Galtea UI may use slightly different names than the `variants` parameter in the SDK/API. For example, `paraphrased`, `typos`, `incorrect`, `cognitively_diverse`, and `linguistic_diverse` are directly supported as variants. Other evolution types may be available in the UI for future expansion or custom use cases.
+
+These evolutions help assess your product's understanding and resilience by simulating real-world user behavior and edge cases. For more details on configuring variants, see the [Test Creation API documentation](/sdk/api/test/create).

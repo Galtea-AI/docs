@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-10-15</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">Product Policies, New Red Teaming Strategies, and Smarter Test Generation</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-10-15">2025-10-15</a>
+
+                <h3 style="color: #171717">Define Product Behavior with Policies</h3>
+                <p style="color: #171717; font-size: 16px">
+                  <a href="https://docs.galtea.ai/concepts/product" style="color: #5286ff">Products</a> now accept a set of policies describing how they should behave in specific situations. This allows you to set explicit rules, such as requiring a disclaimer for financial advice or defining
+                  standard responses for out-of-scope questions, to ensure consistent and safe model behavior.
+                </p>
+
+                <h3 style="color: #171717">Advanced Red Teaming Strategies</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We've added five new, sophisticated <a href="https://docs.galtea.ai/concepts/product/test/red-teaming-strategies" style="color: #5286ff">red teaming strategies</a> to help you uncover more complex vulnerabilities. These strategies use your <strong>Product Description</strong> to
+                  create highly contextual and evasive prompts:
+                </p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Persuasive Content:</strong> Disguises malicious requests as legitimate business tasks.</li>
+                  <li><strong>Creative Writing:</strong> Reframes harmful prompts as creative exercises.</li>
+                  <li><strong>Data Analysis:</strong> Hides malicious intent within analytical or data-generation tasks.</li>
+                  <li><strong>Bait and Switch:</strong> Lowers model defenses with benign queries before introducing the adversarial prompt.</li>
+                  <li><strong>Empathetic Framing:</strong> Uses emotional manipulation to pressure the model into unsafe compliance.</li>
+                </ul>
+
+                <h3 style="color: #171717">Smarter Test Generation Engine</h3>
+                <p style="color: #171717; font-size: 16px">
+                  Our test generation capabilities have been significantly upgraded for both <a href="https://docs.galtea.ai/concepts/product/test/quality-tests" style="color: #5286ff">Quality</a> and
+                  <a href="https://docs.galtea.ai/concepts/product/test/red-teaming-tests" style="color: #5286ff">Red Teaming</a> tests:
+                </p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>New Quality Test Engine:</strong> The engine for generating Quality Tests has been rebuilt to produce higher-quality test cases and can now incorporate and validate the new product policies you define.</li>
+                  <li><strong>Faster Red Teaming Generation:</strong> The generation process for Red Teaming Tests is now more reliable and significantly faster, allowing you to build robust security evaluations more efficiently.</li>
+                </ul>
+
+                <h3 style="color: #171717">Platform Usability and Performance</h3>
+                <p style="color: #171717; font-size: 16px">We've rolled out several enhancements to improve your workflow and the platform's reliability:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Deletion Confirmations:</strong> To prevent accidental data loss, the platform will now ask for confirmation before deleting key entities like Test Cases, Evaluations, and Versions.</li>
+                  <li><strong>Improved Table Experience:</strong> The performance and user experience of data tables and their filters have been optimized for a smoother, more responsive interface.</li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack channel.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">Here's a sneak peek at what we're working on:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>Dynamic Export of Test Cases (via a CSV file) instead of the original static one.</li>
+                  <li>General UX improvements plus capacity to edit entities from within the tables (Test Cases, Evaluations, Versions...).</li>
+                  <li>Conversation Simulator will leverage the agent's retrieval context to better mimic user reactions (for example, a simulated user can say "I don't see that" if a suggested action isn't present in the retrieved context), enabling stronger validation of grounded answers.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

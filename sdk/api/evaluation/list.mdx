@@ -1,0 +1,49 @@
+---
+title: 'Listing Evaluations'
+sidebarTitle: "List"
+description: "List all evaluations associated with a specific session."
+---
+
+
+## Returns
+Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects.
+
+## Example
+```python
+# List evaluations for a session
+session_evaluations = galtea.evaluations.list(session_id="YOUR_SESSION_ID")
+```
+
+## Parameters
+<ResponseField name="session_id" type="str | list[str]" default="None">
+  The ID or IDs of the session(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="version_id" type="str" default="None">
+  The ID of the version for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="test_case_id" type="str | list[str]" default="None">
+  The ID or IDs of the test case(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="test_id" type="str | list[str]" default="None">
+  The ID or IDs of the test(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="metric_id" type="str | list[str]" default="None">
+  The ID or IDs of the metric(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort evaluations by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="sort_by_score" type="string" optional>
+  Sort evaluations by score. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of evaluations to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="1000" optional>
+  Maximum number of evaluations to return in a single request.
+  
+  **Default:** `1000`
+</ResponseField>

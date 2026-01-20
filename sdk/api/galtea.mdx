@@ -1,0 +1,50 @@
+---
+title: 'Galtea Client'
+sidebarTitle: "Galtea Client"
+description: "Main entry point for the Galtea SDK"
+icon: "plug"
+---
+
+## Galtea
+
+The `Galtea` class is the main entry point for the Galtea SDK. It provides access to all the functionalities of the SDK.
+
+### Initialization
+
+To initialize the `Galtea` class, you need to provide your API key obtained in the [settings page](https://platform.galtea.ai/settings) of the Galtea platform.
+
+```python
+from galtea import Galtea
+
+# Initialize Galtea SDK
+galtea = Galtea(api_key="YOUR_API_KEY", suppress_updatable_version_message=False)
+```
+
+### Services
+
+The `Galtea` class provides access to the following services:
+
+- [`products`](/sdk/api/product/service): Access [product](/concepts/product) related functionalities.
+- [`versions`](/sdk/api/version/service): Access [version](/concepts/product/version) related functionalities.
+- [`tests`](/sdk/api/test/service): Access [test](/concepts/product/test) related functionalities.
+- [`test_cases`](/sdk/api/test-case/service): Access [test cases](/concepts/product/test/case) related functionalities.
+- [`metrics`](/sdk/api/metric/service): Access [metric](/concepts/metric) related functionalities.
+- [`sessions`](/sdk/api/session/service): Access [session](/concepts/product/version/session) related functionalities.
+- [`inference_results`](/sdk/api/inference-result/service): Access [inference result](/concepts/product/version/session/inference-result) related functionalities.
+- [`traces`](/sdk/api/trace/service): Access [trace](/concepts/product/version/session/trace) collection and management.
+- [`evaluations`](/sdk/api/evaluation/service): Access [evaluation](/concepts/product/version/session/evaluation) related functionalities.
+- [`simulator`](/sdk/api/simulator/service): Access [conversation simulator](/concepts/conversation-simulator) related functionalities.
+
+
+### Example
+
+```python
+from galtea import Galtea
+
+# Initialize Galtea SDK
+galtea = Galtea(api_key="YOUR_API_KEY", suppress_updatable_version_message=False)
+
+# List products
+products = galtea.products.list()
+print(products)
+```

@@ -1,0 +1,21 @@
+<Update label="2025-07-21" description="Synthetic User Simulation, New Data Leakage Metric, and Platform Enhancements">
+## Test Your Chatbots with Synthetic Users and Scenarios
+
+It is now possible to generate tests that simulate realistic, multi-turn user interactions. Our new **[Scenario Based Tests](/concepts/product/test/scenario-tests)** allow you to define synthetic user personas and goals to evaluate how well your conversational AI handles complex dialogues.
+
+This feature is powered by the **[Conversation Simulator](/concepts/product/test/case/conversation-simulator)**, which programmatically runs these scenarios to test dialogue flow, context handling, and task completion. Get started with our new **[Simulating User Conversations tutorial](/sdk/tutorials/simulating-conversations)**.
+
+## New Red Teaming Metric: Data Leakage
+
+We've added the **[Data Leakage](/concepts/metric/data-leakage)** metric to our suite of Red Teaming evaluations. This metric assesses whether your LLM returns content that could contain sensitive information, such as PII, financial data, or proprietary business data. It is crucial for ensuring your applications are secure and privacy-compliant.
+
+## Enhanced Metric Management
+
+We've rolled out several improvements to make metric creation and management more powerful and intuitive:
+- **Link Metrics to Specific Models**: You can now associate a [Metric](/concepts/metric) with a specific evaluator model (e.g., "GPT-4.1"). This ensures consistency across evaluation runs and allows you to use specialized models for certain metrics.
+- **Simplified Custom Scoring**: We've introduced a more streamlined method for defining and calculating scores for your own deterministic metrics using the `CustomScoreEvaluationMetric` class. This makes it easier to integrate your custom, rule-based logic directly into the Galtea workflow. Learn more in our [tutorial on evaluating with custom scores](/sdk/tutorials/create-evaluation-with-custom-scores).
+
+## Support for Larger Inputs and Outputs
+
+To better support applications that handle large documents or complex queries, we have increased the maximum character size for evaluation inputs and outputs to 250,000 characters.
+</Update>

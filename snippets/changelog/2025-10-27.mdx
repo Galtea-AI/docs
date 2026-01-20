@@ -1,0 +1,23 @@
+<Update label="2025-10-27" description="Simplified Metric Creation, Smarter Simulations, and UX Polish">
+## Introducing Partial Prompts: Create Custom Metrics Faster
+
+We're making it easier than ever to create custom judge metrics with our new **Partial Prompt** validation method. Now, you can focus solely on defining your evaluation criteria and simply select the data parameters you need—like `input` or `retrieval_context`. Galtea automatically constructs the full, correctly formatted judge prompt for you, saving you time and reducing complexity.
+
+This new approach streamlines the creation of powerful, tailored [Metrics](/concepts/metric), allowing you to concentrate on what matters most: the evaluation logic itself.
+
+<Frame>
+  <img src="/images/changelog/2025-10-27_partial-prompt-metric.png" alt="Creating a metric with the new Partial Prompt method" />
+</Frame>
+
+## Quality Generator with Improved Language Handling
+
+The LLM language confusion is now patched for the quality generator. Languages are formally detected for the whole document, and test cases are ensured to be generated with the correct language. This ensures more accurate and contextually appropriate test case generation across different language inputs.
+
+## Improved Long Context Processing for Quality Test Cases
+
+Our quality generator now intelligently processes long documents, ensuring optimal context is provided for the best quality generation of test cases. This enhancement streamlines the evaluation process and improves the reliability of generated test cases for comprehensive quality assessments.
+
+## Platform Experience Enhancements
+
+We've also rolled out several quality-of-life improvements and bug fixes for a smoother experience. A notable update is that tables across the platform now refresh instantly after you delete an item with a right-click, making data management more fluid and intuitive.
+</Update>

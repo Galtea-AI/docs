@@ -1,0 +1,98 @@
+---
+title: "Model"
+sidebarTitle: "Overview"
+description: "A representation of a LLM Model with cost information to calculate cost estimations"
+---
+
+## What is a Model?
+
+A model in Galtea represents a Large Language Model (LLM) configuration with associated cost information. This allows the platform to track, estimate, and report on the costs of using different LLMs across your products and evaluations.
+
+<Info>
+  Models are organization-wide and can be referenced across multiple products to ensure consistent cost tracking.
+</Info>
+
+You can **create**, view and manage your models on the [Galtea dashboard](https://platform.galtea.ai/).
+
+## Use Cases for Models
+
+Models in Galtea are primarily used for:
+
+<CardGroup cols={2}>
+  <Card title="Cost Tracking" icon="money-bill-trend-up">
+    Monitor spending on AI models across different products and versions
+  </Card>
+  <Card title="Budget Planning" icon="chart-line">
+    Project future costs based on token usage patterns
+  </Card>
+  <Card title="Cost Optimization" icon="sliders">
+    Compare costs between different model providers and configurations
+  </Card>
+  <Card title="Financial Reporting" icon="file-invoice-dollar">
+    Generate accurate reports on LLM usage expenses
+  </Card>
+</CardGroup>
+
+## Model Properties
+
+When creating a model in Galtea, you'll need to provide the following information:
+
+<ResponseField name="Name" type="Text" required>
+  The name of the model. This should be descriptive and indicate the provider and version.
+  **Example**: "GPT-4 Turbo" or "Claude 3 Haiku"
+</ResponseField>
+
+<ResponseField name="Cost per Input Token" type="Number">
+  The cost in dollars per input token. This is the rate charged by the provider for tokens in your prompts.
+  **Example**: 0.00001 (representing $0.00001 per token)
+</ResponseField>
+
+<ResponseField name="Cost per Output Token" type="Number">
+  The cost in dollars per output token. This is the rate charged by the provider for tokens in the model's responses.
+  **Example**: 0.00003 (representing $0.00003 per token)
+</ResponseField>
+
+<ResponseField name="Cost per Cache Read Input Token" type="Number">
+  The cost in dollars per cached input token. Some providers offer reduced rates for cached requests.
+  **Example**: 0.000005 (representing $0.000005 per token)
+</ResponseField>
+
+<ResponseField name="Cost per Cache Creation Input Token" type="Number" optional>
+  The cost in dollars per input token when creating a cache entry.
+  **Example**: 0.000005
+</ResponseField>
+
+<ResponseField name="Cost per Input Token (Above 128k)" type="Number" optional>
+  The cost in dollars per input token for contexts larger than 128k tokens, if applicable.
+  **Example**: 0.00002
+</ResponseField>
+
+<ResponseField name="Cost per Output Token (Above 128k)" type="Number" optional>
+  The cost in dollars per output token for contexts larger than 128k tokens, if applicable.
+  **Example**: 0.00006
+</ResponseField>
+
+<ResponseField name="Tokenizer Provider" type="Text">
+  The provider of the tokenizer used by the model. This is important for accurate token counting and cost estimation.
+  Right now, the only supported tokenizers are:
+  **Examples**: 
+  - "OpenAI" (uses [tiktoken](https://github.com/openai/tiktoken))
+  - "Anthropic" (uses [anthropic-tokenizer](https://lunary.ai/anthropic-tokenizer))
+</ResponseField>
+
+<ResponseField name="Source" type="Text">
+  The provider or source of the pricing model. This can be a URL to the model's pricing page or documentation.
+  For instance: https://openai.com/api/pricing/
+</ResponseField>
+
+---
+
+## Models vs. Evaluator Models
+
+It's important to distinguish between a **Model** and an **Evaluator Model** in Galtea:
+
+- **Model (This Page):** Represents the AI model your product is using. Its primary purpose in Galtea is for **cost estimation and tracking**. You link a Version to a Model to calculate the cost of its inference results.
+
+- **Evaluator Model:** This is an LLM used by Galtea to perform "LLM-as-a-judge" evaluations for non-deterministic [Metrics](/concepts/metric). You select an Evaluator Model when creating a custom metric with a `judge_prompt`.
+
+While both are LLMs, their roles within the Galtea platform are distinct: one is being tested, and the other is doing the testing.

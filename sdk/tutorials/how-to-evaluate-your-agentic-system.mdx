@@ -1,0 +1,93 @@
+---
+title: 'How to evaluate your agentic system?'
+description: "A practical guide for evaluating your agentic system: use Galtea's tracing feature to capture your agent's traces and then define your specific scope of interest by creating a custom metric."
+icon: "lightbulb"
+---
+
+You can use Galtea's decorator [@trace](/sdk/tutorials/tracing-agent-operations) to capture your agent’s performance. This feature allows you to obtain a new evaluation parameter to use when generating evaluations. It is called `traces` and contains the entire path of your system between a user input and a system output. In Galtea, we provide some metrics like [Tool Correctness](/concepts/metric/tool-correctness);  nevertheless, because these systems tend to be very specific, we encourage you to create your own [Metric](sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt). Here are some ideas that can help detect gaps in your agentic system.
+
+---
+### Example 1: Was Tool X called before Tool Y
+
+*Example of Judge Prompt:*
+```
+**Evaluation Criteria:**
+Check if the TRACES reflect correct agent behavior by comparing them to what was expected. Focus on:
+1. Whether Tool X is invoked at least once in the traces
+2. Whether Tool Y is invoked only after Tool X
+3. Whether the ordering of tool calls follows the intended system logic
+
+**Rubric:**
+Score 1 (Good): Tool X is called before Tool Y, and Tool Y is never called first in the traces.
+Score 0 (Bad): Tool Y is called before Tool X, or Tool X is never called.
+
+```
+
+---
+### Example 2: Were all attributes collected before calling Tool X?
+
+*Example of Judge Prompt:*
+```
+**Evaluation Criteria:**
+Check if the TRACES reflect correct agent behavior by comparing them to what was expected. Focus on:
+1. Whether attribute_a, attribute_b, and attribute_c appear in the traces before Tool X is called
+2. Whether these attributes are explicitly present in the traces
+3. Whether the attributes are derived from user input or tool outputs rather than invented
+
+**Rubric:**
+Score 1 (Good): All required attributes are explicitly present and correctly sourced before Tool X is invoked.
+Score 0 (Bad): Any attribute is missing, implicit, or invented before calling Tool X.
+```
+
+---
+### Example 3: Do attributes come from the correct sources?
+
+*Example of Judge Prompt:*
+```
+**Evaluation Criteria:**
+Check if the TRACES reflect correct agent behavior by comparing them to what was expected. Focus on:
+1. Whether attribute_b originates from Tool Y output rather than user input
+2. Whether attribute_c is recomputed after Tool Z when Tool Z is called
+3. Whether attributes are overridden only when justified by a tool output
+
+**Rubric:**
+Score 1 (Good): Attributes in the traces originate from the correct tools and are updated appropriately.
+Score 0 (Bad): Any attribute is sourced incorrectly, reused improperly, or overridden without justification.
+
+```
+
+---
+### Example 4: Are tools used under required conditions?
+
+*Example of Judge Prompt:*
+```
+**Evaluation Criteria:**
+Check if the TRACES reflect correct agent behavior by comparing them to what was expected. Focus on:
+1. Whether Tool Z is called only when attribute_a exceeds the required threshold
+2. Whether Tool X is skipped when attribute_c is false
+3. Whether conditional branching in the traces matches tool results
+
+**Rubric:**
+Score 1 (Good): Tools are invoked or skipped strictly according to the required conditions.
+Score 0 (Bad): Any tool is called or skipped in violation of the defined conditions.
+```
+
+---
+### Example 5: Are the tool outputs actually used?
+
+Ensure tool outputs are actually *used*.
+
+*Example of Judge Prompt:*
+```
+**Evaluation Criteria:**
+Check if the TRACES reflect correct agent behavior by comparing them to what was expected. Focus on:
+1. Whether field_d from Tool X output is referenced later in the traces
+2. Whether Tool Y output influences subsequent reasoning or tool calls
+3. Whether tool outputs are respected and not contradicted later in the traces
+
+**Rubric:**
+Score 1 (Good): Tool outputs are explicitly used and consistently reflected in later steps.
+Score 0 (Bad): Tool outputs are ignored, unused, or contradicted.
+```
+
+

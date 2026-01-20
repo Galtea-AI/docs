@@ -1,0 +1,60 @@
+---
+title: "Custom Judge"
+description: "A flexible LLM-as-a-judge evaluation metric designed to assess model outputs based on customizable product rubrics, domain-specific behavior expectations, and grounded context."
+---
+
+The Custom Judge metric is a [non-deterministic Metric](/concepts/metric) used by Galtea to offer a fully customizable evaluation experience. It allows teams to simulate human judgment using their own scoring rubrics, behavioral criteria, and contextual expectations. This flexibility makes it ideal for evaluating model outputs in scenarios where standard metrics fall short—such as enforcing product-specific capabilities, boundaries, tone, or compliance rules and enabling precise assessments aligned with your product's unique goals, use cases, and risk tolerances.
+
+---
+
+## Evaluation Parameters
+
+To compute the `custom_judge` metric, the following parameters can be considered, depending on your needs, the validation method and the test type:
+
+- **`input`**: The original user message.
+- **`expected_output`**: The ideal or target answer your product should have generated.
+- **`actual_output`**: The response actually produced by the model.
+- **`context`**: Any additional internal context passed to the model (e.g. memory, conversation history).
+- **`retrieval_context`**: External content retrieved during inference, such as from a vector store or knowledge base.
+- **`traces`**: Execution traces from the agent, including tool calls, LLM invocations, and other internal operations.
+- **`product_description`**: A high-level overview of what the product is.
+- **`product_capabilities`**: What the product is designed to do.
+- **`product_inabilities`**: What the product cannot or should not do.
+- **`product_security_boundaries`**: Sensitive actions or behaviors that the model must not perform, even if technically capable.
+- **`goal`**: The objective the synthetic user is trying to achieve in a conversation scenario.
+- **`user_persona`**: The personality traits, communication style, and motivations of the synthetic user in the scenario.
+- **`scenario`**: A description of the specific situation or environment in which the conversation takes place. 
+- **`stopping_criterias`**: Conditions or signals that determine when the conversation or interaction should end.
+- **`conversation_turns`**: All turns in the conversation (only available for Full Prompt validation method).
+
+---
+
+## How Is It Calculated?
+
+The **Custom Judge** evaluation process includes:
+
+1. **Prompt Construction**: You define the evaluation logic by writing your own `judge_prompt`. This prompt can include contextual information, specific behavioral rubrics, product constraints, and any other evaluation criteria relevant to your use case. Galtea fills in the prompt using the parameters you provide at runtime.
+
+2. **Score and Justification**: Based on your custom prompt, Galtea returns a structured output containing:
+
+   ```
+   Score: [Number between 0 and 1]
+   Reason: [Evaluator's explanation]
+   ```
+
+---
+
+## Suggested Test Case Types
+
+The **Custom Judge** metric is best suited for:
+
+* **Behavioral Evaluation**: Ensuring model behavior aligns with defined product guidelines or safety constraints.
+* **Security Testing**: Validating that responses do not cross ethical, privacy, or safety boundaries.
+* **Policy Adherence**: Checking compliance with brand tone, content rules, or moderation policies.
+* **Retrieval Use**: Evaluating whether the model made appropriate use of retrieved context.
+---
+
+## Related Topics
+
+- [Factual Accuracy](/concepts/metric/factual-accuracy)
+- [Resilience to Noise](/concepts/metric/resilience-to-noise)
