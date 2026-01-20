@@ -46,7 +46,16 @@
     }
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "navigation": {
     "global": {
@@ -110,7 +119,13 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/product/service", "sdk/api/product/list", "sdk/api/product/get", "sdk/api/product/get-by-name", "sdk/api/product/delete"]
+                    "pages": [
+                      "sdk/api/product/service",
+                      "sdk/api/product/list",
+                      "sdk/api/product/get",
+                      "sdk/api/product/get-by-name",
+                      "sdk/api/product/delete"
+                    ]
                   }
                 ]
               },
@@ -123,7 +138,14 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/version/service", "sdk/api/version/create", "sdk/api/version/list", "sdk/api/version/get", "sdk/api/version/get-by-name", "sdk/api/version/delete"]
+                    "pages": [
+                      "sdk/api/version/service",
+                      "sdk/api/version/create",
+                      "sdk/api/version/list",
+                      "sdk/api/version/get",
+                      "sdk/api/version/get-by-name",
+                      "sdk/api/version/delete"
+                    ]
                   }
                 ]
               },
@@ -144,7 +166,11 @@
                       {
                         "group": "Red Teaming",
                         "icon": "shield-check",
-                        "pages": ["concepts/product/test/red-teaming-tests", "concepts/product/test/red-teaming-threats", "concepts/product/test/red-teaming-strategies"]
+                        "pages": [
+                          "concepts/product/test/red-teaming-tests",
+                          "concepts/product/test/red-teaming-threats",
+                          "concepts/product/test/red-teaming-strategies"
+                        ]
                       },
                       {
                         "group": "Scenarios",
@@ -156,7 +182,15 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/test/service", "sdk/api/test/create", "sdk/api/test/list", "sdk/api/test/get", "sdk/api/test/get-by-name", "sdk/api/test/delete", "sdk/api/test/download"]
+                    "pages": [
+                      "sdk/api/test/service",
+                      "sdk/api/test/create",
+                      "sdk/api/test/list",
+                      "sdk/api/test/get",
+                      "sdk/api/test/get-by-name",
+                      "sdk/api/test/delete",
+                      "sdk/api/test/download"
+                    ]
                   }
                 ]
               },
@@ -169,7 +203,13 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/test-case/service", "sdk/api/test-case/create", "sdk/api/test-case/list", "sdk/api/test-case/get", "sdk/api/test-case/delete"]
+                    "pages": [
+                      "sdk/api/test-case/service",
+                      "sdk/api/test-case/create",
+                      "sdk/api/test-case/list",
+                      "sdk/api/test-case/get",
+                      "sdk/api/test-case/delete"
+                    ]
                   }
                 ]
               },
@@ -182,7 +222,10 @@
                   {
                     "group": "Simulator",
                     "icon": "user-group",
-                    "pages": ["sdk/api/simulator/service", "sdk/api/simulator/simulate"]
+                    "pages": [
+                      "sdk/api/simulator/service",
+                      "sdk/api/simulator/simulate"
+                    ]
                   }
                 ]
               },
@@ -195,7 +238,15 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/session/service", "sdk/api/session/create", "sdk/api/session/get-or-create", "sdk/api/session/list", "sdk/api/session/get", "sdk/api/session/get-by-custom-id", "sdk/api/session/delete"]
+                    "pages": [
+                      "sdk/api/session/service",
+                      "sdk/api/session/create",
+                      "sdk/api/session/get-or-create",
+                      "sdk/api/session/list",
+                      "sdk/api/session/get",
+                      "sdk/api/session/get-by-custom-id",
+                      "sdk/api/session/delete"
+                    ]
                   }
                 ]
               },
@@ -230,7 +281,17 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/trace/service", "sdk/api/trace/start-trace", "sdk/api/trace/set-context", "sdk/api/trace/clear-context", "sdk/api/trace/create", "sdk/api/trace/create-batch", "sdk/api/trace/list", "sdk/api/trace/get", "sdk/api/trace/delete"]
+                    "pages": [
+                      "sdk/api/trace/service",
+                      "sdk/api/trace/start-trace",
+                      "sdk/api/trace/set-context",
+                      "sdk/api/trace/clear-context",
+                      "sdk/api/trace/create",
+                      "sdk/api/trace/create-batch",
+                      "sdk/api/trace/list",
+                      "sdk/api/trace/get",
+                      "sdk/api/trace/delete"
+                    ]
                   }
                 ]
               },
@@ -243,7 +304,14 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/evaluation/service", "sdk/api/evaluation/create-single-turn", "sdk/api/evaluation/create", "sdk/api/evaluation/list", "sdk/api/evaluation/get", "sdk/api/evaluation/delete"]
+                    "pages": [
+                      "sdk/api/evaluation/service",
+                      "sdk/api/evaluation/create-single-turn",
+                      "sdk/api/evaluation/create",
+                      "sdk/api/evaluation/list",
+                      "sdk/api/evaluation/get",
+                      "sdk/api/evaluation/delete"
+                    ]
                   }
                 ]
               },
@@ -262,7 +330,14 @@
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "pages": ["sdk/api/metric/service", "sdk/api/metric/create", "sdk/api/metric/list", "sdk/api/metric/get", "sdk/api/metric/get-by-name", "sdk/api/metric/delete"]
+                    "pages": [
+                      "sdk/api/metric/service",
+                      "sdk/api/metric/create",
+                      "sdk/api/metric/list",
+                      "sdk/api/metric/get",
+                      "sdk/api/metric/get-by-name",
+                      "sdk/api/metric/delete"
+                    ]
                   },
                   {
                     "group": "RAG metrics",
@@ -281,19 +356,48 @@
                   {
                     "group": "Conversational",
                     "icon": "message",
-                    "pages": ["concepts/metric/knowledge-retention", "concepts/metric/role-adherence", "concepts/metric/conversation-completeness", "concepts/metric/conversation-relevancy", "concepts/metric/user-satisfaction", "concepts/metric/user-objective-accomplished"]
+                    "pages": [
+                      "concepts/metric/knowledge-retention",
+                      "concepts/metric/role-adherence",
+                      "concepts/metric/conversation-completeness",
+                      "concepts/metric/conversation-relevancy",
+                      "concepts/metric/user-satisfaction",
+                      "concepts/metric/user-objective-accomplished"
+                    ]
                   },
                   {
                     "group": "Red Teaming",
                     "icon": "shield-check",
-                    "pages": ["concepts/metric/misuse-resilience", "concepts/metric/non-toxic", "concepts/metric/unbiased", "concepts/metric/jailbreak-resilience", "concepts/metric/data-leakage"]
+                    "pages": [
+                      "concepts/metric/misuse-resilience",
+                      "concepts/metric/non-toxic",
+                      "concepts/metric/unbiased",
+                      "concepts/metric/jailbreak-resilience",
+                      "concepts/metric/data-leakage"
+                    ]
                   },
                   {
                     "group": "Deterministic metrics",
                     "icon": "calculator",
-                    "pages": ["concepts/metric/bleu", "concepts/metric/rouge", "concepts/metric/meteor", "concepts/metric/text-similarity", "concepts/metric/text-match", "concepts/metric/iou", "concepts/metric/spatial-match", "concepts/metric/url-validation", "concepts/metric/tool-correctness"]
+                    "pages": [
+                      "concepts/metric/bleu",
+                      "concepts/metric/rouge",
+                      "concepts/metric/meteor",
+                      "concepts/metric/text-similarity",
+                      "concepts/metric/text-match",
+                      "concepts/metric/iou",
+                      "concepts/metric/spatial-match",
+                      "concepts/metric/url-validation",
+                      "concepts/metric/tool-correctness"
+                    ]
                   }
                 ]
+              },
+
+              {
+                "group": "Endpoint Connection",
+                "icon": "plug",
+                "pages": ["concepts/product/endpoint-connection"]
               }
             ]
           }
