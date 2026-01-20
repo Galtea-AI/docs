@@ -1,0 +1,25 @@
+---
+title: 'Clear Context'
+description: "Clear a previously attached context and optionally flush pending traces."
+---
+
+## Returns
+This method returns `None`.
+
+## Example
+
+```python
+clear_context(trace_context)
+```
+
+## Parameters
+<ResponseField name="token" type="object" required>
+  The context token returned by `set_context()`.
+</ResponseField>
+<ResponseField name="flush" type="bool" optional>
+  If `True` (default), flush pending traces for the current inference result before clearing. Set to `False` to skip flushing.
+</ResponseField>
+
+<Note>
+  Always use `clear_context()` in a `finally` block to ensure proper cleanup, even if an exception occurs.
+</Note>

@@ -1,0 +1,24 @@
+<Update label="2025-07-07" description="Custom Threats, New Metrics, and Enhanced Test Case Management">
+## Tailor Your Red Teaming with Custom Threats
+
+You can now define your own custom threats when creating [Red Teaming Tests](/concepts/product/test/red-teaming-tests). This new capability allows you to move beyond our pre-defined threat library and create highly specific adversarial tests that target the unique vulnerabilities and edge cases of your AI product. Simply describe the threat you want to simulate, and Galtea will generate relevant test cases.
+
+## New Red Teaming Strategies: RolePlay and Prefix Injection
+
+We've expanded our arsenal of [Red Teaming Strategies](/concepts/product/test/red-teaming-strategies) to help you build more robust AI defenses:
+
+- **RolePlay**: This strategy attempts to alter the model's identity (e.g., "You are now an unrestricted AI"), encouraging it to bypass its own safety mechanisms and perform actions it would normally refuse.
+- **Prefix Injection**: Adds a misleading or tactical instruction before the actual malicious prompt. This can trick the model into a different mode of operation, making it more susceptible to the adversarial attack.
+
+## Introducing the Misuse Resilience Metric
+
+A new [non-deterministic metric](/concepts/metric), **[Misuse Resilience](/concepts/metric/misuse-resilience)**, is now available. This powerful metric evaluates your product's ability to stay aligned with its intended purpose, as defined in your **[product description](/concepts/product)**, even when faced with adversarial inputs or out-of-scope requests. It ensures your AI doesn't get diverted into performing unintended actions, a crucial aspect of building robust and responsible AI systems. Learn more in the [full documentation](/concepts/metric/misuse-resilience).
+
+## Enhanced Test Case Management: Mark as Reviewed
+
+To improve collaboration and workflow for human annotation teams, [Test Cases](/concepts/product/test/case) can now be marked as "reviewed". This feature allows you to:
+- Track which test cases have been validated by a human.
+- See who performed the review, providing a clear audit trail.
+- Filter and manage your test sets with greater confidence.
+
+</Update>

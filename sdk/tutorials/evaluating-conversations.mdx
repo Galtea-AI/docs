@@ -1,0 +1,198 @@
+---
+title: 'Evaluating Conversations'
+description: "Learn how to evaluate multi-turn conversations using Galtea's session-based workflow across test-based, past conversations, and production monitoring."
+icon: "comments"
+---
+
+import SessionCard from '/snippets/cards/session-card.mdx';
+import InferenceResultCard from '/snippets/cards/inference-result-card.mdx';
+import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
+import ConversationSimulatorCard from '/snippets/cards/conversation-simulator-card.mdx';
+
+To accurately evaluate interactions within a dialogue, you can use Galtea's session-based workflow. This approach allows you to log an entire conversation and then run evaluations on all of its turns at once.
+
+Certain metrics are specifically designed for conversational analysis and require the full context:
+  - **Role Adherence**: Measures how well the AI stays within its defined role.
+  - **Knowledge Retention**: Assesses the model's ability to remember and use information from previous turns.
+  - **Conversation Completeness**: Evaluates whether the conversation has reached a natural and informative conclusion.
+  - **Conversation Relevancy**: Assesses whether each turn in the conversation is relevant to the ongoing topic.
+
+### The Session-Based Workflow
+
+<Steps>
+    <Step title="Create a Session">
+        A [Session](/concepts/product/version/session) acts as a container for all the turns in a single conversation. You create one at the beginning of an interaction.
+    </Step>
+    <Step title="Log Inference Results">
+        Each user input and model output pair is an [Inference Result](/concepts/product/version/session/inference-result). You can log these turns individually or in a single batch call after the conversation ends. Using a batch call is more efficient.
+    </Step>
+    <Step title="Evaluate the Session">
+        Once the session is logged, you can create evaluations for the entire conversation using the `evaluations.create()` method.
+    </Step>
+</Steps>
+
+### Choose your scenario
+
+<Tabs>
+  <Tab title="Test-based evaluation">
+    Use this when you have test cases. It requires `test_case_id` and is often combined with the Conversation Simulator to generate turns.
+
+```python
+# Fetch your test cases (created from a CSV of scenarios)
+test_cases = galtea_client.test_cases.list(test_id=scenarios_test.id)
+if test_cases is None or len(test_cases) == 0:
+    raise ValueError("No test cases found")
+
+
+# Implement your Agent (connect your product/model)
+class MyAgent(galtea.Agent):
+    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
+        return galtea.AgentResponse(content="...")
+
+
+for test_case in test_cases:
+    # Create a session linked to the test case
+    session = galtea_client.sessions.create(
+        version_id=version_id,
+        test_case_id=test_case.id,
+    )
+
+    # Run the simulator (synthetic user) with your Agent
+    galtea_client.simulator.simulate(
+        session_id=session.id,
+        agent=MyAgent(),
+        max_turns=test_case.max_iterations or 20,
+    )
+
+    # Evaluate the full conversation
+    galtea_client.evaluations.create(
+        session_id=session.id,
+        metrics=[
+            {"name": "Conversation Relevancy"},
+            {"name": "Role Adherence"},
+            {"name": "Knowledge Retention"},
+        ],
+    )
+```
+
+<Info>
+  See the full workflow in [Simulating Conversations](/sdk/tutorials/simulating-conversations).
+</Info>
+  </Tab>
+
+  <Tab title="Past conversations (offline ingestion)">
+    Use this when the conversation already happened outside Galtea. Ingest the transcript by creating a session (no `test_case_id`) and logging all turns in a batch, then evaluate.
+
+```python
+# Optional: map to your own conversation ID and mark as production if these are real users
+session = galtea_client.sessions.create(
+    version_id=version_id,
+    custom_id="EXTERNAL_CONVERSATION_ID",
+    is_production=True,
+)
+
+conversation_turns = [
+    {"role": "user", "content": "What are some lower-risk investment strategies?"},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+        "retrieval_context": "Low-risk investment options include index funds, government bonds, and Treasury securities.",
+    },
+    {"role": "user", "content": "With age, should the investment strategy change?"},
+    {
+        "role": "assistant",
+        "content": "Yes, many advisors recommend shifting to more conservative investments as you approach retirement.",
+        "retrieval_context": "Financial advisors typically recommend a more conservative asset allocation as investors near retirement age.",
+    },
+]
+
+# Log all turns at once
+galtea_client.inference_results.create_batch(
+    session_id=session.id, conversation_turns=conversation_turns
+)
+
+# Evaluate the full session
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},
+        {"name": "Knowledge Retention"},
+        {"name": "Conversation Relevancy"},
+    ],
+)
+```
+  </Tab>
+
+  <Tab title="Monitoring (production)">
+    Use this for real-time logging of user interactions from your live product. Create the session with `is_production=True` and log turns as they happen (or batch at the end), then evaluate.
+
+<Tabs>
+  <Tab title="Log turns individually">
+```python
+session = galtea_client.sessions.create(
+    version_id=version_id,
+    is_production=True,
+)
+
+
+def your_product(user_input: str) -> str:
+    return f"This is a simulated response to '{user_input}'"
+
+
+def handle_turn(user_input: str) -> str:
+    model_output = your_product(user_input)
+    galtea_client.inference_results.create(
+        session_id=session.id, input=user_input, output=model_output
+    )
+    return model_output
+
+
+# Simulate production interactions
+handle_turn("Hello!")
+handle_turn("What services do you offer?")
+```
+  </Tab>
+  <Tab title="Log turns in a batch">
+```python
+session_batch = galtea_client.sessions.create(
+    version_id=version_id,
+    is_production=True,
+)
+
+conversation_turns = [
+    {"role": "user", "content": "What are some lower-risk investment strategies?"},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+    },
+]
+
+galtea_client.inference_results.create_batch(
+    session_id=session_batch.id, conversation_turns=conversation_turns
+)
+```
+  </Tab>
+</Tabs>
+
+```python
+# Evaluate when the conversation is complete
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[{"name": "Conversation Relevancy"}, {"name": "Knowledge Retention"}],
+)
+```
+
+<Info>
+  See the dedicated guide: [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries).
+</Info>
+  </Tab>
+</Tabs>
+
+## Learn More
+
+<CardGroup cols={2}>
+  <SessionCard />
+  <InferenceResultCard />
+  <EvaluationCard />
+  <ConversationSimulatorCard />
+</CardGroup>

@@ -1,0 +1,52 @@
+---
+title: 'Version Service'
+sidebarTitle: "Service"
+description: "Version Service API methods in the Galtea SDK"
+---
+
+import VersionCard from '/snippets/cards/version-card.mdx';
+
+The Version Service in the Galtea SDK allows you to manage different iterations of your [products](/concepts/product) through [versions](/concepts/product/version).
+This Service is exposed by the `galtea.versions` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a version:
+```python
+version = galtea.versions.create(
+    name=version_name,
+    product_id=product_id,
+    description="Demo version created via SDK",
+    model_id="ru45tcu3bnqibuswhla4omyt",
+)
+```
+
+List versions for a product:
+```python
+versions = galtea.versions.list(product_id=product_id, limit=5)
+```
+
+Get a version by ID:
+```python
+version = galtea.versions.get(version_id=version_id)
+```
+
+## Service Methods
+- [Create Version](/sdk/api/version/create)
+- [Listing Versions](/sdk/api/version/list)
+- [Retrieving Version](/sdk/api/version/get)
+- [Retrieving Version By Name](/sdk/api/version/get-by-name)
+- [Deleting Version](/sdk/api/version/delete)
+
+## Related Concepts
+
+<VersionCard />

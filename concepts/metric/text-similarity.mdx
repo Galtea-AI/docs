@@ -1,0 +1,44 @@
+---
+title: "Text Similarity"
+description: "Quantifies the overall textual resemblance between a generated summary and a reference summary by using character-level fuzzy matching. This metric accounts for minor variations in wording or structure while still capturing how similar the two texts are at a surface level."
+---
+
+The Text Similarity metric is one of the [Deterministic Metric](/concepts/metric) options provided by Galtea. It evaluates how closely a generated text resembles a reference by using fuzzy string matching techniques. This approach is especially valuable in scenarios where flexible wording, paraphrasing, or non-exact phrasing is acceptable, but a general sense of alignment is still important.
+
+---
+## Evaluation Parameters
+
+To compute the text_similarity metric, the following parameters must be provided:
+
+- **`actual_output`**: The generated text or summary from the model.
+- **`expected_output`**: The reference or ground truth text to compare against.
+
+---
+## How Is It Calculated?
+
+The metric uses a fuzzy string matching algorithm, which compares the characters in both strings and calculates how many edits (insertions, deletions, or substitutions) are needed to transform one into the other.
+
+
+---
+## Interpretation of Scores
+
+- **≥ 0.8** – High textual similarity; close match.
+- **0.5 – 0.8** – Moderate similarity; captures most content.
+- **< 0.5** – Low similarity; outputs may diverge significantly.
+
+---
+## Suggested Test Case Types
+
+Use Text Similarity when evaluating:
+
+- **General text matching** where loose phrasing is acceptable.
+- **Heuristic checks** for paraphrasing or alternative wording.
+- **Lightweight similarity evaluations** without requiring semantic understanding.
+
+---
+## Related Topics
+
+- [Text Match](/concepts/metric/text-match)
+- [IOU](/concepts/metric/iou)
+- [Spatial Match](/concepts/metric/spatial-match)
+

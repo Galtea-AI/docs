@@ -1,0 +1,142 @@
+---
+title: '@trace Decorator'
+description: "Automatically trace function calls with OpenTelemetry."
+---
+
+## Returns
+Returns the decorated function with automatic tracing enabled.
+
+## Example
+```python
+@trace(type=TraceType.TOOL, name="calculate_sum")
+def calculate(a, b):
+    return a + b
+
+
+class MyMathsAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        message = input_data.last_user_message_str() or ""
+        a, b = map(int, message.split(","))
+        return AgentResponse(content=f"Result: {calculate(a, b)}")
+
+
+inference_result = galtea.inference_results.generate(
+    agent=MyMathsAgent(),
+    session=session,
+    user_input="5,3",
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" optional>
+  Custom span name. Defaults to the function name.
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
+</ResponseField>
+<ResponseField name="log_args" type="bool" optional>
+  Whether to log function arguments as input data. Default: `True`.
+</ResponseField>
+<ResponseField name="log_results" type="bool" optional>
+  Whether to log return value as output data. Default: `True`.
+</ResponseField>
+<ResponseField name="attributes" type="dict" optional>
+  Custom attributes to add to the span (e.g., model name, configuration).
+</ResponseField>
+<ResponseField name="include_docstring" type="bool" optional>
+  If `True`, the function's docstring is automatically used as the trace description (max 32KB). Default: `False`.
+</ResponseField>
+
+## Features
+
+### Automatic Exception Recording
+Exceptions are always recorded in traces for debugging, regardless of `log_args` and `log_results` settings:
+
+```python
+@trace(type=TraceType.TOOL)
+def risky_operation() -> str:
+    # Exceptions are always recorded in traces for debugging
+    # even with log_args=False and log_results=False
+    return "Success"
+
+
+class RiskyAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        result = risky_operation()
+        return AgentResponse(content=result)
+
+
+# The trace will include error details if an exception occurs
+inference_result_risky = galtea.inference_results.generate(
+    agent=RiskyAgent(),
+    session=session_decorator,
+    user_input="test",
+)
+```
+
+### Input/Output Serialization
+Function arguments and return values are automatically serialized to JSON. Non-serializable objects are converted to string representation:
+
+```python
+@trace(type=TraceType.TOOL)
+def process_data(user_id: str, config: dict) -> dict:
+    # Function arguments are automatically serialized to JSON
+    # Non-serializable objects are converted to string representation
+    return {"status": "processed", "user_id": user_id}
+
+
+class DataAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        result = process_data("user_123", {"setting": "value"})
+        return AgentResponse(content=str(result))
+
+
+session_serialization = galtea.sessions.create(
+    version_id=version_id, is_production=True
+)
+if session_serialization is None:
+    raise ValueError("session_serialization is None")
+
+inference_result_data = galtea.inference_results.generate(
+    agent=DataAgent(),
+    session=session_serialization,
+    user_input="process",
+)
+```
+
+### Context Propagation
+Traces automatically inherit the context set by `set_context()`:
+
+```python
+@trace(type=TraceType.AGENT)
+def agent_workflow() -> str:
+    # This trace is automatically linked to the inference result
+    # when set_context() has been called with inference_result_id
+    return "workflow completed"
+
+
+# Create an inference result for context propagation example
+session_context = galtea.sessions.create(version_id=version_id, is_production=True)
+if session_context is None:
+    raise ValueError("session_context is None")
+
+inference_result_context = galtea.inference_results.create(
+    session_id=session_context.id,
+    input="Run workflow",
+)
+if inference_result_context is None:
+    raise ValueError("inference_result_context is None")
+
+# Set context before running traced functions
+token = set_context(inference_result_id=inference_result_context.id)
+
+try:
+    result = agent_workflow()
+finally:
+    clear_context(token)
+```
+
+<Note>
+  The `@trace` decorator uses OpenTelemetry under the hood. Traces are automatically exported to Galtea API when `clear_context()` is called or when the batch processor flushes.
+</Note>
+

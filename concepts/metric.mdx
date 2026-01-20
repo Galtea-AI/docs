@@ -1,0 +1,420 @@
+---
+title: "Metric"
+sidebarTitle: "Overview"
+description: "Ways to evaluate and score product performance"
+---
+
+import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
+import SDKMetricsServiceCard from '/snippets/cards/sdk-metrics-service-card.mdx';
+
+## What are Metrics?
+
+Metrics in Galtea define the specific criteria and methods used to evaluate the performance of your [product](/concepts/product). They determine how outputs are scored during [evaluations](/concepts/product/version/session/evaluation), ensuring consistent and meaningful assessment.
+
+<Info>
+  Metrics are organization-wide and can be reused across multiple products.
+</Info>
+
+You can **create**, view and manage your metrics on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/metric/service).
+
+## Conceptual categories
+
+At Galtea, we use two types of metrics to evaluate large language model (LLM) outputs: **deterministic** and **non-deterministic**.
+
+
+- **Deterministic metrics** are rule-based and computed using strict logic, such as SQL queries or structural checks. These include things like answer format validation, presence of required fields, or exact string matches. Their results are consistent and reproducible. Common examples of deterministic checks include:
+  *   Answer format validation (e.g., ensuring the output is a valid JSON or follows a specific template)
+  *   Presence of required fields (e.g., checking if all necessary information is included in the response)
+  *   Exact string matches (e.g., verifying if a specific keyword or phrase is present)
+  *   Numerical range checks (e.g., confirming a value falls within an acceptable range)
+  *   Boolean condition checks (e.g., ensuring a specific condition evaluates to true or false as expected)
+
+  Currently the deterministic metrics accessible directly from the platform are [BLEU](/concepts/metric/bleu), [ROUGE](/concepts/metric/rouge), [METEOR](/concepts/metric/meteor), [Text Similarity](/concepts/metric/text-similarity), [Text Match](/concepts/metric/text-match), [IOU](/concepts/metric/iou) and [Spatial Match](/concepts/metric/spatial-match) and [URL Validation](/concepts/metric/url-validation).
+
+  Additionally you can define your own custom deterministic metrics. In order to do that, you can implement a class that inherits from the `CustomScoreEvaluationMetric` base class and pass an instance of it to the evaluation creation method. See more in [our example](/sdk/tutorials/create-evaluation-with-custom-scores).
+
+  <Info>
+    The platform cannot automatically evaluate *deterministic metrics*, as it lacks the necessary information. However, by using the `CustomScoreEvaluationMetric` class in the SDK, you can execute your custom logic locally and have the scores seamlessly uploaded to the platform for visualization.
+  </Info>
+
+- **Non-deterministic metrics** are powered by the LLM-as-a-judge methodology. The tested and deployed Galtea judges are human-aligned and optimized for the type of evaluation they are designed for. These metrics assess aspects like factual accuracy, misuse resilience, and correct task completion. Additionally you can create your own metrics using a template from the platform, assessing any aspect of your AI product you desire.
+
+<Info title="Applicability to Different Output Types">
+  Galtea metrics are versatile and can be applied to **any type of output**, including strings, numbers, and boolean values.
+
+  *   **For deterministic metrics:** Evaluating numerical or boolean outputs is straightforward. For example, you can check if a returned numerical value is within a valid range or if a boolean output matches a specific condition.
+  *   **For non-deterministic metrics:** While typically used for open-ended text, they can also assess the reasoning or justification behind a numerical or boolean value when needed. For instance, verifying whether a model's numeric prediction aligns with the provided context or input data.
+</Info>
+
+## List of metrics available in the Galtea Platform
+
+<Note>
+  The following table provides a summary of the default metrics available in the Galtea platform. You can also create custom metrics tailored to your specific needs.
+</Note>
+
+| Metric | Category | Description |
+| --- | --- | --- |
+| **[Factual Accuracy](/concepts/metric/factual-accuracy)** | RAG | Measures the quality of your RAG pipeline's generator by evaluating whether the actual_output factually aligns with the expected_output. |
+| **[Resilience To Noise](/concepts/metric/resilience-to-noise)** | RAG | Evaluates whether the generated output is resilient to noisy input, such as typos, OCR/ASR errors, and distracting content. |
+| **[Answer Relevancy](/concepts/metric/answer-relevancy)** | RAG | Measures the quality of your RAG pipeline's generator by evaluating how relevant the actual_output of your LLM application is compared to the provided input. |
+| **[Faithfulness](/concepts/metric/faithfulness)** | RAG | Measures the quality of your RAG pipeline's generator by evaluating whether the actual_output factually aligns with the contents of your retrieval_context. |
+| **[Contextual Precision](/concepts/metric/contextual-precision)** | RAG | Measures your RAG pipeline's retriever by evaluating whether nodes in your retrieval_context that are relevant to the given input are ranked higher than irrelevant ones. |
+| **[Contextual Recall](/concepts/metric/contextual-recall)** | RAG | Measures the quality of your RAG pipeline's retriever by evaluating the extent of which the retrieval_context aligns with the expected_output. |
+| **[Contextual Relevancy](/concepts/metric/contextual-relevancy)** | RAG | Measures the quality of your RAG pipeline's retriever by evaluating the overall relevance of the information presented in your retrieval_context for a given input. |
+| **[BLEU](/concepts/metric/bleu)** | Deterministic | Measures how many n-grams in the actual output overlap with those in a set of expected output. |
+| **[ROUGE](/concepts/metric/rouge)** | Deterministic | Evaluates automatic summarization by measuring the longest common subsequence that preserves the word order between actual output and expected output summaries. |
+| **[METEOR](/concepts/metric/meteor)** | Deterministic | Evaluates translation, summarization, and paraphrasing by aligning words using exact matches, stems, or synonyms. |
+| **[Text Similarity](/concepts/metric/text-similarity)** | Deterministic |Quantifies the overall textual resemblance between a generated summary and a reference summary by using character-level fuzzy matching. |
+| **[Text Match](/concepts/metric/text-match)** | Deterministic |Determines whether generated text matches a reference with high character-level similarity using fuzzy matching, returning a binary outcome based on a threshold.|
+| **[IOU](/concepts/metric/iou)** | Deterministic | Measures the spatial overlap between a predicted bounding box and one or more reference boxes to quantify alignment in object detection and layout tasks.  |
+| **[Spatial Match](/concepts/metric/spatial-match)** | Deterministic |Performs a binary evaluation of the spatial alignment between a predicted bounding box and reference boxes using the best Intersection over Union (IoU) score to return a pass/fail signal.|
+| **[URL Validation](/concepts/metric/url-validation)** | Deterministic |Performs a binary evaluation to check if all the URLs present in the model response are valid and safe. |
+| **[Role Adherence](/concepts/metric/role-adherence)** | Conversational | Determines whether your LLM chatbot is able to adhere to its given role throughout a conversation. |
+| **[Conversation Completeness](/concepts/metric/conversation-completeness)** | Conversational | Determines whether your LLM chatbot is able to complete an end-to-end conversation by satisfying user needs throughout a conversation. |
+| **[Conversation Relevancy](/concepts/metric/conversation-relevancy)** | Conversational | Determines whether your LLM chatbot is able to consistently generate relevant responses throughout a conversation. |
+| **[Knowledge Retention](/concepts/metric/knowledge-retention)** | Conversational | Assesses the ability of your LLM chatbot to retain factual information presented throughout a conversation. |
+| **[User Satisfaction](/concepts/metric/user-satisfaction)** | Conversational | Evaluates how satisfied the user was with the chatbot interaction, focusing on efficiency and user sentiment. |
+| **[User Objective Accomplished](/concepts/metric/user-objective-accomplished)** | Conversational | Evaluates whether the chatbot successfully and correctly fulfilled the user's stated objective, optionally verifying against an expected_output. |
+| **[Non-Toxic](/concepts/metric/non-toxic)** | Red Teaming | Determines whether the responses of your LLM based product responds are free of toxic language. |
+| **[Unbiased](/concepts/metric/unbiased)** | Red Teaming | Determine whether your LLM output is free of gender, racial, or political bias. |
+| **[Misuse Resilience](/concepts/metric/misuse-resilience)** | Red Teaming | Evaluates whether the generated output is resilient to misuse and remains aligned with the product description. |
+| **[Data Leakage](/concepts/metric/data-leakage)** | Red Teaming | Evaluates whether the LLM returns content that may include sensitive information. |
+| **[Jailbreak Resilience](/concepts/metric/jailbreak-resilience)** | Red Teaming | Evaluates the ability of an LLM-based product to resist attempts at breaking or manipulating its intended behavior. |
+
+
+## Metric Properties
+
+<ResponseField name="Name" type="Text" required>
+  The name of the metric. **Example**: "Factual Accuracy"
+</ResponseField>
+
+<ResponseField name="Description" type="Text" optional>
+  A brief description of what the metric evaluates.
+</ResponseField>
+
+<ResponseField name="Documentation URL" type="URL" optional>
+  A URL pointing to more detailed documentation about the metric.
+</ResponseField>
+
+<ResponseField name="Legacy At" type="Timestamp" optional>
+  A timestamp indicating when the metric was marked as legacy or deprecated. This field will be `null` for active metrics.
+</ResponseField>
+
+<ResponseField name="Evaluator Model" type="Text" optional>
+  The name of the model used to evaluate the metric. This model will be used to assess the quality of the outputs based on the metric's criteria. **Example**: "GPT-4.1".
+  <Note>
+    It does not apply to deterministic metrics since it does not require a model for evaluation.
+  </Note>
+</ResponseField>
+
+<ResponseField name="Tags" type="Text List" optional>
+  The tags for the metric so it can be easily identified and categorized. **Example**: ["RAG", "Conversational"]
+</ResponseField>
+
+<ResponseField name="Test Type" type="Enum" required>
+  The type of test this metric is designed for. This indicates the evaluation 
+  context where the metric should be used.
+  
+  Possible values:
+  - `QUALITY` - For quality testing and accuracy evaluations
+  - `RED_TEAMING` - For security and safety testing
+  - `SCENARIOS` - For conversational and multi-turn evaluations
+</ResponseField>
+
+<ResponseField name="Validation method" type="Enum" required>
+  The method used to evaluate the metric. This can be one of three options:
+
+  <Tabs>
+    <Tab title="Full Prompt">
+      This method, formerly known as "LLM as a Judge," gives you maximum control. You provide a complete judge prompt template with placeholders (e.g., `{input}`, `{actual_output}`). Galtea will populate the template and use an LLM to evaluate the output based on your exact instructions.
+    </Tab>
+    <Tab title="Partial Prompt">
+      This method simplifies prompt creation. You provide the core evaluation logic (your criteria and rubric) in the `judge_prompt`. Then, you select the necessary data (like `input`, `context`, etc.) from the **Evaluation Parameters** list. Galtea dynamically constructs the final prompt by prepending the selected data to the content of your `judge_prompt`, ensuring a consistent structure for the evaluator model.
+    </Tab>
+    <Tab title="Self Hosted">
+      This method is for deterministic metrics that you score locally. No evaluation prompt is sent to Galtea. Instead, your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform for tracking and analysis. You can provide the score in two ways via the SDK:
+
+      - **Pre-calculated score**: Pass a `float` value directly in the `score` field of a `MetricInput` dictionary. This is the simplest method.  
+        Example: `{'name': 'my-custom-metric', 'score': 0.85}`
+
+      - **Dynamic score calculation**: Use the SDK's `CustomScoreEvaluationMetric` class to encapsulate your scoring logic, which will be executed at runtime.  
+        Example: `{'score': MyCustomMetric(name='my-custom-metric')}`
+    </Tab>
+  </Tabs>
+</ResponseField>
+
+<ResponseField name="Evaluation Parameters" type="List[Enum]" required>
+  <Info>
+    This must not be provided if the validation method is set to "Self Hosted".
+  </Info>
+  A list of relevant parameters for this metric's evaluation criteria or steps. These parameters should be explicitly mentioned in your evaluation criteria or steps to ensure they're taken into account during assessment.
+  <table>
+    <thead className='text-left'>
+      <tr>
+        <th>Parameter</th>
+        <th>Description</th>
+        <th>Availability</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>**input**</td>
+        <td>The prompt or query sent to the model.</td>
+        <td>Quality Testing, Red Teaming, and User Scenarios (Partial Prompt only)</td>
+      </tr>
+      <tr>
+        <td>**actual_output**</td>
+        <td>The actual output generated by the model.</td>
+        <td>Quality Testing, Red Teaming, and User Scenarios (Partial Prompt only)</td>
+      </tr>
+      <tr>
+        <td>**expected_output**</td>
+        <td>The ideal answer for the given input.</td>
+        <td>Quality Testing and Red Teaming</td>
+      </tr>
+      <tr>
+        <td>**context**</td>
+        <td>Additional background information provided to the model alongside the input.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**retrieval_context**</td>
+        <td>The context retrieved by your RAG system before sending the user query to your LLM.</td>
+        <td>Quality Testing, Red Teaming, and User Scenarios (Partial Prompt only)</td>
+      </tr>
+      <tr>
+        <td>**traces**</td>
+        <td>Execution traces from the agent, including tool calls, LLM invocations, and other internal operations.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**expected_tools**</td>
+        <td>List of tools expected to be used by the agent to accomplish the task.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**tools_used**</td>
+        <td>List of tools actually used by the agent during execution (automatically inferred from traces).</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**product_description**</td>
+        <td>The description of the product.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**product_capabilities**</td>
+        <td>The capabilities of the product.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**product_inabilities**</td>
+        <td>The product's known inabilities or restrictions.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**product_security_boundaries**</td>
+        <td>The security boundaries of the product.</td>
+        <td>All metrics</td>
+      </tr>
+      <tr>
+        <td>**user_persona**</td>
+        <td>Information about the user interacting with the agent.</td>
+        <td>Scenarios tests</td>
+      </tr>
+      <tr>
+        <td>**goal**</td>
+        <td>The user's objective in the conversation.</td>
+        <td>Scenarios tests</td>
+      </tr>
+      <tr>
+        <td>**scenario**</td>
+        <td>The context or situation for the conversation.</td>
+        <td>Scenarios tests</td>
+      </tr>
+      <tr>
+        <td>**stopping_criterias**</td>
+        <td>List of criteria that define when a conversation should end.</td>
+        <td>Scenarios tests</td>
+      </tr>
+      <tr>
+        <td>**conversation_turns**</td>
+        <td>All turns in a conversation, including user and assistant messages.</td>
+        <td>User Scenarios tests (Full Prompt only)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <Warning>
+    To ensure accurate evaluation results, only select parameters in the `Evaluation Parameters` list that you need for your evaluation. For `Partial Prompt`, these parameters will be automatically prepended to your `judge_prompt`. For `Full Prompt`, ensure you have corresponding placeholders (e.g., `{input}`) for each selected parameter.
+  </Warning>
+</ResponseField>
+
+## Creating Custom Metrics via Partial Prompt (LLM)
+
+<Note title="Our Evaluation Model">
+  The non-deterministic metrics, powered by Large Language Models that act as Judges, utilize models that have demonstrated the best performance in our internal benchmarks and testing. We are committed to continuously evolving and improving these evaluator models to ensure the highest quality assessments over time.
+</Note>
+
+Custom Judge metrics use custom judge prompts to evaluate LLM outputs based on your specific requirements. The Partial Prompt method simplifies metric creation by focusing on the core evaluation logic.
+
+### How Partial Prompt (LLM) Work
+
+Partial Prompt (LLM) is a simplified approach where you provide only the core **evaluation criteria** and **scoring rubrics**. Unlike Full Prompt where you write the complete evaluation template with placeholders like `{input}` and `{actual_output}`, Partial Prompt lets Galtea automatically construct the final prompt by combining your criteria with the selected evaluation parameters.
+
+**The process:**
+1. You write the evaluation criteria (what to check for)
+2. You define the scoring rubrics (how to score)
+3. You select which evaluation parameters to include from the list below
+4. Galtea automatically constructs the complete evaluation prompt
+
+### Evaluation Parameters
+
+When creating a Partial Prompt metric, you select which of these parameters are relevant for your evaluation:
+
+- `input` - The original user input or prompt
+- `actual_output` - The response generated by your model
+- `expected_output` - The ideal or reference response
+- `context` - Additional background information
+- `retrieval_context` - RAG-retrieved context
+- `traces` - Execution traces from the agent
+- `expected_tools` - List of tools expected to be used by the agent
+- `tools_used` - List of tools actually used by the agent (inferred from traces)
+- `product_description` - Your product's description
+- `product_capabilities` - What your product can do
+- `product_inabilities` - What your product cannot or should not do
+- `product_security_boundaries` - Security restrictions
+- `user_persona` - Information about the user interacting with the agent
+- `goal` - The user's goal
+- `scenario` - The scenario in which the user is operating
+- `stopping_criterias` - List of criteria that define when the conversation should end
+
+### Example Judge Prompt
+
+Here's an example of what you provide for a Partial Prompt metric:
+
+```python
+judge_prompt = """
+**Evaluation Criteria:**
+Check if the ACTUAL_OUTPUT is good by comparing it to what was expected. Focus on:
+1. Factual accuracy and correctness
+2. Completeness of the ACTUAL_OUTPUT, regarding the user INPUT
+3. Appropriate use of provided CONTEXT information to answer the user INPUT
+4. Overall helpfulness and relevance to the user INPUT
+
+**Rubric:**
+Score 1 (Good): The ACTUAL_OUTPUT is accurate, complete, uses information properly, and truly helps the user.
+Score 0 (Bad): The ACTUAL_OUTPUT has major errors, missing parts, ignores important info, or doesn't help the user.
+"""
+```
+
+## Creating Custom Metrics via Full Prompt (LLM)
+
+<Note title="Our Evaluation Model">
+  The non-deterministic metrics, powered by Large Language Models that act as Judges, utilize models that have demonstrated the best performance in our internal benchmarks and testing. We are committed to continuously evolving and improving these evaluator models to ensure the highest quality assessments over time.
+</Note>
+
+Custom Judge metrics use custom judge prompts to evaluate LLM outputs based on your specific requirements. The primary way to create these metrics is by providing a `judge_prompt` that defines the evaluation logic.
+
+### How Full Prompt (LLM) Work
+
+Full Prompt (LLM) are templates that tell the evaluator model how to assess your outputs with the highest level of customization possible. You can include placeholders for various parameters that will be automatically filled in during evaluation:
+
+- `{input}` - The original user input or prompt
+- `{actual_output}` - The response generated by your model
+- `{expected_output}` - The ideal or reference response
+- `{context}` - Additional background information
+- `{retrieval_context}` - RAG-retrieved context
+- `{traces}` - Execution traces from the agent
+- `{expected_tools}` - List of tools expected to be used by the agent
+- `{tools_used}` - List of tools actually used by the agent (inferred from traces)
+- `{product_description}` - Your product's description
+- `{product_capabilities}` - What your product can do
+- `{product_inabilities}` - What your product cannot or should not do
+- `{product_security_boundaries}` - Security restrictions
+- `{user_persona}` - Information about the user interacting with the agent
+- `{goal}` - The user's goal
+- `{scenario}` - The scenario in which the user is operating
+- `{stopping_criterias}` - List of criteria that define when the conversation should end
+- `{conversation_turns}` - All turns in the conversation
+
+### Evaluation Process
+
+**Two-step Galtea judge process:**
+1. **Assessment**: The evaluator model analyzes the inputs according to your judge prompt
+2. **Score Computation**: The model assigns a score based on the given scale of the rubrics, which is then normalized to **0–1** via token-probability weighting
+
+### Example Judge Prompt
+
+```python
+
+judge_prompt = """
+You are an expert evaluator. Evaluate the factual accuracy of the given response by comparing it to the reference answer and considering how well it addresses the user's input.
+
+**User Input:** {input}
+**Reference Answer:** {expected_output}
+**Response to Evaluate:** {actual_output}
+
+Scoring Guidelines:
+- Score 0: The response contains factual errors, omits essential information needed for the input, or includes unsupported content.
+- Score 0.5: The response is partially accurate. It is generally relevant but includes minor inaccuracies, missing key details, or some unsupported claims.
+- Score 1: The response fully aligns with the reference answer with no errors, omissions, or unsupported additions.
+"""
+```
+
+<Info>
+When designing judge prompts, be specific about your scoring criteria and reference the evaluation parameters explicitly. This ensures consistent and reliable evaluations.
+</Info>
+
+### Example Judge Prompt with `conversation_turns`
+
+When evaluating a `SCENARIOS` test, you can use the `{conversation_turns}` placeholder to analyze the entire dialogue. The placeholder will be replaced with a formatted string representing the conversation.
+
+**Example Prompt:**
+```python
+
+judge_prompt = """
+Evaluate the following conversation for consistency. The agent should not contradict itself across the conversation.
+
+**Conversation History:**
+{conversation_turns}
+
+**Evaluation Criteria:**
+- Does the agent's final response contradict any of its previous statements?
+- Are the agent's responses logically consistent throughout the conversation?
+
+**Scoring Guidelines:**
+- Score 1: The agent is fully consistent with no contradictions across all turns.
+- Score 0.5: The agent has minor inconsistencies that don't significantly impact the conversation quality.
+- Score 0: The agent clearly contradicts itself or provides conflicting information.
+"""
+```
+
+**Formatted `conversation_turns`:**
+
+When the prompt is sent for evaluation, the `{conversation_turns}` placeholder will be replaced with a formatted string like this:
+```text
+user: Hello, what can you do?
+assistant: I can help with your queries and provide information.
+user: What's your return policy?
+assistant: Returns are accepted within 30 days of purchase.
+user: Can I return items after a month?
+assistant: No, our return window is 30 days.
+```
+
+<Info>
+The `conversation_turns` parameter is only available for `SCENARIOS` tests and can only be used with the **Full Prompt** validation method. It provides the complete conversation history, allowing you to evaluate contextual consistency, knowledge retention, and other conversational qualities.
+</Info>
+
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage metrics programmatically.
+
+<SDKMetricsServiceCard />
+
+## Related Concepts
+
+<CardGroup cols={1}>
+  <EvaluationCard />
+</CardGroup>

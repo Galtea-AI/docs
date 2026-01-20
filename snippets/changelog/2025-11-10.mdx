@@ -1,0 +1,27 @@
+<Update label="2025-11-10" description="Social Logins, Metric Versioning, and Test Generation Improvements">
+## Flexible Sign-In with Google, GitHub, and GitLab
+
+You can now sign in to Galtea using your Google, GitHub, or GitLab accounts! This makes accessing your workspace faster and more secure, providing a seamless single sign-on (SSO) experience alongside our traditional email and password login.
+
+<Frame>
+  <img src="/images/changelog/2025-11-10_social-logins.png" alt="New social login options for Google, GitHub, and GitLab" />
+</Frame>
+
+## Simplified Metric Versioning with "Legacy" Tag
+
+We've introduced a new way to handle updated [Metrics](/concepts/metric). Galtea metrics might be marked as "Legacy," allowing us to improve them over time with the same name. This approach simplifies versioning by removing the need to embed version numbers in metric names, ensuring that your historical evaluations remain linked to the correct metric version.
+
+## Test Generation Transparency and Enhancements
+
+We're bringing more transparency and efficiency to our test generation process:
+
+- **See What's Under the Hood:** The models used to generate a [Test](/concepts/product/test) are now listed in the test's details section, providing clearer insight into how your test cases were created.
+- **Faster Test Generation:** We've significantly sped up the processing of multiple files within ZIP archives when generating tests from a knowledge base.
+- **Smarter Test Case Handling:** The engine for generating [Quality Tests](/concepts/product/test/quality-tests) now handles the `max_test_cases` parameter more effectively.
+
+## Fixes & Improvements
+
+- Fixed a bug where file names from ZIP archives were not displayed correctly in the UI.
+- Resolved an issue that prevented the processing of ZIP files containing two files with the same name (e.g., `folder1/file.txt` and `folder2/file.txt`).
+
+</Update>

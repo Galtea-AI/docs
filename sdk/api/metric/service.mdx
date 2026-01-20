@@ -1,0 +1,55 @@
+---
+title: 'Metrics Service'
+sidebarTitle: "Service"
+description: "Metrics Service API methods in the Galtea SDK"
+---
+
+import MetricCard from '/snippets/cards/metric-card.mdx';
+
+The Metrics Service in the Galtea SDK allows you to manage [metrics](/concepts/metric) for evaluating your products.
+This Service is exposed by the `galtea.metrics` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a metric:
+```python
+metric = galtea.metrics.create(
+    name=metric_name,
+    test_type="QUALITY",
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Evaluate if the actual_output is polite.",
+    evaluation_params=["actual_output"],
+    description="Checks politeness",
+)
+```
+
+List all metrics:
+```python
+metrics = galtea.metrics.list(limit=20)
+```
+
+Get a metric by name:
+```python
+metric = galtea.metrics.get_by_name(name=metric_name)
+```
+
+## Service Methods
+- [Create Metric](/sdk/api/metric/create)
+- [Listing Metrics](/sdk/api/metric/list)
+- [Retrieving Metric](/sdk/api/metric/get)
+- [Retrieving Metric By Name](/sdk/api/metric/get-by-name)
+- [Deleting Metric](/sdk/api/metric/delete)
+
+## Related Concepts
+
+<MetricCard />

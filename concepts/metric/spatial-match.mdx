@@ -1,0 +1,55 @@
+---
+title: "Spatial Match"
+description: "Performs a binary evaluation of the spatial alignment between a predicted bounding box and one or more reference boxes using the best Intersection over Union (IoU) score. Returns a pass/fail signal based on a threshold, making it ideal for layout-sensitive validation tasks."
+---
+
+The Spatial Match metric is part of the [Deterministic Metric](/concepts/metric) options in Galtea. It determines whether a predicted bounding box sufficiently overlaps with any of the reference boxes by computing the Intersection over Union ([IOU](/concepts/metric/iou)) and applying a threshold. This binary variant of the [IOU](/concepts/metric/iou) metric is particularly useful when an exact spatial match is not required, but a minimum quality of alignment must be enforced.
+
+---
+## Evaluation Parameters
+
+To compute the spatial\_match metric, the following parameters must be provided:
+
+- **`actual_output`**: A single predicted bounding box in the format.
+- **`expected_output`**: A list of lists of ground truth boxes, each also in the format.
+
+---
+## How Is It Calculated?
+
+1. The predicted box is compared against each reference box.
+
+2. The **IoU** is calculated for each pair:
+
+   $$
+   \text{IoU} = \frac{\text{Area of Intersection}}{\text{Area of Union}}
+   $$
+
+3. The **highest IoU score** among all comparisons is selected as the final score.
+
+4. If this score is greater than or equal to a predefined threshold (0.5), the metric returns 100% (pass). Otherwise, it returns 0% (fail).
+
+This approach accommodates situations where reference answers span multiple boxes (e.g., one box per word), and only the best alignment needs to be evaluated.
+
+---
+## Interpretation of Scores
+
+- **1.0** – Strong spatial match; high alignment.
+- **0.0** – Low spatial match; poor alignment.
+
+---
+
+## Suggested Test Case Types
+
+Use Spatial Match when evaluating:
+
+- **Document layout tasks** requiring accurate box alignment.
+- **OCR or form field extraction** where exact box positioning matters.
+- **Visual QA and multi-box alignment tasks** that benefit from flexible but spatially aware comparisons.
+
+---
+## Related Topics
+
+- [Text Match](/concepts/metric/text-match)
+- [IOU](/concepts/metric/iou)
+- [Text Similarity](/concepts/metric/text-similarity)
+

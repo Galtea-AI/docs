@@ -1,0 +1,54 @@
+---
+title: "ROUGE"
+description: "Evaluates automatic summarization by measuring the longest common subsequence (LCS) that preserves the word order between candidate and reference summaries." 
+---
+
+The ROUGE (Recall-Oriented Understudy for Gisting Evaluation) metric is one of the [Deterministic Metric](/concepts/metric) Galtea exposes to evaluate how well a generated summary captures the content of a reference summary. It is primarily used for summarization tasks and other scenarios where recall is more important than exact lexical match.
+
+---
+## Evaluation Parameters
+
+To compute the `rouge` metric, the following parameters are required:
+
+- **`actual_output`**: The model’s generated summary.
+- **`expected_output`**: The reference (or gold) summary to compare against.
+
+---
+## How Is It Calculated?
+
+This implementation uses **ROUGE-L**, which focuses on the **Longest Common Subsequence (LCS)** between the candidate and reference:
+
+1. **Longest Common Subsequence**  
+   Identifies the longest sequence of words that appears in both candidate and reference (not necessarily contiguous, but in the same order).
+
+2. **Precision & Recall**  
+   - **Precision (P)** = LCS length / candidate length  
+   - **Recall (R)** = LCS length / reference length
+
+3. **F1 Score**  
+   Combines precision and recall:  
+   $$
+   F1 = 2 \cdot \frac{P \times R}{R+P} 
+   $$
+
+
+ROUGE-L returns a score between **0 and 1**:
+
+- **≥ 0.5** – Strong overlap with the reference summary.
+- **0.3 – 0.5** – Moderate overlap; acceptable for abstractive summarization.
+- **< 0.3** – Weak overlap; likely missing key content.
+
+---
+## Suggested Test Case Types
+
+Use ROUGE when evaluating:
+
+- **Abstractive or extractive summaries**.
+- **Headline generation** where recall of important tokens matters.
+- **Content coverage tests** for long text generation.
+
+---
+## Related Topics
+
+- [BLEU](/concepts/metric/bleu)
+- [METEOR](/concepts/metric/meteor)

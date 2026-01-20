@@ -1,0 +1,18 @@
+---
+title: 'Retrieving Test Case'
+sidebarTitle: "Get"
+description: "Retrieve a specific test case by its ID."
+---
+
+## Returns
+Returns a [TestCase](/concepts/product/test/case) object for the given test case ID.
+
+## Example
+```python
+test_case = galtea.test_cases.get(test_case_id=test_case_id)
+```
+
+## Parameters
+<ResponseField name="test_case_id" type="string" required>
+  The ID of the test case you want to retrieve.
+</ResponseField>

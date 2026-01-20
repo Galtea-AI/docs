@@ -1,0 +1,193 @@
+---
+title: "Endpoint Connection"
+sidebarTitle: "Endpoint Connection"
+description: "A reusable connection to an external endpoint for product evaluations"
+---
+
+## What is an Endpoint Connection?
+
+An Endpoint Connection in Galtea represents a reusable configuration for connecting to external API endpoints. Endpoint Connections are associated with a [product](/concepts/product) and allow you to define how Galtea should communicate with your AI system during evaluations.
+
+<Note>
+  Endpoint Connections are only available through the [Galtea Dashboard](https://platform.galtea.ai/). They are not currently accessible via the SDK.
+</Note>
+
+## Use Cases
+
+Endpoint Connections are useful when you want to:
+
+- **Automate evaluations** - Configure how Galtea calls your AI endpoint for automated testing
+- **Standardize API calls** - Define reusable endpoint configurations with consistent authentication and request formatting
+- **Manage multiple environments** - Create separate connections for development, staging, and production endpoints
+
+## Creating an Endpoint Connection
+
+To create an Endpoint Connection:
+
+1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
+2. Go to the "Endpoint Connections" section
+3. Click "New Endpoint Connection"
+4. Configure the connection properties as described below
+
+## Endpoint Connection Properties
+
+<ResponseField name="Name" type="Text" required>
+  A unique name for the endpoint connection within the product. **Example**: "Production Chat API" or "Staging Summarizer"
+</ResponseField>
+
+<ResponseField name="URL" type="Text" required>
+  The full URL of the endpoint to connect to. Must be a valid HTTP or HTTPS URL. **Example**: "https://api.company.com/v1/chat"
+</ResponseField>
+
+<ResponseField name="HTTP Method" type="Enum" required>
+  The HTTP method to use when calling the endpoint. Supported values:
+  - `GET`
+  - `POST`
+  - `PUT`
+  - `PATCH`
+  - `DELETE`
+  
+  Default: `POST`
+</ResponseField>
+
+<ResponseField name="Auth Type" type="Enum" required>
+  The authentication method to use. Supported values:
+  - `NONE` - No authentication
+  - `BEARER` - Bearer token authentication
+  - `API_KEY` - API key authentication
+  - `BASIC` - Basic HTTP authentication
+  - `OAUTH2` - OAuth 2.0 authentication
+  
+  Default: `BEARER`
+</ResponseField>
+
+<ResponseField name="Auth Token" type="Text">
+  The authentication token or credentials, depending on the selected auth type. This value is securely stored.
+</ResponseField>
+
+<ResponseField name="Headers" type="JSON">
+  Optional custom headers to include with each request. **Example**:
+  ```json
+  {
+    "Content-Type": "application/json",
+    "X-Custom-Header": "value"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="Input Template" type="String (Jinja2)" required>
+  A Jinja2 template string defining how to format the request body. This template is rendered before sending the request to your endpoint.
+
+  **Available placeholders:**
+  - `{{ input }}` - The test case input (required)
+  - `{{ context }}` - The test case context
+  - `{{ id }}` - The test case ID
+  - `{{ session.id }}` - The session ID
+  - `{{ test.id }}` - The test ID
+  - `{% for turn in pastTurns %}...{% endfor %}` - Loop through conversation history
+    - `{{ turn.input }}` - Previous user input
+    - `{{ turn.output }}` - Previous assistant response
+
+  **Example (OpenAI-compatible format)**:
+  ```jinja2
+  {
+    "model": "gpt-4",
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {% for turn in pastTurns %}
+      {"role": "user", "content": "{{ turn.input }}"},
+      {"role": "assistant", "content": "{{ turn.output }}"},
+      {% endfor %}
+      {"role": "user", "content": "{{ input }}"}
+    ]
+  }
+  ```
+
+  **Example (Custom format)**:
+  ```jinja2
+  {
+    "data": {
+      "names": ["query", "contexto"],
+      "ndarray": [
+        [
+          "{{ input }}",
+          [
+            {% for turn in pastTurns %}
+            "{{ turn.input }}",
+            "{{ turn.output }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ]
+        ]
+      ]
+    }
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="Output Mapping" type="JSON" required>
+  A JSON object defining how to extract values from the API response using [JSONPath](https://goessner.net/articles/JsonPath/) expressions.
+
+  **Required keys:**
+  - `output` - JSONPath expression to extract the main response (required)
+
+  **Optional keys:**
+  - `retrieval_context` - JSONPath expression to extract retrieval context
+  - Any additional keys for extra properties to store in session metadata
+
+  **JSONPath Syntax Reference:**
+  | Expression | Description |
+  |------------|-------------|
+  | `$` | Root object |
+  | `.` | Child operator |
+  | `[]` | Array index or child operator |
+  | `[*]` | Wildcard (all elements) |
+  | `[0]` | First array element |
+  | `[-1]` | Last array element |
+
+  **Example**:
+  ```json
+  {
+    "output": "$.choices[0].message.content",
+    "retrieval_context": "$.choices[0].retrieval_context",
+    "session_id": "$.metadata.session_id"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="Timeout" type="Number">
+  Request timeout in seconds. Must be between 1 and 300 seconds. Default: 60 seconds.
+</ResponseField>
+
+<ResponseField name="Rate Limit" type="Number">
+  Optional rate limit for requests per minute. Use this to avoid exceeding your API's rate limits.
+</ResponseField>
+
+<ResponseField name="Retry Config" type="JSON">
+  Optional retry configuration for failed requests. **Example**:
+  ```json
+  {
+    "maxRetries": 3,
+    "backoffMs": 1000
+  }
+  ```
+</ResponseField>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use descriptive names">
+    Choose names that clearly identify the endpoint's purpose and environment, such as "Production Chat API" or "Staging Document Analyzer".
+  </Accordion>
+  
+  <Accordion title="Configure appropriate timeouts">
+    Set timeouts based on your endpoint's expected response time. For complex AI operations, you may need longer timeouts (60-120 seconds).
+  </Accordion>
+  
+  <Accordion title="Use retry configuration">
+    Configure retries for endpoints that may experience transient failures. Start with 2-3 retries with exponential backoff.
+  </Accordion>
+  
+  <Accordion title="Secure your credentials">
+    Never share your auth tokens. Galtea securely stores and encrypts all authentication credentials.
+  </Accordion>
+</AccordionGroup>

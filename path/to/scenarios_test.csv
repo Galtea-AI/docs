@@ -1,0 +1,4 @@
+goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario,strategy
+"Book a one-way flight from SFO to JFK for next Tuesday","A busy professional who is direct and values efficiency","I need to book a flight","The user has confirmed the flight booking|The chatbot indicates it cannot fulfill the request",10,"Flight",written
+"Find the cheapest round-trip flight to Europe in summer","A budget-conscious student who asks many questions","Hi, I'm looking for cheap flights to Europe","Flight is booked|User decides not to book|Maximum budget is exceeded",15,"Budget",spoken
+"Change an existing flight reservation","A frustrated customer whose plans have changed","I need to change my flight immediately","Reservation is successfully modified|Customer is transferred to agent",8,"Flight",written

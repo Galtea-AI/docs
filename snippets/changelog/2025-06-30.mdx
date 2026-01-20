@@ -1,0 +1,46 @@
+<Update label="2025-06-30" description="New Metric, More Red Teaming Strategies and Better Usability">
+## Introducing the Factual Accuracy Metric
+
+We've added a new **Factual Accuracy** metric to our evaluation toolkit! This [non-deterministic metric](/concepts/metric/factual-accuracy) measures whether the information in your model's output is factually correct when compared to a trusted reference answer. It's particularly valuable for RAG and question answering systems where accuracy is paramount.
+
+The metric uses an LLM-as-a-judge approach to compare key facts between your model's output and the expected answer, helping you catch hallucinations and ensure your AI provides reliable information to users. [Read the full documentation here](/concepts/metric/factual-accuracy).
+
+## Enhanced Red Teaming with New Attack Strategies
+
+Our red teaming capabilities just got more sophisticated! We've added two powerful new [attack strategies](/concepts/product/test/red-teaming-strategies):
+
+- **Biblical Strategy**: Transforms adversarial prompts into biblical/ancient scripture style using poetic and symbolic language to disguise malicious intent while preserving meaning.
+- **Math Prompt Strategy**: Encodes harmful requests into formal mathematical notation using group theory concepts to obscure the intent from standard text analysis.
+
+These strategies join our existing arsenal to help you test your AI's defenses against increasingly creative attack vectors that real-world adversaries might use. [See all available red teaming strategies](/concepts/product/test/red-teaming-strategies).
+
+## Smarter Red Teaming Test Generation
+
+We've significantly improved how [red teaming tests](/concepts/product/test/red-teaming-tests) are generated. Our system now takes even more factors into account when creating adversarial test cases:
+
+- **Product-Aware Generation**: Tests are now more precisely tailored to your specific product's strengths, weaknesses, and operational boundaries.
+- **Context-Sensitive Attacks**: The generation process better understands your product's intended use cases to craft more relevant and challenging scenarios.
+- **Enhanced Threat Modeling**: Our algorithms now consider a broader range of factors when determining the most effective attack vectors for your particular AI system.
+
+This means your [red teaming tests](/concepts/product/test/red-teaming-tests) will be more effective at uncovering real vulnerabilities and edge cases specific to your product.
+
+## Better Metric Source Visibility and Management
+
+Understanding where your metrics come from is now easier than ever! We've enhanced the platform to provide clearer visibility into metric sources:
+
+- **Source Classification**: All metrics are now clearly labeled with their source - whether they're from established frameworks, custom Galtea implementations, or other origins.
+- **Enhanced Filtering**: You can now filter metrics by their source to quickly find the evaluation criteria that best fit your needs.
+- **Improved Descriptions**: Metric descriptions now include more detailed information about their origins and implementation, with links to relevant documentation.
+
+<Frame>
+    <img src="/images/changelog/2025-06-30_metrics-source-table.png" alt="Enhanced Metrics Table with Source Visibility" />
+</Frame>
+
+The three main metric sources you'll see are:
+- **Galtea**: Custom metrics designed specifically for your needs, like our new Factual Accuracy metric
+- **G-Eval**: Framework-based metrics that use evaluation criteria or steps for assessment
+- **Established Frameworks**: Metrics adapted from proven evaluation libraries and methodologies
+
+This transparency helps you make more informed decisions about which metrics to use for your specific evaluation needs.
+
+</Update>

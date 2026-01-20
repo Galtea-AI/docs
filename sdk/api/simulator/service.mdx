@@ -1,0 +1,45 @@
+---
+title: 'Simulator Service'
+sidebarTitle: "Service"
+description: "Simulator Service API methods in the Galtea SDK for running multi-turn conversation simulations."
+---
+
+import ConversationSimulatorCard from '/snippets/cards/conversation-simulator-card.mdx';
+
+The [Conversation Simulator](/concepts/product/test/case/conversation-simulator) is a feature for testing conversational AI systems. The `SimulatorService` in the Galtea SDK allows you to run these simulations programmatically. This service is exposed through the `galtea.simulator` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Simulate a conversation with your agent:
+```python
+class MyCustomAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        # Implement your agent logic here, using input_data content
+        return AgentResponse(
+            content=f"Generated response for {input_data.last_user_message_str()}"
+        )
+
+
+simulation_result = galtea.simulator.simulate(
+    session_id=scenarios_session.id,
+    agent=MyCustomAgent(),
+    max_turns=3,
+    log_inference_results=True,
+)
+```
+
+## Service Methods
+- [Simulate Conversation](/sdk/api/simulator/simulate)
+
+## Related Concepts
+
+<ConversationSimulatorCard />

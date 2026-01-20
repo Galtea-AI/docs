@@ -1,0 +1,108 @@
+---
+title: "Create Metric"
+sidebarTitle: "Create"
+description: "Create a metric for evaluating your products."
+---
+
+## Returns
+
+Returns a [Metric](/concepts/metric) object for the given parameters, or `None` if an error occurs.
+
+## Examples
+
+<Tabs>
+  <Tab title="Full Prompt (LLM-as-a-Judge)">
+```python
+metric = galtea.metrics.create(
+    name=metric_name,
+    test_type="QUALITY",
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Evaluate if the actual_output is polite.",
+    evaluation_params=["actual_output"],
+    description="Checks politeness",
+)
+```
+  </Tab>
+  <Tab title="Partial Prompt (LLM-as-a-Judge)">
+```python
+metric = galtea.metrics.create(
+    name="accuracy_v1_partial_" + run_identifier,
+    test_type="QUALITY",
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Determine whether the actual output is equivalent to the expected output",
+    evaluation_params=["actual_output", "expected_output"],
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric.",
+)
+```
+  </Tab>
+  <Tab title="Self Hosted">
+```python
+metric = galtea.metrics.create(
+    name="accuracy_v1_self_" + run_identifier,
+    test_type="QUALITY",
+    source="self_hosted",
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric calculated by our custom score function.",
+)
+```
+  </Tab>
+</Tabs>
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  The name of the metric.
+</ResponseField>
+<ResponseField name="test_type" type="string" required>
+  The type of test this metric is designed for.
+  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+</ResponseField>
+<ResponseField name="evaluator_model_name" type="string" optional>
+  The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.
+  
+  **Available models:**
+  - `"Claude-Sonnet-4.0"`
+  - `"Claude-Sonnet-3.7"`
+  - `"GPT-4.1-mini"`
+  - `"Gemini-2.5-Flash-Lite"`
+  - `"Gemini-2.5-Flash"`
+  - `"Gemini-2.0-flash"`
+  - `"GPT-4o"`
+  - `"GPT-4.1"`
+
+  <Note>
+    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation.
+  </Note>
+</ResponseField>
+<ResponseField name="judge_prompt" type="string" optional>
+  A custom prompt that defines the evaluation logic for an LLM-as-a-judge metric. You can use placeholders like `{input}`, `{actual_output}`, etc., which will be populated at evaluation time. If you provide a `judge_prompt`, the metric will be an LLM-based evaluation. If omitted, the metric is considered a deterministic "Custom Score" metric.
+</ResponseField>
+<ResponseField name="source" type="string" optional>
+  The source of the metric. Possible values are: `full_prompt`, `partial_prompt` or `self_hosted`.
+  - [Full Prompt (LLM-as-a-Judge)](/concepts/metric#creating-custom-metrics-via-full-prompt-llm): Gives you maximum control by providing a complete judge prompt template with placeholders (e.g., `{input}`, `{actual_output}`). Galtea populates the template and uses an LLM to evaluate based on your exact instructions.
+  - [Partial Prompt (LLM-as-a-Judge)](/concepts/metric#creating-custom-metrics-via-partial-prompt-llm): Simplifies prompt creation by providing only the core evaluation criteria or rubric. Galtea dynamically constructs the final prompt by prepending selected evaluation parameters to your criteria.
+  - [Self Hosted](/concepts/metric#self-hosted): For deterministic metrics scored locally using the SDK's `CustomScoreEvaluationMetric`. Your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform.
+  
+  <Note>
+    This parameter is optional for now but may be required in the future to avoid confusion.
+  </Note>
+</ResponseField>
+<ResponseField name="evaluation_params" type="list[string]" optional>
+  Evaluation parameters to be used when the metric is a Partial Prompt (LLM-as-a-Judge). These parameters will be prepended to the judge prompt to construct the final prompt.
+  To check the available evaluation parameters, see the [Evaluation Parameters](/concepts/metric#param-evaluation-parameters) section.
+
+  <Note>
+    It should not be provided if the metric is NOT a Partial Prompt (LLM-as-a-Judge).
+  </Note>
+</ResponseField>
+<ResponseField name="tags" type="list[string]" optional>
+  Tags to categorize the metric.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  A brief description of what the metric evaluates.
+</ResponseField>
+<ResponseField name="documentation_url" type="string" optional>
+  A URL pointing to more detailed documentation about the metric.
+</ResponseField>

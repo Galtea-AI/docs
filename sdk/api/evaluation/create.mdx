@@ -1,0 +1,130 @@
+---
+title: 'Create Evaluations'
+sidebarTitle: "Create"
+description: "Create evaluations for all inference results within a session using specified metrics."
+---
+
+This method evaluates an entire conversation stored in a [Session](/concepts/product/version/session) by creating evaluations for each of its [Inference Results](/concepts/product/version/session/inference-result).
+
+## Returns
+Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric and each inference result in the session.
+
+
+## Usage
+This method evaluates all inference results within a session using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
+
+### Development Testing
+
+**For non self-hosted metrics**
+```python
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    metrics=[{"name": "Role Adherence"}, {"name": "Conversation Relevancy"}],
+)
+```
+
+**If you pre-computed the score**
+```python
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    metrics=[{"name": self_hosted_metric.name, "score": 0.85}],
+)
+```
+
+### Production Monitoring
+In order to monitor your product in a production environment, you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag of the [Session](/concepts/product/version/session) to `True`.
+```python
+production_session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+# Create an inference result for the production session first
+production_inference_result = galtea.inference_results.create(
+    session_id=production_session.id,
+    input="Production user query",
+    output="Production response",
+)
+
+evaluations = galtea.evaluations.create(
+    session_id=production_session.id,
+    metrics=[{"name": self_hosted_metric.name, "score": 0.85}],
+)
+```
+
+### Advanced Usage
+You can also create evaluations using self-hosted metrics with dynamically calculated scores by utilizing the `CustomScoreEvaluationMetric` class, which allows for more complex evaluation scenarios.
+```python 
+# First, create a session, in this case it is a production session, so we do not need a test case
+session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+# Then, add some inference results to the session
+galtea.inference_results.create_batch(
+    session_id=session.id,
+    conversation_turns=[
+        {"role": "user", "content": "Hi"},
+        {"role": "assistant", "content": "Hello!"},
+        {"role": "user", "content": "How are you?"},
+        {"role": "assistant", "content": "I am fine, thank you."},
+    ],
+)
+
+
+# Define scoring logic as a class
+class PolitenessCheck(CustomScoreEvaluationMetric):
+    def __init__(self):
+        super().__init__(name="politeness-check")
+
+    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
+        if actual_output is None:
+            return 0.0
+        polite_words = ["please", "thank you", "you're welcome"]
+        return (
+            1.0 if any(word in actual_output.lower() for word in polite_words) else 0.0
+        )
+
+
+# Create the metric in the platform if it doesn't exist yet
+# Note: This can be done via the Dashboard too
+try:
+    metric = galtea.metrics.get_by_name(name="politeness-check")
+except Exception:
+    metric = None
+if metric is None:
+    galtea.metrics.create(
+        name="politeness-check",
+        source="self_hosted",
+        description="Checks if polite words appear in the output",
+        test_type="QUALITY",
+    )
+
+# Now, evaluate the entire session
+evaluations = galtea.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},  # You can use galtea-hosted metrics simultaneously
+        {"score": PolitenessCheck()},  # Self-hosted with dynamic scoring
+        # Note: No 'name' or 'id' in dict - it comes from PolitenessCheck(name="...")
+    ],
+)
+```
+
+<Note>
+  Both options are equally valid for self-hosted metrics. Choose based on your preference: pre-compute for simplicity, or use CustomScoreEvaluationMetric for encapsulation and reusability.
+</Note>
+
+## Parameters
+<ResponseField name="session_id" type="string" required>
+  The ID of the session containing the inference results to be evaluated.
+</ResponseField>
+<ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" required>
+  A list of metrics to use for the evaluation. 
+  
+  The `MetricInput` dictionary supports the following keys:
+  - `id` (string, optional): The ID of an existing metric
+  - `name` (string, optional): The name of the metric
+  - `score` (float | CustomScoreEvaluationMetric, optional): For self-hosted metrics only
+    - If `float`: Pre-computed score (0.0 to 1.0). Requires `id` or `name` in the dict.
+    - If `CustomScoreEvaluationMetric`: Score will be calculated dynamically. The CustomScoreEvaluationMetric instance must be initialized with `name` or `id`. Do NOT provide `id` or `name` in the dict when using this option.
+  
+  <Note>
+    For self-hosted metrics, both score options are equally valid: pre-compute as a float, or use CustomScoreEvaluationMetric for dynamic calculation. Galtea-hosted metrics automatically compute scores and should not include a `score` field.
+  </Note>
+</ResponseField>

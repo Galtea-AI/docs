@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-05-05</title>
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Poppins, Arial, sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f7fa; text-align: left; margin: 20px; padding: 20px; border: 1px solid #d1d3db; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center; margin-top: 20px">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galteaLogo.png" style="width: 100px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #333; font-size: 26px; margin-top: 30px; margin-bottom: 0px">Analytics Upgrades and Red Teaming Test Improvements</h1>
+                <a style="color: #5c5bdd; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-05-05">2025-05-05</a>
+
+                <h3 style="color: #333">Analytics Page Upgrades</h3>
+                <p style="color: #444; font-size: 16px">We're continuing to improve the Analytics page to help you extract insights faster:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Radar View for Version Comparison:</strong> Visualize performance across multiple metrics with our new radar view.</li>
+                  <li><strong>Smarter Metric Filters:</strong> Only shows metrics used in evaluations—less clutter, more focus.</li>
+                  <li><strong>Graph Tooltips:</strong> Hover to reveal truncated names inside charts.</li>
+                </ul>
+                <div style="text-align: center; margin: 10px 0">
+                  <img src="https://mintlify.s3.us-west-1.amazonaws.com/galtea/images/changelog/2025-05-05_radar-view.png" alt="Radar View" style="max-width: 100%; height: auto; border-radius: 8px" />
+                </div>
+
+                <h3 style="color: #333">SDK Safeguards</h3>
+                <p style="color: #444; font-size: 16px">We've introduced two improvements to make SDK usage more reliable:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Version Compatibility Checks:</strong> Clear errors when the SDK version is incompatible with the API.</li>
+                  <li><strong>Update Notifications:</strong> Get notified in the console when a newer SDK version is available.</li>
+                </ul>
+
+                <h3 style="color: #333">Improvements in Red Teaming Tests</h3>
+                <ul style="color: #444; font-size: 16px">
+                  <li>
+                    <strong>New "misuse" threat implemented:</strong><br />
+                    Now red teaming incorporates a new threat, misuse, which are queries that not necessarily malicious however out-of-scope for you specific product. You can now test whether your product can successfully block these queries by marking "Mitre Atlas: Ambiguous prompts" in the threat
+                    list.
+                  </li>
+                  <li>
+                    <strong>Better "data leakage" and "toxicity" tests:</strong><br />
+                    The red teaming tests incorporate better your product meta data, to generate the most adequate test cases for "data leakage" and "toxicity".
+                  </li>
+                </ul>
+
+                <h3 style="color: #333">Bug Fixes</h3>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Metric Range Fix:</strong> Default metrics now correctly show 100% as best and 0% as worst.</li>
+                  <li><strong>Test Creation with ".txt" Knowledge Base Files Fix:</strong> Due to a recent refactor, the creation of tests using knowledge base files with ".txt" extensions was not possible. This has been fixed and you can now create tests using ".txt" files again.</li>
+                </ul>
+
+                <br />
+                <p style="color: #444; font-size: 16px">We hope these upgrades make your experience better and more efficient.</p>
+                <p style="color: #444; font-size: 16px"><strong>We'd love your feedback</strong> — reply to this email or reach out via Slack/Discord.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #d1d3db" />
+
+                <h3 style="color: #333; margin-top: 40px">Coming Next</h3>
+                <p style="color: #444; font-size: 16px">Here's what we're working on next:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li>
+                    <strong>Better attack strategies for red teaming:</strong> Red teaming tests will not only generate the threats to attack the product, but also vary the attacks to break the defenses and guardrails of the product, such as converting the prompt to base64, or to math questions.
+                  </li>
+                  <li><strong>Richer tests cases for quality assessment:</strong> Quality tests will generate harder to answer questions with richer answers that can connect multiple contexts.</li>
+                  <li><strong>More Robust Permissions:</strong> A redesigned and more secure permission system is in the works.</li>
+                  <li><strong>More Filter Improvements:</strong> We're continuing to refine filters to improve your analytics workflow.</li>
+                </ul>
+
+                <p style="margin-top: 35px; color: #444; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

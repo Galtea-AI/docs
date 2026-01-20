@@ -1,0 +1,41 @@
+---
+title: 'List Traces'
+sidebarTitle: "List"
+description: "Retrieve traces for an inference result."
+---
+
+## Returns
+Returns a list of [Trace](/concepts/product/version/session/trace) objects.
+
+## Example
+
+```python
+traces = galtea.traces.list(inference_result_id=inference_result_id)
+```
+
+## Parameters
+<ResponseField name="inference_result_id" type="string | list[string]" optional>
+  Filter traces by inference result ID(s).
+</ResponseField>
+<ResponseField name="session_id" type="string | list[string]" optional>
+  Filter traces by session ID(s).
+</ResponseField>
+<ResponseField name="types" type="list[string]" optional>
+  Filter traces by type. Options: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`.
+</ResponseField>
+<ResponseField name="names" type="list[string]" optional>
+  Filter traces by name.
+</ResponseField>
+<ResponseField name="sort_by_start_time" type="string" optional>
+  Sort traces by start_time. Valid values: `asc`, `desc`.
+</ResponseField>
+<ResponseField name="offset" type="int" optional>
+  Number of traces to skip for pagination. Default: `0`.
+</ResponseField>
+<ResponseField name="limit" type="int" optional>
+  Maximum number of traces to return. Default: `1000`.
+</ResponseField>
+
+<Note>
+  At least one of `inference_result_id` or `session_id` must be provided.
+</Note>

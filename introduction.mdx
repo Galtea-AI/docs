@@ -1,0 +1,72 @@
+---
+title: Introduction
+description: "Welcome to Galtea, the platform that empowers enterprises by providing a comprehensive AI evaluation platform that improves AI reliability, reduces risks, streamlines compliance, and accelerates time to market."
+icon: "play"
+---
+
+import ProductCard from '/snippets/cards/product-card.mdx';
+import VersionCard from '/snippets/cards/version-card.mdx';
+import TestCard from '/snippets/cards/test-card.mdx';
+import SessionCard from '/snippets/cards/session-card.mdx';
+import InferenceResultCard from '/snippets/cards/inference-result-card.mdx';
+import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
+import MetricCard from '/snippets/cards/metric-card.mdx';
+import ModelCard from '/snippets/cards/model-card.mdx';
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Register" icon="user-plus" href="/registration">
+    Register your organization into Galtea's platform
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Execute your first Evaluation in less than 5 minutes
+  </Card>
+</CardGroup>
+
+## How It Works
+
+The typical workflow in Galtea follows these steps:
+
+<Steps>
+  <Step title="Create Product">Create a [Product](/concepts/product) to represent your AI functionality.</Step>
+  <Step title="Create Version">Define a new [Version](/concepts/product/version) of your product with specific parameters.</Step>
+  <Step title="Create Test">Create a [Test](/concepts/product/test) with [Test Cases](/concepts/product/test/case) to evaluate your product.</Step>
+  <Step title="Run Evaluations">Execute [Evaluations](/concepts/product/version/session/evaluation) for each test case against [sessions](/concepts/product/version/session) of your product version.</Step>
+  <Step title="Analyze Results">Review and compare the performance of different versions using the built-in analytics tools.</Step>
+  <Step title="Iterate">Develop a new version of your product and repeat the process to track improvements and regressions.</Step>
+</Steps>
+
+## Platform Access
+
+You can interact with Galtea through multiple channels:
+
+<CardGroup cols={4}>
+  <Card title="Web Platform" icon="globe" href="https://platform.galtea.ai/">
+    Manage your products and access insights via the dashboard.
+  </Card>
+  <Card title="Python SDK" icon="python" href="/sdk/introduction">
+    Seamlessly integrate our services using the Python SDK.
+  </Card>
+  <Card title="GitHub Actions" icon="github" href="/sdk/integrations/github-actions">
+    Automate your workflows by integrating with GitHub Actions.
+  </Card>
+  <Card title="REST API" icon="code">
+    Documentation is coming soon.
+  </Card>
+</CardGroup>
+
+## Core Concepts
+
+Galtea is built around several key concepts that work together to provide comprehensive evaluation of AI products:
+
+<CardGroup cols={3}>
+  <ProductCard />
+  <VersionCard />
+  <TestCard />
+  <SessionCard />
+  <InferenceResultCard />
+  <EvaluationCard />
+  <MetricCard />
+  <ModelCard />
+</CardGroup>

@@ -1,0 +1,237 @@
+---
+title: "Scenario Based Tests"
+description: "Evaluate multi-turn dialogue interactions using conversation simulation with synthetic users"
+sidebarTitle: "Overview"
+---
+
+## What are Scenarios?
+
+Scenarios in Galtea are designed to evaluate the conversational capabilities of your [product](/concepts/product) through multi-turn dialogue interactions. These tests use the [Conversation Simulator](/concepts/product/test/case/conversation-simulator) to create realistic conversations with synthetic users that have specific goals, personalities, and behaviors.
+
+Unlike [Quality Tests](/concepts/product/test/quality-tests) that focus on single-turn question-answer pairs, or [Red Teaming Tests](/concepts/product/test/red-teaming-tests) that test security vulnerabilities, Scenario based tests evaluate how well your AI product can:
+
+- Maintain context across multiple conversation turns
+- Guide users toward successful task completion
+- Handle unexpected but realistic user inputs
+- Stay in character and follow conversation guidelines
+- Manage complex dialogue flows
+
+## Creating Scenarios
+
+You can create scenarios in Galtea through two methods:
+
+<Tabs>
+  <Tab title="Scenario Generator">
+    <Steps>
+      <Step title="Define Your Product">
+        Start by defining your product in Galtea. These detailed [product properties](/concepts/product#product-properties) will be used as the foundation for generating realistic scenarios.
+      </Step>
+      <Step title="Configure the test">
+        Select *User Scenarios* as the test type and *Generated* as the test origin
+        <Info>
+          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+        </Info>
+      </Step>
+      <Step title="Generate Scenarios">
+        Galtea will automatically analyze your product definition to create tailored conversation scenarios, complete with:
+        - Realistic user personas based on your target audience
+        - Goals aligned with your product's use cases
+        - Natural conversation flows that test key features
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Upload Your Own Scenarios">
+    <Steps>
+      <Step title="Create your scenarios file">
+        Prepare a CSV file following the scenarios structure shown [below](#example-scenario-tests-and-file-format)
+      </Step>
+      <Step title="Configure the test">
+        Select "Scenarios" as the test type and "Uploaded" as the test origin
+        <Info>
+          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+        </Info>
+      </Step>
+      <Step title="Upload your scenarios file">
+        Select the file you created and upload it to Galtea
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+
+
+## Conversation Flow Categories
+
+Scenarios can cover various types of conversational interactions:
+
+<AccordionGroup>
+  <Accordion title="Task Completion">Scenarios where the synthetic user has a specific goal to accomplish, such as booking a service, making a purchase, or getting support for an issue.</Accordion>
+  <Accordion title="Information Seeking">Scenarios focused on retrieving specific information or answers, testing the AI's knowledge and ability to provide helpful responses.</Accordion>
+  <Accordion title="Customer Support">Scenarios that simulate customer service interactions, including complaints, troubleshooting, and problem resolution.</Accordion>
+  <Accordion title="Sales and Consultation">Scenarios where the user is exploring options, comparing products, or seeking advice before making decisions.</Accordion>
+  <Accordion title="Complex Multi-Step Processes">Scenarios that involve multiple stages or require gathering various pieces of information over several turns.</Accordion>
+  <Accordion title="Edge Cases and Challenges">Scenarios that test how the AI handles difficult, unclear, or unexpected user behavior while maintaining conversation quality.</Accordion>
+</AccordionGroup>
+
+## Example Scenarios and File Format
+
+Here are examples of scenario content and structure:
+
+<AccordionGroup>
+  <Accordion title="Travel Booking Scenarios">
+    <Tabs>
+      <Tab title="Table View">
+        | Goal | User Persona | Initial Prompt | Stopping Criterias | Max Iterations | Scenario |
+        |------|--------------|----------------|-------------------|----------------|----------|
+        | Book a one-way flight from SFO to JFK for next Tuesday | A busy professional who is direct and values efficiency | I need to book a flight | The user has confirmed the flight booking\|The chatbot indicates it cannot fulfill the request | 10 | Flight booking scenario |
+        | Find the cheapest round-trip flight to Europe in summer | A budget-conscious student who asks many questions | Hi, I'm looking for cheap flights to Europe | Flight is booked\|User decides not to book\|Maximum budget is exceeded | 15 | Budget travel scenario |
+        | Change an existing flight reservation | A frustrated customer whose plans have changed | I need to change my flight immediately | Reservation is successfully modified\|Customer is transferred to agent | 8 | Flight modification scenario |
+      </Tab>
+      <Tab title="Raw CSV">
+        ```csv
+        goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario
+        "Book a one-way flight from SFO to JFK for next Tuesday","A busy professional who is direct and values efficiency","I need to book a flight","The user has confirmed the flight booking|The chatbot indicates it cannot fulfill the request",10,"Flight booking scenario"
+        "Find the cheapest round-trip flight to Europe in summer","A budget-conscious student who asks many questions","Hi, I'm looking for cheap flights to Europe","Flight is booked|User decides not to book|Maximum budget is exceeded",15,"Budget travel scenario"
+        "Change an existing flight reservation","A frustrated customer whose plans have changed","I need to change my flight immediately","Reservation is successfully modified|Customer is transferred to agent",8,"Flight modification scenario"
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+
+  <Accordion title="Customer Support Scenarios">
+    <Tabs>
+      <Tab title="Table View">
+        | Goal | User Persona | Initial Prompt | Stopping Criterias | Max Iterations | Scenario |
+        |------|--------------|----------------|-------------------|----------------|----------|
+        | Get help with a defective product | An upset customer who received a broken item | My product arrived broken and I'm very disappointed | Issue is resolved&#124;Customer requests supervisor&#124;Refund is processed | 12 | Product defect resolution |
+        | Understand how to use a new feature | A curious but non-technical user | I heard about a new feature but don't know how to use it | User successfully uses the feature&#124;User gives up&#124;Technical support is escalated | 10 | Feature education scenario |
+        | Cancel a subscription | A polite customer who wants to downgrade service | I'd like to cancel my subscription please | Subscription is cancelled&#124;Alternative plan is accepted&#124;Retention offer is declined | 8 | Subscription cancellation |
+      </Tab>
+      <Tab title="Raw CSV">
+        ```csv
+        goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario
+        "Get help with a defective product","An upset customer who received a broken item","My product arrived broken and I'm very disappointed","Issue is resolved|Customer requests supervisor|Refund is processed",12,"Product defect resolution"
+        "Understand how to use a new feature","A curious but non-technical user","I heard about a new feature but don't know how to use it","User successfully uses the feature|User gives up|Technical support is escalated",10,"Feature education scenario"
+        "Cancel a subscription","A polite customer who wants to downgrade service","I'd like to cancel my subscription please","Subscription is cancelled|Alternative plan is accepted|Retention offer is declined",8,"Subscription cancellation"
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+
+  <Accordion title="Sales and Consultation Scenarios">
+    <Tabs>
+      <Tab title="Table View">
+        | Goal | User Persona | Initial Prompt | Stopping Criterias | Max Iterations | Scenario |
+        |------|--------------|----------------|-------------------|----------------|----------|
+        | Find the right product for specific needs | A thorough researcher who compares many options | I'm looking for a solution but need help choosing | Product recommendation is accepted&#124;User requests human consultation&#124;User decides to research more | 15 | Product recommendation scenario |
+        | Get pricing information for enterprise solution | A business decision maker focused on ROI | What are your enterprise pricing options? | Quote is requested&#124;Meeting is scheduled&#124;User indicates budget constraints | 10 | Enterprise sales scenario |
+        | Compare different service tiers | An analytical customer who wants detailed comparisons | Can you help me understand the differences between your plans? | Plan is selected&#124;User requests trial&#124;User needs more time to decide | 12 | Service comparison scenario |
+      </Tab>
+      <Tab title="Raw CSV">
+        ```csv
+        goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario
+        "Find the right product for specific needs","A thorough researcher who compares many options","I'm looking for a solution but need help choosing","Product recommendation is accepted|User requests human consultation|User decides to research more",15,"Product recommendation scenario"
+        "Get pricing information for enterprise solution","A business decision maker focused on ROI","What are your enterprise pricing options?","Quote is requested|Meeting is scheduled|User indicates budget constraints",10,"Enterprise sales scenario"
+        "Compare different service tiers","An analytical customer who wants detailed comparisons","Can you help me understand the differences between your plans?","Plan is selected|User requests trial|User needs more time to decide",12,"Service comparison scenario"
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  This structure is required by Galtea to automatically generate the [test cases](/concepts/product/test/case) for your scenarios as [tests](/concepts/product/test) within the platform. If this format is not provided, you can still [manually create the test cases](/sdk/api/test-case/service#create-test-case).
+</Note>
+
+<Info>
+  For automatic processing, the file format must be `CSV`. 
+</Info>
+
+<Warning>
+  The examples provided above are simplified demonstrations. In actual CSV files, scenarios can be much more detailed and the number of test cases (rows) can be significantly higher to provide comprehensive conversation testing coverage.
+</Warning>
+
+## Structure of Scenarios
+
+Scenarios have a specific structure designed to enable realistic conversation simulation:
+
+<ResponseField name="goal" type="Text" required>
+  The overall objective the synthetic user is trying to achieve during the conversation.
+  **Example**: "Book a one-way flight from San Francisco (SFO) to New York (JFK) for next Tuesday"
+</ResponseField>
+
+<ResponseField name="user_persona" type="Text" required>
+  The personality and communication style of the synthetic user that will be simulated throughout the conversation.
+  **Example**: "A busy professional who is direct and values efficiency. They prefer to get things done quickly without much small talk."
+</ResponseField>
+
+<ResponseField name="initial_prompt" type="Text" optional>
+  The first message the synthetic user sends to start the conversation. If not provided, the system will generate an appropriate opening based on the goal and persona.
+  **Example**: "Hello, I need to book a flight."
+</ResponseField>
+
+<ResponseField name="stopping_criterias" type="Text" optional>
+  A delimited string of conditions that, if met, will cause the conversation simulation to end. Use `;` or `|` as delimiters to separate multiple criteria.
+  **Example**: "The user has confirmed the flight booking|The chatbot indicates it cannot fulfill the request;User expresses satisfaction with the service"
+</ResponseField>
+
+<ResponseField name="max_iterations" type="Number" optional>
+  The maximum number of conversation turns before the simulation automatically ends. This prevents infinite loops and controls test duration.
+  **Example**: 10
+</ResponseField>
+
+<ResponseField name="scenario" type="Text" optional>
+  A brief description of the scenario for documentation and organizational purposes. This helps categorize and manage different types of conversation tests.
+  **Example**: "Flight booking scenario for business travelers"
+</ResponseField>
+
+## Using Scenarios with the Conversation Simulator
+
+Scenarios are specifically designed to work with Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator). When you run evaluations using scenarios, the system will:
+
+1. **Initialize the conversation** using the `initial_prompt` and `user_persona`
+2. **Generate realistic user responses** based on the `goal` and conversation history  
+3. **Continue the dialogue** until one of the `stopping_criterias` is met or `max_iterations` is reached
+4. **Evaluate the conversation** using your selected [metrics](/concepts/metric) to assess performance
+
+For detailed implementation examples, see the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations).
+
+## Best Practices for Manually Creating Scenarios
+
+<AccordionGroup>
+  <Accordion title="Goal Definition">
+    <ul>
+      <li>Make goals specific and measurable</li>
+      <li>Include realistic constraints (time, budget, preferences)</li>
+      <li>Vary complexity across different scenarios</li>
+      <li>Consider both successful and unsuccessful outcomes</li>
+    </ul>
+  </Accordion>
+  
+  <Accordion title="User Persona Creation">
+    <ul>
+      <li>Include personality traits that affect communication style</li>
+      <li>Specify technical knowledge level and domain expertise</li>
+      <li>Define emotional states and motivations</li>
+      <li>Consider cultural and contextual factors</li>
+    </ul>
+  </Accordion>
+  
+  <Accordion title="Stopping Criteria Design">
+    <ul>
+      <li>Include both positive outcomes (goal achieved) and negative outcomes (failure, frustration)</li>
+      <li>Account for edge cases where the conversation might stall</li>
+      <li>Use multiple criteria connected with "|" or ";" to cover various scenarios</li>
+      <li>Make criteria specific enough to be clearly identifiable</li>
+    </ul>
+  </Accordion>
+  
+  <Accordion title="Scenario Coverage">
+    <ul>
+      <li>Test common user journeys and edge cases</li>
+      <li>Include scenarios with different complexity levels</li>
+      <li>Cover various user types and use cases</li>
+      <li>Test both cooperative and challenging user behaviors</li>
+    </ul>
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,43 @@
+<Update label="2025-05-05" description="Analytics Upgrades and Red Teaming Test Improvements">
+## Improvements in Red Teaming Tests
+
+- **New "misuse" threat implemented**  
+  Now red teaming incorporates a new threat, misuse, which are queries that not necessaryly malicious however out-of-scope for you specific product. You can now test whether your product can successfully block these queries by marking "Mitre Atlas: Ambiguous prompts" in the threat list.
+
+- **Better "data leakage" and "toxicity" tests**  
+  The red teaming tests incorporate better your product meta data, to generate the most adequate test cases for "data leakage" and "toxicity".
+
+## Analytics Page Upgrades
+
+We're continuing to expand the power of the Analytics page! This update introduces:
+
+- **Radar View for Version Comparison**  
+  You can now visualize performance across multiple metrics for a single version using the brand-new radar view. It provides a quick way to understand strengths and weaknesses at a glance.
+
+- **Smarter Metric Filters**  
+  Filters now only show metrics that have actually been used in evaluations—removing unnecessary clutter and making it easier to find relevant data.
+
+- **Graph Tooltips**  
+  Hovering over truncated names now reveals full labels with tooltips, helping you understand graph contents more clearly.
+
+<Frame>
+    <img src="/images/changelog/2025-05-05_radar-view.png" alt="Radar View" />
+</Frame>
+
+## SDK Safeguards
+
+We've added protections to ensure your SDK integration is as smooth and reliable as possible:
+
+- **Version Compatibility Checks**  
+  If the SDK version you're using is not compatible with the current API, it will now throw a clear error to prevent unexpected behavior.
+
+- **Update Notifications**  
+  When a new SDK version is available, you'll get a console message with update information—keeping you in the loop without being intrusive.
+
+## Bug Fixes
+
+- **Metric Range Calculation**  
+  Some default metrics were previously displaying inverted scoring scales (e.g., treating 0% as best and 100% as worst). This is now resolved for accurate interpretation.
+- **Test Creation Not Possible Through `.txt` Knowledge Base Files**  
+  Due to a recent refactor, the creation of tests using knowledge base files with `.txt` extensions was not possible. This has been fixed and you can now create tests using `.txt` files as the knowledge base again.
+</Update>

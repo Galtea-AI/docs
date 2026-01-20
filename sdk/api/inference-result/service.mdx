@@ -1,0 +1,66 @@
+---
+title: 'Inference Result Service'
+sidebarTitle: "Service"
+description: "Inference Result Service API methods in the Galtea SDK"
+---
+
+import InferenceResultCard from '/snippets/cards/inference-result-card.mdx';
+
+The Inference Result Service in the Galtea SDK allows you to manage [inference results](/concepts/product/version/session/inference-result) for evaluating your products.
+This Service is exposed by the `galtea.inference_results` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Generate an inference result using an Agent (recommended):
+```python
+# Define an Agent to be used for generation
+class MyAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        # Implement your agent logic here, using input_data content
+        return AgentResponse(content="Generated response")
+
+
+inference_result = galtea.inference_results.generate(
+    agent=MyAgent(), session=session, user_input="Generate something"
+)
+```
+
+Manually create an inference result:
+```python
+inference_result = galtea.inference_results.create(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="Paris",
+    latency=150.5,
+)
+```
+
+Update an inference result:
+```python
+inference_result = galtea.inference_results.update(
+    inference_result_id=inference_result_id,
+    output="Paris is the capital.",
+    cost=0.0001,
+)
+```
+
+## Service Methods
+- [Generate Inference Result](/sdk/api/inference-result/generate) - **Recommended** for automatic trace collection
+- [Create Inference Result](/sdk/api/inference-result/create)
+- [Create Inference Result Batch](/sdk/api/inference-result/create-batch)
+- [Update Inference Result](/sdk/api/inference-result/update)
+- [List Inference Results](/sdk/api/inference-result/list)
+- [Get Inference Result](/sdk/api/inference-result/get)
+- [Delete Inference Result](/sdk/api/inference-result/delete)
+
+## Related Concepts
+<InferenceResultCard />

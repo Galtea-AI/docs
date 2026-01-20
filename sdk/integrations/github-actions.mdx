@@ -1,0 +1,143 @@
+---
+title: 'GitHub Actions'
+sidebarTitle: "GitHub Actions"
+description: "Learn how to integrate Galtea's evaluation capabilities into your GitHub Actions workflow"
+icon: "code-compare"
+---
+
+## Initial Setup
+
+<Note>
+    To initialize the `Galtea` class, you need to provide your API key obtained in the [settings page](https://platform.galtea.ai/settings) of the Galtea platform.
+</Note>
+
+
+Before you can use GitHub Actions with Galtea, you need to perform some credentials and variables configuration:
+
+- **Configure Repository Secrets and Variables**
+   - Go to your repository's "Settings" tab
+   - Navigate to "Secrets and variables" > "Actions"
+   - Add the following:
+     - Secret: `GALTEA_API_KEY` - Your Galtea API key
+     - Variable: `GALTEA_PRODUCT_ID` - Your Galtea Product ID
+   - Click "Add" after each entry
+
+## Dependencies
+
+Create a `requirements.txt` file in your repository and add the dependencies required for your project. At minimum, you'll need galtea library:
+
+```txt requirements.txt
+galtea
+python-dotenv
+```
+
+## Create your GitHub Action
+
+Create a `.github/workflows/evaluate.yml` file in your repository with the following content:
+
+```yml .github/workflows/evaluate.yml
+name: Galtea Evaluation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    env:
+      GALTEA_API_KEY: ${{ secrets.GALTEA_API_KEY }}
+      GALTEA_PRODUCT_ID: ${{ vars.GALTEA_PRODUCT_ID }}
+      GALTEA_TEST_NAME: ${{ vars.GALTEA_TEST_NAME }}
+      GALTEA_ACCURACY_METRIC_NAME: ${{ vars.GALTEA_ACCURACY_METRIC_NAME }}
+      GALTEA_COMPLETENESS_METRIC_NAME: ${{ vars.GALTEA_COMPLETENESS_METRIC_NAME }}
+      GITHUB_SHA: ${{ github.sha }}
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout
+       uses: actions/checkout@v4
+
+     - name: Setup Python
+       uses: actions/setup-python@v5
+       with:
+         python-version: '3.10'
+
+     - name: Install dependencies
+       run: |
+        pip install -r requirements.txt
+
+     - name: Run Evaluation
+       run: |
+        python evaluate.py
+```
+
+## Create your Test Script
+
+Create a `evaluate.py` file in your repository with the following content:
+
+```python
+from datetime import datetime
+
+from galtea import Galtea
+
+galtea = Galtea(api_key="YOUR_API_KEY")
+
+run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
+
+# Create product via direct API call (SDK doesn't expose products.create)
+client = getattr(galtea, "_Galtea__client", None)
+if client is None:
+    raise ValueError("Could not access Galtea client for direct API call")
+client.post(
+    "products",
+    json={
+        "name": f"docs-github-actions-product-{run_identifier}",
+        "description": "Product for GitHub Actions integration documentation",
+        "securityBoundaries": "none",
+        "capabilities": "answer questions",
+        "inabilities": "none",
+    },
+)
+products = galtea.products.list(limit=1)
+product = products[0]
+PRODUCT_ID: str = product.id
+
+# Create a test with test cases
+test = galtea.tests.create(
+    product_id=PRODUCT_ID,
+    name=f"github-actions-test-{run_identifier}",
+    type="QUALITY",
+    test_file_path="path/to/quality_test.csv",
+)
+
+# @start github_actions_workflow
+# GitHub Actions workflow environment variables would be:
+# GALTEA_API_KEY, GALTEA_PRODUCT_ID, GALTEA_TEST_NAME
+
+version = galtea.versions.create(name=f"v1.X-{run_identifier}", product_id=PRODUCT_ID)
+
+test_cases = galtea.test_cases.list(test_id=test.id)
+
+metrics = ["Factual Accuracy"]
+
+# Placeholder for where the model's answer would be generated
+# In a real scenario, this would involve calling your model with test_case.input
+model_answer = "This is a placeholder model answer."
+
+for test_case in test_cases:
+    galtea.evaluations.create_single_turn(
+        version_id=version.id,
+        test_case_id=test_case.id,
+        metrics=metrics,
+        actual_output=model_answer,
+    )
+# @end github_actions_workflow
+
+print(f"Evaluated {len(test_cases)} test cases against version {version.name}")
+
+# Cleanup
+galtea.products.delete(product_id=PRODUCT_ID)
+```
+
+
+> **Success!** 🎉 Your GitHub Actions workflow is now configured to run evaluations with Galtea. Each time you push changes, it will automatically evaluate your product using the latest version of your code.

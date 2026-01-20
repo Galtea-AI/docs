@@ -1,0 +1,53 @@
+<Update label="2025-07-28" description="New Evaluator Models, Classic Metrics, and Dashboard Redesign">
+## Expanded Evaluator Model Support
+
+We've added support for more evaluator models to enhance your evaluation capabilities:
+
+- **Gemini-2.5-Flash**: Google's latest high-performance model optimized for speed and accuracy
+- **Gemini-2.5-Flash-Lite**: A lightweight variant offering faster processing with efficient resource usage  
+- **Gemini-2.0-Flash**: Google's established model providing reliable evaluation performance
+
+You can now [link these models to specific Metrics](/concepts/metric) for consistent evaluation results and leverage specialized models for different evaluation scenarios. Learn more about configuring evaluator models in our [SDK documentation](/sdk/api/metric).
+
+## Enhanced Conversation Simulation
+
+Testing conversational AI just got more powerful with two major improvements:
+
+- **Visible Stopping Reasons**: You can now see exactly why simulated conversations ended in the dashboard, providing crucial insights into dialogue flow and helping you identify areas for improvement.
+
+- **Custom User Persona Definitions**: Create highly specific synthetic user personas when generating [Scenario Based Tests](/concepts/product/test/scenario-tests). Define detailed user backgrounds, goals, and behaviors to test how your AI handles diverse user interactions more effectively.
+
+These enhancements work seamlessly with our [Conversation Simulator](/concepts/product/test/case/conversation-simulator) to deliver more realistic and insightful testing scenarios.
+
+## Classic NLP Metrics Now Available
+
+We've expanded our metric library with three essential deterministic metrics for precise text evaluation:
+
+- **[BLEU](/concepts/metric/bleu)**: Measures n-gram overlap between generated and reference text, ideal for machine translation and constrained generation tasks.
+
+- **[ROUGE](/concepts/metric/rouge)**: Evaluates summarization quality by measuring the longest common subsequence between candidate and reference summaries.
+
+- **[METEOR](/concepts/metric/meteor)**: Assesses translation and paraphrasing by aligning words using exact matches, stems, and synonyms for more nuanced evaluation.
+
+These classic metrics complement our existing evaluation suite and are perfect for scenarios requiring deterministic, rule-based scoring.
+
+## Enhanced Red Teaming with Jailbreak Resilience v2
+
+Security testing gets an upgrade with **[Jailbreak Resilience v2](/concepts/metric/jailbreak-resilience-v2)**, an improved version of our jailbreak resistance metric. This enhanced evaluation provides more comprehensive assessment of your model's ability to resist adversarial prompts and maintain safety boundaries across various attack vectors.
+
+## Dashboard Redesign: First Iteration
+
+We've launched the first iteration of our redesigned dashboard with a refreshed visual language focused on clarity and usability. Key improvements include:
+
+- **Modern Typography**: Cleaner, more readable text throughout the platform
+- **Refined UI Elements**: Updated buttons, cards, and form elements with reduced rounded corners for a more contemporary look
+- **Streamlined Tables**: Enhanced data presentation with improved content layout
+- **Updated Login Experience**: A more polished and user-friendly authentication flow
+
+This redesign represents our commitment to delivering a more intuitive and visually appealing user experience while maintaining the powerful functionality you rely on.
+
+## Improved SDK Documentation
+
+We've enhanced our [SDK documentation](/sdk/api/metric/create#param-evaluator-model-name) with clearer guidance on defining evaluator models for metrics, making it easier to configure and customize your evaluation workflows.
+
+</Update>

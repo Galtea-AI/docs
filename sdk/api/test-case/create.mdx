@@ -1,0 +1,74 @@
+---
+title: 'Create Test Case'
+sidebarTitle: "Create"
+description: "Create a test case for your test."
+---
+
+## Returns
+Returns a [TestCase](/concepts/product/test/case) object for the given parameters.
+
+## Example
+```python
+test_case = galtea.test_cases.create(
+    test_id=test_id,
+    input="What is the capital of France?",
+    expected_output="Paris",
+    context="Geography facts",
+    variant="original",
+)
+```
+
+## Parameters
+<ResponseField name="test_id" type="string" required>
+  The ID of the test you want to create the test case for.
+</ResponseField>
+<ResponseField name="input" type="string" required>
+  The input for the test case. This is the question or prompt you want to send to your model for a later evaluation.
+</ResponseField>
+<ResponseField name="expected_output" type="string" optional>
+  The expected output for the input given. This is the correct answer or response you want to evaluate against.
+</ResponseField>
+<ResponseField name="expected_tools" type="list[string]" optional>
+  The expected tools for the input given. This is the list of tools that the model should use to generate the expected output.
+</ResponseField>
+<ResponseField name="context" type="string" optional>
+  The context for the test case. This is the additional information that can help the model generate the expected output.
+</ResponseField>
+<ResponseField name="variant" type="string" optional>
+  An optional variant to categorize or label the test case (e.g., "original", "paraphrased").
+</ResponseField>
+<ResponseField name="reviewed_by_id" type="string" optional>
+  The ID of the user who has reviewed and validated this test case.
+</ResponseField>
+<ResponseField name="language" type="string" optional>
+  Language for the test case.
+  Follow this list to know the supported ones:
+  - https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+</ResponseField>
+<ResponseField name="user_score" type="int" optional>
+  User vote for the test case (1 for good quality, -1 for bad quality, 0 for unreviewed).
+</ResponseField>
+<ResponseField name="user_score_reason" type="string" optional>
+  Reason for the user vote given.
+</ResponseField>
+<ResponseField name="confidence" type="float" optional>
+  Confidence for the test case.
+</ResponseField>
+<ResponseField name="confidence_reason" type="string" optional>
+  Reason for the confidence given.
+</ResponseField>
+<ResponseField name="goal" type="string" optional>
+  The user's objective for scenario-based tests. Used when creating SCENARIOS test cases.
+</ResponseField>
+<ResponseField name="user_persona" type="string" optional>
+  Description of the user persona used to generate scenario-based test cases.
+</ResponseField>
+<ResponseField name="scenario" type="string" optional>
+  Description of the scenario context for scenario-based test cases.
+</ResponseField>
+<ResponseField name="initial_prompt" type="string" optional>
+  The initial message from the synthetic user for scenario-based tests.
+</ResponseField>
+<ResponseField name="stopping_criterias" type="list[string]" optional>
+  List of criteria to end the conversation in scenario-based simulations.
+</ResponseField>

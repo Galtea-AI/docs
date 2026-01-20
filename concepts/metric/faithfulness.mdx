@@ -1,0 +1,50 @@
+---
+title: "Faithfulness"
+description: "Evaluates whether the generated output aligns with the retrieved context in a RAG pipeline."
+---
+
+The **Faithfulness** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate the factual alignment between the model's generated response (`actual_output`) and the information found in the `retrieval_context`. It is a core indicator of hallucination risk in retrieval-augmented generation systems.
+
+A high faithfulness score indicates that the model grounds its answer in retrieved content, rather than introducing unsupported or fabricated information.
+
+---
+
+## Evaluation Parameters
+
+To compute the `faithfulness` metric, the following inputs are required:
+
+- **`input`**: The user's original prompt.
+- **`actual_output`**: The LLM-generated response.
+- **`retrieval_context`**: The retrieved passages or nodes used by the model.
+
+---
+
+## How Is It Calculated?
+
+The score is computed using the following steps:
+
+1. **Fact Comparison**: An LLM analyzes whether the statements made in `actual_output` are substantiated by the `retrieval_context`.
+2. **Hallucination Check**: The LLM flags any unsupported claims or discrepancies.
+
+The final metric is calculated as:
+
+$$
+\text{Faithfulness} = \frac{\text{Number of factually aligned outputs}}{\text{Total number of evaluated outputs}}
+$$
+
+This helps teams monitor the risk of hallucinations and improve trust in generated responses.
+
+<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-faithfulness).</Note>
+
+---
+
+## Suggested Test Case Types
+
+The Faithfulness metric is effective for evaluating quality test cases in Galtea, for products that use RAG, since it measures the model's ability to maintain alignment with retrieved context.
+
+---
+
+## Related Topics
+
+- [Answer Relevancy](/concepts/metric/answer-relevancy)
+- [Contextual Recall](/concepts/metric/contextual-recall)

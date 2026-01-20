@@ -1,0 +1,40 @@
+---
+title: "User Satisfaction"
+description: "Evaluates how satisfied the user was with the conversation. It is a key indicator of user experience."
+---
+
+The **User Satisfaction** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate the end-user's perception of a chatbot interaction. This metric focuses on the *experience* itself—whether the user left the conversation feeling content or frustrated. Even if a goal was technically achieved, poor interaction quality (such as inefficiency or negative sentiment) can lead to low satisfaction.
+
+This metric is particularly useful for monitoring the overall user experience, identifying friction points, and ensuring that chatbot responses not only solve problems but also foster trust and ease of use.
+
+---
+
+## Evaluation Parameters
+
+To compute the `user_satisfaction` metric, the following parameter is required:
+
+- **`input`**: The user messages sent to the chatbot.
+- **`actual_output`**: The chatbot's corresponding responses.
+
+The evaluation considers the *entire conversation* rather than individual responses in isolation.
+
+---
+
+## How Is It Calculated?
+
+The `user_satisfaction` score is derived using an LLM-as-a-judge approach with explicit pass criteria:
+
+1. **Efficiency Check**: Was the interaction smooth and direct, or did the user have to rephrase, repeat, or correct the chatbot?
+2. **Sentiment Analysis**: Did the user display positive/neutral sentiment or negative sentiment?
+
+Based on these criteria, the LLM assigns a **binary score**:
+
+- **1 (Satisfied):** The interaction was efficient and the user’s sentiment was neutral-to-positive.  
+- **0 (Not Satisfied):** The interaction was inefficient, the user expressed frustration, or both.
+
+---
+
+## Related Topics
+
+- [User Objective Accomplished](/concepts/metric/user-objective-accomplished)  
+- [Conversation Relevancy](/concepts/metric/conversation-relevancy)  

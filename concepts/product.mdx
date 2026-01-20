@@ -1,0 +1,105 @@
+---
+title: "Product"
+sidebarTitle: "Overview"
+description: "A functionality or service evaluated by Galtea"
+---
+
+import VersionCard from '/snippets/cards/version-card.mdx';
+import TestCard from '/snippets/cards/test-card.mdx';
+import SDKProductServiceCard from '/snippets/cards/sdk-product-service-card.mdx';
+
+## What is a Product?
+
+A product in Galtea represents a functionality or service that you want to evaluate. Examples include _QA chat_, _Summarization_, or _Content Generation_.
+
+<Note>Even if your organization has a single public-facing product (like a website or dashboard for all user interactions), you should define separate Galtea products for each distinct functionality you want to evaluate.</Note>
+
+You can **create**, view and manage your products on the [Galtea dashboard](https://platform.galtea.ai/). Products can also be viewed and managed programmatically using the [Galtea SDK](/sdk/api/product/service).
+
+## Related Concepts
+
+A product in Galtea is associated with:
+
+<CardGroup cols={2}>
+  <VersionCard />
+  <TestCard />
+</CardGroup>
+
+## SDK Integration
+
+The SDK allows you to list existing products, retrieve specific products by their ID or name, and delete products. See the [Product Service API documentation](/sdk/api/product/service) for more details.
+
+<Note>Note that product creation is handled through the Galtea platform.</Note>
+
+<SDKProductServiceCard />
+
+## Product Properties
+
+<ResponseField name="Product Name" type="Text" required>
+  The name of your product.
+  **Example**: "Document Summarizer"
+</ResponseField>
+
+<ResponseField name="Product Description" type="Text" required>
+  Describe what your AI product does, who it serves, and its main use case. Focus on user experience, not technical details.
+  <Info>
+    <ul>
+      <li><strong>What to include:</strong> What the product does, who uses it, and its primary purpose.</li>
+      <li><strong>What to avoid:</strong> Technical implementation details or internal jargon.</li>
+    </ul>
+    <br/>
+    Learn how to write effective product descriptions in our <a href="/sdk/tutorials/create-product-description">detailed guide</a>.
+  </Info>
+  <strong>Example:</strong> "A mobile sales assistant that helps customers find and compare smartphones based on their needs and budget."
+</ResponseField>
+
+<ResponseField name="Capabilities" type="Text" required>
+  List what your product is specifically designed to do, and what kind of information has access to. This helps generate specifically targeted test cases.
+
+    <strong>Example:</strong> "Can answer questions about phone specifications, recommend devices based on user preferences, can access past user purchases, compare prices across models, and provide information about warranties and accessories."
+</ResponseField>
+
+<ResponseField name="Inabilities" type="Text" required>
+  List technical limitations such as information and tools that the product do not have access to, and additionally the general scope boundaries. This prevents generation of irrelevant or misleading test cases.
+
+    <strong>Example:</strong> "Cannot process purchases, access customer account information, or provide technical support for device repairs."
+</ResponseField>
+
+<ResponseField name="Security Boundaries" type="Text" required>
+  Things that the product must not do, although theoretically it has the capability to do so.
+
+    <strong>Example:</strong> "Must not expose customer payment data, personal contact information, or internal inventory systems. Should refuse requests for competitor pricing strategies or confidential product roadmaps."
+</ResponseField>
+
+<ResponseField name="Policies" type="Text" optional>
+  Define specific rules and instructions for how the product must behave in certain situations. Policies ensure consistent, safe, and compliant responses.
+  <Info>
+    Policies consist of clear instructions, such as "**always** answer with **x** if asked about **y**" or "add **[specific disclaimer text]** at the end of your responses when asked about **z**."
+  </Info>
+    <strong>Example:</strong> "If asked for guaranteed investment returns, respond that all investments carry risk. Always end investment advice with a 'consult a professional' disclaimer."
+</ResponseField>
+
+<ResponseField name="Risk Level" type="Enum" required>
+  The risk level of the product under the EU AI Act.
+  Possible values:
+  - `GPAI`: General-Purpose AI Model (Article 3(63), Title VIII A - Chapter 1).
+  - `GPAI Systemic`: General-Purpose AI Model with Systemic Risk (Article 52a, referring to criteria in Article 52c).
+  - `Special System`: AI Systems with Specific Transparency Obligations (Article 50).
+  - `High`: High-Risk AI System (Article 6, Annexes I & III).
+  - `Prohibited`: Prohibited AI Practices (Article 5).
+  <Info>Legal definitions available in the [Rules for trustworthy artificial intelligence in the EU](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng).</Info>
+</ResponseField>
+
+<ResponseField name="Operator Type" type="Enum" required>
+  The operator type of the product under the EU AI Act.
+  Possible values:
+  - `Authorised Representative`: An entity established in the EU, appointed by a provider from a third country, to act on their behalf regarding AI Act obligations.
+  - `Deployer`: An entity that uses an AI system under its authority, except when the AI system is used in the course of a personal non-professional activity.
+  - `Distributer`: An entity in the supply chain, other than the provider or importer, that makes an AI system available on the Union market.
+  - `Importer`: An entity established in the EU that places on the market or puts into service an AI system bearing the name or trademark of a person established outside the Union.
+  - `Product Manufacturer`: The manufacturer of a product that incorporates an AI system.
+  - `Provider`: An entity that develops an AI system or that has an AI system developed and places it on the market or puts it into service under its own name or trademark.
+  <Info>Legal definitions available in the [EU AI Act](https://artificialintelligenceact.eu/article/3/).</Info>
+</ResponseField>
+
+

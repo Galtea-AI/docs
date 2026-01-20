@@ -1,0 +1,150 @@
+---
+title: "Quality Tests"
+description: "Evaluate the quality and correctness of your outputs"
+sidebarTitle: "Overview"
+icon: ""
+---
+
+## What are Quality Tests?
+
+Quality tests in Galtea are designed to evaluate the quality, accuracy, and correctness of your [product's](/concepts/product) outputs. These tests typically consist of questions or prompts paired with ideal answers, allowing Galtea to assess how well your product's responses match the expected standard.
+
+## Creating Quality Tests
+
+You can create quality tests in Galtea through two methods:
+
+<Tabs>
+  <Tab title="Generate from Knowledge Base">
+    <Steps>
+      <Step title="Prepare your knowledge base file">
+        Create a file containing all the information that the Product should **know and adhere to**
+      </Step>
+      <Step title="Configure the test">
+        Select *Quality* as the test type and *Generated* as the test origin
+        <Info>
+          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+        </Info>
+      </Step>
+      <Step title="Generate the test">
+        Galtea will process the Knowledge Base and generate a *Test File* containing *Test Cases* for you
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Upload Your Own Test">
+    <Steps>
+      <Step title="Create your test file">
+        Prepare a CSV file following the structure shown [below](#example-quality-tests-and-file-format)
+      </Step>
+      <Step title="Configure the test">
+        Select "Quality" as the test type and "Uploaded" as the test origin
+        <Info>
+          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+        </Info>
+      </Step>
+      <Step title="Upload your test file">
+        Select the file you created and upload it to Galtea
+      </Step>
+          </Steps>
+  </Tab>
+</Tabs>
+
+## Example Quality Tests and File Format
+
+Here are examples of the content and its creation-document structure:
+
+<AccordionGroup>
+  <Accordion title="Basic Knowledge Questions">
+    <Tabs>
+      <Tab title="Table View">
+        | # | Instance ID | Input | Expected Output | Tag | Source |
+        |---|------------|-------|-----------------|-----|---------|
+        | 0 | 0 | What is the Capital of France? | Paris | original |  |
+        | 1 | 1 | What is the largest planet in our solar system? | Jupiter | original |  |
+        ...
+      </Tab>
+      <Tab title="Raw CSV">
+        ```csv
+        ,instance_id,input,expected_output,tag,source
+        0,0,"What is the Capital of France?","Paris","original",""
+        1,1,"What is the largest planet in our solar system?","Jupiter","original",""
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+
+  <Accordion title="Technical Product Specifications">
+    <Tabs>
+      <Tab title="Table View">
+        | # | Instance ID | Input | Expected Output | Tag | Source |
+        |---|------------|-------|-----------------|-----|---------|
+        | 0 | 0 | ¿Cuál es el sistema operativo del Samsung Galaxy A8 EE? | El sistema operativo del Samsung Galaxy A8 EE es Android 8.1. | original | Noviembre 2018Catálogo dispositivos móviles Samsung Galaxy A8 EE... |
+        | 1 | 1 | ¿Cuántos megapíxeles tiene la cámara principal del Huawei P20? | La cámara principal del Huawei P20 tiene 20 MP + 12 MP. | original | Huawei P20 Sistema Operativo : Android 8.1 + EMUI 8.1 Pantalla : 5.8" Full View Resolución Full HD... |
+      </Tab>
+      <Tab title="Raw CSV">
+        ```csv
+        ,instance_id,input,expected_output,tag,source
+        0,0,"¿Cuál es el sistema operativo del Samsung Galaxy A8 EE?","El sistema operativo del Samsung Galaxy A8 EE es Android 8.1.","original","Noviembre 2018Catálogo dispositivos móviles Samsung Galaxy A8 EE... "
+        1,1,"¿Cuántos megapíxeles tiene la cámara principal del Huawei P20?","La cámara principal del Huawei P20 tiene 20 MP + 12 MP.","original","Huawei P20 Sistema Operativo : Android 8.1 + EMUI 8.1 Pantalla : 5.8\" Full View Resolución Full HD... "
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+
+  <Accordion title="Compliance and Regulations">
+    <Tabs>
+      <Tab title="Table View">
+        | # | Instance ID | Input | Expected Output | Tag | Source |
+        |---|------------|-------|-----------------|-----|---------|
+        | 0 | 0 | What are three key provisions of the GDPR? | The GDPR provides several key rights to data subjects, including: the right to access, the right to be forgotten, and the right to data portability. | original | GDPR Guidelines Document (2018): The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy in the European Union and the European Economic Area... |
+        | 1 | 1 | What does CCPA stand for and who does it protect? | CCPA stands for California Consumer Privacy Act. It protects California residents' rights regarding their personal information collected by businesses. | original | The California Consumer Privacy Act (CCPA) is a state statute intended to enhance privacy rights and consumer protection for residents of California, United States... |
+      </Tab>
+      <Tab title="Raw CSV">
+        ```csv
+        ,instance_id,input,expected_output,tag,source
+        0,0,"What are three key provisions of the GDPR?","The GDPR provides several key rights to data subjects, including: the right to access, the right to be forgotten, and the right to data portability.","original","GDPR Guidelines Document (2018): The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy in the European Union and the European Economic Area..."
+        1,1,"What does CCPA stand for and who does it protect?","CCPA stands for California Consumer Privacy Act. It protects California residents' rights regarding their personal information collected by businesses.","original","The California Consumer Privacy Act (CCPA) is a state statute intended to enhance privacy rights and consumer protection for residents of California, United States..."
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  This structure is the required by Galtea in order to automatically generate the [test cases](/concepts/product/test/case) for your [test](/concepts/product/test). If that format is not provided, you can still [manually create the test cases](/sdk/api/test-case/service#create-test-case).
+</Note>
+
+<Info>
+  For automatic processing, the file format must be `CSV`. 
+</Info>
+
+<Warning>
+  The extent of the examples provided above are short extractions. In the actual CSV files they can be much longer and the amount of test cases (rows) can be much higher.
+</Warning>
+
+## Structure of Quality Tests
+
+Quality tests have a specific structure designed to facilitate effective evaluation:
+
+<ResponseField name="instance_id" type="Number" required>
+  A unique identifier for the test instance.
+</ResponseField>
+
+<ResponseField name="input" type="Text" required>
+  The question or prompt that the product is expected to respond to.
+  **Example**: "What are three key provisions of the GDPR related to data subject rights?"
+</ResponseField>
+
+<ResponseField name="expected_output" type="Text">
+  The expected answer to the question, serving as a benchmark for evaluation.
+  **Example**: "The GDPR provides several key rights to data subjects, including: the right to access, the right to be forgotten, the right to rectification, the right to restrict processing, the right to data portability, and the right to object to processing."
+</ResponseField>
+
+<ResponseField name="tag" type="Text">
+  A categorization tag for the test instance. **Example**: "original"
+</ResponseField>
+
+<ResponseField name="source" type="Text">
+  The source text used to generate the test case, which can be a section of a document, a webpage, or any other relevant material. This field is particularly useful for tracing the origin of the information used in the test case.
+
+  **Example**: "GDPR Guidelines Document (2018): The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy in the European Union and the European Economic Area..."
+</ResponseField>

@@ -1,0 +1,74 @@
+---
+title: "Strategies"
+description: "Galtea platform uses a variety of red teaming strategies to generate adversarial test cases and evaluate the robustness of your product."
+icon: ""
+---
+
+## What is a Red Teaming Strategy?
+
+A **red teaming strategy** is a specific technique applied to an initial prompt (often derived from a selected [threat](/concepts/product/test/red-teaming-threats)) to modify or obfuscate it. The goal is to create more sophisticated or evasive inputs that test the limits and probe for vulnerabilities in AI models. These strategies simulate various real-world adversarial attack vectors, helping you evaluate your product's robustness against attempts to bypass safety mechanisms, content filters, or detection systems.
+
+Basically, we will create prompts based on the selected threats and then apply the selected strategies to those prompts. This allows us to generate multiple variations of each threat, increasing the diversity and effectiveness of your adversarial testing.
+
+<Info>
+    In the [SDK](/sdk/api/test/create), you can select one or more red teaming strategies to apply to your test cases. These strategies are applied to all selected threats, generating variations of each threat prompt with the chosen strategy.
+</Info>
+
+## Threats vs. Strategies
+
+- **Threats** define the goal or target of the adversarial input (e.g., Misuse, Data Leakage).
+- **Strategies** define the method or technique used to craft or modify the prompt to achieve that threat (e.g., Base64 encoding, Leetspeak).
+
+Think of threats as the "what" and strategies as the "how" in adversarial testing.
+
+## Available Red Teaming Strategies
+
+Below are the main red teaming strategies available in Galtea:
+
+- **Original**: The unmodified prompt generated directly from the selected threat, without any additional obfuscation or transformation. This serves as the baseline for comparison in red teaming tests and is always included by default (it cannot be deselected).
+- **Base64**: Obfuscate prompts by encoding them in base64, requiring decoding before interpretation. *Helps evade simple keyword-based filters.*
+- **Hex**: Encode prompts in hexadecimal format to obscure their content. *Useful for bypassing string-matching filters.*
+- **Homoglyph**: Replace characters with visually similar Unicode characters to evade detection. *Can fool naive text-matching systems.*
+- **Leetspeak**: Substitute letters with numbers or symbols (e.g., "leet speak") to bypass filters. *Commonly used to evade moderation.*
+- **Morse Code**: Encode prompts using Morse code to obscure intent. *Requires decoding, making detection harder.*
+- **Rot13**: Apply the ROT13 cipher to shift letters and obfuscate the prompt. *Simple obfuscation to bypass basic checks.*
+- **Zero Width Insertion**: Insert zero-width characters to break up keywords that might be caught by simple string matching filters without affecting readability for humans.
+- **Emoji Obfuscation**: Use emojis to replace or supplement words, making detection harder. *Obscures meaning for keyword-based systems.*
+- **Biblical**: Transforms text into a biblical/ancient scripture style using poetic and symbolic language to disguise the intent while preserving meaning. *May bypass filters looking for direct requests.*
+- **Math Prompt**: Encodes malicious prompts into formal mathematical notation using group theory concepts to obscure the intent. *Can hide intent from standard text analysis.*
+- **Roleplay**: Coerces the model into specific roles (employee, trainee, auditor, researcher) based on the product context, where fulfilling the malicious request appears as a logical part of training simulations or security assessments. *Exploits professional contexts to justify harmful requests.*
+- **Prefix**: Add benign or misleading prefixes to prompts to bypass safety mechanisms. *Distracts or misleads content filters.*
+- **Persuasive Content**: Disguises malicious requests as necessary components of legitimate business documents (presentations, emails, memos) by creating plausible professional personas and business contexts. *Makes harmful requests appear as logical business requirements.*
+- **Creative Writing**: Reframes malicious requests as creative writing exercises (poems, stories, analogies) leveraging the model's willingness to generate creative content. *Disguises harmful intent within artistic or educational contexts.*
+- **Data Analysis**: Frames malicious requests as logical conclusions of data analysis, calculation, or template-generation tasks by creating analytical personas and methodologies. *Hides harmful intent within technical and analytical contexts.*
+- **Bait and Switch**: Lowers model defenses with harmless, product-related queries before delivering the malicious payload in the same prompt using natural transitions. *Exploits context switching to bypass initial safety checks.*
+- **Empathetic Framing**: Disguises malicious requests as charitable acts of helping vulnerable third parties, creating emotional conflicts that make refusal seem uncharitable. *Exploits empathy and helpfulness to pressure compliance.*
+
+<Note> **Roleplay, Persuasive Content, Creative Writing, Data Analysis, Bait and Switch, and Empathetic Framing** use the **Product Description** to further customize the transformation of the original attack.</Note>
+
+[comment]: # (- **Backtranslation**: Translate prompts to another language and back to introduce subtle changes. *Can alter phrasing to evade detection.*)
+[comment]: # (- **Citation**: Add academic or formal citations to prompts to lend credibility or mask intent. *Can make harmful requests appear legitimate.*)
+[comment]: # (- **Multilingual**: Mix multiple languages within a prompt to evade monolingual filters. *Useful for bypassing language-specific moderation.*)
+
+## How Strategies Are Applied
+
+When you generate red teaming tests in Galtea, you can select one or more strategies. Each selected strategy is applied to all chosen threats, creating multiple variations of each threat prompt. This approach increases the diversity and effectiveness of your adversarial testing.
+
+> For example, if you select the "Misuse" threat and the "Base64" and "Leetspeak" strategies, Galtea will generate test cases that attempt to use your model for unintended purposes using both base64-encoded and leetspeak-modified prompts.
+
+## Selecting Strategies in the Platform
+
+When creating a red teaming test in the Galtea platform:
+- Choose your desired threats (e.g., Misuse, Data Leakage, etc.).
+- Select one or more red teaming strategies from the list.
+- If you specify a maximum number of test cases, Galtea will distribute this count across the combinations of selected threats and applied strategies.
+- The final number of generated test cases may vary depending on your max_test_cases setting (if used), the number of threat/strategy combinations, and potentially the ability to successfully apply certain strategies to certain threats.
+
+If you need additional strategies or want to suggest new ones, please contact us at [support@galtea.ai](mailto:support@galtea.ai).
+
+## References
+
+- [Promptfoo: Red Teaming Strategies](https://www.promptfoo.dev/docs/red-team/strategies/)
+- [OWASP Top 10 for LLMs 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- [MITRE ATLAS](https://atlas.mitre.org/)
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)

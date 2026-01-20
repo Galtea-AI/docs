@@ -1,0 +1,60 @@
+---
+title: "METEOR"
+description: "Evaluates translation, summarization, and paraphrasing by aligning words using exact matches, stems, or synonyms, computing precision and recall."
+---
+
+The METEOR (Metric for Evaluation of Translation with Explicit ORdering) metric is one of the [Deterministic Metric](/concepts/metric) Galtea exposes for evaluating machine translation, summarization, and paraphrasing tasks. It aims to correlate more closely with human judgments compared to [BLEU](/concepts/metric/bleu).
+
+---
+## Evaluation Parameters
+
+To compute the `meteor` metric, the following parameters are required:
+
+- **`actual_output`**: The model’s generated text.
+- **`expected_output`**: The reference (or gold) text to compare against.
+
+---
+## How Is It Calculated?
+
+METEOR improves upon [BLEU](/concepts/metric/bleu) by considering **semantic and morphological matches**:
+
+1. **Alignment**  
+   Tokens are matched between candidate and reference using:
+   - **Exact matches**
+   - **Stems** (e.g., "run" vs. "running")
+   - **Synonyms** (e.g., "big" vs. "large")
+
+2. **Precision & Recall**  
+   Both are calculated from the aligned tokens.
+
+3. **Fragmentation Penalty**  
+   A penalty is applied if matches are scattered (fragmented alignment).
+
+4. **Final Score**  
+   The score is computed as:
+   $$
+   METEOR = F_{mean} \times (1 - Penalty)
+   $$
+   where F_mean is the harmonic mean of precision and recall.
+
+
+METEOR returns a score between **0 and 1**:
+
+- **≥ 0.6** – High-quality translation/summary with semantic fidelity.
+- **0.3 – 0.6** – Moderate quality; some paraphrasing or structural divergence.
+- **< 0.3** – Low-quality or semantically incorrect output.
+
+---
+## Suggested Test Case Types
+
+Use METEOR when evaluating:
+
+- **Machine Translation** with varied phrasings.
+- **Abstractive Summarization** where synonyms are common.
+- **Paraphrase Detection** with semantic variation.
+
+---
+## Related Topics
+
+- [BLEU](/concepts/metric/bleu)
+- [ROUGE](/concepts/metric/rouge)

@@ -1,0 +1,493 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Galtea Docs",
+  "colors": {
+    "primary": "#5286FF",
+    "light": "#A9E3FE",
+    "dark": "#171717"
+  },
+  "favicon": "/favicon.png",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": "system"
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "fonts": {
+    "family": "Geist"
+  },
+  "appearance": {
+    "default": "system",
+    "strict": false
+  },
+  "background": {
+    "color": {
+      "light": "#f6f6f5",
+      "dark": "#09090a"
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@galtea.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://platform.galtea.ai"
+    }
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  },
+  "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Blog",
+          "href": "https://galtea.ai/blog",
+          "icon": "newspaper"
+        },
+        {
+          "anchor": "Changelog",
+          "href": "https://docs.galtea.ai/changelog",
+          "icon": "list-check"
+        }
+      ]
+    },
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["introduction", "registration", "quickstart"]
+          },
+          {
+            "group": "Tutorials",
+            "pages": [
+              "sdk/tutorials/create-product-description",
+              "sdk/tutorials/create-test",
+              "sdk/tutorials/create-evaluation",
+              "sdk/tutorials/monitor-production-responses-to-user-queries",
+              "sdk/tutorials/evaluating-conversations",
+              "sdk/tutorials/simulating-conversations",
+              "sdk/tutorials/tracing-agent-operations",
+              "sdk/tutorials/create-evaluation-with-custom-scores",
+              "sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt",
+              "sdk/tutorials/how-to-evaluate-your-agentic-system"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": ["sdk/integrations/github-actions"]
+          }
+        ]
+      },
+      {
+        "tab": "Concepts",
+        "groups": [
+          {
+            "group": "SDK",
+            "pages": ["sdk/installation", "sdk/usage", "sdk/api/galtea"]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              {
+                "group": "Product",
+                "icon": "cube",
+                "pages": [
+                  "concepts/product",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/product/service", "sdk/api/product/list", "sdk/api/product/get", "sdk/api/product/get-by-name", "sdk/api/product/delete"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Version",
+                "icon": "code-branch",
+                "pages": [
+                  "concepts/product/version",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/version/service", "sdk/api/version/create", "sdk/api/version/list", "sdk/api/version/get", "sdk/api/version/get-by-name", "sdk/api/version/delete"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Test",
+                "icon": "flask",
+                "pages": [
+                  "concepts/product/test",
+                  {
+                    "group": "Test Types",
+                    "pages": [
+                      {
+                        "group": "Quality",
+                        "icon": "certificate",
+                        "pages": ["concepts/product/test/quality-tests"]
+                      },
+                      {
+                        "group": "Red Teaming",
+                        "icon": "shield-check",
+                        "pages": ["concepts/product/test/red-teaming-tests", "concepts/product/test/red-teaming-threats", "concepts/product/test/red-teaming-strategies"]
+                      },
+                      {
+                        "group": "Scenarios",
+                        "icon": "user-group",
+                        "pages": ["concepts/product/test/scenario-tests"]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/test/service", "sdk/api/test/create", "sdk/api/test/list", "sdk/api/test/get", "sdk/api/test/get-by-name", "sdk/api/test/delete", "sdk/api/test/download"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Test Case",
+                "icon": "list",
+                "pages": [
+                  "concepts/product/test/case",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/test-case/service", "sdk/api/test-case/create", "sdk/api/test-case/list", "sdk/api/test-case/get", "sdk/api/test-case/delete"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Simulator",
+                "icon": "user-group",
+                "pages": [
+                  "concepts/product/test/case/conversation-simulator",
+                  {
+                    "group": "Simulator",
+                    "icon": "user-group",
+                    "pages": ["sdk/api/simulator/service", "sdk/api/simulator/simulate"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Session",
+                "icon": "comments",
+                "pages": [
+                  "concepts/product/version/session",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/session/service", "sdk/api/session/create", "sdk/api/session/get-or-create", "sdk/api/session/list", "sdk/api/session/get", "sdk/api/session/get-by-custom-id", "sdk/api/session/delete"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Inference Result",
+                "icon": "diagram-project",
+                "pages": [
+                  "concepts/product/version/session/inference-result",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/inference-result/service",
+                      "sdk/api/inference-result/generate",
+                      "sdk/api/inference-result/create",
+                      "sdk/api/inference-result/create-batch",
+                      "sdk/api/inference-result/update",
+                      "sdk/api/inference-result/list",
+                      "sdk/api/inference-result/get",
+                      "sdk/api/inference-result/delete"
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "group": "Trace",
+                "icon": "sitemap",
+                "pages": [
+                  "concepts/product/version/session/trace",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/trace/service", "sdk/api/trace/start-trace", "sdk/api/trace/set-context", "sdk/api/trace/clear-context", "sdk/api/trace/create", "sdk/api/trace/create-batch", "sdk/api/trace/list", "sdk/api/trace/get", "sdk/api/trace/delete"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Evaluation",
+                "icon": "clipboard-check",
+                "pages": [
+                  "concepts/product/version/session/evaluation",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/evaluation/service", "sdk/api/evaluation/create-single-turn", "sdk/api/evaluation/create", "sdk/api/evaluation/list", "sdk/api/evaluation/get", "sdk/api/evaluation/delete"]
+                  }
+                ]
+              },
+
+              {
+                "group": "Model",
+                "icon": "microchip",
+                "pages": ["concepts/model"]
+              },
+
+              {
+                "group": "Metrics",
+                "icon": "brackets-curly",
+                "pages": [
+                  "concepts/metric",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": ["sdk/api/metric/service", "sdk/api/metric/create", "sdk/api/metric/list", "sdk/api/metric/get", "sdk/api/metric/get-by-name", "sdk/api/metric/delete"]
+                  },
+                  {
+                    "group": "RAG metrics",
+                    "icon": "magnifying-glass-chart",
+                    "pages": [
+                      "concepts/metric/factual-accuracy",
+                      "concepts/metric/resilience-to-noise",
+                      "concepts/metric/answer-relevancy",
+                      "concepts/metric/faithfulness",
+                      "concepts/metric/contextual-precision",
+                      "concepts/metric/contextual-recall",
+                      "concepts/metric/contextual-relevancy",
+                      "concepts/metric/custom-judge"
+                    ]
+                  },
+                  {
+                    "group": "Conversational",
+                    "icon": "message",
+                    "pages": ["concepts/metric/knowledge-retention", "concepts/metric/role-adherence", "concepts/metric/conversation-completeness", "concepts/metric/conversation-relevancy", "concepts/metric/user-satisfaction", "concepts/metric/user-objective-accomplished"]
+                  },
+                  {
+                    "group": "Red Teaming",
+                    "icon": "shield-check",
+                    "pages": ["concepts/metric/misuse-resilience", "concepts/metric/non-toxic", "concepts/metric/unbiased", "concepts/metric/jailbreak-resilience", "concepts/metric/data-leakage"]
+                  },
+                  {
+                    "group": "Deterministic metrics",
+                    "icon": "calculator",
+                    "pages": ["concepts/metric/bleu", "concepts/metric/rouge", "concepts/metric/meteor", "concepts/metric/text-similarity", "concepts/metric/text-match", "concepts/metric/iou", "concepts/metric/spatial-match", "concepts/metric/url-validation", "concepts/metric/tool-correctness"]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  "footer": {
+    "socials": {
+      "linkedin": "https://linkedin.com/company/galtea-ai",
+      "website": "https://galtea.ai"
+    }
+  },
+  "redirects": [
+    {
+      "source": "sdk/introduction",
+      "destination": "sdk/installation"
+    },
+    {
+      "source": "/concepts/metric-type",
+      "destination": "/concepts/metric"
+    },
+    {
+      "source": "/concepts/metric-type/answer-relevancy",
+      "destination": "/concepts/metric/answer-relevancy"
+    },
+    {
+      "source": "/concepts/metric-type/bleu",
+      "destination": "/concepts/metric/bleu"
+    },
+    {
+      "source": "/concepts/metric-type/contextual-precision",
+      "destination": "/concepts/metric/contextual-precision"
+    },
+    {
+      "source": "/concepts/metric-type/contextual-recall",
+      "destination": "/concepts/metric/contextual-recall"
+    },
+    {
+      "source": "/concepts/metric-type/contextual-relevancy",
+      "destination": "/concepts/metric/contextual-relevancy"
+    },
+    {
+      "source": "/concepts/metric-type/conversation-completeness",
+      "destination": "/concepts/metric/conversation-completeness"
+    },
+    {
+      "source": "/concepts/metric-type/conversation-relevancy",
+      "destination": "/concepts/metric/conversation-relevancy"
+    },
+    {
+      "source": "/concepts/metric-type/custom-judge",
+      "destination": "/concepts/metric/custom-judge"
+    },
+    {
+      "source": "/concepts/metric-type/data-leakage",
+      "destination": "/concepts/metric/data-leakage"
+    },
+    {
+      "source": "/concepts/metric-type/factual-accuracy",
+      "destination": "/concepts/metric/factual-accuracy"
+    },
+    {
+      "source": "/concepts/metric-type/faithfulness",
+      "destination": "/concepts/metric/faithfulness"
+    },
+    {
+      "source": "/concepts/metric-type/iou",
+      "destination": "/concepts/metric/iou"
+    },
+    {
+      "source": "/concepts/metric-type/jailbreak-resilience",
+      "destination": "/concepts/metric/jailbreak-resilience"
+    },
+    {
+      "source": "/concepts/metric-type/jailbreak-resilience-v2",
+      "destination": "/concepts/metric/jailbreak-resilience"
+    },
+    {
+      "source": "/concepts/metric/jailbreak-resilience-v2",
+      "destination": "/concepts/metric/jailbreak-resilience"
+    },
+    {
+      "source": "/concepts/metric-type/knowledge-retention",
+      "destination": "/concepts/metric/knowledge-retention"
+    },
+    {
+      "source": "/concepts/metric-type/meteor",
+      "destination": "/concepts/metric/meteor"
+    },
+    {
+      "source": "/concepts/metric-type/misuse-resilience",
+      "destination": "/concepts/metric/misuse-resilience"
+    },
+    {
+      "source": "/concepts/metric-type/non-toxic",
+      "destination": "/concepts/metric/non-toxic"
+    },
+    {
+      "source": "/concepts/metric-type/resilience-to-noise",
+      "destination": "/concepts/metric/resilience-to-noise"
+    },
+    {
+      "source": "/concepts/metric-type/role-adherence",
+      "destination": "/concepts/metric/role-adherence"
+    },
+    {
+      "source": "/concepts/metric-type/rouge",
+      "destination": "/concepts/metric/rouge"
+    },
+    {
+      "source": "/concepts/metric-type/spatial-match",
+      "destination": "/concepts/metric/spatial-match"
+    },
+    {
+      "source": "/concepts/metric-type/text-match",
+      "destination": "/concepts/metric/text-match"
+    },
+    {
+      "source": "/concepts/metric-type/text-similarity",
+      "destination": "/concepts/metric/text-similarity"
+    },
+    {
+      "source": "/concepts/metric-type/unbiased",
+      "destination": "/concepts/metric/unbiased"
+    },
+    {
+      "source": "/concepts/metric-type/url-validation",
+      "destination": "/concepts/metric/url-validation"
+    },
+    {
+      "source": "/concepts/metric-type/tool-correctness",
+      "destination": "/concepts/metric/tool-correctness"
+    },
+    {
+      "source": "/concepts/product/version/session/evaluation/task",
+      "destination": "/concepts/product/version/session/evaluation"
+    },
+    {
+      "source": "/sdk/api/metrics",
+      "destination": "/sdk/api/metric"
+    },
+    {
+      "source": "/sdk/api/metrics/service",
+      "destination": "/sdk/api/metric/service"
+    },
+    {
+      "source": "/sdk/api/metrics/create",
+      "destination": "/sdk/api/metric/create"
+    },
+    {
+      "source": "/sdk/api/metrics/list",
+      "destination": "/sdk/api/metric/list"
+    },
+    {
+      "source": "/sdk/api/metrics/get",
+      "destination": "/sdk/api/metric/get"
+    },
+    {
+      "source": "/sdk/api/metrics/get-by-name",
+      "destination": "/sdk/api/metric/get-by-name"
+    },
+    {
+      "source": "/sdk/api/metrics/delete",
+      "destination": "/sdk/api/metric/delete"
+    },
+    {
+      "source": "/sdk/api/evaluation-task",
+      "destination": "/sdk/api/evaluation"
+    },
+    {
+      "source": "/sdk/api/evaluation-task/service",
+      "destination": "/sdk/api/evaluation/service"
+    },
+    {
+      "source": "/sdk/api/evaluation-task/create-single-turn",
+      "destination": "/sdk/api/evaluation/create-single-turn"
+    },
+    {
+      "source": "/sdk/api/evaluation-task/create",
+      "destination": "/sdk/api/evaluation/create"
+    },
+    {
+      "source": "/sdk/api/evaluation-task/list",
+      "destination": "/sdk/api/evaluation/list"
+    },
+    {
+      "source": "/sdk/api/evaluation-task/get",
+      "destination": "/sdk/api/evaluation/get"
+    },
+    {
+      "source": "/sdk/api/evaluation-task/delete",
+      "destination": "/sdk/api/evaluation/delete"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+<Update label="2025-12-18" description="Agent Tracing & Observability">
+## Full Visibility with Agent Tracing
+
+You can now add **[Traces](/concepts/product/version/session/trace)** to your [Sessions](/concepts/product/version/session) and [Inference Results](/concepts/product/version/session/inference-result). This unlocks deep observability into your AI agents, allowing you to understand exactly what they are doing at each step of execution—not just the final output.
+
+Traces capture internal operations such as:
+- **Tool Calls:** API requests, calculations, or data fetching.
+- **Retrieval Steps:** Vector database searches and RAG context retrieval.
+- **Chain Orchestration:** Internal routing and decision-making logic.
+- **LLM Invocations:** Prompts sent to underlying models.
+
+With the new **[Trace Service](/sdk/api/trace/service)** in the SDK, you can visualize the full execution tree, debug errors, analyze latency for specific operations, and audit agent behavior with granular detail.
+
+<Frame>
+  <img src="/images/changelog/2025-12-18_tracing-view.png" alt="Agent Tracing Visualization" />
+</Frame>
+
+We've also added a comprehensive guide on how to instrument your code. [Read the Tracing Tutorial](/sdk/tutorials/tracing-agent-operations) to get started.
+
+</Update>

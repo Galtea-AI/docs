@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-08-04</title>
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Poppins, Arial, sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f7fa; text-align: left; margin: 20px; padding: 20px; border: 1px solid #d1d3db; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center; margin-top: 20px">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galteaLogo.png" style="width: 100px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #333; font-size: 26px; margin-top: 30px; margin-bottom: 0px">Custom Judges, New Metrics, and a UI Refresh</h1>
+                <a style="color: #5c5bdd; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-08-04">2025-08-04</a>
+
+                <h3 style="color: #333">Create Custom Judges via Your Own Prompts</h3>
+                <p style="color: #444; font-size: 16px">
+                  You can now define <strong>Custom Judge</strong> metrics by crafting your own evaluation prompts during metric creation. This allows you to encode domain-specific rubrics, product constraints, or behavioral guidelines directly into the metric—giving you precise control over how LLM
+                  outputs are assessed. Simply write your prompt, specify the scoring logic, and Galtea will use LLM-as-a-judge techniques to evaluate outputs according to your standards.
+                </p>
+                <div style="text-align: center; margin: 10px 0">
+                  <img src="https://mintlify.s3.us-west-1.amazonaws.com/galtea/images/changelog/2025-08-04_custom_judge.png" alt="Creating a custom judge metric" style="max-width: 100%; height: auto; border-radius: 8px" />
+                </div>
+
+                <h3 style="color: #333">New Deterministic Metrics</h3>
+                <p style="color: #444; font-size: 16px">Four new deterministic metrics are now available, perfect for scenarios requiring rule-based scoring:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Text Similarity:</strong> Quantifies text resemblance using character-level fuzzy matching.</li>
+                  <li><strong>Text Match:</strong> Returns pass/fail based on similarity to a reference string.</li>
+                  <li><strong>Spatial Match:</strong> Verifies box alignment with IoU scoring for a pass/fail result.</li>
+                  <li><strong>IoU (Intersection over Union):</strong> Computes the overlap ratio between predicted and reference boxes.</li>
+                </ul>
+
+                <h3 style="color: #333">Dashboard Redesign: Second Iteration</h3>
+                <p style="color: #444; font-size: 16px">We've launched the second iteration of our redesigned dashboard with a refreshed visual language focused on clarity and usability. Key improvements include:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li><strong>Modern Forms:</strong> Forms have been modernized to provide a more intuitive and visually appealing user experience, giving a more professional look to the Dashboard.</li>
+                </ul>
+                <p style="color: #444; font-size: 16px">This redesign represents our commitment to delivering a more intuitive and visually appealing user experience.</p>
+
+                <br />
+                <p style="color: #444; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #444; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack/Discord channel.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #d1d3db" />
+                <p style="margin-top: 35px; color: #444; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

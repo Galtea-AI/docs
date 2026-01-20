@@ -1,0 +1,146 @@
+---
+title: 'Creating Product Descriptions'
+description: "Learn how to create effective product descriptions that power comprehensive AI evaluation."
+icon: "bullseye"
+iconType: "solid"
+---
+
+**Product context** forms the cornerstone of your AI evaluation strategy in Galtea. It clearly defines what your AI system is intended to accomplish, allowing the platform to generate relevant test cases, deliver meaningful evaluations, and provide actionable insights tailored to your use case. Galtea organizes product context into five key categories: **product description, capabilities, inabilities, security boundaries, and policies**. Below, we explain how to effectively provide each category for optimal evaluation results.
+
+## What Is a Product Description?
+
+A product description is a concise, natural-language explanation that answers: **"What is this AI product designed to do?"**
+
+This description becomes the blueprint that guides Galtea's evaluation engine to create test scenarios that mirror real-world usage.
+
+## Why Product Descriptions Matter
+
+Your product description directly impacts the quality and relevance of your evaluations. A well-crafted description enables Galtea to:
+
+- Generate test cases that reflect actual user interactions
+- Create adversarial scenarios relevant to your domain
+- Tailor evaluation metrics to your specific use case
+- Provide actionable insights for improving AI reliability
+
+## Writing Effective Product Descriptions
+
+### Be Specific and Purpose-Driven
+
+Focus on three key elements:
+- **What** the product does
+- **Who** it serves
+- **Which** domain or tasks it handles
+
+**Good Examples:**
+- "A customer support assistant that helps telecom subscribers resolve billing inquiries and plan changes through natural conversation."
+- "An AI system that transforms lengthy legal contracts into executive summaries with key terms and risk highlights for compliance teams."
+
+**Avoid Generic Descriptions:**
+- "A chatbot that answers questions"
+- "An AI assistant for our company"
+
+### Focus on User Experience, Not Architecture
+
+Describe your product from the end-user perspective rather than technical implementation details.
+
+**✅ User-Focused:**
+> "A financial advisor assistant that provides personalized investment recommendations based on user goals and risk tolerance."
+
+**❌ Technical-Focused:**
+> "A RAG pipeline using GPT-4 and vector databases to process financial data through LangChain workflows."
+
+### Best Practices
+
+**Keep It Concise**: Aim for 2-3 sentences that capture the essence without unnecessary detail.
+
+**Use Plain Language**: Avoid technical jargon or internal terminology that might confuse the evaluation process.
+
+**Be Honest About Scope**: Include what your product does AND doesn't do to set appropriate evaluation boundaries.
+
+**Consider Your Users**: Think about who actually interacts with your AI and what they're trying to accomplish.
+
+### Common Pitfalls to Avoid
+
+- **Too Broad**: "An AI that helps with business tasks" → **Better**: "An AI that automates invoice processing and expense categorization for accounting teams"
+- **Too Technical**: "A transformer model fine-tuned on domain data" → **Better**: "A legal research assistant that finds relevant case law and statutes"
+- **Feature Lists**: Avoid listing capabilities like "can answer questions, summarize text, and translate" → **Better**: Focus on the primary use case and user outcome
+
+## Extended Product Descriptions
+To maximize the effectiveness of test case generation—especially for security and adversarial scenarios—provide detailed, structured definitions for your product’s **capabilities, inabilities, and security boundaries**. Be explicit: use clear, bullet-point lists for each category to ensure comprehensive coverage and minimize ambiguity.
+
+Below, we outline each category and illustrate them with specific examples, using the following product description as a reference:
+
+
+**Example Product Description:**
+>"A personal finance assistant that provides investment recommendations, portfolio analysis, and financial planning guidance for individual investors based on their goals, risk tolerance, and market conditions."
+
+Here are the extra product context categories:
+
+### Capabilities
+List what your product is specifically designed to do, and what kind of information has access to. This helps generate specifically targeted test cases.
+
+<Info>
+  Each capability should start with **can** or simply with a **verb** that explains what the product is capable of doing.
+</Info>
+```
+* Analyze investment portfolios and suggest rebalancing strategies
+* Provide market insights and explain financial concepts
+* Calculate retirement planning scenarios and savings goals
+* Compare investment products (stocks, bonds, ETFs, mutual funds)
+* Generate personalized investment strategies based on user profiles
+* Offer tax-efficient investment guidance and strategies
+```
+
+### Inabilities
+Clearly list technical limitations, including information and tools the product cannot access, as well as general scope boundaries. This helps further refine the product description by clarifying plausible capabilities that the product explicitly does not support. Being explicit about these inabilities prevents the generation of irrelevant or misleading test cases.
+<Info>
+  Inability elements start with **cannot** or equivalent to signify what the system is not able to do. The inabilities could be functional or access related.
+</Info>
+```
+* Cannot execute trades or access brokerage accounts
+* Cannot provide tax preparation services or file tax returns
+* Cannot guarantee investment returns or provide insider trading information
+* Cannot provide legal advice on complex financial structures
+* Cannot access users' bank accounts or financial institutions
+* Is not able to store or transmit banking credentials or account numbers
+* Cannot access real-time trading platforms or execute financial transactions
+```
+
+### Security Boundaries
+Things that the product must not do, although theoretically it has the capability to do so.
+<Info>
+  Security boundaries consist of **must not** or **should not** statements to outline the security requirements of the product 
+</Info>
+```
+* Should refuse requests for market manipulation strategies or insider information
+* Must not provide advice on illegal tax avoidance schemes
+* Should decline to share proprietary trading algorithms or investment firm strategies
+```
+
+### Policies
+These are very specific instructions that the product needs to do, when it is faced with certain situations or user inputs.
+<Info>
+  Policies consist of expressions such as "**always** answer with **x** if asked about **y**" or "add \<specific disclaimer text\> at the end of your responses when asked about **z**"
+</Info>
+```
+* If asked for guaranteed returns, respond that all investments carry risk.
+* Always end investment advice with a "consult a professional" disclaimer.
+* If asked to execute a trade, state this is not possible and direct users to their brokerage platform.
+* Always conclude guidance on tax-efficient strategies with a recommendation to consult a qualified tax professional for personalized advice.
+* Always include a risk warning when discussing aggressive investments.
+```
+
+
+## Testing Your Product Context, and extended Description
+
+A good product context should allow someone unfamiliar with your product to:
+1. Understand what problem it solves
+2. Identify who would use it
+3. Predict what kinds of questions or tasks it should handle well
+4. Recognize what it shouldn't be expected to do
+
+If your all your enhanced product definitions pass this test, it will help Galtea create more effective evaluations for your AI system.
+
+---
+
+**Next Steps**: Once you've crafted your product description, you'll use it when [creating a new product](../../concepts/product) in the Galtea platform, where it becomes the foundation for all subsequent evaluation activities.

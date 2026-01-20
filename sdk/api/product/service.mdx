@@ -1,0 +1,54 @@
+---
+title: 'Product Service'
+sidebarTitle: "Service"
+description: "Product Service API methods in the Galtea SDK"
+---
+
+import ProductCard from '/snippets/cards/product-card.mdx';
+
+The Product Service in the Galtea SDK allows you to manage [products](/concepts/product) that you want to evaluate.
+This Service is exposed by the `galtea.products` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+<Note>
+  It is not supported to create product from the sdk, therefore you need to do this from the [dashboard](https://platform.galtea.ai/).
+</Note>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+List all products:
+```python
+products = galtea.products.list(limit=10)
+```
+
+Get a product by ID:
+```python
+product = galtea.products.get(product_id=product_id)
+```
+
+Get a product by name:
+```python
+product = galtea.products.get_by_name(name=product_name)
+```
+
+<Note>
+  Products must be created through the [Galtea Dashboard](https://platform.galtea.ai/product-new). The SDK provides read-only access.
+</Note>
+
+## Service Methods
+- [Listing Products](/sdk/api/product/list)
+- [Retrieving Product](/sdk/api/product/get)
+- [Retrieving Product By Name](/sdk/api/product/get-by-name)
+- [Deleting Product](/sdk/api/product/delete)
+
+## Related Concepts
+
+<ProductCard />

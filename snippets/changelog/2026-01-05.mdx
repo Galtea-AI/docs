@@ -1,0 +1,32 @@
+<Update label="2026-01-05" description="Tool Correctness Metric & New Product UX">
+## Enhanced Product Creation Experience
+
+We have completely revamped the onboarding flow for new products. A new, intuitive form is now available to help you create AI-based products faster and more efficiently. This update streamlines the initial setup configuration, improving the overall user experience when onboarding new agents or LLM apps.
+
+<Frame>
+  <img src="/images/changelog/2026-01-05_ai-product-form.png" alt="New Product Creation Form" />
+</Frame>
+
+## Evaluating Tool Usage
+
+As agents become more autonomous, validating *how* they use tools is just as important as the final answer. We have introduced new capabilities to strictly evaluate tool calls:
+
+### New Property in Test Cases
+Test cases now accept a new property: `expected_tools`. This allows you to define exactly which tools an agent should invoke during a specific test scenario. [Read more about Test Case structure](/sdk/api/test-cases#properties).
+
+### New Evaluation Parameters
+To support this validation, the evaluation process now accepts two specific parameters regarding tool usage:
+- `tools_used`: The actual list of tools invoked by the model.
+- `expected_tools`: The ground truth list of tools that should have been used.
+
+## New Metric: Tool Correctness
+
+We have added a specialized metric to our library: **Tool Correctness**. 
+
+This metric automatically compares the `tools_used` against the `expected_tools` to determine if the agent selected the right functions to solve the user's problem. This is critical for ensuring reliability in agentic workflows. [See metric details](/concepts/metrics#tool-correctness).
+
+<Frame>
+  <img src="/images/changelog/2026-01-05_tool-correctness-metric.png" alt="Tool Correctness Metric Result" />
+</Frame>
+
+</Update>

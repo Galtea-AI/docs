@@ -1,0 +1,46 @@
+---
+title: "Conversation Completeness"
+description: "Evaluates whether your chatbot can guide a user to successfully complete their task across multiple turns."
+---
+
+## Conversation Completeness
+
+The **Conversation Completeness** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to measure the ability of your LLM-based chatbot to guide a user through an end-to-end conversation that successfully satisfies their initial request or goal. It evaluates whether the dialogue includes all necessary steps and logical transitions needed to fulfill the user's intent.
+
+This metric is especially relevant for transactional or task-based agents (e.g., booking systems, support bots).
+
+---
+
+To compute the `conversation_completeness` metric, the following parameters are required in every turn of the conversation:
+
+- **`input`**: The user message in the session.
+- **`actual_output`**: The chatbot's response to the user message.
+
+This metric will evaluate the whole conversation, including all turns, to judge whether the full task was completed or abandoned partway.
+
+---
+
+## How Is It Calculated?
+
+The `conversation_completeness` score is computed using the following LLM-driven process:
+
+1. **Goal Inference**: An LLM infers the user's original goal or task from the early stages of the conversation history.
+2. **Completion Check**: The LLM determines whether the chatbot has successfully satisfied that goal by the end of the conversation.
+
+The score is then calculated as:
+
+$$
+\text{Conversation Completeness} = \frac{\text{Number of satisfied user intents}}{\text{Total number of user intents}}
+$$
+
+Scores closer to **1** suggest a high rate of successful task completion and indicate that users can rely on the chatbot to reach their goals.
+
+<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-conversation-completeness).</Note>
+
+
+---
+
+## Related Topics
+
+- [Conversation Relevancy](/concepts/metric/conversation-relevancy)
+- [Role Adherence](/concepts/metric/role-adherence)

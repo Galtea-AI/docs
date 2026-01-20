@@ -1,0 +1,62 @@
+---
+title: "IOU"
+description: "Measures the spatial overlap between a predicted bounding box and one or more reference boxes. This metric is commonly used in object detection and layout tasks to quantify how well the predicted region aligns with the ground truth."
+
+---
+
+The IOU (Intersection Over Union) metric is part of the [Deterministic Metric](/concepts/metric) options in Galtea. It evaluates the degree of spatial overlap between a single predicted bounding box and a set of ground truth boxes. This is especially useful for tasks involving layout analysis, bounding box prediction, or image-based text extraction, where location matters as much as content.
+
+---
+
+## Evaluation Parameters
+
+To compute the iou metric, the following parameters must be provided:
+
+- **`actual_output`**: A single predicted bounding box in the format.
+- **`expected_output`**: A list of lists of ground truth boxes, each also in the format.
+
+---
+
+## How Is It Calculated?
+
+1. The predicted bounding box is compared against each ground truth box.
+
+2. For each comparison, the IoU is calculated as:
+
+   $$
+   \text{IoU} = \frac{\text{Area of Intersection}}{\text{Area of Union}}
+   $$
+
+3. The maximum IoU value across all comparisons is returned as the final score.
+
+This method is particularly useful when the ground truth includes multiple bounding boxes for a single answer (e.g., one box per word in a multi-word phrase).
+
+---
+
+## Interpretation of Scores
+
+- **≥ 0.7** – Strong spatial alignment.
+- **0.4 – 0.7** – Moderate overlap; may require refinement.
+- **< 0.4** – Poor alignment; predicted box diverges from reference.
+
+Note: These thresholds may be adjusted based on task-specific precision requirements.
+
+---
+
+## Suggested Test Case Types
+
+Use IoU when evaluating:
+
+- **Layout-aware predictions**, such as bounding boxes in OCR or form extraction.
+- **Visual document understanding**, where spatial positioning is essential.
+- **Object or text region detection** in image or PDF-based tasks.
+
+
+---
+## Related Topics
+
+- [Text Match](/concepts/metric/text-match)
+- [Text Similarity](/concepts/metric/text-similarity)
+- [Spatial Match](/concepts/metric/spatial-match)
+
+

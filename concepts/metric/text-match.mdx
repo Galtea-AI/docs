@@ -1,0 +1,50 @@
+---
+title: "Text Match"
+description: "Determines whether the generated text matches the reference with high character-level similarity using fuzzy matching given by the [Text Similarity](/concepts/metric/text-similarity) metric. Returns a binary outcome based on a threshold, making it ideal for simple pass/fail evaluations where exact wording is not required."
+---
+
+The Text Match metric is part of the [Deterministic Metric](/concepts/metric) options in Galtea. It leverages character-level fuzzy string comparison to assess whether two texts are similar enough, based on a predefined threshold. Rather than producing a continuous similarity score, this metric returns a boolean-style score, which is useful for scenarios where a definitive match decision is needed despite minor wording differences.
+
+---
+
+## Evaluation Parameters
+
+To compute the text\_match metric, the following parameters must be provided:
+
+* **`actual_output`**: The generated text from the model.
+* **`expected_output`**: The target or reference text to compare against.
+
+---
+
+## How Is It Calculated?
+
+The metric uses a fuzzy string matching algorithm (based on edit distance) to compute the similarity ratio between the actual and expected outputs. If the similarity ratio exceeds 85%, the output is considered a match, otherwise; it is marked as a non-match.
+
+---
+
+## Interpretation of Scores
+
+* **1.0** – Texts are considered a match (similarity > 85%).
+* **0.0** – Texts are not considered a match (similarity ≤ 85%).
+
+This binary scoring makes the metric particularly useful for simple pass/fail validation use cases.
+
+---
+
+## Suggested Test Case Types
+
+Use Text Match when evaluating:
+
+* **Simple equivalence checks** where light paraphrasing or minor differences are allowed.
+* **Rule-based or heuristic outputs** where exact matches aren't expected but alignment is necessary.
+* **Pass/fail QA checks** for generated text.
+
+
+---
+## Related Topics
+
+* [Text Similarity](/concepts/metric/text-similarity)
+* [IOU](/concepts/metric/iou)
+* [Spatial Match](/concepts/metric/spatial-match)
+
+

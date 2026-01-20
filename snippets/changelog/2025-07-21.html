@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2025-07-21</title>
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Poppins, Arial, sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f7fa; text-align: left; margin: 20px; padding: 20px; border: 1px solid #d1d3db; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center; margin-top: 20px">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galteaLogo.png" style="width: 100px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #333; font-size: 26px; margin-top: 30px; margin-bottom: 0px">Synthetic User Simulation, New Data Leakage Metric, and Platform Enhancements</h1>
+                <a style="color: #5c5bdd; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2025-07-21">2025-07-21</a>
+
+                <h3 style="color: #333">Test Your Chatbots with Synthetic Users and Scenarios</h3>
+                <p style="color: #444; font-size: 16px">
+                  It is now possible to generate tests that simulate realistic, multi-turn user interactions. Our new <strong><a href="https://docs.galtea.ai/concepts/product/test/scenario-tests" style="color: #5c5bdd">Scenario Based Tests</a></strong> allow you to define synthetic user personas and
+                  goals to evaluate how well your conversational AI handles complex dialogues with the help of the <a href="https://docs.galtea.ai/concepts/product/test/case/conversation-simulator" style="color: #5c5bdd">Conversation Simulator</a>. Get started with our new
+                  <a href="https://docs.galtea.ai/sdk/tutorials/simulating-conversations" style="color: #5c5bdd">tutorial</a>.
+                </p>
+
+                <h3 style="color: #333">New Red Teaming Metric: Data Leakage</h3>
+                <p style="color: #444; font-size: 16px">
+                  We've added the <strong><a href="https://docs.galtea.ai/concepts/metric/data-leakage" style="color: #5c5bdd">Data Leakage</a></strong> metric to our suite of Red Teaming evaluations. This metric assesses whether your LLM returns content that could contain sensitive information,
+                  such as PII, financial data, or proprietary business data. It is crucial for ensuring your applications are secure and privacy-compliant.
+                </p>
+
+                <h3 style="color: #333">Enhanced Metric Management</h3>
+                <p style="color: #444; font-size: 16px">We've rolled out several improvements to make metric creation and management more powerful and intuitive:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li>
+                    <strong>Link Metrics to Specific Models:</strong> You can now associate a <a href="https://docs.galtea.ai/concepts/metric" style="color: #5c5bdd">Metric</a> with a specific evaluator model (e.g., "GPT-4.1") to ensure consistency and use specialized models for certain metrics.
+                  </li>
+                  <li>
+                    <strong>Simplified Custom Scoring:</strong> We've introduced a more streamlined method for defining your own deterministic metrics, making it easier to integrate your custom, rule-based logic into the Galtea workflow. See our
+                    <a href="https://docs.galtea.ai/sdk/tutorials/create-evaluation-with-custom-scores" style="color: #5c5bdd">tutorial on evaluating with custom scores</a>.
+                  </li>
+                </ul>
+
+                <h3 style="color: #333">Support for Larger Inputs and Outputs</h3>
+                <p style="color: #444; font-size: 16px">To better support applications that handle large documents or complex queries, we have increased the maximum character size for evaluation inputs and outputs to 250,000 characters.</p>
+
+                <br />
+                <p style="color: #444; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #444; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack/Discord channel.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #d1d3db" />
+
+                <h3 style="color: #333; margin-top: 40px">Coming Next</h3>
+                <p style="color: #444; font-size: 16px">We're not stopping here! Here's what's coming soon:</p>
+                <ul style="color: #444; font-size: 16px">
+                  <li>Visual revamp of the platform</li>
+                  <li>Enhanced warnings for improper SDK usage</li>
+                  <li>New Galtea Metrics</li>
+                </ul>
+                <p style="margin-top: 35px; color: #444; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

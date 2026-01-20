@@ -1,0 +1,32 @@
+---
+title: 'List Inference Results'
+sidebarTitle: "List"
+description: "List inference result logs for a session."
+---
+
+## Returns
+Returns a list of [InferenceResult](/concepts/product/version/session/inference-result) objects.
+
+## Example
+```python
+inference_result = galtea.inference_results.list(session_id=session_id)
+```
+
+## Parameters
+<ResponseField name="session_id" type="string | list[string]" required>
+  The ID or IDs of the session(s) to get inference results for.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort inference results by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of inference results to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="1000" optional>
+  Maximum number of inference results to return in a single request.
+  
+  **Default:** `1000`
+</ResponseField>

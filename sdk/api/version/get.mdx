@@ -1,0 +1,18 @@
+---
+title: 'Retrieving Version'
+sidebarTitle: "Get"
+description: "Retrieve a specific version by its ID."
+---
+
+## Returns
+Returns a [Version](/concepts/product/version) object for the given version ID.
+
+## Example
+```python
+version = galtea.versions.get(version_id=version_id)
+```
+
+## Parameters
+<ResponseField name="version_id" type="string" required>
+  The ID of the version you want to retrieve.
+</ResponseField>

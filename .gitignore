@@ -1,0 +1,4 @@
+*repomix-output.*
+ai_changelog.md
+# Build directory for non-destructive preview
+.build/

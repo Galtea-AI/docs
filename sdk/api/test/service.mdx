@@ -1,0 +1,55 @@
+---
+title: 'Test Service'
+sidebarTitle: "Service"
+description: "Test Service API methods in the Galtea SDK"
+---
+
+import TestCard from '/snippets/cards/test-card.mdx';
+
+The Test Service in the Galtea SDK allows you to manage [tests](/concepts/product/test) for evaluating your products.
+This Service is exposed by the `galtea.tests` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a test:
+```python
+test = galtea.tests.create(
+    name=test_name,
+    type="QUALITY",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=5,
+)
+```
+
+List tests for a product:
+```python
+tests = galtea.tests.list(product_id=product_id, limit=10)
+```
+
+Get a test by ID:
+```python
+test = galtea.tests.get(test_id=test_id)
+```
+
+## Service Methods
+- [Create Test](/sdk/api/test/create)
+- [Listing Tests](/sdk/api/test/list)
+- [Retrieving Test](/sdk/api/test/get)
+- [Retrieving Test By Name](/sdk/api/test/get-by-name)
+- [Deleting Test](/sdk/api/test/delete)
+- [Downloading Test](/sdk/api/test/download)
+
+## Related Concepts
+
+<TestCard />

@@ -1,0 +1,52 @@
+---
+title: 'Test Case Service'
+sidebarTitle: "Service"
+description: "Test Case Service API methods in the Galtea SDK"
+---
+
+import TestCaseCard from '/snippets/cards/test-case-card.mdx';
+
+The Test Case Service in the Galtea SDK allows you to manage [test-cases](/concepts/product/test/case) for evaluating your products.
+This Service is exposed by the `galtea.test_cases` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a test case:
+```python
+test_case = galtea.test_cases.create(
+    test_id=test_id,
+    input="What is the capital of France?",
+    expected_output="Paris",
+    context="Geography facts",
+    variant="original",
+)
+```
+
+List test cases:
+```python
+test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
+```
+
+Get a test case by ID:
+```python
+test_case = galtea.test_cases.get(test_case_id=test_case_id)
+```
+
+## Service Methods
+- [Create Test Case](/sdk/api/test-case/create)
+- [Listing Test Cases](/sdk/api/test-case/list)
+- [Retrieving Test Case](/sdk/api/test-case/get)
+- [Deleting Test Case](/sdk/api/test-case/delete)
+
+## Related Concepts
+
+<TestCaseCard />

@@ -1,0 +1,18 @@
+---
+title: 'Retrieving Metric By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific metric by its name."
+---
+
+## Returns
+Returns a [Metric](/concepts/metric) object for the given metric name.
+
+## Example
+```python
+metric = galtea.metrics.get_by_name(name=metric_name)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  The name of the metric you want to retrieve.
+</ResponseField>

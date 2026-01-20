@@ -1,0 +1,110 @@
+---
+title: 'Trace Service'
+sidebarTitle: "Service"
+description: "Trace Service API methods in the Galtea SDK"
+---
+
+import TraceCard from '/snippets/cards/trace-card.mdx';
+
+The Trace Service in the Galtea SDK allows you to collect, manage, and persist [traces](/concepts/product/version/session/trace) that capture the internal operations of your AI agents during inference.
+
+This Service is exposed by the `galtea.traces` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Two Approaches to Trace Collection
+
+The SDK provides two ways to collect traces:
+
+### 1. Automatic Collection with OpenTelemetry (Recommended)
+
+Use the `@trace` decorator or `start_trace()` context manager with context management:
+
+```python
+@trace(type=TraceType.TOOL)
+def fetch_user_data(user_id: str) -> dict:
+    return {"name": "John Doe", "email": "john@example.com"}
+
+
+@trace(type=TraceType.GENERATION)
+def generate_response(prompt: str) -> str:
+    return "Generated response..."
+
+
+class MyOverviewAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        user = fetch_user_data("user_123")
+        response = generate_response("Hello")
+        return AgentResponse(content=response)
+
+
+# Use generate() for automatic trace context management
+inference_result = galtea.inference_results.generate(
+    agent=MyOverviewAgent(),
+    session=session,
+    user_input="Show me user data",
+)
+```
+
+### 2. Fully Automatic with `generate()`
+
+When using `galtea.inference_results.generate()`, trace collection is handled automatically:
+
+```python
+@trace(type=TraceType.TOOL, name="calculate_sum")
+def calculate(a, b):
+    return a + b
+
+
+class MyMathsAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        message = input_data.last_user_message_str() or ""
+        a, b = map(int, message.split(","))
+        return AgentResponse(content=f"Result: {calculate(a, b)}")
+
+
+inference_result = galtea.inference_results.generate(
+    agent=MyMathsAgent(),
+    session=session,
+    user_input="5,3",
+)
+```
+
+### 3. Manual Collection with Context Management
+
+For full control over the trace lifecycle, use `set_context()` and `clear_context()`:
+
+Set context before running traced functions:
+```python
+trace_context = set_context(inference_result_id=inference_result_id)
+```
+
+Clear context and flush traces:
+```python
+clear_context(trace_context)
+```
+
+<Tip>
+  Use `galtea.inference_results.generate()` for automatic trace collection instead of manual collection.
+</Tip>
+
+## Service Methods
+
+### Context Management
+- [@trace Decorator](/sdk/api/trace/trace-decorator)
+- [start_trace](/sdk/api/trace/start-trace)
+- [set_context](/sdk/api/trace/set-context)
+- [clear_context](/sdk/api/trace/clear-context)
+
+### Direct API Methods
+- [Create Trace](/sdk/api/trace/create)
+- [Create Trace Batch](/sdk/api/trace/create-batch)
+- [List Traces](/sdk/api/trace/list)
+- [Get Trace](/sdk/api/trace/get)
+- [Delete Trace](/sdk/api/trace/delete)
+
+## Related Concepts
+
+<TraceCard />

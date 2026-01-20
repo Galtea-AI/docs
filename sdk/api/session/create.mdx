@@ -1,0 +1,35 @@
+---
+title: 'Create Session'
+sidebarTitle: "Create"
+description: "Create a new session to group inference results."
+---
+
+## Returns
+Returns a [Session](/concepts/product/version/session) object.
+
+## Example
+```python
+session = galtea.sessions.create(
+    version_id=version_id, test_case_id=test_case_id, is_production=False
+)
+```
+
+## Parameters
+<ResponseField name="version_id" type="string" required>
+  The ID of the version to associate with this session.
+</ResponseField>
+<ResponseField name="test_case_id" type="string" optional>
+  The ID of a test case. Required for non-production sessions (`is_production=False`).
+</ResponseField>
+<ResponseField name="custom_id" type="string" optional>
+  A client-provided custom ID for the session.
+  <Note>
+    This is useful to associate sessions in the Galtea platform with those in your application.
+  </Note>
+</ResponseField>
+<ResponseField name="context" type="string" optional>
+  The context provided to the AI product during the session.
+</ResponseField>
+<ResponseField name="is_production" type="boolean" optional>
+  A flag to indicate if the session is from a production environment. When `True`, a `test_case_id` is not required. Defaults to `False`.
+</ResponseField>

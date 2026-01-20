@@ -1,0 +1,20 @@
+<Update label="2025-09-15" description="Test Case Confidence, Custom Judges for Conversations, and More">
+## Confidence Scores for Generated Test Cases
+
+We're introducing confidence scores for all generated [Test Cases](/concepts/product/test/case). This new feature provides a clear indicator of the quality and reliability of each test case, helping you better understand your test suites and prioritize human review efforts. Higher scores indicate greater confidence in the test case's relevance and accuracy.
+
+## Simplified and More Flexible Metric Creation
+
+Creating [Metrics](/concepts/metric) is now more intuitive and flexible. Metrics are now directly linked to a specific test category (`QUALITY`, `RED_TEAMING`, or `SCENARIOS`), which simplifies the creation process by tailoring the available parameters to the relevant test category. This change makes it easier to define metrics that are perfectly aligned with your evaluation goals. See the updated [creation guide](/sdk/api/metric/create) for more details.
+
+## Custom Judges for Conversational Evaluation
+
+You can now create your own **[Custom Judges](/concepts/metric/custom-judge)** specifically for evaluating multi-turn conversations. This powerful feature allows you to define complex, stateful evaluation logic that assesses the entire dialogue, enabling you to measure nuanced aspects like task completion, context retention, and persona adherence across multiple turns. Learn more in our guide to [evaluating conversations](/sdk/tutorials/evaluating-conversations).
+
+## Conversation Simulator Enhancements
+
+We've added more control and realism to the [Conversation Simulator](/concepts/product/test/case/conversation-simulator):
+- **Agent-First Interactions**: The `simulate` method now includes an `agent_goes_first` parameter, allowing you to test scenarios where the agent initiates the conversation. [See the SDK docs](/sdk/api/simulator/simulate).
+- **Selectable Conversation Styles**: When creating a [Scenario Based Test](/concepts/product/test/scenario-tests), you can now choose a conversation style (`written` or `spoken`). This influences the tone and formality of the synthetic user's dialogue, enabling more realistic testing. This is available under the `strategies` parameter in the [test creation method](/sdk/api/test/create).
+
+</Update>

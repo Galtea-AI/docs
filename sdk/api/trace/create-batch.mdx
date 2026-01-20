@@ -1,0 +1,44 @@
+---
+title: 'Create Trace Batch'
+sidebarTitle: "Create Batch"
+description: "Create multiple traces in a single API call."
+---
+
+## Returns
+Returns a list of [Trace](/concepts/product/version/session/trace) objects.
+
+## Example
+
+```python
+galtea.traces.create_batch(
+    [
+        TraceBase(
+            inference_result_id=inference_result_id,
+            name="batch_trace_1",
+            type=TraceType.SPAN,
+        )
+    ]
+)
+```
+
+## Parameters
+<ResponseField name="traces" type="list[TraceBase]" required>
+  List of trace objects to create. Each trace should include `inference_result_id`, `name`, and optionally other fields.
+</ResponseField>
+
+## TraceBase Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `inference_result_id` | `str` | Yes | ID of the inference result this trace belongs to |
+| `name` | `str` | Yes | Name of the traced operation |
+| `id` | `str` | No | Client-generated ID (auto-generated if not provided) |
+| `type` | `TraceType` | No | Type: SPAN, GENERATION, EVENT, AGENT, TOOL, CHAIN, RETRIEVER, EVALUATOR, EMBEDDING, GUARDRAIL. See [Trace Types](/concepts/product/version/session/trace#trace-types) |
+| `parent_trace_id` | `str` | No | ID of parent trace |
+| `input_data` | `dict` | No | Input parameters |
+| `output_data` | `dict` | No | Output result |
+| `error` | `str` | No | Error message if failed |
+| `latency_ms` | `float` | No | Execution time in milliseconds |
+| `start_time` | `str` | No | ISO 8601 timestamp when the trace started |
+| `end_time` | `str` | No | ISO 8601 timestamp when the trace ended |
+| `metadata` | `dict` | No | Additional custom metadata |
