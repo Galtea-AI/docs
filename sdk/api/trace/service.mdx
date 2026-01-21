@@ -18,9 +18,9 @@ This Service is exposed by the `galtea.traces` object.
 
 The SDK provides two ways to collect traces:
 
-### 1. Automatic Collection with OpenTelemetry (Recommended)
+### 1. Automatic Collection with with `generate()`
 
-Use the `@trace` decorator or `start_trace()` context manager with context management:
+When using `galtea.inference_results.generate()`, trace collection is handled automatically:
 
 ```python
 @trace(type=TraceType.TOOL)
@@ -48,31 +48,7 @@ inference_result = galtea.inference_results.generate(
 )
 ```
 
-### 2. Fully Automatic with `generate()`
-
-When using `galtea.inference_results.generate()`, trace collection is handled automatically:
-
-```python
-@trace(type=TraceType.TOOL, name="calculate_sum")
-def calculate(a, b):
-    return a + b
-
-
-class MyMathsAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        message = input_data.last_user_message_str() or ""
-        a, b = map(int, message.split(","))
-        return AgentResponse(content=f"Result: {calculate(a, b)}")
-
-
-inference_result = galtea.inference_results.generate(
-    agent=MyMathsAgent(),
-    session=session,
-    user_input="5,3",
-)
-```
-
-### 3. Manual Collection with Context Management
+### 2. Manual Collection with Context Management
 
 For full control over the trace lifecycle, use `set_context()` and `clear_context()`:
 
@@ -81,7 +57,9 @@ Set context before running traced functions:
 trace_context = set_context(inference_result_id=inference_result_id)
 ```
 
-Clear context and flush traces:
+Then run your traced functions within this context set/open.
+
+Once done, clear the context to [flush](sdk/api/trace/clear-context#param-flush) and detach:
 ```python
 clear_context(trace_context)
 ```

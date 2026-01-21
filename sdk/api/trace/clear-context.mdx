@@ -17,7 +17,7 @@ clear_context(trace_context)
   The context token returned by `set_context()`.
 </ResponseField>
 <ResponseField name="flush" type="bool" optional>
-  If `True` (default), flush pending traces for the current inference result before clearing. Set to `False` to skip flushing.
+  If `True` (default), export any pending traces associated with the current inference result to the telemetry exporter before detaching the context.
 </ResponseField>
 
 <Note>
