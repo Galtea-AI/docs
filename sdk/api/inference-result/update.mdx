@@ -8,26 +8,6 @@ description: "Update an existing inference result with agent output and metadata
 
 The `update()` method allows you to modify an existing inference result after it has been created. This is useful when you need to add or update output, latency, token usage, or cost information.
 
-## Method Signature
-
-```python
-galtea.inference_results.update(
-    inference_result_id: str,
-    output: Optional[str] = None,
-    input: Optional[str] = None,
-    retrieval_context: Optional[str] = None,
-    latency: Optional[float] = None,
-    input_tokens: Optional[int] = None,
-    output_tokens: Optional[int] = None,
-    cache_read_input_tokens: Optional[int] = None,
-    tokens: Optional[int] = None,
-    cost: Optional[float] = None,
-    cost_per_input_token: Optional[float] = None,
-    cost_per_output_token: Optional[float] = None,
-    cost_per_cache_read_input_token: Optional[float] = None
-) -> InferenceResult
-```
-
 ## Parameters
 
 <ParamField path="inference_result_id" type="string" required>

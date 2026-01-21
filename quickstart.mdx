@@ -12,6 +12,7 @@ import ProductCard from '/snippets/cards/product-card.mdx';
 import SessionCard from '/snippets/cards/session-card.mdx';
 import TestCard from '/snippets/cards/test-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
+import TraceCard from '/snippets/cards/trace-card.mdx';
 
 This quickstart walks you through running your first evaluation in Galtea for a conversational product using the Python SDK. It is intended for a technical audience and covers RAG pipelines, conversational scenarios, and security or safety checks.
 
@@ -48,18 +49,19 @@ You can use Galtea from the dashboard or via the Python SDK. This quickstart use
     In the [Galtea dashboard](https://platform.galtea.ai/), copy the API key you created during your product page onboarding (or navigate to **[Settings](https://platform.galtea.ai/settings) > Generate API Key**).
   </Step>
   <Step title="Install the SDK">
-    ```sh
-    pip install galtea
-    ```
+    ```bash
+pip install galtea
+```
   </Step>
   <Step title="Connect to the platform">
     ```python
-    from galtea import Galtea
-    
-    YOUR_API_KEY = "YOUR_API_KEY"
+from galtea import Galtea
 
-    galtea = Galtea(api_key=YOUR_API_KEY)
-    ```
+# Verify the SDK is properly installed by initializing it
+# Note: Replace "YOUR_API_KEY" with your actual API key from the Galtea dashboard
+galtea = Galtea(api_key="YOUR_API_KEY")
+print("Galtea SDK installed successfully!")
+```
   </Step>
 </Steps>
 
@@ -84,8 +86,8 @@ for v in versions:
 Then set them once here:
 
 ```python
-YOUR_PRODUCT_ID = "your_product_id"
-YOUR_VERSION_ID = "your_version_id"
+product_id = "your_product_id"
+version_id = "your_version_id"
 ```
 
 ## 4. Create Your Tests
@@ -113,12 +115,14 @@ You can create one or multiple test types for the same product, depending on whi
 test = galtea.tests.create(
     name="rag-quality-test",
     type="QUALITY",
-    product_id=YOUR_PRODUCT_ID,
-    ground_truth_file_path="path/to/your/knowledge_base.pdf",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
     language="english",
     max_test_cases=20,
 )
 ```
+
+After a brief wait for test case generation, list the test cases:
 
 ```python
 test_cases = galtea.test_cases.list(test_id=test.id)
@@ -133,12 +137,14 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 test = galtea.tests.create(
     name="misuse-red-team-test",
     type="RED_TEAMING",
-    product_id=YOUR_PRODUCT_ID,
+    product_id=product_id,
     variants=["Misuse"],
     strategies=["Original"],  # Original must always be included
     max_test_cases=20,
 )
 ```
+
+After a brief wait for test case generation, list the test cases:
 
 ```python
 test_cases = galtea.test_cases.list(test_id=test.id)
@@ -153,16 +159,18 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 test = galtea.tests.create(
     name="conversation-scenarios-test",
     type="SCENARIOS",
-    product_id=YOUR_PRODUCT_ID,
+    product_id=product_id,
     language="english",
-    max_test_cases=5,
+    max_test_cases=20,
     strategies=["written"],
 )
 ```
 
+After a brief wait for test case generation, list the test cases:
+
 ```python
 test_cases = galtea.test_cases.list(test_id=test.id)
-print(f"Using test '{test.name}' with {len(test_cases)} scenarios.")
+print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 ```
   </Tab>
 </Tabs>
@@ -201,73 +209,79 @@ metric = galtea.metrics.get_by_name(name="Role Adherence")
 
 ## 6. Run the Evaluation
 
-This is where you connect Galtea to your product. For each test case (or scenario), you run your system to produce an output and submit it to Galtea for scoring via [evaluations](/concepts/product/version/session/evaluation).
+This is where you connect Galtea to your product. Then, for each test case (or scenario), you run your system to produce an output and submit it to Galtea for scoring via [evaluations](/concepts/product/version/session/evaluation).
 
-<Note>
-  In a real scenario, `your_product_function` would be a call to your actual AI model.
-</Note>
+To do so, you first need to implement an `Agent` that translates the Galtea information into calls to your product. Here’s a simple example agent:
+
+```python
+class MyAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        user_message = input_data.last_user_message_str()
+        # In a real scenario, you woyuld call your agent here, e.g., your_model_output = your_product_function(user_message)
+        model_output = f"Your model output to the {user_message}"
+        return AgentResponse(content=model_output)
+```
 
 <Tabs>
   <Tab title="RAG">
-```python
-# Placeholder for your actual product/model inference function
-def your_product_function(input_prompt):
-    return f"(your model output) {input_prompt}"
-
-# Loop through test cases and create evaluations.
+  ```python
 for test_case in test_cases:
-    actual_output = your_product_function(test_case.input)
-
-    galtea.evaluations.create_single_turn(
-        version_id=YOUR_VERSION_ID,
+    # Create a session linked to the test case and version
+    session = galtea.sessions.create(
+        version_id=version_id,
         test_case_id=test_case.id,
-        metrics=[{"name": metric.name}],
-        actual_output=actual_output,
     )
 
-print(f"Submitted evaluations for version {YOUR_VERSION_ID} using test '{test.name}'.")
+    # Run a synthetic user conversation against your agent
+    inference_result = galtea.inference_results.generate(
+        session=session,
+        agent=MyAgent(),
+        user_input=test_case.input,
+    )
+
+    # Evaluate the full conversation (session)
+    galtea.evaluations.create(
+        session_id=session.id,
+        metrics=[{"name": metric.name}],
+    )
+
+print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
 ```
+
   </Tab>
 
   <Tab title="Security">
-```python
-# Placeholder for your actual product/model inference function
-def your_product_function(input_prompt):
-    # Example: refuse misuse requests
-    if "ignore" in input_prompt.lower() or "password" in input_prompt.lower():
-        return "I can’t help with that request."
-    return f"(your model output) {input_prompt}"
-
-# Loop through test cases and create evaluations.
+  ```python
 for test_case in test_cases:
-    actual_output = your_product_function(test_case.input)
-
-    galtea.evaluations.create_single_turn(
-        version_id=YOUR_VERSION_ID,
+    # Create a session linked to the test case and version
+    session = galtea.sessions.create(
+        version_id=version_id,
         test_case_id=test_case.id,
-        metrics=[{"name": metric.name}],
-        actual_output=actual_output,
     )
 
-print(f"Submitted evaluations for version {YOUR_VERSION_ID} using test '{test.name}'.")
+    # Run a synthetic user conversation against your agent
+    inference_result = galtea.inference_results.generate(
+        session=session,
+        agent=MyAgent(),
+        user_input=test_case.input,
+    )
+
+    # Evaluate the full conversation (session)
+    galtea.evaluations.create(
+        session_id=session.id,
+        metrics=[{"name": metric.name}],
+    )
+
+print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
 ```
   </Tab>
 
   <Tab title="Conversational">
-```python
-from galtea import Agent, AgentInput, AgentResponse
-
-# Implement your Agent (connect your product/model)
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        user_message = input_data.last_user_message_str()
-        model_output = f"(your model output) {user_message}"
-        return AgentResponse(content=model_output)
-
+  ```python
 for test_case in test_cases:
-    # Create a session linked to the scenario
+    # Create a session linked to the test case and version
     session = galtea.sessions.create(
-        version_id=YOUR_VERSION_ID,
+        version_id=version_id,
         test_case_id=test_case.id,
     )
 
@@ -284,7 +298,7 @@ for test_case in test_cases:
         metrics=[{"name": metric.name}],
     )
 
-print(f"Submitted conversational evaluations for version {YOUR_VERSION_ID} using test '{test.name}'.")
+print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
 ```
   </Tab>
 </Tabs>
@@ -300,12 +314,28 @@ Once your evaluations are submitted, open your product in the [Galtea platform](
 The most useful part is drilling into individual test cases: you can inspect the exact prompt/output pair (or the full conversation for scenarios) and understand which specific inputs move the score up or down. This makes it easier to identify failure patterns, validate fixes in new versions, and iterate with confidence as you move toward production.
 
 ```python
-print(f"View results at: https://platform.galtea.ai/product/{YOUR_PRODUCT_ID}?tab=1")
+print(f"View results at: https://platform.galtea.ai/product/{product_id}")
 ```
 
 ## Next Steps
 
-Congratulations! You’ve completed your first evaluation with Galtea. Next, explore these concepts to tailor tests, metrics, and workflows to your product:
+Congratulations! You’ve completed your first evaluation with Galtea. 
+
+You can now explore more advanced features like:
+
+<CardGroup cols={2}>
+<Card title="Tracing Agent Operations" icon="diagram-project" href="/sdk/tutorials/tracing-agent-operations">
+  Learn how to capture and analyze the internal operations of your AI agent.
+</Card>
+<Card title="Evaluating Production" icon="diagram-project" href="/sdk/tutorials/monitor-production-responses-to-user-queries">
+  Learn how to log and evaluate user queries from your production environment.
+</Card>
+
+</CardGroup>
+
+## Dive Deeper
+
+Explore these concepts to tailor tests, metrics, and workflows to your product:
 
 <CardGroup cols={3}>
   <ProductCard />
@@ -314,8 +344,6 @@ Congratulations! You’ve completed your first evaluation with Galtea. Next, exp
   <SessionCard />
   <InferenceResultCard />
   <EvaluationCard />
-  <MetricCard />
-  <ModelCard />
 </CardGroup>
 
 If you have any questions or need assistance, contact us at [support@galtea.ai](mailto:support@galtea.ai).

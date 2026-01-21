@@ -213,10 +213,10 @@ main_agent (AGENT) - 245.30ms
   <Accordion title="Use meaningful trace names">
     ```python
     # ✅ Good - descriptive
-    @trace(name="fetch_customer_orders", type=TraceType.TOOL)
+    @trace(name="fetch_customer_orders")
     
     # ❌ Bad - generic
-    @trace(name="step_1", type=TraceType.TOOL)
+    @trace(name="step_1")
     ```
   </Accordion>
   

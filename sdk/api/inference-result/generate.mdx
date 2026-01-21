@@ -18,17 +18,6 @@ The `generate()` method is the recommended way to execute your agent when you wa
   This is the recommended method for production use as it handles all trace lifecycle management automatically.
 </Info>
 
-## Method Signature
-
-```python
-galtea.inference_results.generate(
-    agent: Agent,
-    session: Session,
-    user_input: Optional[str] = None,
-    throw_if_empty_agent_response: bool = False
-) -> InferenceResult
-```
-
 ## Parameters
 
 <ParamField path="agent" type="Agent" required>
