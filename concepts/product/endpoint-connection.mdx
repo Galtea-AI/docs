@@ -82,7 +82,7 @@ To create an Endpoint Connection:
   - `{{ id }}` - The test case ID
   - `{{ session.id }}` - The session ID
   - `{{ test.id }}` - The test ID
-  - `{% for turn in pastTurns %}...{% endfor %}` - Loop through conversation history
+  - `{% for turn in past_turns %}...{% endfor %}` - Loop through conversation history
     - `{{ turn.input }}` - Previous user input
     - `{{ turn.output }}` - Previous assistant response
 
@@ -92,7 +92,7 @@ To create an Endpoint Connection:
     "model": "gpt-4",
     "messages": [
       {"role": "system", "content": "You are a helpful assistant."},
-      {% for turn in pastTurns %}
+      {% for turn in past_turns %}
       {"role": "user", "content": "{{ turn.input }}"},
       {"role": "assistant", "content": "{{ turn.output }}"},
       {% endfor %}
@@ -110,7 +110,7 @@ To create an Endpoint Connection:
         [
           "{{ input }}",
           [
-            {% for turn in pastTurns %}
+            {% for turn in past_turns %}
             "{{ turn.input }}",
             "{{ turn.output }}"{% if not loop.last %},{% endif %}
             {% endfor %}
