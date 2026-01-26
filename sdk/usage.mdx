@@ -11,7 +11,8 @@ Below are some examples of how to use the SDK to interact with the Galtea platfo
 ```python
 from galtea import Galtea
 
-galtea = Galtea(api_key="<YOUR_GALTEA_PLATFORM_API_KEY>")
+# Initialize client (replace with your real API key)
+galtea = Galtea(api_key="YOUR_API_KEY")
 ```
 
 <Note>
@@ -28,11 +29,11 @@ In this case, we don't allow to create a product from the sdk, therefore you nee
 With a [version](/concepts/product/version), you can track changes to your product over time and compare different implementations.
 
 ```python
-# Create a version
+# 1) Create a version
 version = galtea.versions.create(
-    name="v1.0",
+    name="v1.0-" + run_identifier,
     product_id=product.id,
-    description="Initial version with basic summarization capabilities"
+    description="Initial version with basic summarization capabilities",
 )
 ```
 <Info>
@@ -45,13 +46,13 @@ With a [Test](/concepts/product/test) you define the [test cases](/concepts/prod
 You can create [quality](/concepts/product/test/quality-tests) or [red teaming](/concepts/product/test/red-teaming-tests) tests depending on your evaluation needs.
 
 ```python
-# Create a test
+# 2) Create a test
 test = galtea.tests.create(
-    name="example-test-tutorial",
+    name="example-test-tutorial-" + run_identifier,
     type="QUALITY",
     product_id=product.id,
-    ground_truth_file_path="path/to/knowledge_file.pdf", # The ground truth is also known as as the knowledge base.
-    language='spanish'
+    ground_truth_file_path="path/to/knowledge.md",  # The ground truth is the knowledge base
+    language="english",
 )
 ```
 
@@ -66,43 +67,44 @@ test = galtea.tests.create(
 You can create custom [Metrics](/concepts/metric) tailored to your specific use cases.
 
 ```python
-# Create a standard metric via API
+# 3) Create a standard metric via API
 metric_from_api = galtea.metrics.create(
-    name="accuracy_v1",
+    name="accuracy-" + run_identifier,
     test_type="QUALITY",
     evaluator_model_name="GPT-4.1",
     source="full_prompt",
-    judge_prompt="Determine whether the output is equivalent to the expected output. Output: \"{actual_output}\". Expected Output: \"{expected_output}.\""
+    judge_prompt=(
+        "Determine whether the output is equivalent to the expected output. "
+        'Output: "{actual_output}". Expected Output: "{expected_output}."'
+    ),
 )
 
-# Or define a custom metric locally for deterministic checks
-from galtea import CustomScoreEvaluationMetric
 
-# First, it needs to be created in the platform
-metric_from_api = galtea.metrics.create(
-    name="keyword-check",
+# 4) Create a custom metric entry in the platform, then define local evaluator
+metric_from_api_custom = galtea.metrics.create(
+    name="keyword-check-" + run_identifier,
+    test_type="QUALITY",
     source="self_hosted",
     description="Checks if the 'actual output' contains the keyword 'expected'.",
 )
 
-# Then, you can define your custom metric class
+from galtea import CustomScoreEvaluationMetric  # noqa: E402
+
+
 class MyKeywordMetric(CustomScoreEvaluationMetric):
-    def __init__(self):
-        super().__init__(name="keyword-check")
+    def __init__(self) -> None:
+        super().__init__(name="keyword-check-" + run_identifier)
+
     def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
         """
         Returns 1.0 if 'expected' is in actual_output, else 0.0.
-        All other args/kwargs are accepted but ignored.
         """
         if actual_output is None:
             return 0.0
-        return 1.0 if "expected" in actual_output else 0.0
-
-keyword_metric = MyKeywordMetric()
 ```
 
 <Info>
-    More information about creating a metric can be found [here](/sdk/api/metrics/service#create-metric).
+    More information about creating a metric can be found [here](/sdk/api/metric/service#create-metric).
 </Info>
 
 
@@ -111,31 +113,29 @@ keyword_metric = MyKeywordMetric()
 [Evaluations](/concepts/product/version/session/evaluation) assess the performance of a [product](/concepts/product) [version](/concepts/product/version) against [test cases](/concepts/product/test/case) using specific [metrics](/concepts/metric). They are now directly linked to [sessions](/concepts/product/version/session) that contain all inference results.
 
 ```python
-# Get test cases from the test
+
+keyword_metric = MyKeywordMetric()
+
+# 5) Retrieve test cases for the test
 test_cases = galtea.test_cases.list(test_id=test.id)
 
-# Run evaluations for each test case
+# 6) Run evaluations for each test case (placeholders used for retriever & product)
 for test_case in test_cases:
-    # Retrieve relevant context for RAG. This may not apply to all products.
-    retrieval_context = your_retriever_function(test_case.input)
-    
-    # Your product's actual response to the input
-    actual_output = your_product_function(test_case.input, test_case.context, retrieval_context)
-    
-    # Run evaluation
+    # Replace the following with your retrieval and product inference functions
+    retrieval_context = None  # your_retriever_function(test_case.input)
+    actual_output = (
+        "This is the expected output"  # your_product_function(test_case.input, ...)
+    )
+
     galtea.evaluations.create_single_turn(
         version_id=version.id,
         test_case_id=test_case.id,
         metrics=[
-            # Standard Galtea-hosted metric, referenced by name
             {"name": metric_from_api.name},
-            
-            # Self-hosted metric with dynamic scoring
-            {"score": keyword_metric} 
+            {"score": keyword_metric},
         ],
         actual_output=actual_output,
-        retrieval_context=retrieval_context, 
-    )
+        retrieval_context=retrieval_context,
 ```
 
 <Info>
@@ -147,16 +147,12 @@ for test_case in test_cases:
 Once the [evaluations](/concepts/product/version/session/evaluation) are completed, you can retrieve them to analyze the results.
 
 ```python
-# First, get all sessions for the version
-sessions = galtea.sessions.list(version_id=version.id, sort_by_created_at="desc")
 
-# Iterate through all product sessions
+# 7) List sessions for the version and print evaluations
+sessions = galtea.sessions.list(version_id=version.id, sort_by_created_at="desc")
 for session in sessions:
-    # Retrieve the evaluations for this session
     evaluations = galtea.evaluations.list(session_id=session.id)
-    # Print the evaluations's ID and score
     for evaluation in evaluations:
-        print(f"Evaluation ID: {evaluation.id}, Score: {evaluation.score}")
 ```
 
 ### Working with Pagination
@@ -166,31 +162,20 @@ When listing resources that may contain many items (products, tests, sessions, e
 #### Basic Pagination Example
 
 ```python
-# Get all test cases for a test using pagination
-test_id = "your_test_id"
-all_test_cases = []
-offset = 0
-limit = 100  # Fetch 100 at a time for better performance
 
-while True:
-    batch = galtea.test_cases.list(
-        test_id=test_id,
-        offset=offset,
-        limit=limit
-    )
-    
-    if not batch:
-        break
-        
-    all_test_cases.extend(batch)
-    
-    # If we got fewer results than the limit, we've reached the end
-    if len(batch) < limit:
-        break
-        
-    offset += limit
 
-print(f"Retrieved {len(all_test_cases)} test cases total")
+# 8) Pagination examples
+def fetch_all_test_cases(test_id: str, limit: int = 100) -> list:
+    all_test_cases = []
+    offset = 0
+    while True:
+        batch = galtea.test_cases.list(test_id=test_id, offset=offset, limit=limit)
+        if not batch:
+            break
+        all_test_cases.extend(batch)
+        if len(batch) < limit:
+            break
+        offset += limit
 ```
 
 #### Understanding Pagination Parameters
@@ -201,14 +186,10 @@ All list methods in the Galtea SDK accept two pagination parameters:
 - **`limit`**: Maximum number of items to return in a single request (default: `1000`)
 
 ```python
-# Get first 10 products
-first_page = galtea.products.list(offset=0, limit=10)
 
-# Get next 10 products
-second_page = galtea.products.list(offset=10, limit=10)
-
-# Get default number of products (up to 1000)
-products = galtea.products.list()  # Returns up to 1000 items
+# Products/pages examples
+first_page_products = galtea.products.list(offset=0, limit=10)
+second_page_products = galtea.products.list(offset=10, limit=10)
 ```
 
 #### Pagination Best Practices
@@ -226,15 +207,14 @@ products = galtea.products.list()  # Returns up to 1000 items
 The same pagination pattern works for all list operations:
 
 ```python
-# Paginate through products
-products = galtea.products.list(offset=0, limit=50)
 
-# Paginate through versions
-versions = galtea.versions.list(product_id="YOUR_PRODUCT_ID", offset=0, limit=50)
-
-# Paginate through sessions
-sessions = galtea.sessions.list(version_id="YOUR_VERSION_ID", offset=0, limit=50)
-
-# Paginate through evaluations
-evaluations = galtea.evaluations.list(session_id="YOUR_SESSION_ID", offset=0, limit=50)
+# Generic pagination examples
+products_page = galtea.products.list(offset=0, limit=50)
+versions_page = galtea.versions.list(product_id=product.id, offset=0, limit=50)
+sessions_page = galtea.sessions.list(version_id=version.id, offset=0, limit=50)
+if sessions:
+    evaluations_page = galtea.evaluations.list(
+        session_id=sessions[0].id,
+        offset=0,
+        limit=50,
 ```

@@ -12,42 +12,42 @@ Returns a [Metric](/concepts/metric) object for the given parameters, or `None` 
 
 <Tabs>
   <Tab title="Full Prompt (LLM-as-a-Judge)">
-    ```python
-    metric = galtea.metrics.create(
-        name="accuracy_v1",
-        test_type="QUALITY",
-        evaluator_model_name="GPT-4.1",
-        source="full_prompt",
-        judge_prompt="Determine whether the output is equivalent to the expected output. Output: \"{actual_output}\". Expected Output: \"{expected_output}.\"",
-        tags=["custom", "accuracy"],
-        description="A custom accuracy metric."
-    )
-    ```
+```python
+metric = galtea.metrics.create(
+    name=metric_name,
+    test_type="QUALITY",
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Evaluate if the actual_output is polite.",
+    evaluation_params=["actual_output"],
+    description="Checks politeness",
+)
+```
   </Tab>
   <Tab title="Partial Prompt (LLM-as-a-Judge)">
-    ```python
-    metric = galtea.metrics.create(
-        name="accuracy_v1",
-        test_type="QUALITY",
-        evaluator_model_name="GPT-4.1",
-        source="partial_prompt",
-        judge_prompt="Determine whether the actual output is equivalent to the expected output",
-        evaluation_params=["actual_output", "expected_output"],
-        tags=["custom", "accuracy"],
-        description="A custom accuracy metric."
-    )
-    ```
+```python
+metric = galtea.metrics.create(
+    name="accuracy_v1_partial_" + run_identifier,
+    test_type="QUALITY",
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Determine whether the actual output is equivalent to the expected output",
+    evaluation_params=["actual_output", "expected_output"],
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric.",
+)
+```
   </Tab>
   <Tab title="Self Hosted">
-    ```python
-    metric = galtea.metrics.create(
-        name="accuracy_v1",
-        test_type="QUALITY",
-        source="self_hosted",
-        tags=["custom", "accuracy"],
-        description="A custom accuracy metric calculated by our custom score function."
-    )
-    ```
+```python
+metric = galtea.metrics.create(
+    name="accuracy_v1_self_" + run_identifier,
+    test_type="QUALITY",
+    source="self_hosted",
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric calculated by our custom score function.",
+)
+```
   </Tab>
 </Tabs>
 

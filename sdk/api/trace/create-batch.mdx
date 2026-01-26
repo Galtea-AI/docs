@@ -10,28 +10,15 @@ Returns a list of [Trace](/concepts/product/version/session/trace) objects.
 ## Example
 
 ```python
-from galtea.domain.models.trace import TraceBase, TraceType
-
-traces = [
-    TraceBase(
-        inference_result_id="YOUR_INFERENCE_RESULT_ID",
-        name="retrieve_documents",
-        type=TraceType.RETRIEVER,
-        input_data={"query": "product pricing"},
-        output_data={"docs": ["doc1", "doc2"]},
-        latency_ms=45.2
-    ),
-    TraceBase(
-        inference_result_id="YOUR_INFERENCE_RESULT_ID",
-        name="generate_response",
-        type=TraceType.GENERATION,
-        input_data={"prompt": "Summarize pricing"},
-        output_data={"response": "The price is $99"},
-        latency_ms=320.5
-    )
-]
-
-created_traces = galtea.traces.create_batch(traces=traces)
+galtea.traces.create_batch(
+    [
+        TraceBase(
+            inference_result_id=inference_result_id,
+            name="batch_trace_1",
+            type=TraceType.SPAN,
+        )
+    ]
+)
 ```
 
 ## Parameters

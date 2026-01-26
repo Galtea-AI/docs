@@ -17,8 +17,6 @@ Galtea's tracing feature captures every operation your agent performs—tool cal
 Add the `@trace` decorator to any function you want to track. It automatically captures: name, inputs, outputs, timing, errors, and parent-child relationships.
 
 ```python
-from galtea import trace, TraceType
-
 @trace(name="db_call", type=TraceType.TOOL)
 def my_function(query: str) -> str:
     result = db.query(query)
@@ -32,10 +30,10 @@ def my_function(query: str) -> str:
 For fine-grained control over specific code blocks, use `start_trace`.
 
 ```python
-from galtea import start_trace, TraceType
-
-def get_user(user_id: str):
-    with start_trace("database_query", type=TraceType.TOOL, input={"user_id": user_id}) as span:
+def get_user(user_id: str) -> str:
+    with start_trace(
+        "database_query", type=TraceType.TOOL, input={"user_id": user_id}
+    ) as span:
         query = f"SELECT * FROM users WHERE id = {user_id}"
         result = db.query(query)
         span.update(output=result, metadata={"query": query})
@@ -67,19 +65,15 @@ Use `inference_results.generate()` or `simulator.simulate()` for hands-free trac
 Requires implementing the `Agent` abstract class:
 
 ```python
-from galtea import Galtea, Agent, AgentInput, AgentResponse, trace, TraceType
-
-galtea = Galtea(api_key="YOUR_API_KEY")
-
 class MyAgent(Agent):
     @trace(type=TraceType.RETRIEVER)
     def search(self, query: str) -> list[dict]:
         return [{"id": "doc_1", "content": "..."}]
-    
+
     @trace(type=TraceType.GENERATION)
     def generate(self, context: list, query: str) -> str:
         return "Based on the context..."
-    
+
     @trace(type=TraceType.AGENT)
     def call(self, input: AgentInput) -> AgentResponse:
         query = input.last_user_message_str()
@@ -87,30 +81,28 @@ class MyAgent(Agent):
         response = self.generate(docs, query)
         return AgentResponse(content=response, retrieval_context=str(docs))
 
+
 # Setup
-session = galtea.sessions.create(version_id=version.id)
+session = galtea.sessions.create(version_id=version.id, is_production=True)
 agent = MyAgent()
 
 # Everything is handled automatically
 inference_result = galtea.inference_results.generate(
-    agent=agent,
-    session=session,
-    user_input="What's the price?"
+    agent=agent, session=session, user_input="What's the price?"
 )
 # Traces are collected, associated with inference_result.id, and flushed automatically
 ```
+
 
 #### Multi-Turn with `simulate()`
 
 When using the [Conversation Simulator](/sdk/tutorials/simulating-conversations), tracing works out-of-the-box. Decorate your agent methods with `@trace` and run:
 
 ```python
-result = galtea.simulator.simulate(
-    session_id=session.id,
-    agent=agent,
-    max_turns=10
-)
-# Traces are saved automatically for each turn
+    result = galtea.simulator.simulate(
+        session_id=simulation_session.id, agent=agent, max_turns=5
+    )
+    # Traces are saved automatically for each turn
 ```
 
 ### Manual Collection
@@ -118,46 +110,44 @@ result = galtea.simulator.simulate(
 For full control, use `set_context()` and `clear_context()` to manually manage the trace lifecycle:
 
 ```python
-from galtea import Galtea, trace, set_context, clear_context, TraceType
-
-galtea = Galtea(api_key="YOUR_API_KEY")
-
 # Define traced functions
 @trace(type=TraceType.RETRIEVER)
 def search(query: str) -> list[dict]:
     return [{"id": "doc_1", "content": "..."}]
 
+
 @trace(type=TraceType.GENERATION)
 def generate(context: list, query: str) -> str:
     return "Based on the context..."
+
 
 @trace(type=TraceType.AGENT)
 def run_agent(query: str) -> str:
     docs = search(query)
     return generate(docs, query)
 
+
 # Setup
-session = galtea.sessions.create(version_id=version.id)
+manual_session = galtea.sessions.create(version_id=version.id, is_production=True)
 user_input = "What's the price?"
 
 # 1. Create inference result first (to get the ID)
-inference_result = galtea.inference_results.create(
-    session_id=session.id,
+manual_inference_result = galtea.inference_results.create(
+    session_id=manual_session.id,
     input=user_input,
-    output=None  # Will update later
+    output=None,  # Will update later
 )
 
 # 2. Set trace context with the inference result ID
-token = set_context(inference_result_id=inference_result.id)
+token = set_context(inference_result_id=manual_inference_result.id)
 
 try:
     # 3. Run your logic - all @trace calls will be associated with this inference result
     response = run_agent(user_input)
-    
+
     # 4. Update inference result with the output
     galtea.inference_results.update(
-        inference_result_id=inference_result.id,
-        output=response
+        inference_result_id=manual_inference_result.id, output=response
     )
 finally:
     # 5. Clear context and flush traces to Galtea

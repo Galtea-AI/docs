@@ -8,42 +8,23 @@ Returns the decorated function with automatic tracing enabled.
 
 ## Example
 ```python
-from galtea import trace, TraceType
+@trace(type=TraceType.TOOL, name="calculate_sum")
+def calculate(a, b):
+    return a + b
 
-# Basic usage - function name is used as span name
-@trace
-def my_function():
-    return "result"
 
-# With type annotation
-@trace(type=TraceType.TOOL)
-def fetch_user(user_id: str) -> dict:
-    return {"name": "John Doe", "id": user_id}
+class MyMathsAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        message = input_data.last_user_message_str() or ""
+        a, b = map(int, message.split(","))
+        return AgentResponse(content=f"Result: {calculate(a, b)}")
 
-# Full configuration
-@trace(
-    name="gpt4_completion",
-    type=TraceType.GENERATION,
-    log_args=True,
-    log_results=True,
-    attributes={"model": "gpt-4", "temperature": 0.7}
+
+inference_result = galtea.inference_results.generate(
+    agent=MyMathsAgent(),
+    session=session,
+    user_input="5,3",
 )
-def generate_response(prompt: str) -> str:
-    return openai.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
-    ).choices[0].message.content
-
-# Include function docstring as trace description
-@trace(type=TraceType.TOOL, include_docstring=True)
-def calculate_discount(price: float, percentage: float) -> float:
-    """Calculates the discounted price based on the given percentage."""
-    return price * (1 - percentage / 100)
-
-# Async functions are supported
-@trace(type=TraceType.RETRIEVER)
-async def search_documents(query: str) -> list:
-    return await vector_db.search(query)
 ```
 
 ## Parameters
@@ -73,36 +54,84 @@ Exceptions are always recorded in traces for debugging, regardless of `log_args`
 
 ```python
 @trace(type=TraceType.TOOL)
-def risky_operation():
-    raise ValueError("Something went wrong")
-    
-# The trace will include the error message and stack trace
+def risky_operation() -> str:
+    # Exceptions are always recorded in traces for debugging
+    # even with log_args=False and log_results=False
+    return "Success"
+
+
+class RiskyAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        result = risky_operation()
+        return AgentResponse(content=result)
+
+
+# The trace will include error details if an exception occurs
+inference_result_risky = galtea.inference_results.generate(
+    agent=RiskyAgent(),
+    session=session_decorator,
+    user_input="test",
+)
 ```
 
 ### Input/Output Serialization
 Function arguments and return values are automatically serialized to JSON. Non-serializable objects are converted to string representation:
 
 ```python
-@trace
-def process_data(user: User, config: dict) -> Response:
-    # user object will be converted to str(user)
-    # config dict will be serialized as JSON
-    return Response(...)
+@trace(type=TraceType.TOOL)
+def process_data(user_id: str, config: dict) -> dict:
+    # Function arguments are automatically serialized to JSON
+    # Non-serializable objects are converted to string representation
+    return {"status": "processed", "user_id": user_id}
+
+
+class DataAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        result = process_data("user_123", {"setting": "value"})
+        return AgentResponse(content=str(result))
+
+
+session_serialization = galtea.sessions.create(
+    version_id=version_id, is_production=True
+)
+if session_serialization is None:
+    raise ValueError("session_serialization is None")
+
+inference_result_data = galtea.inference_results.generate(
+    agent=DataAgent(),
+    session=session_serialization,
+    user_input="process",
+)
 ```
 
 ### Context Propagation
 Traces automatically inherit the context set by `set_context()`:
 
 ```python
-token = set_context(inference_result_id="inf_123")
-
 @trace(type=TraceType.AGENT)
-def agent_workflow():
-    # This trace is automatically linked to inf_123
-    return process_request()
+def agent_workflow() -> str:
+    # This trace is automatically linked to the inference result
+    # when set_context() has been called with inference_result_id
+    return "workflow completed"
+
+
+# Create an inference result for context propagation example
+session_context = galtea.sessions.create(version_id=version_id, is_production=True)
+if session_context is None:
+    raise ValueError("session_context is None")
+
+inference_result_context = galtea.inference_results.create(
+    session_id=session_context.id,
+    input="Run workflow",
+)
+if inference_result_context is None:
+    raise ValueError("inference_result_context is None")
+
+# Set context before running traced functions
+token = set_context(inference_result_id=inference_result_context.id)
 
 try:
-    agent_workflow()
+    result = agent_workflow()
 finally:
     clear_context(token)
 ```

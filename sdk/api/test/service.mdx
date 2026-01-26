@@ -15,32 +15,31 @@ This Service is exposed by the `galtea.tests` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Create a test
+Create a test:
+```python
 test = galtea.tests.create(
-    name="my-quality-test",
+    name=test_name,
     type="QUALITY",
-    product_id="YOUR_PRODUCT_ID",
-    ground_truth_file_path="path/to/knowledge.pdf",
-    max_test_cases=50
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=5,
 )
+```
 
-print(f"Created test: {test.name} (ID: {test.id})")
+List tests for a product:
+```python
+tests = galtea.tests.list(product_id=product_id, limit=10)
+```
 
-# List all tests for a product
-tests = galtea.tests.list(product_id="YOUR_PRODUCT_ID")
-print(f"Total tests: {len(tests)}")
-
-# Retrieve test by name
-retrieved_test = galtea.tests.get_by_name(
-    product_id="YOUR_PRODUCT_ID",
-    test_name="my-quality-test"
-)
-print(f"Found test: {retrieved_test.name}")
+Get a test by ID:
+```python
+test = galtea.tests.get(test_id=test_id)
 ```
 
 ## Service Methods

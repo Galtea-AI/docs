@@ -15,34 +15,28 @@ This Service is exposed by the `galtea.versions` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Create a version
+Create a version:
+```python
 version = galtea.versions.create(
-    name="v1.0",
-    product_id="YOUR_PRODUCT_ID",
-    description="Initial version with basic capabilities",
-    model_id="gpt-4"
+    name=version_name,
+    product_id=product_id,
+    description="Demo version created via SDK",
 )
+```
 
-print(f"Created version: {version.name} (ID: {version.id})")
+List versions for a product:
+```python
+versions = galtea.versions.list(product_id=product_id, limit=5)
+```
 
-# List all versions for a product
-versions = galtea.versions.list(product_id="YOUR_PRODUCT_ID")
-print(f"Total versions: {len(versions)}")
-
-for v in versions:
-    print(f"- {v.name} created at {v.created_at}")
-
-# Retrieve version by name
-version = galtea.versions.get_by_name(
-    product_id="YOUR_PRODUCT_ID",
-    version_name="v1.0"
-)
-print(f"Found version: {version.name}")
+Get a version by ID:
+```python
+version = galtea.versions.get(version_id=version_id)
 ```
 
 ## Service Methods

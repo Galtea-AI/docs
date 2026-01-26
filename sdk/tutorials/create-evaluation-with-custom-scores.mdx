@@ -18,46 +18,41 @@ The recommended way to specify metrics in SDK v3.0 is using the `MetricInput` di
 If you want to calculate the score yourself before creating the evaluation, you can provide the score directly as a float:
 
 ```python
-import os
-from galtea import Galtea
-
-galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
-
-# --- Configuration ---
-VERSION_ID = "your_version_id"
-TEST_CASE_ID = "your_test_case_id"
-
 # Your product's response
 actual_output = "This response contains the correct keyword."
 
-# 1. Define your custom scoring logic
+
+# Define your custom scoring logic
 def contains_keyword(text: str, keyword: str) -> float:
     """Returns 1.0 if the keyword is in text (case-insensitive), 0.0 otherwise."""
     return 1.0 if keyword.lower() in text.lower() else 0.0
 
-# 2. Compute the score
+
+# Compute the score
 custom_score = contains_keyword(actual_output, "correct")
 
-# 3. Create the metric if it doesn't exist yet
+# Create the metric if it doesn't exist yet
 CUSTOM_METRIC_NAME = "contains-correct"
 galtea.metrics.create(
-    name=CUSTOM_METRIC_NAME, 
-    source='self_hosted', 
-    description='Checks for the presence of the keyword "correct" in the output'
+    name=CUSTOM_METRIC_NAME,
+    source="self_hosted",
+    description='Checks for the presence of the keyword "correct" in the output',
+    test_type="QUALITY",
 )
 
-# 4. Run evaluation with your pre-computed score
+# Run evaluation with your pre-computed score
 galtea.evaluations.create_single_turn(
-    version_id=VERSION_ID,
-    test_case_id=TEST_CASE_ID,
+    version_id=version_id,
+    test_case_id=test_case_id,
     actual_output=actual_output,
     metrics=[
-        {"name": "Role Adherence"},                           # Standard Galtea metric
-        {"name": CUSTOM_METRIC_NAME, "score": custom_score}  # Self-hosted with pre-computed score
+        {"name": "Role Adherence"},  # Standard Galtea metric
+        {
+            "name": CUSTOM_METRIC_NAME,
+            "score": custom_score,
+        },  # Self-hosted with pre-computed score
     ],
 )
-
-print("Evaluation with custom metric submitted.")
 ```
 
 ### Option 2: Use CustomScoreEvaluationMetric Class
@@ -65,22 +60,13 @@ print("Evaluation with custom metric submitted.")
 If you prefer to encapsulate your scoring logic in a class that will be executed dynamically, you can use the `CustomScoreEvaluationMetric` class within the MetricInput dictionary:
 
 ```python
-import os
-from galtea import Galtea, CustomScoreEvaluationMetric
-
-galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
-
-# --- Configuration ---
-VERSION_ID = "your_version_id"
-TEST_CASE_ID = "your_test_case_id"
-
-# 1. Define your custom metric class
+# Define your custom metric class
 class ContainsKeyword(CustomScoreEvaluationMetric):
     def __init__(self, keyword: str):
         self.keyword = keyword.lower()
         # Initialize with the metric name or ID
         super().__init__(name=f"contains-{self.keyword}")
-        
+
     def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
         """
         Returns 1.0 if the keyword is in actual_output (case-insensitive), 0.0 otherwise.
@@ -90,33 +76,32 @@ class ContainsKeyword(CustomScoreEvaluationMetric):
             return 0.0
         return 1.0 if self.keyword in actual_output.lower() else 0.0
 
-# 2. Instantiate your metric
-accuracy_metric = ContainsKeyword(keyword="correct")
 
-# 3. Create the metric in the platform if it doesn't exist yet
+# Instantiate your metric
+accuracy_metric = ContainsKeyword(keyword="relevant")
+
+# Create the metric in the platform if it doesn't exist yet
 galtea.metrics.create(
-    name=accuracy_metric.name, 
-    source='self_hosted', 
-    description='Checks for the presence of the keyword "correct" in the output'
+    name=accuracy_metric.name,
+    source="self_hosted",
+    description='Checks for the presence of the keyword "relevant" in the output',
+    test_type="QUALITY",
 )
 
 # Your product's response
-actual_output = "This response contains the correct keyword."
+actual_output_2 = "This response is relevant and helpful."
 
-# 4. Run evaluation with your custom metric class
+# Run evaluation with your custom metric class
 # Important: Do NOT provide 'id' or 'name' in the dict when using CustomScoreEvaluationMetric
-# The metric identifier comes from the CustomScoreEvaluationMetric instance itself
 galtea.evaluations.create_single_turn(
-    version_id=VERSION_ID,
-    test_case_id=TEST_CASE_ID,
-    actual_output=actual_output,
+    version_id=version_id,
+    test_case_id=test_case_id,
+    actual_output=actual_output_2,
     metrics=[
         {"name": "Role Adherence"},  # Standard Galtea metric
-        {"score": accuracy_metric}   # Self-hosted with dynamic scoring
+        {"score": accuracy_metric},  # Self-hosted with dynamic scoring
     ],
 )
-
-print("Evaluation with custom metric submitted.")
 ```
 
 <Note>
@@ -137,39 +122,3 @@ Both approaches are equally valid and current. Choose based on your preference:
   - Your scoring logic is complex and benefits from encapsulation
   - You want the SDK to handle score calculation automatically
   - You need to reuse the same metric logic across multiple evaluations
-
-## Legacy Format (Not Recommended)
-
-For backward compatibility, the SDK still supports passing CustomScoreEvaluationMetric or strings directly without the MetricInput dictionary wrapper:
-
-```python
-from galtea import Galtea, CustomScoreEvaluationMetric
-
-# This format is deprecated - use MetricInput dictionaries instead
-class ContainsKeyword(CustomScoreEvaluationMetric):
-    def __init__(self, keyword: str):
-        self.keyword = keyword.lower()
-        super().__init__(name=f"contains-{self.keyword}")
-        
-    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
-        if actual_output is None:
-            return 0.0
-        return 1.0 if self.keyword in actual_output.lower() else 0.0
-
-accuracy_metric = ContainsKeyword(keyword="correct")
-
-# Legacy format - passing CustomScoreEvaluationMetric directly
-galtea.evaluations.create_single_turn(
-    version_id=VERSION_ID,
-    test_case_id=TEST_CASE_ID,
-    actual_output=actual_output,
-    metrics=[
-        "Role Adherence",     # Legacy: string format
-        accuracy_metric       # Legacy: CustomScoreEvaluationMetric directly
-    ],
-)
-```
-
-<Warning>
-  This legacy format is maintained for backward compatibility only. New code should use the MetricInput dictionary format with either pre-computed scores or CustomScoreEvaluationMetric as the `score` field.
-</Warning>

@@ -10,9 +10,10 @@ Returns an [InferenceResult](/concepts/product/version/session/inference-result)
 ## Example
 ```python
 inference_result = galtea.inference_results.create(
-    session_id="YOUR_SESSION_ID",
+    session_id=session_id,
     input="What is the capital of France?",
-    output="Paris is the capital of France."
+    output="Paris",
+    latency=150.5,
 )
 ```
 

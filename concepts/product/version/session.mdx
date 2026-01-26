@@ -33,6 +33,11 @@ The Galtea SDK allows you to create, view, and manage sessions programmatically.
   The test case associated with the session. This is typically used for non-production evaluations.
 </ResponseField>
 
+<ResponseField name="Is Production" type="Boolean" optional>
+  Indicates whether the session is a production session. This is typically used to differentiate production data from test data.
+  It should be set to `True` if there is no associated test case.
+</ResponseField>
+
 <ResponseField name="Context" type="Text" optional>
   The context provided to the AI product during the session.
 </ResponseField>

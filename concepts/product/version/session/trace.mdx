@@ -73,29 +73,36 @@ The `@trace` decorator automatically captures function inputs, outputs, timing, 
 ### Syntax Options
 
 ```python
-from galtea import trace, TraceType
+from galtea import Galtea, TraceType, trace
+
 
 # Full specification
 @trace(name="my_operation", type=TraceType.TOOL)
-def my_function(): ...
+def my_function_1():
+    # Function implementation ...
+    print("Doing something...")
+
 
 # Name only (type defaults to None, for unclassified operations)
 @trace(name="custom_name")
-def my_function(): ...
+def my_function_2():
+    # Function implementation ...
+    print("Doing something else...")
+
 
 # Include function docstring as trace description
 @trace(type=TraceType.TOOL, include_docstring=True)
-def fetch_user_data(user_id: str):
-    """Fetches user data from the database by ID."""
-    return db.get_user(user_id)
+def my_function_3(user_id: str):
+    """Fetch user data from the database given a user ID."""
+    # Function implementation ...
+    print(f"Fetching data for user {user_id}...")
+
 
 # Bare decorator (uses function name)
-@trace
-def my_function(): ...
-
-# Empty parentheses
 @trace()
-def my_function(): ...
+def my_function_4():
+    # Function implementation ...
+    print("Doing another thing...")
 ```
 
 ### Error Tracking
@@ -115,10 +122,13 @@ def risky_call(self, data: str) -> str:
 
 ### Viewing Trace Hierarchy
 
-After collecting traces, you can visualize the execution flow:
+After collecting traces, you can visualize the execution in the Dashboard or by usign the following code:
 
 ```python
 traces = galtea.traces.list(inference_result_id=inference_result.id)
+
+print("Trace Hierarchy:")
+
 
 def print_trace_tree(traces, parent_id=None, indent=0):
     for trace in traces:
@@ -126,6 +136,7 @@ def print_trace_tree(traces, parent_id=None, indent=0):
             prefix = "  " * indent + ("└─ " if indent > 0 else "")
             print(f"{prefix}{trace.name} ({trace.type}) - {trace.latency_ms:.2f}ms")
             print_trace_tree(traces, trace.id, indent + 1)
+
 
 print_trace_tree(traces)
 ```
@@ -202,22 +213,22 @@ main_agent (AGENT) - 245.30ms
   <Accordion title="Use meaningful trace names">
     ```python
     # ✅ Good - descriptive
-    @trace(name="fetch_customer_orders", type=TraceType.TOOL)
+    @trace(name="fetch_customer_orders")
     
     # ❌ Bad - generic
-    @trace(name="step_1", type=TraceType.TOOL)
+    @trace(name="step_1")
     ```
   </Accordion>
   
   <Accordion title="Trace at meaningful boundaries">
     Trace operations that represent logical units of work, not every single function:
     ```python
-    # ✅ Good - meaningful operation
-    @trace(name="search_products", type=TraceType.RETRIEVER)
-    def search_products(self, query):
-        results = self._query_vector_db(query)  # Internal, not traced
-        return self._format_results(results)     # Internal, not traced
-    ```
+# ✅ Good - meaningful operation
+@trace(name="search_products", type=TraceType.RETRIEVER)
+def search_products(self, query):
+    results = self._query_vector_db(query)  # Internal, not traced
+    return self._format_results(results)  # Internal, not traced
+```
   </Accordion>
   
   <Accordion title="Select appropriate node types">
@@ -227,11 +238,12 @@ main_agent (AGENT) - 245.30ms
   <Accordion title="Keep input/output data reasonable">
     The decorator captures function arguments automatically. Consider what's useful for debugging:
     ```python
-    @trace(name="process_document", type=TraceType.TOOL)
-    def process(self, doc_id: str) -> dict:
-        # Only doc_id is captured as input, not the full document
-        doc = self.fetch_document(doc_id)
-        return {"summary": doc.summary, "status": "processed"}
-    ```
+@trace(name="process_document", type=TraceType.TOOL)
+def process(self, doc_id: str) -> dict:
+    # Only doc_id is captured as input, not the full document
+    doc = self.fetch_document(doc_id)
+    return {"summary": doc.summary, "status": "processed"}
+```
   </Accordion>
+
 </AccordionGroup>

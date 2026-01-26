@@ -6,7 +6,7 @@ description: "Simulator Service API methods in the Galtea SDK for running multi-
 
 import ConversationSimulatorCard from '/snippets/cards/conversation-simulator-card.mdx';
 
-The [Conversation Simulator](/concepts/conversation-simulator) is a feature for testing conversational AI systems. The `SimulatorService` in the Galtea SDK allows you to run these simulations programmatically. This service is exposed through the `galtea.simulator` object.
+The [Conversation Simulator](/concepts/product/test/case/conversation-simulator) is a feature for testing conversational AI systems. The `SimulatorService` in the Galtea SDK allows you to run these simulations programmatically. This service is exposed through the `galtea.simulator` object.
 
 <Info>
   Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
@@ -14,37 +14,27 @@ The [Conversation Simulator](/concepts/conversation-simulator) is a feature for 
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea, Agent, AgentInput, AgentResponse
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Define your agent
-class MyAgent(Agent):
+Simulate a conversation with your agent:
+```python
+class MyCustomAgent(Agent):
     def call(self, input_data: AgentInput) -> AgentResponse:
-        user_message = input_data.last_user_message_str()
+        # Implement your agent logic here, using input_data content
         return AgentResponse(
-            content=f"I received: {user_message}",
-            metadata={"response_count": 1}
+            content=f"Generated response for {input_data.last_user_message_str()}"
         )
 
-# Create a session for the simulation
-session = galtea.sessions.create(
-    version_id="YOUR_VERSION_ID",
-    test_case_id="YOUR_TEST_CASE_ID"
-)
 
-# Run a conversation simulation
-result = galtea.simulator.simulate(
-    session_id=session.id,
-    agent=MyAgent(),
-    max_turns=5,
-    log_inference_results=True
+simulation_result = galtea.simulator.simulate(
+    session_id=scenarios_session.id,
+    agent=MyCustomAgent(),
+    max_turns=3,
+    log_inference_results=True,
 )
-
-print(f"Simulation completed: {result.total_turns} turns")
-for message in result.messages:
-    print(f"{message.role}: {message.content}")
 ```
 
 ## Service Methods

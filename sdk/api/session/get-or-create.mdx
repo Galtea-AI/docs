@@ -9,11 +9,10 @@ Returns a [Session](/concepts/product/version/session) object.
 
 ## Example
 ```python
-# Tries to get a session with custom_id "existing-session-id", creates it if not found.
 session = galtea.sessions.get_or_create(
-    custom_id="existing-session-id",
-    version_id="YOUR_VERSION_ID",
-    test_case_id="YOUR_TEST_CASE_ID"
+    custom_id=custom_session_id,
+    version_id=version_id,
+    test_case_id=test_case_id,
 )
 ```
 

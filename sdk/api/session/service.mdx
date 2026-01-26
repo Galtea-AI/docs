@@ -15,36 +15,30 @@ This Service is exposed by the `galtea.sessions` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Create a test-based session
+Create a session:
+```python
 session = galtea.sessions.create(
-    version_id="YOUR_VERSION_ID",
-    test_case_id="YOUR_TEST_CASE_ID",
-    is_production=False
+    version_id=version_id, test_case_id=test_case_id, is_production=False
 )
+```
 
-print(f"Created session: {session.id}")
-
-# Create a production session
-prod_session = galtea.sessions.create(
-    version_id="YOUR_VERSION_ID",
-    custom_id="user-session-123",
-    is_production=True
-)
-
-# Get or create session (idempotent operation)
+Get or create a session with a custom ID:
+```python
 session = galtea.sessions.get_or_create(
-    version_id="YOUR_VERSION_ID",
-    custom_id="user-session-123"
+    custom_id=custom_session_id,
+    version_id=version_id,
+    test_case_id=test_case_id,
 )
+```
 
-# List all sessions for a version
-sessions = galtea.sessions.list(version_id="YOUR_VERSION_ID")
-print(f"Total sessions: {len(sessions)}")
+List sessions for a version:
+```python
+sessions = galtea.sessions.list(version_id=version_id, limit=10)
 ```
 
 ## Service Methods

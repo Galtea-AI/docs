@@ -10,11 +10,11 @@ Returns a [TestCase](/concepts/product/test/case) object for the given parameter
 ## Example
 ```python
 test_case = galtea.test_cases.create(
-    test_id="YOUR_TEST_ID",
+    test_id=test_id,
     input="What is the capital of France?",
     expected_output="Paris",
-    context="France is a country in Europe\nIt is known for its art, fashion, and culture\nThe capital of France is Paris\nParis is known for its cafe culture and landmarks like the Eiffel Tower",
-    variant="geography_question",
+    context="Geography facts",
+    variant="original",
 )
 ```
 

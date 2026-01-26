@@ -18,86 +18,50 @@ This Service is exposed by the `galtea.traces` object.
 
 The SDK provides two ways to collect traces:
 
-### 1. Automatic Collection with OpenTelemetry (Recommended)
+### 1. Automatic Collection with with `generate()`
 
-Use the `@trace` decorator or `start_trace()` context manager with context management:
+When using `galtea.inference_results.generate()`, trace collection is handled automatically:
 
 ```python
-from galtea import Galtea, trace, set_context, clear_context, TraceType
-
-galtea = Galtea(api_key="YOUR_API_KEY")
-
 @trace(type=TraceType.TOOL)
 def fetch_user_data(user_id: str) -> dict:
     return {"name": "John Doe", "email": "john@example.com"}
+
 
 @trace(type=TraceType.GENERATION)
 def generate_response(prompt: str) -> str:
     return "Generated response..."
 
-# Set context before running traced functions
-inference_result = galtea.inference_results.create(session_id=session.id, input="...")
-token = set_context(inference_result_id=inference_result.id)
 
-try:
-    user = fetch_user_data("user_123")
-    response = generate_response("Hello")
-finally:
-    clear_context(token)  # Flushes traces to Galtea
-```
+class MyOverviewAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        user = fetch_user_data("user_123")
+        response = generate_response("Hello")
+        return AgentResponse(content=response)
 
-### 2. Fully Automatic with `generate()`
 
-When using `galtea.inference_results.generate()`, trace collection is handled automatically:
-
-```python
-# Traces are collected, saved, and cleaned up automatically
+# Use generate() for automatic trace context management
 inference_result = galtea.inference_results.generate(
-    agent=my_agent,
+    agent=MyOverviewAgent(),
     session=session,
-    user_input="What's the price?"
+    user_input="Show me user data",
 )
 ```
 
-### 3. Manual Collection with Context Management
+### 2. Manual Collection with Context Management
 
 For full control over the trace lifecycle, use `set_context()` and `clear_context()`:
 
+Set context before running traced functions:
 ```python
-from galtea import Galtea, trace, set_context, clear_context, TraceType
+trace_context = set_context(inference_result_id=inference_result_id)
+```
 
-galtea = Galtea(api_key="YOUR_API_KEY")
+Then run your traced functions within this context set/open.
 
-@trace(type=TraceType.RETRIEVER)
-def search_docs(query: str):
-    return [{"doc": "relevant content"}]
-
-@trace(type=TraceType.GENERATION)
-def generate(context):
-    return "Generated response"
-
-# 1. Create inference result first
-inference_result = galtea.inference_results.create(
-    session_id="YOUR_SESSION_ID",
-    input="What is pricing?"
-)
-
-# 2. Set context to associate traces with the inference result
-token = set_context(inference_result_id=inference_result.id)
-
-try:
-    # 3. Execute traced operations
-    context = search_docs("What is pricing?")
-    response = generate(context)
-    
-    # 4. Update inference result with output
-    galtea.inference_results.update(
-        inference_result_id=inference_result.id,
-        output=response
-    )
-finally:
-    # 5. Clear context and flush traces to Galtea
-    clear_context(token)  # flush=True by default
+Once done, clear the context to [flush](sdk/api/trace/clear-context#param-flush) and detach:
+```python
+clear_context(trace_context)
 ```
 
 <Tip>

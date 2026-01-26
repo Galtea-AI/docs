@@ -114,13 +114,11 @@
               {
                 "group": "Product",
                 "icon": "cube",
-                "expanded": true,
                 "pages": [
                   "concepts/product",
                   {
                     "group": "SDK",
                     "icon": "code",
-                    "expanded": true,
                     "pages": [
                       "sdk/api/product/service",
                       "sdk/api/product/list",
@@ -394,6 +392,12 @@
                     ]
                   }
                 ]
+              },
+
+              {
+                "group": "Endpoint Connection",
+                "icon": "plug",
+                "pages": ["concepts/product/endpoint-connection"]
               }
             ]
           }

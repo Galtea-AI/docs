@@ -8,27 +8,7 @@ Returns a context token that must be passed to `clear_context()` for cleanup.
 
 ## Example
 ```python
-from galtea import Galtea, trace, set_context, clear_context, TraceType
-
-galtea = Galtea(api_key="YOUR_API_KEY")
-
-# Create an inference result first
-inference_result = galtea.inference_results.create(
-    session_id="YOUR_SESSION_ID",
-    input="User question"
-)
-
-# Set context before running traced functions
-token = set_context(
-    inference_result_id=inference_result.id
-)
-
-try:
-    # All @trace decorated functions will now be associated with this inference result
-    result = my_traced_function()
-finally:
-    # Always clear context in a finally block
-    clear_context(token)
+trace_context = set_context(inference_result_id=inference_result_id)
 ```
 
 ## Parameters

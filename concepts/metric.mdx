@@ -15,7 +15,7 @@ Metrics in Galtea define the specific criteria and methods used to evaluate the 
   Metrics are organization-wide and can be reused across multiple products.
 </Info>
 
-You can **create**, view and manage your metrics on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/metrics/service).
+You can **create**, view and manage your metrics on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/metric/service).
 
 ## Conceptual categories
 
@@ -347,6 +347,7 @@ Full Prompt (LLM) are templates that tell the evaluator model how to assess your
 ### Example Judge Prompt
 
 ```python
+
 judge_prompt = """
 You are an expert evaluator. Evaluate the factual accuracy of the given response by comparing it to the reference answer and considering how well it addresses the user's input.
 
@@ -371,6 +372,7 @@ When evaluating a `SCENARIOS` test, you can use the `{conversation_turns}` place
 
 **Example Prompt:**
 ```python
+
 judge_prompt = """
 Evaluate the following conversation for consistency. The agent should not contradict itself across the conversation.
 

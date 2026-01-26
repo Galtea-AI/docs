@@ -101,9 +101,10 @@ You can create your custom metric in Galtea using the [Dashboard ](https://platf
 Here's an example of how to create a custom metric using the SDK with the template shown above:
 
 ```python
-from galtea import Galtea
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+from galtea import Galtea
 
 load_dotenv()
 
@@ -111,7 +112,7 @@ galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
 
 # Create a new metric
 metric = galtea.metrics.create(
-    name="Generic Metric",
+    name=metric_name,
     test_type="QUALITY",  # or "RED_TEAMING", "SCENARIO"
     source="partial_prompt",
     judge_prompt="""
@@ -135,4 +136,4 @@ metric = galtea.metrics.create(
     description="Generic Metric",
     tags=["quality"],
 )
-``` 
+```

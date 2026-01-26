@@ -14,10 +14,7 @@ The `Galtea` class is the main entry point for the Galtea SDK. It provides acces
 To initialize the `Galtea` class, you need to provide your API key obtained in the [settings page](https://platform.galtea.ai/settings) of the Galtea platform.
 
 ```python
-from galtea import Galtea
-
-# Initialize Galtea SDK
-galtea = Galtea(api_key="YOUR_API_KEY", suppress_updatable_version_message=False)
+galtea = Galtea(api_key="YOUR_API_KEY")
 ```
 
 ### Services
@@ -33,18 +30,11 @@ The `Galtea` class provides access to the following services:
 - [`inference_results`](/sdk/api/inference-result/service): Access [inference result](/concepts/product/version/session/inference-result) related functionalities.
 - [`traces`](/sdk/api/trace/service): Access [trace](/concepts/product/version/session/trace) collection and management.
 - [`evaluations`](/sdk/api/evaluation/service): Access [evaluation](/concepts/product/version/session/evaluation) related functionalities.
-- [`simulator`](/sdk/api/simulator/service): Access [conversation simulator](/concepts/conversation-simulator) related functionalities.
+- [`simulator`](/sdk/api/simulator/service): Access [conversation simulator](/concepts/product/test/case/conversation-simulator) related functionalities.
 
 
 ### Example
 
 ```python
-from galtea import Galtea
-
-# Initialize Galtea SDK
-galtea = Galtea(api_key="YOUR_API_KEY", suppress_updatable_version_message=False)
-
-# List products
-products = galtea.products.list()
-print(products)
+products = galtea.products.list(limit=10)
 ```

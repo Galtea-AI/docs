@@ -15,38 +15,40 @@ This Service is exposed by the `galtea.metrics` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Create a custom metric (LLM-as-a-Judge)
+Create a metric:
+```python
 metric = galtea.metrics.create(
-    name="custom-accuracy",
+    name=metric_name,
     test_type="QUALITY",
     evaluator_model_name="GPT-4.1",
-    source="full_prompt",
-    judge_prompt='Determine if output equals expected. Output: "{actual_output}". Expected: "{expected_output}".',
-    description="Custom accuracy metric"
+    source="partial_prompt",
+    judge_prompt="Evaluate if the actual_output is polite.",
+    evaluation_params=["actual_output"],
+    description="Checks politeness",
 )
+```
 
-print(f"Created metric: {metric.name} (ID: {metric.id})")
+List all metrics:
+```python
+metrics = galtea.metrics.list(limit=20)
+```
 
-# List all metrics
-metrics = galtea.metrics.list()
-print(f"Total metrics: {len(metrics)}")
-
-# Retrieve a built-in metric by name
-role_adherence = galtea.metrics.get_by_name(name="Role Adherence")
-print(f"Found metric: {role_adherence.name}")
+Get a metric by name:
+```python
+metric = galtea.metrics.get_by_name(name=metric_name)
 ```
 
 ## Service Methods
-- [Create Metric](/sdk/api/metrics/create)
-- [Listing Metrics](/sdk/api/metrics/list)
-- [Retrieving Metric](/sdk/api/metrics/get)
-- [Retrieving Metric By Name](/sdk/api/metrics/get-by-name)
-- [Deleting Metric](/sdk/api/metrics/delete)
+- [Create Metric](/sdk/api/metric/create)
+- [Listing Metrics](/sdk/api/metric/list)
+- [Retrieving Metric](/sdk/api/metric/get)
+- [Retrieving Metric By Name](/sdk/api/metric/get-by-name)
+- [Deleting Metric](/sdk/api/metric/delete)
 
 ## Related Concepts
 

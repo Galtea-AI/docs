@@ -5,38 +5,26 @@ description: "Run a full conversation simulation between your agent and a synthe
 ---
 
 ## Returns
-It returns a result object from the [Conversation Simulator](/concepts/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
+It returns a result object from the [Conversation Simulator](/concepts/product/test/case/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
 
 In order to run the simulation you need to use Galtea's Agent. This agent manages your conversations with our simulation service so you don't have to worry about it.
 
 ## Example
 ```python
-import galtea
-
-# Define your agent
-class MyAgent(galtea.Agent):
-    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
-        user_message = input_data.last_user_message_str()
-        return galtea.AgentResponse(
-            content=f"Echo: {user_message}",
-            retrieval_context=None,  # Optional: context retrieved by the agent (e.g., for RAG)
-            metadata=None  # Optional: additional metadata
+class MyCustomAgent(Agent):
+    def call(self, input_data: AgentInput) -> AgentResponse:
+        # Implement your agent logic here, using input_data content
+        return AgentResponse(
+            content=f"Generated response for {input_data.last_user_message_str()}"
         )
 
-# Create a session and run the simulation
-session = galtea.sessions.create(version_id="your_version_id")
-result = galtea.simulator.simulate(
-    session_id=session.id,
-    agent=MyAgent(),
-    max_turns=5,
-    log_inference_results=True,
-    enable_last_inference=True,
-    include_metadata=True
-)
 
-print(result.total_turns)
-for message in result.messages:
-    print(message.role, message.content)
+simulation_result = galtea.simulator.simulate(
+    session_id=scenarios_session.id,
+    agent=MyCustomAgent(),
+    max_turns=3,
+    log_inference_results=True,
+)
 ```
 
 ## Parameters

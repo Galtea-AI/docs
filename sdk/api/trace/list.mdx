@@ -8,16 +8,9 @@ description: "Retrieve traces for an inference result."
 Returns a list of [Trace](/concepts/product/version/session/trace) objects.
 
 ## Example
-```python
-traces = galtea.traces.list(inference_result_id="YOUR_INFERENCE_RESULT_ID")
 
-# Filter by type and name
-traces = galtea.traces.list(
-    session_id="YOUR_SESSION_ID",
-    types=["TOOL", "GENERATION"],
-    names=["fetch_user_data", "generate_response"],
-    sort_by_start_time="asc"
-)
+```python
+traces = galtea.traces.list(inference_result_id=inference_result_id)
 ```
 
 ## Parameters

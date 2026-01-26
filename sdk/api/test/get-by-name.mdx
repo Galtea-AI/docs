@@ -9,11 +9,7 @@ Returns a [Test](/concepts/product/test) object for the given product and test n
 
 ## Example
 ```python
-# If type is needed for disambiguation
-test = galtea.tests.get_by_name(product_id="YOUR_PRODUCT_ID", test_name="YOUR_TEST_NAME", type="QUALITY")
-
-# If type is not needed
-test = galtea.tests.get_by_name(product_id="YOUR_PRODUCT_ID", test_name="YOUR_TEST_NAME")
+test = galtea.tests.get_by_name(product_id=product_id, test_name=test_name)
 ```
 
 ## Parameters

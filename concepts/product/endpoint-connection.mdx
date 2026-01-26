@@ -1,7 +1,7 @@
 ---
 title: "Endpoint Connection"
-sidebarTitle: "Endpoint Connection"
-description: "A reusable connection to an external endpoint for product evaluations"
+sidebarTitle: "Overview"
+description: "A reusable connection to an external endpoint that defines how to connect to your AI system's API."
 ---
 
 ## What is an Endpoint Connection?
@@ -45,7 +45,6 @@ To create an Endpoint Connection:
   - `POST`
   - `PUT`
   - `PATCH`
-  - `DELETE`
   
   Default: `POST`
 </ResponseField>
@@ -56,7 +55,6 @@ To create an Endpoint Connection:
   - `BEARER` - Bearer token authentication
   - `API_KEY` - API key authentication
   - `BASIC` - Basic HTTP authentication
-  - `OAUTH2` - OAuth 2.0 authentication
   
   Default: `BEARER`
 </ResponseField>
@@ -84,7 +82,7 @@ To create an Endpoint Connection:
   - `{{ id }}` - The test case ID
   - `{{ session.id }}` - The session ID
   - `{{ test.id }}` - The test ID
-  - `{% for turn in pastTurns %}...{% endfor %}` - Loop through conversation history
+  - `{% for turn in past_turns %}...{% endfor %}` - Loop through conversation history
     - `{{ turn.input }}` - Previous user input
     - `{{ turn.output }}` - Previous assistant response
 
@@ -94,7 +92,7 @@ To create an Endpoint Connection:
     "model": "gpt-4",
     "messages": [
       {"role": "system", "content": "You are a helpful assistant."},
-      {% for turn in pastTurns %}
+      {% for turn in past_turns %}
       {"role": "user", "content": "{{ turn.input }}"},
       {"role": "assistant", "content": "{{ turn.output }}"},
       {% endfor %}
@@ -112,7 +110,7 @@ To create an Endpoint Connection:
         [
           "{{ input }}",
           [
-            {% for turn in pastTurns %}
+            {% for turn in past_turns %}
             "{{ turn.input }}",
             "{{ turn.output }}"{% if not loop.last %},{% endif %}
             {% endfor %}
@@ -155,21 +153,44 @@ To create an Endpoint Connection:
 </ResponseField>
 
 <ResponseField name="Timeout" type="Number">
-  Request timeout in seconds. Must be between 1 and 300 seconds. Default: 60 seconds.
+  Request timeout in seconds. Must be between 1 and 300 seconds. Default: 30 seconds.
 </ResponseField>
 
 <ResponseField name="Rate Limit" type="Number">
   Optional rate limit for requests per minute. Use this to avoid exceeding your API's rate limits.
 </ResponseField>
 
-<ResponseField name="Retry Config" type="JSON">
-  Optional retry configuration for failed requests. **Example**:
-  ```json
-  {
-    "maxRetries": 3,
-    "backoffMs": 1000
-  }
-  ```
+## Retry Configuration
+
+Configure automatic retry behavior for failed requests. When enabled, Galtea will automatically retry requests that fail with specific HTTP status codes.
+
+<ResponseField name="Retry Enabled" type="Boolean">
+  Whether automatic retry is enabled. Default: `false`
+</ResponseField>
+
+<ResponseField name="Max Retry Attempts" type="Number">
+  Maximum number of retry attempts. Default: `3`
+</ResponseField>
+
+<ResponseField name="Initial Delay" type="Number">
+  Initial delay in milliseconds before the first retry. Default: `1000` (1 second)
+</ResponseField>
+
+<ResponseField name="Backoff Strategy" type="Enum">
+  Strategy for increasing delay between retry attempts:
+  - `exponential` - Delay doubles with each attempt (recommended)
+  - `linear` - Delay increases linearly
+  - `fixed` - Constant delay between attempts
+  
+  Default: `exponential`
+</ResponseField>
+
+<ResponseField name="Max Delay" type="Number">
+  Maximum delay cap in milliseconds. Default: `30000` (30 seconds)
+</ResponseField>
+
+<ResponseField name="Retryable Status Codes" type="Array of Numbers">
+  HTTP status codes that should trigger a retry. Default: `[429, 500, 502, 503, 504]`
 </ResponseField>
 
 ## Best Practices

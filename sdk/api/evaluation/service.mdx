@@ -15,33 +15,43 @@ This Service is exposed by the `galtea.evaluations` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Create a single-turn evaluation
-evaluations = galtea.evaluations.create_single_turn(
-    version_id="YOUR_VERSION_ID",
-    test_case_id="YOUR_TEST_CASE_ID",
-    actual_output="Paris is the capital of France.",
-    metrics=[
-        {"name": "Faithfulness"},
-        {"name": "Answer Relevancy"}
-    ]
+Create evaluations of a session (one per metric):
+```python
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    metrics=[{"name": "Role Adherence"}, {"name": "Conversation Relevancy"}],
 )
+```
 
-print(f"Created {len(evaluations)} evaluations")
+At some point later, you will be able to list all evaluations for that session:
+
+```python
+evaluations = galtea.evaluations.list(session_id=session_id)
+```
+
+Display the results:
+
+> You might need to await the evaluation completion depending on the type of evaluation you are creating.
+```python
+print(f"Total evaluations: {len(evaluations)}")
+scores = [ev.score for ev in evaluations if ev.score is not None]
+if len(scores) > 0:
+    average_score = sum(scores) / len(scores)
+    print(f"Average Score: {average_score}")
+else:
+    print("No scores available yet")
+
+print("Detailed Results:")
 for evaluation in evaluations:
-    print(f"Metric: {evaluation.metric_name}")
-    print(f"Score: {evaluation.score}")
-    print(f"Reason: {evaluation.reason}")
-
-# List all evaluations for a session
-session_evaluations = galtea.evaluations.list(
-    session_id="YOUR_SESSION_ID"
-)
-print(f"Total evaluations: {len(session_evaluations)}")
+    metric = galtea.metrics.get(metric_id=evaluation.metric_id)
+    print(f"Metric: {metric}")
+    print(f"    Score: {evaluation.score}")
+    print(f"    Reason: {evaluation.reason}")
 ```
 
 ## Service Methods

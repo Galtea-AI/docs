@@ -9,16 +9,7 @@ Returns the local file path to the downloaded test file.
 
 ## Example
 ```python
-# First, get a Test object
-test = galtea.tests.get(test_id="YOUR_TEST_ID")
-# Or
-# test = galtea.tests.get_by_name(product_id="YOUR_PRODUCT_ID", test_name="YOUR_TEST_NAME")
-
-if test and test.uri: # Check if the test has an associated file URI
-    downloaded_file_path = galtea.tests.download(test=test, output_directory="downloaded_tests")
-    print(f"Test file downloaded to: {downloaded_file_path}")
-else:
-    print("Test does not have a downloadable file or test not found.")
+downloaded_path = galtea.tests.download(test=test, output_directory="./.temp")
 ```
 
 ## Parameters

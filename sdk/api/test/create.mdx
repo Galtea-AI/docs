@@ -13,13 +13,12 @@ Returns a [Test](/concepts/product/test) object for the given parameters.
 Create a quality test to evaluate the quality and correctness of outputs.
 ```python
 test = galtea.tests.create(
-    name="example-test-tutorial",
+    name=test_name,
     type="QUALITY",
-    product_id="YOUR_PRODUCT_ID",
-    ground_truth_file_path="path/to/knowledge_file.pdf",
-    language='english',
-    variants=["paraphrased", "typos", "incorrect"],
-    max_test_cases=100
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=5,
 )
 ```
 </Tab>
@@ -28,13 +27,13 @@ test = galtea.tests.create(
 Create security and safety tests to identify potential vulnerabilities in your product.
 
 ```python
-test = galtea.tests.create(
-    name="security-red-team-test",
+red_team_test = galtea.tests.create(
+    name=f"red-teaming-test-{run_identifier}",
     type="RED_TEAMING",
-    product_id="YOUR_PRODUCT_ID",
-    variants=["Toxicity", "Misuse", "data_leakage"],
-    strategies=["Original", "Roleplay", "Base64"], # original must always be included
-    max_test_cases=50
+    product_id=product_id,
+    variants=["Toxicity"],
+    strategies=["Original", "Roleplay", "Base64"],
+    max_test_cases=50,
 )
 ```
 
@@ -44,14 +43,14 @@ test = galtea.tests.create(
 Generate conversation scenarios tailored to specific user personas and use cases.
 
 ```python
-test = galtea.tests.create(
-    name="medical-professional-scenarios",
+scenario_test = galtea.tests.create(
+    name=f"scenarios-test-{run_identifier}",
     type="SCENARIOS",
-    product_id="YOUR_PRODUCT_ID",
+    product_id=product_id,
     custom_user_focus="A medical professional specialized in dementia with more than 15 years in the field",
     language="english",
     max_test_cases=25,
-    strategies=["written"]
+    strategies=["written"],
 )
 ```
 
@@ -61,11 +60,11 @@ test = galtea.tests.create(
 Upload your own test cases using a CSV file for complete control over test content.
 
 ```python
-test = galtea.tests.create(
-    name="custom-uploaded-test",
+csv_test = galtea.tests.create(
+    name=f"csv-quality-test-{run_identifier}",
     type="QUALITY",
-    product_id="YOUR_PRODUCT_ID",
-    test_file_path="path/to/custom_test_cases.csv"
+    product_id=product_id,
+    test_file_path="path/to/quality_test.csv",
 )
 ```
 

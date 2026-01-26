@@ -15,30 +15,30 @@ This Service is exposed by the `galtea.test_cases` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# Create a test case
+Create a test case:
+```python
 test_case = galtea.test_cases.create(
-    test_id="YOUR_TEST_ID",
+    test_id=test_id,
     input="What is the capital of France?",
     expected_output="Paris",
-    context="France is a country in Europe. The capital is Paris.",
-    variant="geography_question"
+    context="Geography facts",
+    variant="original",
 )
+```
 
-print(f"Created test case: {test_case.id}")
-print(f"Input: {test_case.input}")
-print(f"Expected: {test_case.expected_output}")
+List test cases:
+```python
+test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
+```
 
-# List all test cases for a test
-test_cases = galtea.test_cases.list(test_id="YOUR_TEST_ID")
-print(f"Total test cases: {len(test_cases)}")
-
-for tc in test_cases:
-    print(f"- {tc.variant}: {tc.input[:50]}...")
+Get a test case by ID:
+```python
+test_case = galtea.test_cases.get(test_case_id=test_case_id)
 ```
 
 ## Service Methods

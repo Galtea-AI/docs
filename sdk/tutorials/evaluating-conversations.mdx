@@ -38,41 +38,39 @@ Certain metrics are specifically designed for conversational analysis and requir
     Use this when you have test cases. It requires `test_case_id` and is often combined with the Conversation Simulator to generate turns.
 
 ```python
-import os
-import galtea
-from galtea import Galtea
+# Fetch your test cases (created from a CSV of scenarios)
+test_cases = galtea_client.test_cases.list(test_id=scenarios_test.id)
+if test_cases is None or len(test_cases) == 0:
+    raise ValueError("No test cases found")
 
-galtea_client = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
 
-# 1) Fetch your test cases (created from a CSV of scenarios)
-test_cases = galtea_client.test_cases.list(test_id="YOUR_TEST_ID")
-
-# 2) Implement your Agent (connect your product/model)
+# Implement your Agent (connect your product/model)
 class MyAgent(galtea.Agent):
     def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
         return galtea.AgentResponse(content="...")
 
+
 for test_case in test_cases:
-    # 3) Create a session linked to the test case
+    # Create a session linked to the test case
     session = galtea_client.sessions.create(
-        version_id="YOUR_VERSION_ID",
-        test_case_id=test_case.id
+        version_id=version_id,
+        test_case_id=test_case.id,
     )
 
-    # 4) Run the simulator (synthetic user) with your Agent
+    # Run the simulator (synthetic user) with your Agent
     galtea_client.simulator.simulate(
         session_id=session.id,
         agent=MyAgent(),
         max_turns=test_case.max_iterations or 20,
     )
 
-    # 5) Evaluate the full conversation
+    # Evaluate the full conversation
     galtea_client.evaluations.create(
         session_id=session.id,
         metrics=[
-            {"name": "Conversation Relevancy"}, 
-            {"name": "Role Adherence"}, 
-            {"name": "Knowledge Retention"}
+            {"name": "Conversation Relevancy"},
+            {"name": "Role Adherence"},
+            {"name": "Knowledge Retention"},
         ],
     )
 ```
@@ -86,39 +84,40 @@ for test_case in test_cases:
     Use this when the conversation already happened outside Galtea. Ingest the transcript by creating a session (no `test_case_id`) and logging all turns in a batch, then evaluate.
 
 ```python
-import os
-from galtea import Galtea
-
-galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
-VERSION_ID = "YOUR_VERSION_ID"
-
 # Optional: map to your own conversation ID and mark as production if these are real users
-session = galtea.sessions.create(
-    version_id=VERSION_ID,
+session = galtea_client.sessions.create(
+    version_id=version_id,
     custom_id="EXTERNAL_CONVERSATION_ID",
-    is_production=True
+    is_production=True,
 )
 
 conversation_turns = [
     {"role": "user", "content": "What are some lower-risk investment strategies?"},
-    {"role": "assistant", "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.", "retrieval_context": "Low-risk investment options include index funds, government bonds, and Treasury securities."},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+        "retrieval_context": "Low-risk investment options include index funds, government bonds, and Treasury securities.",
+    },
     {"role": "user", "content": "With age, should the investment strategy change?"},
-    {"role": "assistant", "content": "Yes, many advisors recommend shifting to more conservative investments as you approach retirement.", "retrieval_context": "Financial advisors typically recommend a more conservative asset allocation as investors near retirement age."},
+    {
+        "role": "assistant",
+        "content": "Yes, many advisors recommend shifting to more conservative investments as you approach retirement.",
+        "retrieval_context": "Financial advisors typically recommend a more conservative asset allocation as investors near retirement age.",
+    },
 ]
 
 # Log all turns at once
-galtea.inference_results.create_batch(
-    session_id=session.id,
-    conversation_turns=conversation_turns
+galtea_client.inference_results.create_batch(
+    session_id=session.id, conversation_turns=conversation_turns
 )
 
 # Evaluate the full session
-galtea.evaluations.create(
+galtea_client.evaluations.create(
     session_id=session.id,
     metrics=[
-        {"name": "Role Adherence"}, 
-        {"name": "Knowledge Retention"}, 
-        {"name": "Conversation Relevancy"}
+        {"name": "Role Adherence"},
+        {"name": "Knowledge Retention"},
+        {"name": "Conversation Relevancy"},
     ],
 )
 ```
@@ -130,37 +129,46 @@ galtea.evaluations.create(
 <Tabs>
   <Tab title="Log turns individually">
 ```python
-from galtea import Galtea
-import os
-
-galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
-VERSION_ID = "YOUR_ACTIVE_VERSION_ID"
-
-session = galtea.sessions.create(
-    version_id=VERSION_ID,
+session = galtea_client.sessions.create(
+    version_id=version_id,
     is_production=True,
 )
 
+
+def your_product(user_input: str) -> str:
+    return f"This is a simulated response to '{user_input}'"
+
+
 def handle_turn(user_input: str) -> str:
     model_output = your_product(user_input)
-    galtea.inference_results.create(
-        session_id=session.id,
-        input=user_input,
-        output=model_output
+    galtea_client.inference_results.create(
+        session_id=session.id, input=user_input, output=model_output
     )
     return model_output
+
+
+# Simulate production interactions
+handle_turn("Hello!")
+handle_turn("What services do you offer?")
 ```
   </Tab>
   <Tab title="Log turns in a batch">
 ```python
+session_batch = galtea_client.sessions.create(
+    version_id=version_id,
+    is_production=True,
+)
+
 conversation_turns = [
     {"role": "user", "content": "What are some lower-risk investment strategies?"},
-    {"role": "assistant", "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities."},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+    },
 ]
 
-galtea.inference_results.create_batch(
-    session_id=session.id,
-    conversation_turns=conversation_turns
+galtea_client.inference_results.create_batch(
+    session_id=session_batch.id, conversation_turns=conversation_turns
 )
 ```
   </Tab>
@@ -168,9 +176,9 @@ galtea.inference_results.create_batch(
 
 ```python
 # Evaluate when the conversation is complete
-galtea.evaluations.create(
+galtea_client.evaluations.create(
     session_id=session.id,
-    metrics=["Conversation Relevancy", "Knowledge Retention"],
+    metrics=[{"name": "Conversation Relevancy"}, {"name": "Knowledge Retention"}],
 )
 ```
 

@@ -6,7 +6,7 @@ sidebarTitle: "Overview"
 
 ## What are Scenarios?
 
-Scenarios in Galtea are designed to evaluate the conversational capabilities of your [product](/concepts/product) through multi-turn dialogue interactions. These tests use the [Conversation Simulator](/concepts/conversation-simulator) to create realistic conversations with synthetic users that have specific goals, personalities, and behaviors.
+Scenarios in Galtea are designed to evaluate the conversational capabilities of your [product](/concepts/product) through multi-turn dialogue interactions. These tests use the [Conversation Simulator](/concepts/product/test/case/conversation-simulator) to create realistic conversations with synthetic users that have specific goals, personalities, and behaviors.
 
 Unlike [Quality Tests](/concepts/product/test/quality-tests) that focus on single-turn question-answer pairs, or [Red Teaming Tests](/concepts/product/test/red-teaming-tests) that test security vulnerabilities, Scenario based tests evaluate how well your AI product can:
 
@@ -43,7 +43,7 @@ You can create scenarios in Galtea through two methods:
   <Tab title="Upload Your Own Scenarios">
     <Steps>
       <Step title="Create your scenarios file">
-        Prepare a CSV file following the scenarios structure (see format below)
+        Prepare a CSV file following the scenarios structure shown [below](#example-scenario-tests-and-file-format)
       </Step>
       <Step title="Configure the test">
         Select "Scenarios" as the test type and "Uploaded" as the test origin
@@ -187,7 +187,7 @@ Scenarios have a specific structure designed to enable realistic conversation si
 
 ## Using Scenarios with the Conversation Simulator
 
-Scenarios are specifically designed to work with Galtea's [Conversation Simulator](/concepts/conversation-simulator). When you run evaluations using scenarios, the system will:
+Scenarios are specifically designed to work with Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator). When you run evaluations using scenarios, the system will:
 
 1. **Initialize the conversation** using the `initial_prompt` and `user_persona`
 2. **Generate realistic user responses** based on the `goal` and conversation history  

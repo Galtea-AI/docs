@@ -9,11 +9,7 @@ Returns a list of [TestCase](/concepts/product/test/case) objects for the given 
 
 ## Example
 ```python
-# List all test cases for a test
-test_cases = galtea.test_cases.list(test_id="YOUR_TEST_ID")
-
-# List with pagination
-paginated_test_cases = galtea.test_cases.list(test_id="YOUR_TEST_ID", offset=10, limit=5)
+test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
 ```
 
 ## Parameters

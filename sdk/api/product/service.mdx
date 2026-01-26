@@ -19,30 +19,28 @@ This Service is exposed by the `galtea.products` object.
 
 ## Quick Example
 
+First, initialize the Galtea SDK:
 ```python
-from galtea import Galtea
-
 galtea = Galtea(api_key="YOUR_API_KEY")
+```
 
-# List all products
-products = galtea.products.list()
-print(f"Total products: {len(products)}")
+List all products:
+```python
+products = galtea.products.list(limit=10)
+```
 
-for product in products:
-    print(f"- {product.name} (ID: {product.id})")
+Get a product by ID:
+```python
+product = galtea.products.get(product_id=product_id)
+```
 
-# Get a specific product by ID
-product = galtea.products.get(id="YOUR_PRODUCT_ID")
-print(f"Product: {product.name}")
-print(f"Description: {product.description}")
-
-# Get product by name
-product = galtea.products.get_by_name(name="My Product")
-print(f"Found: {product.name}")
+Get a product by name:
+```python
+product = galtea.products.get_by_name(name=product_name)
 ```
 
 <Note>
-  Products must be created through the [Galtea Dashboard](https://platform.galtea.ai/). The SDK provides read-only access.
+  Products must be created through the [Galtea Dashboard](https://platform.galtea.ai/product-new). The SDK provides read-only access.
 </Note>
 
 ## Service Methods

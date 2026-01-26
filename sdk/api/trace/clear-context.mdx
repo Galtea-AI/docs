@@ -7,18 +7,9 @@ description: "Clear a previously attached context and optionally flush pending t
 This method returns `None`.
 
 ## Example
+
 ```python
-from galtea import set_context, clear_context
-
-# Set context before running traced functions
-token = set_context(inference_result_id="inf_123")
-
-try:
-    # Run traced functions...
-    my_traced_function()
-finally:
-    # Clear context and flush traces (default behavior)
-    clear_context(token)
+clear_context(trace_context)
 ```
 
 ## Parameters
@@ -26,7 +17,7 @@ finally:
   The context token returned by `set_context()`.
 </ResponseField>
 <ResponseField name="flush" type="bool" optional>
-  If `True` (default), flush pending traces for the current inference result before clearing. Set to `False` to skip flushing.
+  If `True` (default), export any pending traces associated with the current inference result to the telemetry exporter before detaching the context.
 </ResponseField>
 
 <Note>

@@ -1,0 +1,5 @@
+# No need to process images folder
+images/
+
+.env
+.env.local

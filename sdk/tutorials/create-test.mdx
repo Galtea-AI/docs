@@ -9,7 +9,7 @@ While Galtea can automatically generate tests from a knowledge file, you can als
 ## Creating Tests with the SDK
 
 <Info>
-  Tests can be generated automatically by Galtea providing a knowledge file [via the sdk](http://localhost:3000/sdk/api/test/create) or the dashboard.
+  Tests can be generated automatically by Galtea providing a knowledge file [via the SDK](/sdk/api/test/create) or the dashboard.
 </Info>
 
 The Galtea SDK provides methods to create both [Quality Tests](/concepts/product/test/quality-tests) and [Red Teaming Tests](/concepts/product/test/red-teaming-tests).
@@ -19,22 +19,15 @@ The Galtea SDK provides methods to create both [Quality Tests](/concepts/product
   <Tab title="Upload Existing Test File">
     If you have a prepared test file in CSV format, you can upload it directly.
 
-    ```python
-    from galtea import Galtea
-    import os
-
-    galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
-
-    # Upload a pre-existing test file to the Galtea Platform
-    test = galtea.tests.create(
-        name="financial-qa-test",
-        type="QUALITY",
-        product_id="YOUR_PRODUCT_ID",
-        test_file_path="path/to/your/finance_db_sample.csv"
-    )
-
-    print(f"Test created with ID: {test.id}")
-    ```
+```python
+# Upload a pre-existing test file to the Galtea Platform
+test = galtea.tests.create(
+    name="financial-qa-test-" + run_identifier,
+    type="QUALITY",
+    product_id=product_id,
+    test_file_path="path/to/quality_test.csv",
+)
+```
     
     <Warning>
       The test file must follow the structure specified for:
@@ -53,24 +46,17 @@ The Galtea SDK provides methods to create both [Quality Tests](/concepts/product
   <Tab title="Generate Test from Knowledge Base">
     You can provide a knowledge base file (e.g., PDF, TXT) and have Galtea generate the test cases for you. This is a powerful feature for creating comprehensive tests with minimal effort.
 
-    ```python
-    from galtea import Galtea
-    import os
-
-    galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
-
-    # Generate a test from a PDF knowledge base
-    test = galtea.tests.create(
-        name="financial-qa-test",
-        type="QUALITY",
-        product_id="YOUR_PRODUCT_ID",
-        ground_truth_file_path="path/to/your/financial_document.pdf",
-        language="english",
-        max_test_cases=50 # Limit the number of generated test cases
-    )
-
-    print(f"Test generated from knowledge base with ID: {test.id}")
-    ```
+```python
+# Generate a test from a knowledge base file (PDF, TXT, etc.)
+generated_test = galtea.tests.create(
+    name="generated-financial-qa-test-" + run_identifier,
+    type="QUALITY",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=50,  # Limit the number of generated test cases
+)
+```
   </Tab>
 </Tabs>
 

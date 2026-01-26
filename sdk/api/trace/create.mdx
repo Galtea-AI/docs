@@ -8,15 +8,14 @@ description: "Create a single trace directly via the API."
 Returns a [Trace](/concepts/product/version/session/trace) object.
 
 ## Example
+
 ```python
-trace = galtea.traces.create(
-    inference_result_id="YOUR_INFERENCE_RESULT_ID",
-    name="fetch_user_data",
-    type="TOOL",
-    description="Fetches user profile data from the database by user ID",
-    input_data={"user_id": "user_123"},
-    output_data={"name": "John Doe", "email": "john@example.com"},
-    latency_ms=150.5
+manual_trace = galtea.traces.create(
+    inference_result_id=inference_result_id,
+    name="manual_db_call",
+    type=TraceType.TOOL,
+    start_time="2023-01-01T12:00:00Z",
+    end_time="2023-01-01T12:00:01Z",
 )
 ```
 
