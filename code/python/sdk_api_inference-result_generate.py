@@ -33,7 +33,6 @@ version = galtea_client.versions.create(
     name="Version-" + run_identifier,
     product_id=product_id,
     description="Demo version for generate examples",
-    model_id="ru45tcu3bnqibuswhla4omyt",
 )
 if version is None:
     raise ValueError("version is None")

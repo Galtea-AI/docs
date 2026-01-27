@@ -38,7 +38,6 @@ product = galtea.products.get(product_id=product_id)
 version = galtea.versions.create(
     name="v1.0-" + run_identifier,
     product_id=product.id,
-    model_id="ru45tcu3bnqibuswhla4omyt",
     description="Initial version with basic summarization capabilities",
 )
 # @end creating_a_version

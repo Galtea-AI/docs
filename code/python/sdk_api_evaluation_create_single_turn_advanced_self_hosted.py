@@ -26,7 +26,6 @@ version = galtea.versions.create(
     name="Version-docs-" + run_identifier,
     product_id=product_id,
     description="Demo version created via SDK",
-    model_id="ru45tcu3bnqibuswhla4omyt",
 )
 if version is None:
     raise ValueError("version is None")

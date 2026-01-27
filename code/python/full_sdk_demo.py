@@ -66,7 +66,6 @@ version = galtea.versions.create(
     name=version_name,
     product_id=product_id,
     description="Demo version created via SDK",
-    model_id="ru45tcu3bnqibuswhla4omyt",
 )
 # @end version_create
 if version is None:

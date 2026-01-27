@@ -41,7 +41,6 @@ product_id = response.json()["id"]
 version = galtea.versions.create(
     product_id=product_id,
     name="v1.0-" + run_identifier,
-    model_id="ru45tcu3bnqibuswhla4omyt",
 )
 
 # Create a scenarios test for simulation
