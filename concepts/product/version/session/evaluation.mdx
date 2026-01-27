@@ -6,9 +6,9 @@ description: "An evaluation that assesses inference results from a session using
 
 import MetricCard from '/snippets/cards/metric-card.mdx';
 import SDKEvaluationServiceCard from '/snippets/cards/sdk-evaluation-service-card.mdx';
+import SessionCard from '/snippets/cards/session-card.mdx';
 import TestCard from '/snippets/cards/test-card.mdx';
 import TestCaseCard from '/snippets/cards/test-case-card.mdx';
-import SessionCard from '/snippets/cards/session-card.mdx';
 
 ## What is an Evaluation?
 
@@ -126,4 +126,8 @@ Once an evaluation is created, you can access the following information:
 
 <ResponseField name="Error" type="Text">
   The error message if the evaluation failed during processing.
+</ResponseField>
+
+<ResponseField name="Retries Attempted" type="Number">
+  The number of retry attempts made for this evaluation. Starts at 0 and increments each time the evaluation is retried. Used to track retry history and enforce retry limits.
 </ResponseField>

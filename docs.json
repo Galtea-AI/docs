@@ -310,6 +310,7 @@
                       "sdk/api/evaluation/create",
                       "sdk/api/evaluation/list",
                       "sdk/api/evaluation/get",
+                      "sdk/api/evaluation/retry",
                       "sdk/api/evaluation/delete"
                     ]
                   }

@@ -1,0 +1,28 @@
+---
+title: 'Retrying Evaluations'
+sidebarTitle: "Retry"
+description: "Retry one or more failed evaluations."
+---
+
+## Returns
+Returns a dictionary containing retry results:
+- `retried` (int): Number of evaluations successfully queued for retry.
+- `skipped` (int): Number of evaluations skipped (not FAILED or exceeded max retries).
+- `errors` (list[str]): Error messages for any failed retries.
+
+## Example
+```python
+result = galtea.evaluations.retry(id="eval_abc123")
+print(f"Retried: {result['retried']}, Skipped: {result['skipped']}")
+```
+
+## Parameters
+<ResponseField name="id" type="str | list[str]" required>
+  Single evaluation ID or list of evaluation IDs to retry. Only evaluations with status `FAILED` can be retried.
+</ResponseField>
+
+## Retry Limits
+
+<Note>
+Non-admin users are limited to a fixed number of retries per evaluation (default: 5). Once exceeded, the evaluation cannot be retried by regular users. For additional support or to increase retry limits, contact support@galtea.ai.
+</Note>
