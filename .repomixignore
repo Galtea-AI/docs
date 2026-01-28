@@ -3,3 +3,7 @@ images/
 
 .env
 .env.local
+
+# Repomix files
+.repomixignore
+*repomix-output.xml

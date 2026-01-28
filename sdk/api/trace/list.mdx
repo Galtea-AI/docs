@@ -26,6 +26,12 @@ traces = galtea.traces.list(inference_result_id=inference_result_id)
 <ResponseField name="names" type="list[string]" optional>
   Filter traces by name.
 </ResponseField>
+<ResponseField name="from_start_time" type="str | int" default="None">
+  Filter traces started at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_start_time`.
+</ResponseField>
+<ResponseField name="to_start_time" type="str | int" default="None">
+  Filter traces started at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_start_time`.
+</ResponseField>
 <ResponseField name="sort_by_start_time" type="string" optional>
   Sort traces by start_time. Valid values: `asc`, `desc`.
 </ResponseField>

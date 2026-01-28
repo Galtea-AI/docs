@@ -1,10 +1,10 @@
 ---
 title: "Answer Relevancy"
-description: "Evaluates whether the generated answer is relevant to the user's input in a RAG pipeline."
+description: "Evaluates whether the generated answer is relevant to the user's input."
 ---
 
 
-The **Answer Relevancy** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate the quality of your RAG pipeline's generator by measuring how well the `actual_output` addresses the user's original query (`input`). It helps determine whether the model is generating responses that are focused, appropriate, and directly useful in the context of the question.
+The **Answer Relevancy** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate the quality of your model outputs by measuring how well the `actual_output` addresses the user's original query (`input`). It helps determine whether the model is generating responses that are focused, appropriate, and directly useful in the context of the question.
 
 This is essential for ensuring the model doesn't drift into unrelated topics or provide verbose but irrelevant information.
 
@@ -23,20 +23,15 @@ This metric does not directly evaluate the retrieval context, focusing purely on
 
 ## How Is It Calculated?
 
-The score is computed via an LLM-as-a-judge process:
+The `answer_relevancy` score is derived using an LLM-as-a-judge approach with explicit pass criteria:
 
-1. **Intent Extraction**: An LLM identifies the core informational need in the `input`.
-2. **Relevancy Judgment**: The LLM evaluates whether the `actual_output` appropriately and directly addresses that need.
+1. **Intent Alignment**: Does the `actual_output` directly address the core informational need expressed in the `input`?
+2. **Relevancy Check**: Is the response focused and on-topic, without drifting into unrelated information?
 
-The final score is calculated as:
+Based on these criteria, the LLM assigns a **binary score**:
 
-$$
-\text{Answer Relevancy} = \frac{\text{Number of relevant outputs}}{\text{Total number of evaluated responses}}
-$$
-
-Higher scores indicate that the generator is effectively aligned with user queries.
-
-<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-answer-relevancy).</Note>
+- **1 (Relevant):** The response directly and appropriately addresses the user's query.
+- **0 (Not Relevant):** The response fails to address the query, is off-topic, or provides irrelevant information.
 
 ---
 
