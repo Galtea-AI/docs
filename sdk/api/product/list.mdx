@@ -13,6 +13,12 @@ products = galtea.products.list(limit=10)
 ```
 
 ## Parameters
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter products created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter products created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_created_at`.
+</ResponseField>
 <ResponseField name="sort_by_created_at" type="string" optional>
   Sort products by creation date. Valid values are "asc" and "desc".
 </ResponseField>
