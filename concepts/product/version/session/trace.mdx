@@ -213,51 +213,51 @@ main_agent (AGENT) - 245.30ms
   <Accordion title="Use meaningful trace names">
     Choose descriptive names that clearly indicate the operation being traced:
     ```python
-# ✅ Good - descriptive
-@trace(name="fetch_customer_orders")
-# ❌ Bad - generic
-@trace(name="step_1")
-```
+    # ✅ Good - descriptive
+    @trace(name="fetch_customer_orders")
+    # ❌ Bad - generic
+    @trace(name="step_1")
+    ```
   </Accordion>
   
   <Accordion title="Trace at meaningful boundaries">
     Trace operations that represent logical units of work, not every single function:
     ```python
-# ✅ Good - meaningful operation
-@trace(name="search_products", type=TraceType.RETRIEVER)
-def search_products(self, query):
-    results = self._query_vector_db(query)  # Internal, not traced
-    return self._format_results(results)  # Internal, not traced
-```
+    # ✅ Good - meaningful operation
+    @trace(name="search_products", type=TraceType.RETRIEVER)
+    def search_products(self, query):
+        results = self._query_vector_db(query)  # Internal, not traced
+        return self._format_results(results)  # Internal, not traced
+    ```
   </Accordion>
   
   <Accordion title="Select appropriate node types">
     Classify operations correctly to enable better filtering and analysis in the dashboard.
     ```python
-# ✅ Good - correct classification
-@trace(name="generate_evaluation_metrics", type=TraceType.RETRIEVER)
-def fetch_user_data(self, user_id: str) -> dict:
-    # Function implementation ...
-    return {"user_id": user_id, "data": "Sample data"}
+    # ✅ Good - correct classification
+    @trace(name="generate_evaluation_metrics", type=TraceType.RETRIEVER)
+    def fetch_user_data(self, user_id: str) -> dict:
+        # Function implementation ...
+        return {"user_id": user_id, "data": "Sample data"}
 
 
-# ❌ Bad - incorrect classification
-@trace(name="generate_evaluation_metrics", type=TraceType.TOOL)
-def fetch_user_data_incorrect(self, user_id: str) -> dict:
-    # Function implementation ...
-    return {"user_id": user_id, "data": "Sample data"}
-```
+    # ❌ Bad - incorrect classification
+    @trace(name="generate_evaluation_metrics", type=TraceType.TOOL)
+    def fetch_user_data_incorrect(self, user_id: str) -> dict:
+        # Function implementation ...
+        return {"user_id": user_id, "data": "Sample data"}
+    ```
   </Accordion>
   
   <Accordion title="Keep input/output data reasonable">
     The decorator captures function arguments automatically. Consider what's useful for debugging:
     ```python
-@trace(name="process_document", type=TraceType.TOOL)
-def process(self, doc_id: str) -> dict:
-    # Only doc_id is captured as input, not the full document
-    doc = self.fetch_document(doc_id)
-    return {"summary": doc.summary, "status": "processed"}
-```
+    @trace(name="process_document", type=TraceType.TOOL)
+    def process(self, doc_id: str) -> dict:
+        # Only doc_id is captured as input, not the full document
+        doc = self.fetch_document(doc_id)
+        return {"summary": doc.summary, "status": "processed"}
+    ```
   </Accordion>
 
 </AccordionGroup>

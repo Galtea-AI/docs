@@ -50,18 +50,18 @@ You can use Galtea from the dashboard or via the Python SDK. This quickstart use
   </Step>
   <Step title="Install the SDK">
     ```bash
-pip install galtea
-```
+    pip install galtea
+    ```
   </Step>
   <Step title="Connect to the platform">
     ```python
-from galtea import Galtea
+    from galtea import Galtea
 
-# Verify the SDK is properly installed by initializing it
-# Note: Replace "YOUR_API_KEY" with your actual API key from the Galtea dashboard
-galtea = Galtea(api_key="YOUR_API_KEY")
-print("Galtea SDK installed successfully!")
-```
+    # Verify the SDK is properly installed by initializing it
+    # Note: Replace "YOUR_API_KEY" with your actual API key from the Galtea dashboard
+    galtea = Galtea(api_key="YOUR_API_KEY")
+    print("Galtea SDK installed successfully!")
+    ```
   </Step>
 </Steps>
 
@@ -225,81 +225,81 @@ class MyAgent(Agent):
 <Tabs>
   <Tab title="RAG">
   ```python
-for test_case in test_cases:
-    # Create a session linked to the test case and version
-    session = galtea.sessions.create(
-        version_id=version_id,
-        test_case_id=test_case.id,
-    )
+  for test_case in test_cases:
+      # Create a session linked to the test case and version
+      session = galtea.sessions.create(
+          version_id=version_id,
+          test_case_id=test_case.id,
+      )
 
-    # Run a synthetic user conversation against your agent
-    inference_result = galtea.inference_results.generate(
-        session=session,
-        agent=MyAgent(),
-        user_input=test_case.input,
-    )
+      # Run a synthetic user conversation against your agent
+      inference_result = galtea.inference_results.generate(
+          session=session,
+          agent=MyAgent(),
+          user_input=test_case.input,
+      )
 
-    # Evaluate the full conversation (session)
-    galtea.evaluations.create(
-        session_id=session.id,
-        metrics=[{"name": metric.name}],
-    )
+      # Evaluate the full conversation (session)
+      galtea.evaluations.create(
+          session_id=session.id,
+          metrics=[{"name": metric.name}],
+      )
 
-print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-```
+  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
+  ```
 
   </Tab>
 
   <Tab title="Security">
   ```python
-for test_case in test_cases:
-    # Create a session linked to the test case and version
-    session = galtea.sessions.create(
-        version_id=version_id,
-        test_case_id=test_case.id,
-    )
+  for test_case in test_cases:
+      # Create a session linked to the test case and version
+      session = galtea.sessions.create(
+          version_id=version_id,
+          test_case_id=test_case.id,
+      )
 
-    # Run a synthetic user conversation against your agent
-    inference_result = galtea.inference_results.generate(
-        session=session,
-        agent=MyAgent(),
-        user_input=test_case.input,
-    )
+      # Run a synthetic user conversation against your agent
+      inference_result = galtea.inference_results.generate(
+          session=session,
+          agent=MyAgent(),
+          user_input=test_case.input,
+      )
 
-    # Evaluate the full conversation (session)
-    galtea.evaluations.create(
-        session_id=session.id,
-        metrics=[{"name": metric.name}],
-    )
+      # Evaluate the full conversation (session)
+      galtea.evaluations.create(
+          session_id=session.id,
+          metrics=[{"name": metric.name}],
+      )
 
-print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-```
+  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
+  ```
   </Tab>
 
   <Tab title="Conversational">
   ```python
-for test_case in test_cases:
-    # Create a session linked to the test case and version
-    session = galtea.sessions.create(
-        version_id=version_id,
-        test_case_id=test_case.id,
-    )
+  for test_case in test_cases:
+      # Create a session linked to the test case and version
+      session = galtea.sessions.create(
+          version_id=version_id,
+          test_case_id=test_case.id,
+      )
 
-    # Run a synthetic user conversation against your agent
-    galtea.simulator.simulate(
-        session_id=session.id,
-        agent=MyAgent(),
-        max_turns=test_case.max_iterations or 10,
-    )
+      # Run a synthetic user conversation against your agent
+      galtea.simulator.simulate(
+          session_id=session.id,
+          agent=MyAgent(),
+          max_turns=test_case.max_iterations or 10,
+      )
 
-    # Evaluate the full conversation (session)
-    galtea.evaluations.create(
-        session_id=session.id,
-        metrics=[{"name": metric.name}],
-    )
+      # Evaluate the full conversation (session)
+      galtea.evaluations.create(
+          session_id=session.id,
+          metrics=[{"name": metric.name}],
+      )
 
-print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-```
+  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
+  ```
   </Tab>
 </Tabs>
 
