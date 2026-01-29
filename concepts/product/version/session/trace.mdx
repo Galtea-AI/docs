@@ -211,13 +211,13 @@ main_agent (AGENT) - 245.30ms
 
 <AccordionGroup>
   <Accordion title="Use meaningful trace names">
+    Choose descriptive names that clearly indicate the operation being traced:
     ```python
-    # ✅ Good - descriptive
-    @trace(name="fetch_customer_orders")
-    
-    # ❌ Bad - generic
-    @trace(name="step_1")
-    ```
+# ✅ Good - descriptive
+@trace(name="fetch_customer_orders")
+# ❌ Bad - generic
+@trace(name="step_1")
+```
   </Accordion>
   
   <Accordion title="Trace at meaningful boundaries">
@@ -233,6 +233,20 @@ def search_products(self, query):
   
   <Accordion title="Select appropriate node types">
     Classify operations correctly to enable better filtering and analysis in the dashboard.
+    ```python
+# ✅ Good - correct classification
+@trace(name="generate_evaluation_metrics", type=TraceType.RETRIEVER)
+def fetch_user_data(self, user_id: str) -> dict:
+    # Function implementation ...
+    return {"user_id": user_id, "data": "Sample data"}
+
+
+# ❌ Bad - incorrect classification
+@trace(name="generate_evaluation_metrics", type=TraceType.TOOL)
+def fetch_user_data_incorrect(self, user_id: str) -> dict:
+    # Function implementation ...
+    return {"user_id": user_id, "data": "Sample data"}
+```
   </Accordion>
   
   <Accordion title="Keep input/output data reasonable">
