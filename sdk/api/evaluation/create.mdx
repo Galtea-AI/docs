@@ -1,17 +1,23 @@
 ---
 title: 'Create Evaluations'
 sidebarTitle: "Create"
-description: "Create evaluations for all inference results within a session using specified metrics."
+description: "Create evaluations for all inference results within a session, or evaluate a single inference result using specified metrics."
 ---
 
-This method evaluates an entire conversation stored in a [Session](/concepts/product/version/session) by creating evaluations for each of its [Inference Results](/concepts/product/version/session/inference-result).
+This method evaluates either:
+1. An entire conversation stored in a [Session](/concepts/product/version/session) by creating evaluations for each of its [Inference Results](/concepts/product/version/session/inference-result)
+2. A single [Inference Result](/concepts/product/version/session/inference-result) by providing its ID
 
 ## Returns
-Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric and each inference result in the session.
+Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric provided.
 
 
 ## Usage
-This method evaluates all inference results within a session using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
+This method evaluates inference results using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
+
+<Note>
+  You must provide **either** `session_id` **or** `inference_result_id`, but not both. For single-turn evaluations, you can also use `galtea.inference_results.create_and_evaluate()` which combines creating an inference result and evaluating it in one call.
+</Note>
 
 ### Development Testing
 
@@ -28,6 +34,16 @@ evaluations = galtea.evaluations.create(
 evaluations = galtea.evaluations.create(
     session_id=session_id,
     metrics=[{"name": self_hosted_metric.name, "score": 0.85}],
+)
+```
+
+### Evaluating a Single Inference Result
+You can evaluate a specific inference result by providing its ID instead of a session ID:
+```python
+# Evaluate a specific inference result by providing its ID
+evaluations = galtea.evaluations.create(
+    inference_result_id=inference_result_id,
+    metrics=["Factual Accuracy", "Answer Relevancy"],
 )
 ```
 
@@ -111,8 +127,15 @@ evaluations = galtea.evaluations.create(
 </Note>
 
 ## Parameters
-<ResponseField name="session_id" type="string" required>
+<ResponseField name="session_id" type="string" optional>
   The ID of the session containing the inference results to be evaluated.
+  
+  <Note>Either `session_id` or `inference_result_id` must be provided, but not both.</Note>
+</ResponseField>
+<ResponseField name="inference_result_id" type="string" optional>
+  The ID of a specific inference result to evaluate.
+  
+  <Note>Either `session_id` or `inference_result_id` must be provided, but not both.</Note>
 </ResponseField>
 <ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" required>
   A list of metrics to use for the evaluation. 
