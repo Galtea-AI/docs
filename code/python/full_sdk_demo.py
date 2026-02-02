@@ -225,9 +225,7 @@ if session is None:
     raise ValueError("session from get is None")
 
 # @start session_get_by_custom_id
-session_by_custom = galtea.sessions.get_by_custom_id(
-    version_id=version_id, custom_id=custom_session_id
-)
+session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id)
 # @end session_get_by_custom_id
 if session_by_custom is None:
     raise ValueError("session from get_by_custom_id is None")
@@ -279,6 +277,21 @@ inference_result = galtea.inference_results.get(inference_result_id=inference_re
 # @end inference_result_get
 if inference_result is None:
     raise ValueError("inference_result from get is None")
+
+
+# @start inference_result_create_and_evaluate_basic
+# Create inference result and evaluate in a single call
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="The capital of France is Paris.",
+    metrics=["Factual Accuracy", "Answer Relevancy"],
+)
+# @end inference_result_create_and_evaluate_basic
+if inference_result is None:
+    raise ValueError("inference_result from create_and_evaluate is None")
+if evaluations is None or len(evaluations) == 0:
+    raise ValueError("evaluations from create_and_evaluate is None or empty")
 
 
 # @start inference_result_generate
@@ -459,6 +472,45 @@ evaluations = galtea.evaluations.create_single_turn(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create_single_turn is None or empty")
 
+# @start inference_result_create_and_evaluate_precomputed
+# With pre-computed scores for self-hosted metrics
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
+    session_id=session_id,
+    output="Model response...",
+    metrics=[
+        {"name": "Factual Accuracy"},
+        {"name": self_hosted_metric.name, "score": 0.95},  # Pre-computed score
+    ],
+)
+# @end inference_result_create_and_evaluate_precomputed
+if inference_result is None or evaluations is None:
+    raise ValueError("inference_result or evaluations from create_and_evaluate is None")
+
+# @start inference_result_create_and_evaluate_custom
+# With dynamic score calculation using CustomScoreEvaluationMetric
+from galtea.utils.custom_score_metric import CustomScoreEvaluationMetric
+
+
+class MyMetric(CustomScoreEvaluationMetric):
+    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
+        # Your custom scoring logic
+        return 0.95
+
+
+custom_metric = MyMetric(name=self_hosted_metric.name)
+
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
+    session_id=session_id,
+    output="Model response...",
+    metrics=[
+        {"name": "Factual Accuracy"},
+        {"score": custom_metric},  # Dynamic score calculation
+    ],
+)
+# @end inference_result_create_and_evaluate_custom
+if inference_result is None or evaluations is None:
+    raise ValueError("inference_result or evaluations from create_and_evaluate is None")
+
 # @start evaluation_create_single_turn_production
 evaluations = galtea.evaluations.create_single_turn(
     version_id=version_id,
@@ -488,6 +540,18 @@ if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
 evaluation_id = evaluations[0].id
+
+# @start evaluation_create_from_inference_result
+# Evaluate a specific inference result by providing its ID
+evaluations = galtea.evaluations.create(
+    inference_result_id=inference_result_id,
+    metrics=["Factual Accuracy", "Answer Relevancy"],
+)
+# @end evaluation_create_from_inference_result
+if evaluations is None or len(evaluations) == 0:
+    raise ValueError(
+        "evaluations from create with inference_result_id is None or empty"
+    )
 
 # @start evaluation_create_production
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)

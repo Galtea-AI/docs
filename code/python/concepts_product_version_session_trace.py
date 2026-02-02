@@ -124,6 +124,14 @@ print_trace_tree(traces)
 # @end the_decorator_viewing_trace_hierarchy
 
 
+# @start naming_tips
+# ✅ Good - descriptive
+@trace(name="fetch_customer_orders")
+# ❌ Bad - generic
+@trace(name="step_1")
+# @end naming_tips
+
+
 # @start trace_at_meaningful_boundaries
 # ✅ Good - meaningful operation
 @trace(name="search_products", type=TraceType.RETRIEVER)
@@ -133,6 +141,24 @@ def search_products(self, query):
 
 
 # @end trace_at_meaningful_boundaries
+
+
+# @start select_appropriate_node_types
+# ✅ Good - correct classification
+@trace(name="generate_evaluation_metrics", type=TraceType.RETRIEVER)
+def fetch_user_data(self, user_id: str) -> dict:
+    # Function implementation ...
+    return {"user_id": user_id, "data": "Sample data"}
+
+
+# ❌ Bad - incorrect classification
+@trace(name="generate_evaluation_metrics", type=TraceType.TOOL)
+def fetch_user_data_incorrect(self, user_id: str) -> dict:
+    # Function implementation ...
+    return {"user_id": user_id, "data": "Sample data"}
+
+
+# @end select_appropriate_node_types
 
 
 # @start keep_input_output_data_reasonable

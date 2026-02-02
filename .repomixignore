@@ -1,9 +1,0 @@
-# No need to process images folder
-images/
-
-.env
-.env.local
-
-# Repomix files
-.repomixignore
-*repomix-output.xml

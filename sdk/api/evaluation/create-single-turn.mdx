@@ -4,6 +4,14 @@ sidebarTitle: "Create Single-Turn"
 description: "Create an evaluation for a single-turn interaction, either from a test case or production data."
 ---
 
+<Warning>
+  **Deprecated**: This method is deprecated and will be removed in a future version.
+  
+  Use one of the following alternatives instead:
+  - `galtea.inference_results.create_and_evaluate()` - Creates an inference result and evaluates it in a single call
+  - `galtea.evaluations.create(inference_result_id=...)` - Evaluates an existing inference result
+</Warning>
+
 ## Returns
 Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric provided.
 

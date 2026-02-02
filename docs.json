@@ -263,6 +263,7 @@
                       "sdk/api/inference-result/service",
                       "sdk/api/inference-result/generate",
                       "sdk/api/inference-result/create",
+                      "sdk/api/inference-result/create-and-evaluate",
                       "sdk/api/inference-result/create-batch",
                       "sdk/api/inference-result/update",
                       "sdk/api/inference-result/list",
