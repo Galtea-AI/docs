@@ -38,8 +38,18 @@ version = galtea.versions.create(
 <ResponseField name="dataset_uri" type="string" optional>
   A URI pointing to the dataset.
 </ResponseField>
+<ResponseField name="conversation_endpoint_connection_id" type="string" optional>
+  The ID of the [Endpoint Connection](/concepts/product/endpoint-connection) used for conversational interactions with your AI product.
+</ResponseField>
+<ResponseField name="initialization_endpoint_connection_id" type="string" optional>
+  The ID of the [Endpoint Connection](/concepts/product/endpoint-connection) executed before the conversation begins. Used to initialize a session and obtain a session ID. See [Version Endpoint Connections](/concepts/product/version#endpoint-connections) for more details.
+</ResponseField>
+<ResponseField name="finalization_endpoint_connection_id" type="string" optional>
+  The ID of the [Endpoint Connection](/concepts/product/endpoint-connection) executed after the conversation ends. Used to clean up resources.
+</ResponseField>
 <ResponseField name="endpoint_connection_id" type="string" optional>
-  The ID of an Endpoint Connection for API access.
+  <Warning>Deprecated. Use `conversation_endpoint_connection_id` instead.</Warning>
+  Legacy parameter maintained for backwards compatibility. Maps to `conversation_endpoint_connection_id`.
 </ResponseField>
 <ResponseField name="guardrails" type="string" optional>
   Configuration or description of safety guardrails applied.

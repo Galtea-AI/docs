@@ -230,6 +230,15 @@ session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id
 if session_by_custom is None:
     raise ValueError("session from get_by_custom_id is None")
 
+# @start session_update
+updated_session = galtea.sessions.update(
+    session_id=session_id,
+    custom_id=custom_session_id,
+    metadata={"updated_at": run_identifier},
+)
+# @end session_update
+if updated_session is None:
+    raise ValueError("session from update is None")
 
 # @start inference_result_create
 inference_result = galtea.inference_results.create(

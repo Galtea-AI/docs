@@ -1,0 +1,94 @@
+---
+title: 'Update Session'
+sidebarTitle: "Update"
+description: "Update an existing session with metadata and status information"
+---
+
+## Overview
+
+The `update()` method allows you to modify an existing session after it has been created. This is useful when you need to update session metadata, status, or other properties.
+
+## Parameters
+
+
+<ParamField path="session_id" type="string">
+  The ID of the session to update.
+</ParamField>
+
+<ParamField path="custom_id" type="string">
+  The custom ID associated with the session.
+</ParamField>
+
+<ParamField path="context" type="string">
+  The context provided to the AI product during the session or ground-truth related context.
+</ParamField>
+
+<ParamField path="metadata" type="object">
+  Additional metadata to associate with the session.
+</ParamField>
+
+<ParamField path="error" type="string">
+  Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
+</ParamField>
+
+## Returns
+
+Returns the updated `Session` object.
+
+## Example
+
+```python
+updated_session = galtea.sessions.update(
+    session_id=session_id,
+    custom_id=custom_session_id,
+    metadata={"updated_at": run_identifier},
+)
+```
+
+## Use Cases
+
+### Recording Session Errors
+
+Store error information when a session encounters issues:
+
+```python
+try:
+    # Your agent logic that might fail
+    raise Exception("Connection timeout")
+except Exception as e:
+    # Record the error in the session
+    galtea.sessions.update(
+        session_id=session.id,
+        error=str(e),
+    )
+```
+
+### Adding Session Metadata
+
+Update a session with additional metadata:
+
+```python
+galtea.sessions.update(
+    session_id=session.id,
+    metadata={
+        "user_tier": "premium",
+        "source": "mobile_app",
+        "language": "en",
+    },
+)
+```
+
+## Notes
+
+<Warning>
+  Only include fields you want to update. Fields not specified will remain unchanged.
+</Warning>
+
+- Pass `None` explicitly to clear a field's value
+
+## Related Methods
+
+- [Create Session](/sdk/api/session/create) - Create a new session
+- [Get Session](/sdk/api/session/get) - Retrieve a session
+- [Get Session By Custom ID](/sdk/api/session/get-by-custom-id) - Retrieve a session by its Custom ID
+- [List Sessions](/sdk/api/session/list) - List all sessions

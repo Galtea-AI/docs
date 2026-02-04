@@ -39,5 +39,14 @@ The Galtea SDK allows you to create, view, and manage sessions programmatically.
 </ResponseField>
 
 <ResponseField name="Context" type="Text" optional>
-  The context provided to the AI product during the session.
+  The context provided to the AI product during the session or ground-truth related context.
 </ResponseField>
+
+<ResponseField name="Metadata" type="Object" optional>
+  Additional custom metadata about the session. This can be used to store any relevant information that doesn't fit into the other fields.
+</ResponseField>
+
+<ResponseField name="Error" type="Text" optional>
+  Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
+</ResponseField>
+

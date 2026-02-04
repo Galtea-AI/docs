@@ -35,6 +35,15 @@ To create an Endpoint Connection:
   A unique name for the endpoint connection within the product. **Example**: "Production Chat API" or "Staging Summarizer"
 </ResponseField>
 
+<ResponseField name="Type" type="Enum" required>
+  A type that defines the purpose of the endpoint connection. Supported values:
+  - `INITIALIZATION` - Connection used for initializing a session
+  - `CONVERSATION` - Connection used for conversational interactions
+  - `FINALIZATION` - Connection used for finalizing a session
+
+  This is done for complex session lifecycles where a single endpoint connection is not enough.
+</ResponseField>
+
 <ResponseField name="URL" type="Text" required>
   The full URL of the endpoint to connect to. Must be a valid HTTP or HTTPS URL. **Example**: "https://api.company.com/v1/chat"
 </ResponseField>
@@ -45,8 +54,7 @@ To create an Endpoint Connection:
   - `POST`
   - `PUT`
   - `PATCH`
-  
-  Default: `POST`
+  - `DELETE`
 </ResponseField>
 
 <ResponseField name="Auth Type" type="Enum" required>
@@ -55,8 +63,6 @@ To create an Endpoint Connection:
   - `BEARER` - Bearer token authentication
   - `API_KEY` - API key authentication
   - `BASIC` - Basic HTTP authentication
-  
-  Default: `BEARER`
 </ResponseField>
 
 <ResponseField name="Auth Token" type="Text">
@@ -79,9 +85,11 @@ To create an Endpoint Connection:
   **Available placeholders:**
   - `{{ input }}` - The test case input (required)
   - `{{ context }}` - The test case context
-  - `{{ id }}` - The test case ID
-  - `{{ session.id }}` - The session ID
-  - `{{ test.id }}` - The test ID
+  - `{{ session_id }}` - The external session ID (if available)
+  - `{{ test_case_id }}` - The test case ID
+  - `{{ test_id }}` - The test ID
+  - `{{ galtea_session_id }}` - The Galtea session ID
+  - Any field stored in session metadata (for example `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`)
   - `{% for turn in past_turns %}...{% endfor %}` - Loop through conversation history
     - `{{ turn.input }}` - Previous user input
     - `{{ turn.output }}` - Previous assistant response
