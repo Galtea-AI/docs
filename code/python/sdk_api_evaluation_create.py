@@ -70,7 +70,7 @@ galtea.metrics.create(
     name="politeness-check",
     source="self_hosted",
     description="Checks if polite words appear in the output",
-    test_type="QUALITY",
+    test_type="ACCURACY",
 )
 
 # Now, evaluate the entire session
@@ -119,7 +119,7 @@ galtea.metrics.create(
     name="legacy-politeness-check",
     source="self_hosted",
     description="Legacy polite check",
-    test_type="QUALITY",
+    test_type="ACCURACY",
 )
 
 custom_score_politeness = LegacyPolitenessCheck()

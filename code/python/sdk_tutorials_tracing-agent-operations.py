@@ -43,12 +43,12 @@ version = galtea.versions.create(
     name="v1.0-" + run_identifier,
 )
 
-# Create a scenarios test for simulation
-scenarios_test = galtea.tests.create(
-    name="tracing-scenarios-" + run_identifier,
-    type="SCENARIOS",
+# Create a behavior test for simulation
+behavior_test = galtea.tests.create(
+    name="tracing-behavior-" + run_identifier,
+    type="BEHAVIOR",
     product_id=product_id,
-    test_file_path="path/to/scenarios_test.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
 
 
@@ -85,7 +85,7 @@ def get_user(user_id: str) -> str:
 # @end 2_the_context_manager
 
 
-# @start automatic_collection_single_turn_with
+# @start automatic_collection_agent_setup
 class MyAgent(Agent):
     @trace(type=TraceType.RETRIEVER)
     def search(self, query: str) -> list[dict]:
@@ -106,8 +106,9 @@ class MyAgent(Agent):
 # Setup
 session = galtea.sessions.create(version_id=version.id, is_production=True)
 agent = MyAgent()
+# @end automatic_collection_agent_setup
 
-# Everything is handled automatically
+# @start automatic_collection_single_turn_with
 inference_result = galtea.inference_results.generate(
     agent=agent, session=session, user_input="What's the price?"
 )
@@ -116,7 +117,7 @@ inference_result = galtea.inference_results.generate(
 
 
 # Create a session for multi-turn simulation (requires test case)
-test_cases = galtea.test_cases.list(test_id=scenarios_test.id, limit=1)
+test_cases = galtea.test_cases.list(test_id=behavior_test.id, limit=1)
 if test_cases:
     simulation_session = galtea.sessions.create(
         version_id=version.id, test_case_id=test_cases[0].id

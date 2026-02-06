@@ -38,8 +38,8 @@ Certain metrics are specifically designed for conversational analysis and requir
     Use this when you have test cases. It requires `test_case_id` and is often combined with the Conversation Simulator to generate turns.
 
 ```python
-# Fetch your test cases (created from a CSV of scenarios)
-test_cases = galtea_client.test_cases.list(test_id=scenarios_test.id)
+# Fetch your test cases (created from a CSV of behavior tests)
+test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("No test cases found")
 

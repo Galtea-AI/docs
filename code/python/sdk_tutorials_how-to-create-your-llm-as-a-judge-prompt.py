@@ -16,7 +16,7 @@ galtea = Galtea(api_key=os.getenv("GALTEA_API_KEY"))
 # Create a new metric
 metric = galtea.metrics.create(
     name=metric_name,
-    test_type="QUALITY",  # or "RED_TEAMING", "SCENARIO"
+    test_type="ACCURACY",  # or "SECURITY", "BEHAVIOR"
     source="partial_prompt",
     judge_prompt="""
     **Role:** You are evaluating the [aspect] of the ACTUAL_OUTPUT.

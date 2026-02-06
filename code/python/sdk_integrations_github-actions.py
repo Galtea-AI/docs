@@ -28,8 +28,8 @@ PRODUCT_ID: str = product.id
 test = galtea.tests.create(
     product_id=PRODUCT_ID,
     name=f"github-actions-test-{run_identifier}",
-    type="QUALITY",
-    test_file_path="path/to/quality_test.csv",
+    type="ACCURACY",
+    test_file_path="path/to/accuracy_test.csv",
 )
 
 # @start github_actions_workflow

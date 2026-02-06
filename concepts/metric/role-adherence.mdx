@@ -22,20 +22,16 @@ This metric will evaluate the whole conversation, including all turns, to evalua
 
 ## How Is It Calculated?
 
-The `role_adherence` score is computed through the following LLM-based steps:
+The `role_adherence` score is computed using an LLM-as-a-judge approach:
 
-1. **Role Identification**: The system extracts the chatbot's assigned role from the initial context or system prompt.
-2. **Deviation Check**: For each turn, the LLM determines whether the `actual_output` deviates from or contradicts the expected behavior of that role.
+1. **Define the Persona**: Based on the `product_description`, the LLM identifies the expected persona, tone, professional boundaries, and style.
+2. **Audit the Conversation**: The LLM reviews every response from the agent in the conversation history.
+3. **Check for Deviations**: The LLM evaluates whether the agent broke character, violated tone constraints, strayed from its designated responsibilities, or suddenly deviated from the inferred role.
 
-The metric is computed as:
+The metric assigns a **binary score**:
 
-$$
-\text{Role Adherence} = \frac{\text{Number of in-role responses}}{\text{Total number of evaluated responses}}
-$$
-
-Scores close to **1** indicate strong consistency with the chatbot's intended persona or function.
-
-<Note>This metric is adapted from the bias metric of the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-role-adherence).</Note>
+- **Score 1.0 (Adherent):** The agent consistently maintained its role, tone, and persona throughout all turns.
+- **Score 0.0 (Non-Adherent):** The agent deviated from its role, broke character, or adopted an inconsistent tone at any point.
 
 ---
 

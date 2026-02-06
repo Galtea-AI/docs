@@ -38,9 +38,9 @@ version_id = version.id
 
 test = galtea.tests.create(
     name="test-custom-metrics-" + run_identifier,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product_id,
-    test_file_path="path/to/quality_test.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
 if test is None:
     raise ValueError("test is None")
@@ -71,7 +71,7 @@ galtea.metrics.create(
     name=CUSTOM_METRIC_NAME,
     source="self_hosted",
     description='Checks for the presence of the keyword "correct" in the output',
-    test_type="QUALITY",
+    test_type="ACCURACY",
 )
 
 # Run evaluation with your pre-computed score
@@ -116,7 +116,7 @@ galtea.metrics.create(
     name=accuracy_metric.name,
     source="self_hosted",
     description='Checks for the presence of the keyword "relevant" in the output',
-    test_type="QUALITY",
+    test_type="ACCURACY",
 )
 
 # Your product's response

@@ -37,20 +37,20 @@ if version is None:
     raise ValueError("version is None")
 version_id = version.id
 
-# Create a scenarios test for test-based evaluation
-scenarios_test = galtea_client.tests.create(
+# Create a behavior test for test-based evaluation
+behavior_test = galtea_client.tests.create(
     product_id=product_id,
-    name="scenarios-test-" + run_identifier,
-    type="SCENARIOS",
-    test_file_path="path/to/scenarios_test.csv",
+    name="behavior-test-" + run_identifier,
+    type="BEHAVIOR",
+    test_file_path="path/to/behavior_test.csv",
 )
-if scenarios_test is None:
-    raise ValueError("scenarios_test is None")
+if behavior_test is None:
+    raise ValueError("behavior_test is None")
 
 
 # @start test_based_evaluation
-# Fetch your test cases (created from a CSV of scenarios)
-test_cases = galtea_client.test_cases.list(test_id=scenarios_test.id)
+# Fetch your test cases (created from a CSV of behavior tests)
+test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("No test cases found")
 

@@ -22,20 +22,16 @@ This metric will evaluate the whole conversation, including all turns, to simula
 
 ## How Is It Calculated?
 
-The `knowledge_retention` score is based on a two-step LLM-driven process:
+The `knowledge_retention` score is computed using an LLM-as-a-judge approach:
 
-1. **Knowledge Extraction**: An LLM is used to extract key facts, assertions, and informational snippets from the previous `conversational_turns`.
-2. **Retention Evaluation**: For each subsequent LLM response, the system assesses whether the model has retained the relevant knowledge or has exhibited information attrition (e.g., contradictions, omissions, or inconsistencies).
+1. **Identify Knowledge Anchors**: The LLM scans user inputs to identify specific facts, preferences, constraints, or context (e.g., names, locations, specific numbers).
+2. **Verify Recall**: The LLM checks if the agent recalled and applied this information in subsequent turns.
+3. **Check Consistency**: The LLM evaluates whether the agent contradicted previously established information, asked for information already provided, or ignored constraints set earlier.
 
-The final score is calculated as:
+The metric assigns a **binary score**:
 
-$$
-\text{Knowledge Retention} = \frac{\text{Number of turns without information attrition}}{\text{Total number of evaluated turns}}
-$$
-
-This yields a score between **0** (no retention) and **1** (perfect retention), where higher values indicate stronger memory consistency over the course of the conversation.
-
-<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-knowledge-retention).</Note>
+- **Score 1.0 (Good Retention):** The agent correctly recalled relevant information or no specific memory recall was required (and no errors were made).
+- **Score 0.0 (Poor Retention):** The agent forgot information, contradicted itself, or asked redundant questions about known facts.
 
 
 ---

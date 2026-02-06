@@ -113,8 +113,8 @@ You can create one or multiple test types for the same product, depending on whi
 
 ```python
 test = galtea.tests.create(
-    name="rag-quality-test",
-    type="QUALITY",
+    name="rag-accuracy-test",
+    type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
     language="english",
@@ -135,8 +135,8 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 
 ```python
 test = galtea.tests.create(
-    name="misuse-red-team-test",
-    type="RED_TEAMING",
+    name="misuse-security-test",
+    type="SECURITY",
     product_id=product_id,
     variants=["Misuse"],
     strategies=["Original"],  # Original must always be included
@@ -157,8 +157,8 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 
 ```python
 test = galtea.tests.create(
-    name="conversation-scenarios-test",
-    type="SCENARIOS",
+    name="conversation-behavior-test",
+    type="BEHAVIOR",
     product_id=product_id,
     language="english",
     max_test_cases=20,

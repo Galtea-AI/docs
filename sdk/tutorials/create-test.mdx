@@ -12,7 +12,7 @@ While Galtea can automatically generate tests from a knowledge file, you can als
   Tests can be generated automatically by Galtea providing a knowledge file [via the SDK](/sdk/api/test/create) or the dashboard.
 </Info>
 
-The Galtea SDK provides methods to create both [Quality Tests](/concepts/product/test/quality-tests) and [Red Teaming Tests](/concepts/product/test/red-teaming-tests).
+The Galtea SDK provides methods to create [Accuracy Tests](/concepts/product/test/quality-tests), [Security & Safety Tests](/concepts/product/test/red-teaming-tests), and [Behavior Tests](/concepts/product/test/scenario-tests).
 
 
 <Tabs>
@@ -23,23 +23,23 @@ The Galtea SDK provides methods to create both [Quality Tests](/concepts/product
 # Upload a pre-existing test file to the Galtea Platform
 test = galtea.tests.create(
     name="financial-qa-test-" + run_identifier,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product_id,
-    test_file_path="path/to/quality_test.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
 ```
     
     <Warning>
       The test file must follow the structure specified for:
-      - [Quality Tests](/concepts/product/test/quality-tests#example-quality-tests-and-file-format): Standard format with `input`, `expected_output`, etc.
-      - [Red Teaming Tests](/concepts/product/test/red-teaming-tests#example-red-teaming-tests-and-file-format): Standard format with adversarial inputs
-      - [Scenarios Tests](/sdk/tutorials/simulating-conversations): Conversation simulator format with `goal`, `user_persona`, etc.
+      - [Accuracy Tests](/concepts/product/test/quality-tests#example-accuracy-tests-and-file-format): Standard format with `input`, `expected_output`, etc.
+      - [Security & Safety Tests](/concepts/product/test/red-teaming-tests#example-security-safety-tests-and-file-format): Standard format with adversarial inputs
+      - [Behavior Tests](/sdk/tutorials/simulating-conversations): Conversation simulator format with `goal`, `user_persona`, etc.
       
       If the file is not correctly formatted, test cases will not be created automatically, but you can still [add them manually](/sdk/api/test-case/create).
     </Warning>
     
     <Info>
-      **New Test Type**: Use `type="SCENARIOS"` to create conversation simulation tests that enable multi-turn dialogue evaluation with synthetic users. See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for complete examples.
+      **Behavior Tests**: Use `type="BEHAVIOR"` to create conversation simulation tests that enable multi-turn dialogue evaluation with synthetic users. See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for complete examples.
     </Info>
   </Tab>
 
@@ -50,7 +50,7 @@ test = galtea.tests.create(
 # Generate a test from a knowledge base file (PDF, TXT, etc.)
 generated_test = galtea.tests.create(
     name="generated-financial-qa-test-" + run_identifier,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
     language="english",

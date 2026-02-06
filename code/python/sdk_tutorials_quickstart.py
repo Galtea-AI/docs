@@ -14,8 +14,11 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 # === Start with cleanup code to ensure a fresh environment ===
 products = galtea.products.list(limit=100)
+print(f"Cleaning up {len(products)} products")
 for product in products:
     galtea.products.delete(product_id=product.id)
+products = galtea.products.list(limit=100)
+print(f"Remaining products after cleanup: {len(products)}")
 # === End cleanup code ===
 
 # Create a product for this demo
@@ -66,8 +69,8 @@ if version_id is None:
 
 # @start create_quality_test
 test = galtea.tests.create(
-    name="rag-quality-test",
-    type="QUALITY",
+    name="rag-accuracy-test",
+    type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
     language="english",
@@ -75,13 +78,13 @@ test = galtea.tests.create(
 )
 # @end create_quality_test
 if test is None:
-    raise ValueError("Failed to create quality test")
-quality_test = test
+    raise ValueError("Failed to create accuracy test")
+accuracy_test = test
 
 # @start create_red_teaming_test
 test = galtea.tests.create(
-    name="misuse-red-team-test",
-    type="RED_TEAMING",
+    name="misuse-security-test",
+    type="SECURITY",
     product_id=product_id,
     variants=["Misuse"],
     strategies=["Original"],  # Original must always be included
@@ -89,13 +92,13 @@ test = galtea.tests.create(
 )
 # @end create_red_teaming_test
 if test is None:
-    raise ValueError("Failed to create red teaming test")
-red_teaming_test = test
+    raise ValueError("Failed to create security test")
+security_test = test
 
 # @start create_scenarios_test
 test = galtea.tests.create(
-    name="conversation-scenarios-test",
-    type="SCENARIOS",
+    name="conversation-behavior-test",
+    type="BEHAVIOR",
     product_id=product_id,
     language="english",
     max_test_cases=20,
@@ -103,53 +106,53 @@ test = galtea.tests.create(
 )
 # @end create_scenarios_test
 if test is None:
-    raise ValueError("Failed to create scenarios test")
-scenarios_test = test
+    raise ValueError("Failed to create behavior test")
+behavior_test = test
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
     # Pick the first test that has a URI
-    test = galtea.tests.get(test_id=quality_test.id)
+    test = galtea.tests.get(test_id=accuracy_test.id)
     if test.uri:
         break
-    print("Waiting for quality test file to be ready...")
+    print("Waiting for accuracy test file to be ready...")
     time.sleep(1)
 else:
     raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    test = galtea.tests.get(test_id=red_teaming_test.id)
+    test = galtea.tests.get(test_id=security_test.id)
     if test.uri:
         break
-    print("Waiting for red teaming test file to be ready...")
+    print("Waiting for security test file to be ready...")
     time.sleep(1)
 else:
     raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    test = galtea.tests.get(test_id=scenarios_test.id)
+    test = galtea.tests.get(test_id=behavior_test.id)
     if test.uri:
         break
-    print("Waiting for scenarios test file to be ready...")
+    print("Waiting for behavior test file to be ready...")
     time.sleep(1)
 else:
     raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 # Ensure it works with all test types, then do the actual demo code
-test_cases = galtea.test_cases.list(test_id=quality_test.id)
+test_cases = galtea.test_cases.list(test_id=accuracy_test.id)
 if len(test_cases) == 0:
-    raise ValueError("No test cases found for quality test")
-quality_test_cases = test_cases
-test_cases = galtea.test_cases.list(test_id=red_teaming_test.id)
+    raise ValueError("No test cases found for accuracy test")
+accuracy_test_cases = test_cases
+test_cases = galtea.test_cases.list(test_id=security_test.id)
 if len(test_cases) == 0:
-    raise ValueError("No test cases found for red teaming test")
-red_teaming_test_cases = test_cases
-test_cases = galtea.test_cases.list(test_id=scenarios_test.id)
+    raise ValueError("No test cases found for security test")
+security_test_cases = test_cases
+test_cases = galtea.test_cases.list(test_id=behavior_test.id)
 if len(test_cases) == 0:
-    raise ValueError("No test cases found for scenarios test")
-scenarios_test_cases = test_cases
+    raise ValueError("No test cases found for behavior test")
+behavior_test_cases = test_cases
 
 # @start list_test_cases
 test_cases = galtea.test_cases.list(test_id=test.id)
@@ -161,21 +164,21 @@ metric = galtea.metrics.get_by_name(name="Factual Accuracy")
 # @end metric_pick_quality
 if metric is None:
     raise ValueError("Could not find metric by name 'Factual Accuracy'")
-quality_metric = metric
+accuracy_metric = metric
 
 # @start metric_pick_red_team
 metric = galtea.metrics.get_by_name(name="Misuse Resilience")
 # @end metric_pick_red_team
 if metric is None:
     raise ValueError("Could not find metric by name 'Misuse Resilience'")
-red_teaming_metric = metric
+security_metric = metric
 
 # @start metric_pick_scenarios
 metric = galtea.metrics.get_by_name(name="Role Adherence")
 # @end metric_pick_scenarios
 if metric is None:
     raise ValueError("Could not find metric by name 'Role Adherence'")
-scenarios_metric = metric
+behavior_metric = metric
 
 
 # @start define_your_agent
@@ -190,73 +193,73 @@ class MyAgent(Agent):
 # @end define_your_agent
 
 # Ensure it works with all test types, then do the actual demo code
-quality_test_case = galtea.test_cases.list(test_id=quality_test.id)[0]
-red_teaming_test_case = galtea.test_cases.list(test_id=red_teaming_test.id)[0]
-scenarios_test_case = galtea.test_cases.list(test_id=scenarios_test.id)[0]
+accuracy_test_case = galtea.test_cases.list(test_id=accuracy_test.id)[0]
+security_test_case = galtea.test_cases.list(test_id=security_test.id)[0]
+behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id)[0]
 if (
-    quality_test_case is None
-    or red_teaming_test_case is None
-    or scenarios_test_case is None
+    accuracy_test_case is None
+    or security_test_case is None
+    or behavior_test_case is None
 ):
     raise ValueError("No test cases found for one or more tests")
 
-quality_session = galtea.sessions.create(
-    version_id=version_id, test_case_id=quality_test_case.id
+accuracy_session = galtea.sessions.create(
+    version_id=version_id, test_case_id=accuracy_test_case.id
 )
-red_teaming_session = galtea.sessions.create(
-    version_id=version_id, test_case_id=red_teaming_test_case.id
+security_session = galtea.sessions.create(
+    version_id=version_id, test_case_id=security_test_case.id
 )
-scenarios_session = galtea.sessions.create(
-    version_id=version_id, test_case_id=scenarios_test_case.id
+behavior_session = galtea.sessions.create(
+    version_id=version_id, test_case_id=behavior_test_case.id
 )
-if quality_session is None or red_teaming_session is None or scenarios_session is None:
+if accuracy_session is None or security_session is None or behavior_session is None:
     raise ValueError("Failed to create one or more sessions")
 # galtea.simulator.simulate(
-#     session_id=quality_session.id,
+#     session_id=accuracy_session.id,
 #     agent=MyAgent(),
-#     max_turns=quality_test_case.max_iterations or 10,
+#     max_turns=accuracy_test_case.max_iterations or 10,
 # )
-quality_inference_result = galtea.inference_results.generate(
-    session=quality_session,
+accuracy_inference_result = galtea.inference_results.generate(
+    session=accuracy_session,
     agent=MyAgent(),
-    user_input=quality_test_case.input,
+    user_input=accuracy_test_case.input,
 )
 # galtea.simulator.simulate(
-#     session_id=red_teaming_session.id,
+#     session_id=security_session.id,
 #     agent=MyAgent(),
-#     max_turns=red_teaming_test_case.max_iterations or 10,
+#     max_turns=security_test_case.max_iterations or 10,
 # )
-red_teaming_inference_result = galtea.inference_results.generate(
-    session=red_teaming_session,
+security_inference_result = galtea.inference_results.generate(
+    session=security_session,
     agent=MyAgent(),
-    user_input=red_teaming_test_case.input,
+    user_input=security_test_case.input,
 )
 conversational_simulation_result = galtea.simulator.simulate(
-    session_id=scenarios_session.id,
+    session_id=behavior_session.id,
     agent=MyAgent(),
-    max_turns=scenarios_test_case.max_iterations or 10,
+    max_turns=behavior_test_case.max_iterations or 10,
 )
 if (
-    quality_inference_result is None
-    or red_teaming_inference_result is None
+    accuracy_inference_result is None
+    or security_inference_result is None
     or conversational_simulation_result is None
 ):
     raise ValueError("Failed to generate one or more inference results")
 galtea.evaluations.create(
-    session_id=quality_session.id,
-    metrics=[{"name": quality_metric.name}],
+    session_id=accuracy_session.id,
+    metrics=[{"name": accuracy_metric.name}],
 )
 galtea.evaluations.create(
-    session_id=red_teaming_session.id,
-    metrics=[{"name": red_teaming_metric.name}],
+    session_id=security_session.id,
+    metrics=[{"name": security_metric.name}],
 )
 galtea.evaluations.create(
-    session_id=scenarios_session.id,
-    metrics=[{"name": scenarios_metric.name}],
+    session_id=behavior_session.id,
+    metrics=[{"name": behavior_metric.name}],
 )
 
-test_cases = quality_test_cases
-metric = quality_metric
+test_cases = accuracy_test_cases
+metric = accuracy_metric
 # @start run_evaluation
 for test_case in test_cases:
     # Create a session linked to the test case and version
@@ -282,9 +285,9 @@ print(f"Submitted evaluations for version {version_id} using test '{test.name}'.
 
 # @end run_evaluation
 
-# Only run the first scenarios test case
-test_cases = scenarios_test_cases[:1]
-metric = scenarios_metric
+# Only run the first behavior test case
+test_cases = behavior_test_cases[:1]
+metric = behavior_metric
 # @start run_evaluation_conversational
 for test_case in test_cases:
     # Create a session linked to the test case and version

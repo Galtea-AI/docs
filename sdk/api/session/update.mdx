@@ -40,7 +40,7 @@ Returns the updated `Session` object.
 ```python
 updated_session = galtea.sessions.update(
     session_id=session_id,
-    custom_id=custom_session_id,
+    custom_id=custom_session_id + "_" + run_identifier,
     metadata={"updated_at": run_identifier},
 )
 ```

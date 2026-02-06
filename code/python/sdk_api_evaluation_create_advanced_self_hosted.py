@@ -72,7 +72,7 @@ if metric is None:
         name="politeness-check",
         source="self_hosted",
         description="Checks if polite words appear in the output",
-        test_type="QUALITY",
+        test_type="ACCURACY",
     )
 
 # Now, evaluate the entire session

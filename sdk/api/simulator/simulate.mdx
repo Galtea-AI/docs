@@ -20,7 +20,7 @@ class MyCustomAgent(Agent):
 
 
 simulation_result = galtea.simulator.simulate(
-    session_id=scenarios_session.id,
+    session_id=behavior_session.id,
     agent=MyCustomAgent(),
     max_turns=3,
     log_inference_results=True,
@@ -58,7 +58,7 @@ simulation_result = galtea.simulator.simulate(
   If True, the agent will generate the first message before any user messages are generated. Default: False
   <Note>
     When `agent_goes_first` is set to `True`:
-    - Any `initial_prompt` defined on the associated `TestCase` will be ignored.
+    - Any `input` (first user message) defined on the associated `TestCase` will be ignored.
     - The first call to your agent will have an empty `messages` list in the `AgentInput`. Ensure your agent's `call` method can handle cases where `input_data.last_user_message_str()` returns `None`.
   </Note>
 </ResponseField>

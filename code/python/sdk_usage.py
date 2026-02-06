@@ -46,7 +46,7 @@ version = galtea.versions.create(
 # 2) Create a test
 test = galtea.tests.create(
     name="example-test-tutorial-" + run_identifier,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product.id,
     ground_truth_file_path="path/to/knowledge.md",  # The ground truth is the knowledge base
     language="english",
@@ -57,7 +57,7 @@ test = galtea.tests.create(
 # 3) Create a standard metric via API
 metric_from_api = galtea.metrics.create(
     name="accuracy-" + run_identifier,
-    test_type="QUALITY",
+    test_type="ACCURACY",
     evaluator_model_name="GPT-4.1",
     source="full_prompt",
     judge_prompt=(
@@ -70,7 +70,7 @@ metric_from_api = galtea.metrics.create(
 # 4) Create a custom metric entry in the platform, then define local evaluator
 metric_from_api_custom = galtea.metrics.create(
     name="keyword-check-" + run_identifier,
-    test_type="QUALITY",
+    test_type="ACCURACY",
     source="self_hosted",
     description="Checks if the 'actual output' contains the keyword 'expected'.",
 )

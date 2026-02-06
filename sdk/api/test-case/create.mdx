@@ -22,8 +22,8 @@ test_case = galtea.test_cases.create(
 <ResponseField name="test_id" type="string" required>
   The ID of the test you want to create the test case for.
 </ResponseField>
-<ResponseField name="input" type="string" required>
-  The input for the test case. This is the question or prompt you want to send to your model for a later evaluation.
+<ResponseField name="input" type="string" optional>
+  The input for the test case. For Accuracy and Safety tests, this is the question or prompt you want to send to your model for evaluation. For Behaviour tests, this is the first user message to use in the conversation (bypassing the simulator for the first turn).
 </ResponseField>
 <ResponseField name="expected_output" type="string" optional>
   The expected output for the input given. This is the correct answer or response you want to evaluate against.
@@ -66,9 +66,7 @@ test_case = galtea.test_cases.create(
 <ResponseField name="scenario" type="string" optional>
   Description of the scenario context for scenario-based test cases.
 </ResponseField>
-<ResponseField name="initial_prompt" type="string" optional>
-  The initial message from the synthetic user for scenario-based tests.
-</ResponseField>
+
 <ResponseField name="stopping_criterias" type="list[string]" optional>
   List of criteria to end the conversation in scenario-based simulations.
 </ResponseField>
