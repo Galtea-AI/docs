@@ -33,13 +33,13 @@ Traces are **always linked to an [inference result](/concepts/product/version/se
 
 Traces support parent-child relationships, allowing you to visualize the complete execution flow of your agent. When a traced function calls another traced function, the hierarchy is automatically captured.
 
-```
+```python
 Agent Call (root)
-├── Route Query (CHAIN)
-├── Retrieve Context (RETRIEVER)
-│   └── Vector Search (TOOL)
-├── Fetch Product Data (TOOL)
-└── Calculate Discount (TOOL)
+├─ Route Query (CHAIN)
+├─ Retrieve Context (RETRIEVER)
+│  └─ Vector Search (TOOL)
+├─ Fetch Product Data (TOOL)
+└─ Calculate Discount (TOOL)
 ```
 
 Each trace includes:

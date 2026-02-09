@@ -22,20 +22,16 @@ This metric will evaluate the whole conversation, including all turns, to evalua
 
 ## How Is It Calculated?
 
-The `conversation_relevancy` score is derived using an LLM-as-a-judge approach:
+The `conversation_relevancy` score is computed using an LLM-as-a-judge approach:
 
-1. **Contextual Analysis**: An LLM is used to analyze the full conversation history.
-2. **Relevancy Judgment**: The LLM determines whether the `actual_output` directly addresses the user's intent and fits naturally within the flow of the dialogue.
+1. **Analyze Context Flow**: The LLM reads the conversation sequentially to understand the evolving context.
+2. **Evaluate Each Turn**: For every agent response, the LLM determines if it directly addresses the user's immediate input, makes sense given previous turns, and stays on-topic.
+3. **Consider Natural Conversation Dynamics**: The LLM accounts for minor clarifications or brief tangents that serve a purpose, and focuses on **significant** relevance failures rather than minor imperfections.
 
-The score is based on the ratio of contextually relevant responses to the total number of evaluated responses:
+The metric assigns a **binary score**:
 
-$$
-\text{Conversation Relevancy} = \frac{\text{Number of turns with relevant statements}}{\text{Total number of statements}}
-$$
-
-Scores range from **0** (entirely off-topic) to **1** (fully relevant throughout), helping you monitor and improve conversational quality at scale.
-
-<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-conversation-relevancy).</Note>
+- **Score 1.0 (Relevant):** The agent maintains overall coherence with only minor or justifiable deviations. Responses align with the user's intent and conversation history.
+- **Score 0.0 (Irrelevant):** The agent demonstrates significant irrelevance issues—repeatedly ignoring context, contradicting established information, or going off-topic without justification.
 
 
 ---

@@ -1,17 +1,17 @@
 ---
-title: "Quality Tests"
-description: "Evaluate the quality and correctness of your outputs"
+title: "Accuracy Tests"
+description: "Evaluate the accuracy and correctness of your outputs"
 sidebarTitle: "Overview"
 icon: ""
 ---
 
-## What are Quality Tests?
+## What are Accuracy Tests?
 
-Quality tests in Galtea are designed to evaluate the quality, accuracy, and correctness of your [product's](/concepts/product) outputs. These tests typically consist of questions or prompts paired with ideal answers, allowing Galtea to assess how well your product's responses match the expected standard.
+Accuracy tests in Galtea are designed to evaluate the quality, accuracy, and correctness of your [product's](/concepts/product) outputs. These tests typically consist of questions or prompts paired with ideal answers, allowing Galtea to assess how well your product's responses match the expected standard.
 
-## Creating Quality Tests
+## Creating Accuracy Tests
 
-You can create quality tests in Galtea through two methods:
+You can create accuracy tests in Galtea through two methods:
 
 <Tabs>
   <Tab title="Generate from Knowledge Base">
@@ -20,7 +20,7 @@ You can create quality tests in Galtea through two methods:
         Create a file containing all the information that the Product should **know and adhere to**
       </Step>
       <Step title="Configure the test">
-        Select *Quality* as the test type and *Generated* as the test origin
+        Select *Accuracy* as the test type and *Generated* as the test origin
         <Info>
           The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
@@ -33,10 +33,10 @@ You can create quality tests in Galtea through two methods:
   <Tab title="Upload Your Own Test">
     <Steps>
       <Step title="Create your test file">
-        Prepare a CSV file following the structure shown [below](#example-quality-tests-and-file-format)
+        Prepare a CSV file following the structure shown [below](#example-accuracy-tests-and-file-format)
       </Step>
       <Step title="Configure the test">
-        Select "Quality" as the test type and "Uploaded" as the test origin
+        Select "Accuracy" as the test type and "Uploaded" as the test origin
         <Info>
           The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
@@ -48,7 +48,7 @@ You can create quality tests in Galtea through two methods:
   </Tab>
 </Tabs>
 
-## Example Quality Tests and File Format
+## Example Accuracy Tests and File Format
 
 Here are examples of the content and its creation-document structure:
 
@@ -121,9 +121,9 @@ Here are examples of the content and its creation-document structure:
   The extent of the examples provided above are short extractions. In the actual CSV files they can be much longer and the amount of test cases (rows) can be much higher.
 </Warning>
 
-## Structure of Quality Tests
+## Structure of Accuracy Tests
 
-Quality tests have a specific structure designed to facilitate effective evaluation:
+Accuracy tests have a specific structure designed to facilitate effective evaluation:
 
 <ResponseField name="instance_id" type="Number" required>
   A unique identifier for the test instance.

@@ -37,7 +37,7 @@ galtea.metrics.create(
     name=CUSTOM_METRIC_NAME,
     source="self_hosted",
     description='Checks for the presence of the keyword "correct" in the output',
-    test_type="QUALITY",
+    test_type="ACCURACY",
 )
 
 # Run evaluation with your pre-computed score
@@ -85,7 +85,7 @@ galtea.metrics.create(
     name=accuracy_metric.name,
     source="self_hosted",
     description='Checks for the presence of the keyword "relevant" in the output',
-    test_type="QUALITY",
+    test_type="ACCURACY",
 )
 
 # Your product's response

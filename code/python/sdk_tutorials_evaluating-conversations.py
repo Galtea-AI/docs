@@ -37,28 +37,28 @@ if version is None:
     raise ValueError("version is None")
 version_id = version.id
 
-# Create a scenarios test for test-based evaluation
-scenarios_test = galtea_client.tests.create(
+# Create a behavior test for test-based evaluation
+behavior_test = galtea_client.tests.create(
     product_id=product_id,
-    name="scenarios-test-" + run_identifier,
-    type="SCENARIOS",
-    test_file_path="path/to/scenarios_test.csv",
+    name="behavior-test-" + run_identifier,
+    type="BEHAVIOR",
+    test_file_path="path/to/behavior_test.csv",
 )
-if scenarios_test is None:
-    raise ValueError("scenarios_test is None")
+if behavior_test is None:
+    raise ValueError("behavior_test is None")
 
 
 # @start test_based_evaluation
-# Fetch your test cases (created from a CSV of scenarios)
-test_cases = galtea_client.test_cases.list(test_id=scenarios_test.id)
+# Fetch your test cases (created from a CSV of behavior tests)
+test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("No test cases found")
 
 
-# Implement your Agent (connect your product/model)
-class MyAgent(galtea.Agent):
-    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
-        return galtea.AgentResponse(content="...")
+# Implement your agent function (connect your product/model)
+def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
+    user_message = input_data.last_user_message_str()
+    return galtea.AgentResponse(content=f"Response to: {user_message}")
 
 
 for test_case in test_cases:
@@ -68,10 +68,10 @@ for test_case in test_cases:
         test_case_id=test_case.id,
     )
 
-    # Run the simulator (synthetic user) with your Agent
+    # Run the simulator (synthetic user) with your agent function
     galtea_client.simulator.simulate(
         session_id=session.id,
-        agent=MyAgent(),
+        agent=my_agent,
         max_turns=test_case.max_iterations or 20,
     )
 

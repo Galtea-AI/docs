@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 
 from galtea import (
-    Agent,
     AgentInput,
     AgentResponse,
     Galtea,
@@ -91,12 +90,12 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=versio
 if version is None:
     raise ValueError("version from get_by_name is None")
 
-test_name = "quality-test-docs-" + run_identifier
+test_name = "accuracy-test-docs-" + run_identifier
 
 # @start test_create
 test = galtea.tests.create(
     name=test_name,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
     language="english",
@@ -158,7 +157,7 @@ metric_name = "metric-docs-" + run_identifier
 # @start metric_create
 metric = galtea.metrics.create(
     name=metric_name,
-    test_type="QUALITY",
+    test_type="ACCURACY",
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Evaluate if the actual_output is polite.",
@@ -230,6 +229,15 @@ session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id
 if session_by_custom is None:
     raise ValueError("session from get_by_custom_id is None")
 
+# @start session_update
+updated_session = galtea.sessions.update(
+    session_id=session_id,
+    custom_id=custom_session_id + "_" + run_identifier,
+    metadata={"updated_at": run_identifier},
+)
+# @end session_update
+if updated_session is None:
+    raise ValueError("session from update is None")
 
 # @start inference_result_create
 inference_result = galtea.inference_results.create(
@@ -295,15 +303,14 @@ if evaluations is None or len(evaluations) == 0:
 
 
 # @start inference_result_generate
-# Define an Agent to be used for generation
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(content="Generated response")
+# Define an agent function to be used for generation
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(content="Generated response")
 
 
 inference_result = galtea.inference_results.generate(
-    agent=MyAgent(), session=session, user_input="Generate something"
+    agent=my_agent, session=session, user_input="Generate something"
 )
 # @end inference_result_generate
 if inference_result is None:
@@ -316,15 +323,14 @@ def calculate(a, b):
     return a + b
 
 
-class MyMathsAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        message = input_data.last_user_message_str() or ""
-        a, b = map(int, message.split(","))
-        return AgentResponse(content=f"Result: {calculate(a, b)}")
+def my_maths_agent(input_data: AgentInput) -> AgentResponse:
+    message = input_data.last_user_message_str() or ""
+    a, b = map(int, message.split(","))
+    return AgentResponse(content=f"Result: {calculate(a, b)}")
 
 
 inference_result = galtea.inference_results.generate(
-    agent=MyMathsAgent(),
+    agent=my_maths_agent,
     session=session,
     user_input="5,3",
 )
@@ -385,48 +391,47 @@ trace = galtea.traces.get(trace_id=trace_id)
 if trace is None:
     raise ValueError("trace from get is None")
 
-scenarios_test = galtea.tests.create(
+behavior_test = galtea.tests.create(
     product_id=product_id,
-    name="scenario-test-from-file-docs-" + run_identifier,
-    type="SCENARIOS",
-    test_file_path="path/to/scenarios_test.csv",
+    name="behavior-test-from-file-docs-" + run_identifier,
+    type="BEHAVIOR",
+    test_file_path="path/to/behavior_test.csv",
 )
 
-red_teaming_test = galtea.tests.create(
+security_test = galtea.tests.create(
     product_id=product_id,
-    name="red-teaming-test-from-file-docs-" + run_identifier,
-    type="RED_TEAMING",
-    test_file_path="path/to/red_teaming_test.csv",
+    name="security-test-from-file-docs-" + run_identifier,
+    type="SECURITY",
+    test_file_path="path/to/security_test.csv",
 )
 
-quality_test = galtea.tests.create(
+accuracy_test = galtea.tests.create(
     product_id=product_id,
-    name="quality-test-from-file-docs-" + run_identifier,
-    type="QUALITY",
-    test_file_path="path/to/quality_test.csv",
+    name="accuracy-test-from-file-docs-" + run_identifier,
+    type="ACCURACY",
+    test_file_path="path/to/accuracy_test.csv",
 )
 
-scenarios_test_case = galtea.test_cases.list(test_id=scenarios_test.id, limit=1)[0]
+behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id, limit=1)[0]
 
-scenarios_session = galtea.sessions.create(
+behavior_session = galtea.sessions.create(
     version_id=version_id,
     is_production=False,
-    test_case_id=scenarios_test_case.id,
+    test_case_id=behavior_test_case.id,
 )
 
 
 # @start simulator_simulate
-class MyCustomAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(
-            content=f"Generated response for {input_data.last_user_message_str()}"
-        )
+def my_custom_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(
+        content=f"Generated response for {input_data.last_user_message_str()}"
+    )
 
 
 simulation_result = galtea.simulator.simulate(
-    session_id=scenarios_session.id,
-    agent=MyCustomAgent(),
+    session_id=behavior_session.id,
+    agent=my_custom_agent,
     max_turns=3,
     log_inference_results=True,
 )
@@ -454,7 +459,7 @@ if self_hosted_metric is not None:
     galtea.metrics.delete(metric_id=self_hosted_metric.id)
 self_hosted_metric = galtea.metrics.create(
     name=self_hosted_metric_name,
-    test_type="QUALITY",
+    test_type="ACCURACY",
     source="self_hosted",
     description="A self-hosted metric for demonstration",
 )

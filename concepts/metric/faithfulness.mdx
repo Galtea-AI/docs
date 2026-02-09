@@ -21,20 +21,21 @@ To compute the `faithfulness` metric, the following inputs are required:
 
 ## How Is It Calculated?
 
-The score is computed using the following steps:
+The `faithfulness` score is determined using an LLM-as-a-judge process with explicit binary pass criteria:
 
-1. **Fact Comparison**: An LLM analyzes whether the statements made in `actual_output` are substantiated by the `retrieval_context`.
-2. **Hallucination Check**: The LLM flags any unsupported claims or discrepancies.
+1. **Fact Extraction**: The LLM extracts factual claims made in `actual_output`.
+2. **Verification Against Source**: Each claim is checked against the `retrieval_context` for substantiation.
+   - If **all** claims are fully supported by the context (no contradictions or hallucinations), the output is considered faithful.
+   - If **any** claim is not supported, contradicted, or hallucinatory relative to the context, the output is considered unfaithful.
 
-The final metric is calculated as:
+The LLM assigns a **binary score**:
 
-$$
-\text{Faithfulness} = \frac{\text{Number of factually aligned outputs}}{\text{Total number of evaluated outputs}}
-$$
+- **1 (Faithful):** All factual claims in the response are substantiated by the provided retrieval context with no hallucinations or contradictions.
+- **0 (Unfaithful):** The response contains at least one unsupported, fabricated, or contradictory claim relative to the retrieval context.
 
-This helps teams monitor the risk of hallucinations and improve trust in generated responses.
+---
 
-<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-faithfulness).</Note>
+This binary scoring system helps teams monitor hallucination risk and improve trust in generated responses.
 
 ---
 
@@ -48,3 +49,4 @@ The Faithfulness metric is effective for evaluating quality test cases in Galtea
 
 - [Answer Relevancy](/concepts/metric/answer-relevancy)
 - [Contextual Recall](/concepts/metric/contextual-recall)
+- [Contextual Relevancy](/concepts/metric/contextual-relevancy)

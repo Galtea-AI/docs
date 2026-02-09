@@ -7,7 +7,6 @@ These examples are referenced from the trace documentation pages.
 from datetime import datetime
 
 from galtea import (
-    Agent,
     AgentInput,
     AgentResponse,
     Galtea,
@@ -69,16 +68,15 @@ def generate_response(prompt: str) -> str:
     return "Generated response..."
 
 
-class MyOverviewAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        user = fetch_user_data("user_123")
-        response = generate_response("Hello")
-        return AgentResponse(content=response)
+def my_overview_agent(input_data: AgentInput) -> AgentResponse:
+    user = fetch_user_data("user_123")
+    response = generate_response("Hello")
+    return AgentResponse(content=response)
 
 
 # Use generate() for automatic trace context management
 inference_result = galtea.inference_results.generate(
-    agent=MyOverviewAgent(),
+    agent=my_overview_agent,
     session=session,
     user_input="Show me user data",
 )
@@ -202,15 +200,14 @@ def risky_operation() -> str:
     return "Success"
 
 
-class RiskyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        result = risky_operation()
-        return AgentResponse(content=result)
+def risky_agent(input_data: AgentInput) -> AgentResponse:
+    result = risky_operation()
+    return AgentResponse(content=result)
 
 
 # The trace will include error details if an exception occurs
 inference_result_risky = galtea.inference_results.generate(
-    agent=RiskyAgent(),
+    agent=risky_agent,
     session=session_decorator,
     user_input="test",
 )
@@ -225,10 +222,9 @@ def process_data(user_id: str, config: dict) -> dict:
     return {"status": "processed", "user_id": user_id}
 
 
-class DataAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        result = process_data("user_123", {"setting": "value"})
-        return AgentResponse(content=str(result))
+def data_agent(input_data: AgentInput) -> AgentResponse:
+    result = process_data("user_123", {"setting": "value"})
+    return AgentResponse(content=str(result))
 
 
 session_serialization = galtea.sessions.create(
@@ -238,7 +234,7 @@ if session_serialization is None:
     raise ValueError("session_serialization is None")
 
 inference_result_data = galtea.inference_results.generate(
-    agent=DataAgent(),
+    agent=data_agent,
     session=session_serialization,
     user_input="process",
 )

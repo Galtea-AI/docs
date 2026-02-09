@@ -22,15 +22,14 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 Generate an inference result using an Agent (recommended):
 ```python
-# Define an Agent to be used for generation
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(content="Generated response")
+# Define an agent function to be used for generation
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(content="Generated response")
 
 
 inference_result = galtea.inference_results.generate(
-    agent=MyAgent(), session=session, user_input="Generate something"
+    agent=my_agent, session=session, user_input="Generate something"
 )
 ```
 

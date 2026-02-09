@@ -32,9 +32,9 @@ product_id = response.json()["id"]
 # Upload a pre-existing test file to the Galtea Platform
 test = galtea.tests.create(
     name="financial-qa-test-" + run_identifier,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product_id,
-    test_file_path="path/to/quality_test.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
 # @end upload_existing_test
 
@@ -48,7 +48,7 @@ print(f"Test created with ID: {test.id}")
 # Generate a test from a knowledge base file (PDF, TXT, etc.)
 generated_test = galtea.tests.create(
     name="generated-financial-qa-test-" + run_identifier,
-    type="QUALITY",
+    type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
     language="english",

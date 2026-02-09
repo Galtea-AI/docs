@@ -6,7 +6,6 @@ Demonstrates how to trace agent operations using the SDK.
 from datetime import datetime
 
 from galtea import (
-    Agent,
     AgentInput,
     AgentResponse,
     Galtea,
@@ -43,12 +42,12 @@ version = galtea.versions.create(
     name="v1.0-" + run_identifier,
 )
 
-# Create a scenarios test for simulation
-scenarios_test = galtea.tests.create(
-    name="tracing-scenarios-" + run_identifier,
-    type="SCENARIOS",
+# Create a behavior test for simulation
+behavior_test = galtea.tests.create(
+    name="tracing-behavior-" + run_identifier,
+    type="BEHAVIOR",
     product_id=product_id,
-    test_file_path="path/to/scenarios_test.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
 
 
@@ -85,38 +84,39 @@ def get_user(user_id: str) -> str:
 # @end 2_the_context_manager
 
 
-# @start automatic_collection_single_turn_with
-class MyAgent(Agent):
-    @trace(type=TraceType.RETRIEVER)
-    def search(self, query: str) -> list[dict]:
-        return [{"id": "doc_1", "content": "..."}]
+# @start automatic_collection_agent_setup
+@trace(type=TraceType.RETRIEVER)
+def search(query: str) -> list[dict]:
+    return [{"id": "doc_1", "content": "..."}]
 
-    @trace(type=TraceType.GENERATION)
-    def generate(self, context: list, query: str) -> str:
-        return "Based on the context..."
 
-    @trace(type=TraceType.AGENT)
-    def call(self, input: AgentInput) -> AgentResponse:
-        query = input.last_user_message_str()
-        docs = self.search(query)
-        response = self.generate(docs, query)
-        return AgentResponse(content=response, retrieval_context=str(docs))
+@trace(type=TraceType.GENERATION)
+def generate_response(context: list, query: str) -> str:
+    return "Based on the context..."
+
+
+@trace(type=TraceType.AGENT)
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    query = input_data.last_user_message_str()
+    docs = search(query)
+    response = generate_response(docs, query)
+    return AgentResponse(content=response, retrieval_context=str(docs))
 
 
 # Setup
 session = galtea.sessions.create(version_id=version.id, is_production=True)
-agent = MyAgent()
+# @end automatic_collection_agent_setup
 
-# Everything is handled automatically
+# @start automatic_collection_single_turn_with
 inference_result = galtea.inference_results.generate(
-    agent=agent, session=session, user_input="What's the price?"
+    agent=my_agent, session=session, user_input="What's the price?"
 )
 # Traces are collected, associated with inference_result.id, and flushed automatically
 # @end automatic_collection_single_turn_with
 
 
 # Create a session for multi-turn simulation (requires test case)
-test_cases = galtea.test_cases.list(test_id=scenarios_test.id, limit=1)
+test_cases = galtea.test_cases.list(test_id=behavior_test.id, limit=1)
 if test_cases:
     simulation_session = galtea.sessions.create(
         version_id=version.id, test_case_id=test_cases[0].id
@@ -124,7 +124,7 @@ if test_cases:
 
     # @start automatic_collection_multi_turn_with
     result = galtea.simulator.simulate(
-        session_id=simulation_session.id, agent=agent, max_turns=5
+        session_id=simulation_session.id, agent=my_agent, max_turns=5
     )
     # Traces are saved automatically for each turn
     # @end automatic_collection_multi_turn_with

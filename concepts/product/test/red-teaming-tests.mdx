@@ -1,17 +1,17 @@
 ---
-title: "Red Teaming Tests"
+title: "Security & Safety Tests"
 description: "Evaluate security, safety, and bias aspects of your AI products"
 sidebarTitle: "Overview"
 icon: ""
 ---
 
-## What are Red Teaming Tests?
+## What are Security & Safety Tests?
 
-Red teaming tests in Galtea are designed to evaluate the security, safety, and bias aspects of your [product](/concepts/product). These tests typically consist of different types of [threats](/concepts/product/test/red-teaming-threats) like adversarial inputs specifically crafted to probe potential weaknesses or vulnerabilities in your AI system. To further enhance the diversity and evasiveness of these tests, Galtea can apply various [Red Teaming Strategies](/concepts/product/test/red-teaming-strategies) to the prompts generated from these threats.
+Security & Safety tests in Galtea are designed to evaluate the security, safety, and bias aspects of your [product](/concepts/product). These tests typically consist of different types of [threats](/concepts/product/test/red-teaming-threats) like adversarial inputs specifically crafted to probe potential weaknesses or vulnerabilities in your AI system. To further enhance the diversity and evasiveness of these tests, Galtea can apply various [security strategies](/concepts/product/test/red-teaming-strategies) to the prompts generated from these threats.
 
-## Creating Red Teaming Tests
+## Creating Security & Safety Tests
 
-You can create red teaming tests in Galtea through two methods:
+You can create security & safety tests in Galtea through two methods:
 
 <Tabs>
   <Tab title="Generate from Your Known Threats">
@@ -20,7 +20,7 @@ You can create red teaming tests in Galtea through two methods:
         Create a file with examples of harmful content or sensitive topic areas you want to test
       </Step>
       <Step title="Configure the test">
-        Select *Red Teaming* as the test type and *Generated* as the test origin
+        Select *Security & Safety* as the test type and *Generated* as the test origin
         <Info>
           The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
@@ -33,10 +33,10 @@ You can create red teaming tests in Galtea through two methods:
   <Tab title="Upload Your Own Test">
     <Steps>
       <Step title="Create your test file">
-        Prepare a CSV file following the structure shown [below](#example-red-teaming-tests-and-file-format)
+        Prepare a CSV file following the structure shown [below](#example-security-safety-tests-and-file-format)
       </Step>
       <Step title="Configure the test">
-        Select "Red Teaming" as the test type and "Uploaded" as the test origin
+        Select "Security & Safety" as the test type and "Uploaded" as the test origin
         <Info>
           The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
@@ -61,7 +61,7 @@ Red teaming tests typically focus on several key categories:
   <Accordion title="Prompt Injection">Tests that attempt to manipulate the model by inserting false system prompts or directives.</Accordion>
 </AccordionGroup>
 
-## Example  Red Teaming Tests and File Format
+## Example Security & Safety Tests and File Format
 
 Here are examples of the content and its creation-document structure:
 
@@ -143,9 +143,9 @@ Here are examples of the content and its creation-document structure:
   The contexts and the extent of the examples provided above are short extractions. In the actual CSV files the context can be much longer and the amount of test cases (rows) can be much higher.
 </Warning>
 
-## Structure of Red Teaming Tests
+## Structure of Security & Safety Tests
 
-Red teaming tests have a specific structure focused on providing challenging inputs:
+Security & Safety tests have a specific structure focused on providing challenging inputs:
 
 <ResponseField name="instance_id" type="Number" required>
   A unique identifier for the test instance.
@@ -156,13 +156,13 @@ Red teaming tests have a specific structure focused on providing challenging inp
 </ResponseField>
 
 <ResponseField name="expected_output" type="Text">
-  For red teaming tests, this field is typically marked as "N/A" since the purpose is to test system resilience rather than producing a specific output.
+  For security & safety tests, this field is typically marked as "N/A" since the purpose is to test system resilience rather than producing a specific output.
 </ResponseField>
 
 <ResponseField name="tag" type="Text">
-  A categorization tag for the test instance, typically "adversarial_inputs" for red teaming tests.
+  A categorization tag for the test instance, typically "adversarial_inputs" for security & safety tests.
 </ResponseField>
 
 <ResponseField name="source" type="Text">
-  The source of the adversarial input, which may be marked as "N/A" for red teaming tests.
+  The source of the adversarial input, which may be marked as "N/A" for security & safety tests.
 </ResponseField>

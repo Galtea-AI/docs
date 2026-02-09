@@ -18,10 +18,59 @@ The `generate()` method is the recommended way to execute your agent when you wa
   This is the recommended method for production use as it handles all trace lifecycle management automatically.
 </Info>
 
+## Agent Options
+
+Provide your agent as a plain function with one of three supported signatures:
+
+- **Simple** — `(user_message: str) -> str` — receives just the last user message
+- **Chat History** — `(messages: list[dict]) -> str` — receives the full conversation history in the OpenAI message standard format (`{"role": "...", "content": "..."}`)
+- **Structured** — `(input_data: AgentInput) -> AgentResponse` — structured input/output with access to session context, helper methods, and optional usage/cost tracking
+
+Both sync and async functions are supported.
+
+### Using an Agent Function
+
+```python
+# Simple: receives just the last user message
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
+
+
+# Chat History: receives the full conversation history (OpenAI message format)
+def my_agent(messages: list[dict]) -> str:
+    return f"Response to: {messages[-1]['content']}"
+
+
+# Structured: structured input/output (with usage/cost tracking and retrieval context)
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    user_msg = input_data.last_user_message_str()
+    return AgentResponse(
+        content=f"Response to: {user_msg}",
+        usage_info={"input_tokens": 100, "output_tokens": 50},
+    )
+
+
+# Async functions work too
+async def my_async_agent(user_message: str) -> str:
+    return f"Async response to: {user_message}"
+
+
+result = galtea_client.inference_results.generate(
+    agent=my_agent,
+    session=session,
+    user_input="Hello!",
+)
+```
+
 ## Parameters
 
-<ParamField path="agent" type="Agent" required>
-  An instance of a class that extends `galtea.Agent`. Must implement the `call()` method.
+<ParamField path="agent" type="AgentType" required>
+  The agent function to execute. Supported signatures:
+  - **Simple:** `(user_message: str) -> str` — receives last user message
+  - **Chat History:** `(messages: list[dict]) -> str` — receives full chat history (OpenAI format)
+  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output
+  
+  Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`.
 </ParamField>
 
 <ParamField path="session" type="Session" required>
@@ -43,15 +92,14 @@ Returns an `InferenceResult` object with all captured data.
 ## Example
 
 ```python
-# Define an Agent to be used for generation
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(content="Generated response")
+# Define an agent function to be used for generation
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(content="Generated response")
 
 
 inference_result = galtea.inference_results.generate(
-    agent=MyAgent(), session=session, user_input="Generate something"
+    agent=my_agent, session=session, user_input="Generate something"
 )
 ```
 
@@ -74,24 +122,23 @@ The `generate()` method automatically captures and saves:
 Your agent can return usage and cost information in the `AgentResponse`:
 
 ```python
-class MyAgentWithUsage(Agent):
-    @galtea.trace(name="main", type=TraceType.AGENT)
-    def call(self, input: AgentInput) -> AgentResponse:
-        # Your agent logic...
+@galtea.trace(name="main", type=TraceType.AGENT)
+def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
+    # Your agent logic...
 
-        return AgentResponse(
-            content="Response content",
-            usage_info={
-                "input_tokens": 150,
-                "output_tokens": 75,
-                "cache_read_input_tokens": 50,
-            },
-            cost_info={
-                "cost_per_input_token": 0.00001,
-                "cost_per_output_token": 0.00003,
-                "cost_per_cache_read_input_token": 0.000001,
-            },
-        )
+    return AgentResponse(
+        content="Response content",
+        usage_info={
+            "input_tokens": 150,
+            "output_tokens": 75,
+            "cache_read_input_tokens": 50,
+        },
+        cost_info={
+            "cost_per_input_token": 0.00001,
+            "cost_per_output_token": 0.00003,
+            "cost_per_cache_read_input_token": 0.000001,
+        },
+    )
 ```
 
 ## Comparison with Manual Approach
@@ -115,12 +162,9 @@ class MyAgentWithUsage(Agent):
 If the agent raises an exception, `generate()` ensures trace context is cleaned up:
 
 ```python
-class FailingAgent(Agent):
-    def call(self, input: AgentInput) -> AgentResponse:
-        raise ValueError("Agent failed intentionally")
+def failing_agent(input_data: AgentInput) -> AgentResponse:
+    raise ValueError("Agent failed intentionally")
 
-
-failing_agent = FailingAgent()
 
 try:
     result = galtea_client.inference_results.generate(

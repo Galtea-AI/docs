@@ -32,8 +32,8 @@ version_id: str = version.id
 test = galtea.tests.create(
     product_id=product_id,
     name=f"create-eval-tutorial-test-{run_identifier}",
-    type="QUALITY",
-    test_file_path="path/to/quality_test.csv",
+    type="ACCURACY",
+    test_file_path="path/to/accuracy_test.csv",
 )
 test_id: str = test.id
 

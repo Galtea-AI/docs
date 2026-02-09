@@ -4,16 +4,26 @@ description: "Learn how to use Galtea's Conversation Simulator to test your AI w
 icon: "user-group"
 ---
 
-Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) allows you to test your conversational AI products by simulating realistic user interactions. The recommended way to integrate your AI is via the **Agent interface** and the simulation agent wrapper. This guide walks you through implementing your agent, configuring scenarios, and running a complete simulation.
+Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) allows you to test your conversational AI products by simulating realistic user interactions. This guide walks you through integrating your agent and running simulations.
 
-## Agent-Based Conversation Simulation Workflow
+## Agent Integration Options
+
+Provide your agent as a plain function with one of three supported signatures:
+
+- **Simple** — `(user_message: str) -> str` — receives just the last user message
+- **Chat History** — `(messages: list[dict]) -> str` — receives the full conversation history in the OpenAI message standard format (`{"role": "...", "content": "..."}`)
+- **Structured** — `(input_data: AgentInput) -> AgentResponse` — structured input/output with access to session context, helper methods, and optional usage/cost tracking
+
+Both sync and async functions are supported.
+
+## Conversation Simulation Workflow
 
 <Steps>
   <Step title="1. Implement Your Agent">
-    Extend the abstract <code>Agent</code> class with your conversational AI logic. Your agent receives the full conversation state and must return a response for each turn.
+    Define an agent function with one of the supported signatures.
   </Step>
   <Step title="2. Prepare Scenario Data">
-    Create a CSV file with scenario data. Each row is a test case describing the user goal, persona, and initial prompt.
+    Create a CSV file with scenario data. Each row is a test case describing the user goal, persona, and input (the first user message).
   </Step>
   <Step title="3. Create a Test and Sessions">
     Upload your scenario CSV to create a test. The platform generates a session for each scenario.
@@ -28,79 +38,75 @@ Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simul
 
 ---
 
-### Example: Agent-Based Simulation Workflow
+### Quick Start
 
-#### 1. Implement Your Agent
-
-Create a Python class that extends `galtea.Agent`. Your agent should implement the `call` method, which receives an `AgentInput` (including conversation history and context) and returns an `AgentResponse`.
+The simplest way to integrate your agent is with a plain function:
 
 ```python
-@galtea.trace(name="main_agent")
+# Simple: receives just the last user message
 def my_agent(user_message: str) -> str:
-    """Your main agent logic"""
-    return "useful_response"
+    """Simplest agent function signature."""
+    # Your LLM call here
+    return f"Response to: {user_message}"
 
 
-class MyGalteaAgent(galtea.Agent):
-    @galtea.trace(name="main")
-    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
-        # Access the latest user message
-        user_message = input_data.last_user_message_str()
+# Chat History: receives full conversation history (OpenAI message format)
+def my_agent(messages: list[dict]) -> str:
+    """Agent function with access to the full conversation history."""
+    user_message = messages[-1]["content"]
+    # Your LLM call here
+    return f"Response to: {user_message}"
 
-        # Generate a response using your own logic/model
-        response = my_agent(user_message)
 
-        # Return a structured response (optionally with metadata and retrieval context)
-        return galtea.AgentResponse(
-            content=response,
-            retrieval_context=None,  # Optional: context retrieved by the agent (e.g., for RAG)
-            metadata=None,  # Optional: additional metadata
-        )
+# Structured: structured input/output
+def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
+    """Structured agent function with access to session context and rich responses."""
+    user_message = input_data.last_user_message_str()
+    return galtea.AgentResponse(
+        content=f"Response to: {user_message}",
+        usage_info={"input_tokens": 100, "output_tokens": 50},
+    )
 ```
 
-<Info>
-    You can optionally use the `@trace` decorator to capture internal operations during simulation. Traces are automatically collected and saved per turn.
-    See the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) guide for more details on using the `@trace` decorator.
-</Info>
+---
 
-#### 2. Create a Test and Sessions
+### Step-by-Step Guide
 
-In order to run simulations of conversations we need to have different scenarios each with their user personas. The easiest way to create these scenarios is to use the scenario based test creation feature of the platform.
+#### 1. Create a Test and Sessions
+
+In order to run simulations of conversations we need to have different behavior test cases, each with their user personas. The easiest way to create these is to use the behavior test creation feature of the platform.
 
 ```python
-# Create a test suite using the scenarios options
+# Create a test suite using the behavior test options
 # This can be done via the Dashboard or programmatically as shown here
 test = galtea_client.tests.create(
     product_id=product.id,
     name=test_name,
-    type="SCENARIOS",
-    # This time we provide a path to a CSV file with scenarios, but you can also be generated by Galtea if you do not provide a CSV file
-    test_file_path="path/to/scenarios_test.csv",
+    type="BEHAVIOR",
+    # This time we provide a path to a CSV file with behavior tests, but you can also have Galtea generate them if you do not provide a CSV file
+    test_file_path="path/to/behavior_test.csv",
 )
 
-# Get your test scenarios
+# Get your test cases
 # If Galtea is generating the test for you, it might take a few moments to be ready
 test_cases = galtea_client.test_cases.list(test_id=test.id)
 ```
 
-After some time you should see the resulting generated test cases in your dashboard. Another option is to upload a csv file with the necessary fields, for more information on the fields see [Scenario-based Tests](/concepts/product/test/scenario-tests) for more details.
+After some time you should see the resulting generated test cases in your dashboard. Another option is to upload a csv file with the necessary fields, for more information on the fields see [Behavior Tests](/concepts/product/test/scenario-tests) for more details.
 
-#### 3. Run the Conversation Simulator
+#### 2. Run the Conversation Simulator
 
-For each test case/session, use the simulator wrapper to run the full simulation with your agent:
+For each test case/session, use the simulator to run the full simulation with your agent function:
 
 ```python
-# Create your agent instance
-agent = MyGalteaAgent()
-
-# Run simulations
+# Run simulations with your agent function
 for test_case in test_cases:
     session = galtea_client.sessions.create(
         version_id=version.id, test_case_id=test_case.id
     )
 
     result = galtea_client.simulator.simulate(
-        session_id=session.id, agent=agent, max_turns=10, log_inference_results=True
+        session_id=session.id, agent=my_structured_agent, max_turns=10
     )
 
     # Analyze results
@@ -111,7 +117,12 @@ for test_case in test_cases:
         print(f"Ended because: {result.stopping_reason}")
 ```
 
-#### 4. Evaluate the Session
+<Info>
+    You can optionally use the `@trace` decorator to capture internal operations during simulation. Traces are automatically collected and saved per turn.
+    See the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) guide for more details on using the `@trace` decorator.
+</Info>
+
+#### 3. Evaluate the Session
 
 ```python
     # After each simulation, you can create an evaluation
@@ -130,25 +141,18 @@ for test_case in test_cases:
 For Retrieval-Augmented Generation (RAG) agents, you can return the context that was retrieved and used to generate the response. This context will be logged with the inference result, enabling powerful evaluations with metrics like `Faithfulness` and `Contextual Relevancy`.
 
 ```python
-class MyRAGAgent(galtea.Agent):
-    def __init__(self, vector_store, llm):
-        self.vector_store = vector_store
-        self.llm = llm
+def my_rag_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
+    user_message = input_data.last_user_message_str()
 
-    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
-        user_message = input_data.last_user_message_str()
+    # Your RAG logic to retrieve context and generate a response
+    retrieved_docs = vector_store.search(user_message)
+    response_content = llm.generate(prompt=user_message, context=retrieved_docs)
 
-        # Your RAG logic to retrieve context and generate a response
-        retrieved_docs = self.vector_store.search(user_message)
-        response_content = self.llm.generate(
-            prompt=user_message, context=retrieved_docs
-        )
-
-        return galtea.AgentResponse(
-            content=response_content,
-            retrieval_context=retrieved_docs,
-            metadata={"docs_retrieved": len(retrieved_docs)},
-        )
+    return galtea.AgentResponse(
+        content=response_content,
+        retrieval_context=retrieved_docs,
+        metadata={"docs_retrieved": len(retrieved_docs)},
+    )
 ```
 
 The `retrieval_context` field is optional and can contain:
@@ -160,4 +164,4 @@ By providing retrieval context, you enable Galtea to evaluate the faithfulness o
 
 ---
 
-By using the agent wrapper and simulation method, you can quickly evaluate your conversational AI models in realistic, repeatable conditions, leveraging Galtea's powerful simulation and analytics tools.
+By using agent functions and the simulation method, you can quickly evaluate your conversational AI models in realistic, repeatable conditions, leveraging Galtea's powerful simulation and analytics tools.

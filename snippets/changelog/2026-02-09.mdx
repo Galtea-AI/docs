@@ -1,0 +1,40 @@
+<Update label="2026-02-09" description="Enhanced Simulation and UI Improvements">
+## SDK & Simulation Upgrades
+
+We have significantly improved the flexibility of the Galtea SDK to better fit your existing workflows.
+
+- **Unified Simulation Method:**
+  The [`simulator.simulate`](/sdk/api/simulator/simulate) method has been upgraded to handle both single-turn and multi-turn simulations. You no longer need to switch methods based on the test case complexity.
+
+- **Simplified Agent Integration:**
+  We've made the `agent` property much more flexible. You can now pass [methods with various signatures](/quickstart#6-run-the-evaluation) directly (including async generators), removing the strict requirement to wrap everything in a specific Agent class.
+
+## New Platform Features
+
+### AI-Powered Product Definition
+Bootstrapping a new product context is now faster than ever. You can upload a set of files (documentation, knowledge base, etc.), and Galtea will use AI to automatically [generate a comprehensive Product Definition](https://platform.galtea.ai/product-new) for you.
+
+### Advanced Endpoint Connections
+For more complex conversational agents, we have refined how connections are established. You can now [configure distinct behaviors](/concepts/product/endpoint-connection#param-type) for:
+1. The **Initialization** of the conversation.
+2. The **Conversation** messages.
+3. The **Finalization** of the conversation.
+
+### Single Inference Evaluation
+You can now evaluate a single inference result directly from the platform UI. This is perfect for spot-checking model behavior without running a full simulation suite.
+
+## Reliability and UX Improvements
+
+- **Graceful Metric Handling:**
+  Previously, using a metric incompatible with a specific Test Type would throw an error. Now, the system intelligently marks these metrics as **"skipped"** in the results, allowing the rest of your evaluation to proceed uninterrupted.
+
+- **Enhanced Custom Metrics:**
+  We have deprecated all DeepEval metrics in favor of our own [**Custom Metrics** architecture](/concepts/metric/custom-judge). This transition significantly enhances the reliability, speed, and flexibility of your evaluations.
+
+- **Test Creation Experience:**
+  The Test creation form has been polished for better usability, making it easier to define and organize your test cases.
+
+- **Platform Stability:**
+  General improvements to platform stability and reliability to ensure a smoother experience during heavy load.
+
+</Update>

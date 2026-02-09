@@ -11,8 +11,8 @@ import ModelCard from '/snippets/cards/model-card.mdx';
 import ProductCard from '/snippets/cards/product-card.mdx';
 import SessionCard from '/snippets/cards/session-card.mdx';
 import TestCard from '/snippets/cards/test-card.mdx';
-import VersionCard from '/snippets/cards/version-card.mdx';
 import TraceCard from '/snippets/cards/trace-card.mdx';
+import VersionCard from '/snippets/cards/version-card.mdx';
 
 This quickstart walks you through running your first evaluation in Galtea for a conversational product using the Python SDK. It is intended for a technical audience and covers RAG pipelines, conversational scenarios, and security or safety checks.
 
@@ -113,8 +113,8 @@ You can create one or multiple test types for the same product, depending on whi
 
 ```python
 test = galtea.tests.create(
-    name="rag-quality-test",
-    type="QUALITY",
+    name="rag-accuracy-test",
+    type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
     language="english",
@@ -135,8 +135,8 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 
 ```python
 test = galtea.tests.create(
-    name="misuse-red-team-test",
-    type="RED_TEAMING",
+    name="misuse-security-test",
+    type="SECURITY",
     product_id=product_id,
     variants=["Misuse"],
     strategies=["Original"],  # Original must always be included
@@ -157,8 +157,8 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 
 ```python
 test = galtea.tests.create(
-    name="conversation-scenarios-test",
-    type="SCENARIOS",
+    name="conversation-behavior-test",
+    type="BEHAVIOR",
     product_id=product_id,
     language="english",
     max_test_cases=20,
@@ -211,16 +211,51 @@ metric = galtea.metrics.get_by_name(name="Role Adherence")
 
 This is where you connect Galtea to your product. Then, for each test case (or scenario), you run your system to produce an output and submit it to Galtea for scoring via [evaluations](/concepts/product/version/session/evaluation).
 
-To do so, you first need to implement an `Agent` that translates the Galtea information into calls to your product. Here’s a simple example agent:
+To do so, you define an **agent function** that translates Galtea's input into calls to your product. The SDK supports three signatures — pick the one that matches how much context your agent needs:
+
+<Tabs>
+  <Tab title="Simple">
+    The quickest way to get started. Your function receives just the latest user message as a string.
 
 ```python
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        user_message = input_data.last_user_message_str()
-        # In a real scenario, you woyuld call your agent here, e.g., your_model_output = your_product_function(user_message)
-        model_output = f"Your model output to the {user_message}"
-        return AgentResponse(content=model_output)
+def my_agent(user_message: str) -> str:
+    # In a real scenario, call your model here
+    return f"Your model output to: {user_message}"
 ```
+  </Tab>
+
+  <Tab title="Chat History">
+    Use this when your agent needs the full conversation context. Your function receives the message list in the OpenAI format (`{"role": "...", "content": "..."}`).
+
+```python
+def my_agent(messages: list[dict]) -> str:
+    # messages follows the standard chat format:
+    # [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}, ...]
+    user_message = messages[-1]["content"]
+    return f"Your model output to: {user_message}"
+```
+  </Tab>
+
+  <Tab title="Structured">
+    For full control over input and output — including optional usage tracking, cost tracking, and retrieval context for RAG evaluations.
+
+```python
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    user_message = input_data.last_user_message_str()
+    # In a real scenario, call your model here
+    model_output = f"Your model output to: {user_message}"
+    # Return AgentResponse with optional usage/cost tracking
+    return AgentResponse(
+        content=model_output,
+        usage_info={"input_tokens": 100, "output_tokens": 50},
+    )
+```
+  </Tab>
+</Tabs>
+
+<Info>
+  All three signatures work with `generate()` and `simulate()`. Both sync and async functions are supported. The SDK auto-detects which signature you're using from the type hint on the first parameter.
+</Info>
 
 <Tabs>
   <Tab title="RAG">
@@ -235,7 +270,7 @@ class MyAgent(Agent):
       # Run a synthetic user conversation against your agent
       inference_result = galtea.inference_results.generate(
           session=session,
-          agent=MyAgent(),
+          agent=my_agent,
           user_input=test_case.input,
       )
 
@@ -262,7 +297,7 @@ class MyAgent(Agent):
       # Run a synthetic user conversation against your agent
       inference_result = galtea.inference_results.generate(
           session=session,
-          agent=MyAgent(),
+          agent=my_agent,
           user_input=test_case.input,
       )
 
@@ -288,7 +323,7 @@ class MyAgent(Agent):
       # Run a synthetic user conversation against your agent
       galtea.simulator.simulate(
           session_id=session.id,
-          agent=MyAgent(),
+          agent=my_agent,
           max_turns=test_case.max_iterations or 10,
       )
 

@@ -21,20 +21,18 @@ To compute the `contextual_relevancy` metric, the following parameters are requi
 
 ## How Is It Calculated?
 
-This metric's score is computed using an LLM-as-a-judge process. The LLM judge performs the following steps:
+The `contextual_relevancy` score is determined using an LLM-as-a-judge approach that measures the signal-to-noise ratio:
 
-1.  **Statement Extraction**: The LLM processes each document/node within the `retrieval_context` to identify individual statements or key pieces of information.
-2.  **Relevance Classification**: For each extracted statement from the `retrieval_context`, the LLM determines if that statement is relevant to the original `input`.
-3.  **Score Calculation**: The final score is the ratio of relevant statements to the total number of statements extracted from the `retrieval_context`.
+1. **Statement Extraction**: The LLM analyzes the `retrieval_context` and identifies the high-level statements or facts presented.
+2. **Relevance Check**: For each statement, the LLM determines if it is relevant (provides useful information) or irrelevant (noise) to addressing the `input`.
+3. **Score Calculation**: The LLM evaluates whether the context contains significant irrelevant statements or is completely unrelated to the input.
 
-The formula is:
-$$
-\text{Contextual Relevancy} = \frac{\text{Number of relevant statements}}{\text{Total number of statements}}
-$$
+The LLM assigns a **binary score**:
 
-A higher score indicates that the retriever is effectively sourcing information that is pertinent to the user's query.
+- **Score 1.0 (Relevant):** All (or the vast majority of) statements are relevant and focused. The retrieval context is highly focused without significant distraction.
+- **Score 0.0 (Noisy/Irrelevant):** The context contains significant irrelevant statements (noise) or is completely unrelated to the input.
 
-<Note>This metric was incorporated to the Galtea platform from the open source library [deepeval](https://deepeval.com/), for more information you can also visit their [documentation](https://deepeval.com/docs/metrics-contextual-relevancy).</Note>
+---
 
 ## Suggested Test Case Types
 

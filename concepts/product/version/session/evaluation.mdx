@@ -113,7 +113,8 @@ Once an evaluation is created, you can access the following information:
   Possible values:
   - **Pending**: The evaluation has been created but not yet processed.
   - **Success**: The evaluation was processed successfully.
-  - **Failed**: The evaluation encountered an error during processing.
+  - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried.
+  - **Skipped**: The evaluation was skipped because the metric validation failed (e.g., missing required parameters) or due to insufficient credits. The error message contains details about what was missing. Check the `canRetry` field to determine if this evaluation can be retried.
 </ResponseField>
 
 <ResponseField name="Score" type="Number">
@@ -130,4 +131,8 @@ Once an evaluation is created, you can access the following information:
 
 <ResponseField name="Retries Attempted" type="Number">
   The number of retry attempts made for this evaluation. Starts at 0 and increments each time the evaluation is retried. Used to track retry history and enforce retry limits.
+</ResponseField>
+
+<ResponseField name="Can Retry" type="Boolean" default="false">
+  Indicates whether the evaluation can be retried. When `true`, the evaluation failed or was skipped due to a temporary condition (e.g., evaluation processing error, insufficient credits) and can be retried later. When `false`, the evaluation cannot be retried. Only evaluations with `canRetry=true` are eligible for the retry operation. Defaults to `false`.
 </ResponseField>
