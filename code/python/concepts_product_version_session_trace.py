@@ -78,7 +78,7 @@ session = galtea.sessions.create(version.id, is_production=True)
 if session is None:
     raise ValueError("session is None")
 
-from galtea import Agent, AgentInput, AgentResponse, Galtea, TraceType  # noqa: E402
+from galtea import AgentInput, AgentResponse, Galtea, TraceType  # noqa: E402
 
 
 # Empty parentheses
@@ -88,20 +88,19 @@ def my_function_nested():
     my_function_1()
 
 
-class MyGalteaAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        user_message = input_data.last_user_message_str()
-        response = f"Hello! You said: {user_message}"
-        my_function_1()
-        my_function_nested()
-        my_function_2()
-        my_function_3(user_id="12345")
-        my_function_4()
-        return AgentResponse(content=response)
+def my_galtea_agent(input_data: AgentInput) -> AgentResponse:
+    user_message = input_data.last_user_message_str()
+    response = f"Hello! You said: {user_message}"
+    my_function_1()
+    my_function_nested()
+    my_function_2()
+    my_function_3(user_id="12345")
+    my_function_4()
+    return AgentResponse(content=response)
 
 
 inference_result = galtea.inference_results.generate(
-    MyGalteaAgent(),
+    my_galtea_agent,
     session,
     "User input",
 )

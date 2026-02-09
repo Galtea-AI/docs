@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 
 from galtea import (
-    Agent,
     AgentInput,
     AgentResponse,
     Galtea,
@@ -304,15 +303,14 @@ if evaluations is None or len(evaluations) == 0:
 
 
 # @start inference_result_generate
-# Define an Agent to be used for generation
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(content="Generated response")
+# Define an agent function to be used for generation
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(content="Generated response")
 
 
 inference_result = galtea.inference_results.generate(
-    agent=MyAgent(), session=session, user_input="Generate something"
+    agent=my_agent, session=session, user_input="Generate something"
 )
 # @end inference_result_generate
 if inference_result is None:
@@ -325,15 +323,14 @@ def calculate(a, b):
     return a + b
 
 
-class MyMathsAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        message = input_data.last_user_message_str() or ""
-        a, b = map(int, message.split(","))
-        return AgentResponse(content=f"Result: {calculate(a, b)}")
+def my_maths_agent(input_data: AgentInput) -> AgentResponse:
+    message = input_data.last_user_message_str() or ""
+    a, b = map(int, message.split(","))
+    return AgentResponse(content=f"Result: {calculate(a, b)}")
 
 
 inference_result = galtea.inference_results.generate(
-    agent=MyMathsAgent(),
+    agent=my_maths_agent,
     session=session,
     user_input="5,3",
 )
@@ -425,17 +422,16 @@ behavior_session = galtea.sessions.create(
 
 
 # @start simulator_simulate
-class MyCustomAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(
-            content=f"Generated response for {input_data.last_user_message_str()}"
-        )
+def my_custom_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(
+        content=f"Generated response for {input_data.last_user_message_str()}"
+    )
 
 
 simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
-    agent=MyCustomAgent(),
+    agent=my_custom_agent,
     max_turns=3,
     log_inference_results=True,
 )

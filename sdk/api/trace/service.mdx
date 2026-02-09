@@ -33,16 +33,15 @@ def generate_response(prompt: str) -> str:
     return "Generated response..."
 
 
-class MyOverviewAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        user = fetch_user_data("user_123")
-        response = generate_response("Hello")
-        return AgentResponse(content=response)
+def my_overview_agent(input_data: AgentInput) -> AgentResponse:
+    user = fetch_user_data("user_123")
+    response = generate_response("Hello")
+    return AgentResponse(content=response)
 
 
 # Use generate() for automatic trace context management
 inference_result = galtea.inference_results.generate(
-    agent=MyOverviewAgent(),
+    agent=my_overview_agent,
     session=session,
     user_input="Show me user data",
 )

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-02-09</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">Enhanced Simulation and UI Improvements</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2026-02-09">2026-02-09</a>
+
+                <h3 style="color: #171717">SDK & Simulation Upgrades</h3>
+                <p style="color: #171717; font-size: 16px">We have significantly improved the flexibility of the Galtea SDK to better fit your existing workflows.</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <strong>Unified Simulation Method:</strong> The <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: &quot;Courier New&quot;, monospace; font-size: 14px; color: #444">simulator.simulate</code> method has been upgraded to
+                    <a href="https://docs.galtea.ai/sdk/api/simulator/simulate" style="color: #5286ff">handle both single-turn and multi-turn simulations</a>.
+                  </li>
+                  <li>
+                    <strong>Simplified Agent Integration:</strong> The <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: &quot;Courier New&quot;, monospace; font-size: 14px; color: #444">agent</code> property now accepts
+                    <a href="https://docs.galtea.ai/quickstart#6-run-the-evaluation" style="color: #5286ff">direct methods with various signatures</a>, removing the need for wrapper classes.
+                  </li>
+                </ul>
+
+                <h3 style="color: #171717">New Platform Features</h3>
+
+                <p style="color: #171717; font-size: 16px"><strong>AI-Powered Product Definition</strong></p>
+                <p style="color: #171717; font-size: 16px; margin-top: 5px">
+                  Bootstrapping a new product context is now faster than ever. You can upload a set of files (documentation, knowledge base, etc.), and Galtea will use AI to
+                  <a href="https://platform.galtea.ai/product-new" style="color: #5286ff">automatically generate a comprehensive definition</a> for you.
+                </p>
+
+                <p style="color: #171717; font-size: 16px"><strong>Advanced Endpoint Connections</strong></p>
+                <p style="color: #171717; font-size: 16px; margin-top: 5px">
+                  You can now <a href="https://docs.galtea.ai/concepts/product/endpoint-connection#param-type" style="color: #5286ff">create endpoint connections</a> with distinct configurations for the <strong>Initialization</strong>, the <strong>Conversation</strong>, and the
+                  <strong>Finalization</strong> of the conversation.
+                </p>
+
+                <p style="color: #171717; font-size: 16px"><strong>Single Inference Evaluation</strong></p>
+                <p style="color: #171717; font-size: 16px; margin-top: 5px">Trigger an evaluation for a single inference result directly from the platform UI—perfect for quick spot-checks.</p>
+
+                <h3 style="color: #171717">Reliability and UX Improvements</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Graceful Metric Handling:</strong> Incompatible metrics now result in a "skipped" status rather than throwing an error.</li>
+                  <li><strong>Transition to Custom Metrics:</strong> We have deprecated DeepEval metrics in favor of our own <a href="https://docs.galtea.ai/concepts/metric/custom-judge" style="color: #5286ff">custom implementation</a> to enhance reliability.</li>
+                  <li><strong>Better Test Creation:</strong> The Test creation form has been polished for improved usability.</li>
+                  <li><strong>Stability:</strong> General improvements to platform reliability.</li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack or Discord channels.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">We are already working on the next set of features:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Metric Architecture Improvements:</strong> We are unlocking metrics so they are no longer locked to specific Test Types, allowing for use in more scenarios.</li>
+                  <li><strong>Automated Report Generator:</strong> Generate comprehensive reports of your evaluations automatically.</li>
+                  <li><strong>Manual Human Evaluation:</strong> Humans will be able to evaluate your Agent manually directly through the Galtea platform.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

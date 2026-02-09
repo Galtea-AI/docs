@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 
 from galtea import (
-    Agent,
     AgentInput,
     AgentResponse,
     Galtea,
@@ -181,16 +180,43 @@ if metric is None:
 behavior_metric = metric
 
 
-# @start define_your_agent
-class MyAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        user_message = input_data.last_user_message_str()
-        # In a real scenario, you woyuld call your agent here, e.g., your_model_output = your_product_function(user_message)
-        model_output = f"Your model output to the {user_message}"
-        return AgentResponse(content=model_output)
+# @start define_agent_simple
+def my_agent(user_message: str) -> str:
+    # In a real scenario, call your model here
+    return f"Your model output to: {user_message}"
 
 
-# @end define_your_agent
+# @end define_agent_simple
+
+
+# @start define_agent_chat
+def my_agent(messages: list[dict]) -> str:
+    # messages follows the standard chat format:
+    # [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}, ...]
+    user_message = messages[-1]["content"]
+    return f"Your model output to: {user_message}"
+
+
+# @end define_agent_chat
+
+
+# @start define_agent_structured_function
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    user_message = input_data.last_user_message_str()
+    # In a real scenario, call your model here
+    model_output = f"Your model output to: {user_message}"
+    # Return AgentResponse with optional usage/cost tracking
+    return AgentResponse(
+        content=model_output,
+        usage_info={"input_tokens": 100, "output_tokens": 50},
+    )
+
+
+# @end define_agent_structured_function
+
+
+# For demo purposes, use the structured function
+MyAgentInstance = my_agent
 
 # Ensure it works with all test types, then do the actual demo code
 accuracy_test_case = galtea.test_cases.list(test_id=accuracy_test.id)[0]
@@ -216,27 +242,27 @@ if accuracy_session is None or security_session is None or behavior_session is N
     raise ValueError("Failed to create one or more sessions")
 # galtea.simulator.simulate(
 #     session_id=accuracy_session.id,
-#     agent=MyAgent(),
+#     agent=my_agent,
 #     max_turns=accuracy_test_case.max_iterations or 10,
 # )
 accuracy_inference_result = galtea.inference_results.generate(
     session=accuracy_session,
-    agent=MyAgent(),
+    agent=my_agent,
     user_input=accuracy_test_case.input,
 )
 # galtea.simulator.simulate(
 #     session_id=security_session.id,
-#     agent=MyAgent(),
+#     agent=my_agent,
 #     max_turns=security_test_case.max_iterations or 10,
 # )
 security_inference_result = galtea.inference_results.generate(
     session=security_session,
-    agent=MyAgent(),
+    agent=my_agent,
     user_input=security_test_case.input,
 )
 conversational_simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
-    agent=MyAgent(),
+    agent=my_agent,
     max_turns=behavior_test_case.max_iterations or 10,
 )
 if (
@@ -271,7 +297,7 @@ for test_case in test_cases:
     # Run a synthetic user conversation against your agent
     inference_result = galtea.inference_results.generate(
         session=session,
-        agent=MyAgent(),
+        agent=my_agent,
         user_input=test_case.input,
     )
 
@@ -299,7 +325,7 @@ for test_case in test_cases:
     # Run a synthetic user conversation against your agent
     galtea.simulator.simulate(
         session_id=session.id,
-        agent=MyAgent(),
+        agent=my_agent,
         max_turns=test_case.max_iterations or 10,
     )
 

@@ -6,7 +6,7 @@ Demonstrates usage/cost info and error handling for the generate method.
 from datetime import datetime
 
 import galtea
-from galtea import Agent, AgentInput, AgentResponse, Galtea
+from galtea import AgentInput, AgentResponse, Galtea
 from galtea.domain.models.trace import TraceType
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -43,34 +43,64 @@ if session is None:
     raise ValueError("session is None")
 
 
-# @start usage_and_cost_info
-class MyAgentWithUsage(Agent):
-    @galtea.trace(name="main", type=TraceType.AGENT)
-    def call(self, input: AgentInput) -> AgentResponse:
-        # Your agent logic...
+# @start agent_options
+# Simple: receives just the last user message
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
 
-        return AgentResponse(
-            content="Response content",
-            usage_info={
-                "input_tokens": 150,
-                "output_tokens": 75,
-                "cache_read_input_tokens": 50,
-            },
-            cost_info={
-                "cost_per_input_token": 0.00001,
-                "cost_per_output_token": 0.00003,
-                "cost_per_cache_read_input_token": 0.000001,
-            },
-        )
+
+# Chat History: receives the full conversation history (OpenAI message format)
+def my_agent(messages: list[dict]) -> str:
+    return f"Response to: {messages[-1]['content']}"
+
+
+# Structured: structured input/output (with usage/cost tracking and retrieval context)
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    user_msg = input_data.last_user_message_str()
+    return AgentResponse(
+        content=f"Response to: {user_msg}",
+        usage_info={"input_tokens": 100, "output_tokens": 50},
+    )
+
+
+# Async functions work too
+async def my_async_agent(user_message: str) -> str:
+    return f"Async response to: {user_message}"
+
+
+result = galtea_client.inference_results.generate(
+    agent=my_agent,
+    session=session,
+    user_input="Hello!",
+)
+# @end agent_options
+
+
+# @start usage_and_cost_info
+@galtea.trace(name="main", type=TraceType.AGENT)
+def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
+    # Your agent logic...
+
+    return AgentResponse(
+        content="Response content",
+        usage_info={
+            "input_tokens": 150,
+            "output_tokens": 75,
+            "cache_read_input_tokens": 50,
+        },
+        cost_info={
+            "cost_per_input_token": 0.00001,
+            "cost_per_output_token": 0.00003,
+            "cost_per_cache_read_input_token": 0.000001,
+        },
+    )
 
 
 # @end usage_and_cost_info
 
 
-agent = MyAgentWithUsage()
-
 result = galtea_client.inference_results.generate(
-    agent=agent,
+    agent=my_agent_with_usage,
     session=session,
     user_input="test input",
 )
@@ -84,12 +114,9 @@ if session_error is None:
 
 
 # @start error_handling
-class FailingAgent(Agent):
-    def call(self, input: AgentInput) -> AgentResponse:
-        raise ValueError("Agent failed intentionally")
+def failing_agent(input_data: AgentInput) -> AgentResponse:
+    raise ValueError("Agent failed intentionally")
 
-
-failing_agent = FailingAgent()
 
 try:
     result = galtea_client.inference_results.generate(

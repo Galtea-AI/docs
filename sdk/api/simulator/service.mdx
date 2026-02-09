@@ -21,17 +21,16 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 Simulate a conversation with your agent:
 ```python
-class MyCustomAgent(Agent):
-    def call(self, input_data: AgentInput) -> AgentResponse:
-        # Implement your agent logic here, using input_data content
-        return AgentResponse(
-            content=f"Generated response for {input_data.last_user_message_str()}"
-        )
+def my_custom_agent(input_data: AgentInput) -> AgentResponse:
+    # Implement your agent logic here, using input_data content
+    return AgentResponse(
+        content=f"Generated response for {input_data.last_user_message_str()}"
+    )
 
 
 simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
-    agent=MyCustomAgent(),
+    agent=my_custom_agent,
     max_turns=3,
     log_inference_results=True,
 )

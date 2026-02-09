@@ -55,10 +55,10 @@ if test_cases is None or len(test_cases) == 0:
     raise ValueError("No test cases found")
 
 
-# Implement your Agent (connect your product/model)
-class MyAgent(galtea.Agent):
-    def call(self, input_data: galtea.AgentInput) -> galtea.AgentResponse:
-        return galtea.AgentResponse(content="...")
+# Implement your agent function (connect your product/model)
+def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
+    user_message = input_data.last_user_message_str()
+    return galtea.AgentResponse(content=f"Response to: {user_message}")
 
 
 for test_case in test_cases:
@@ -68,10 +68,10 @@ for test_case in test_cases:
         test_case_id=test_case.id,
     )
 
-    # Run the simulator (synthetic user) with your Agent
+    # Run the simulator (synthetic user) with your agent function
     galtea_client.simulator.simulate(
         session_id=session.id,
-        agent=MyAgent(),
+        agent=my_agent,
         max_turns=test_case.max_iterations or 20,
     )
 

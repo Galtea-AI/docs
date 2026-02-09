@@ -81,7 +81,7 @@ Here are examples of behavior test content and structure:
   <Accordion title="Travel Booking Scenarios">
     <Tabs>
       <Tab title="Table View">
-        | Goal | User Persona | Initial Prompt | Stopping Criterias | Max Iterations | Scenario |
+        | Goal | User Persona | Input | Stopping Criterias | Max Iterations | Scenario |
         |------|--------------|----------------|-------------------|----------------|----------|
         | Book a one-way flight from SFO to JFK for next Tuesday | A busy professional who is direct and values efficiency | I need to book a flight | The user has confirmed the flight booking\|The chatbot indicates it cannot fulfill the request | 10 | Flight booking scenario |
         | Find the cheapest round-trip flight to Europe in summer | A budget-conscious student who asks many questions | Hi, I'm looking for cheap flights to Europe | Flight is booked\|User decides not to book\|Maximum budget is exceeded | 15 | Budget travel scenario |
@@ -89,7 +89,7 @@ Here are examples of behavior test content and structure:
       </Tab>
       <Tab title="Raw CSV">
         ```csv
-        goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario
+        goal,user_persona,input,stopping_criterias,max_iterations,scenario
         "Book a one-way flight from SFO to JFK for next Tuesday","A busy professional who is direct and values efficiency","I need to book a flight","The user has confirmed the flight booking|The chatbot indicates it cannot fulfill the request",10,"Flight booking scenario"
         "Find the cheapest round-trip flight to Europe in summer","A budget-conscious student who asks many questions","Hi, I'm looking for cheap flights to Europe","Flight is booked|User decides not to book|Maximum budget is exceeded",15,"Budget travel scenario"
         "Change an existing flight reservation","A frustrated customer whose plans have changed","I need to change my flight immediately","Reservation is successfully modified|Customer is transferred to agent",8,"Flight modification scenario"
@@ -101,7 +101,7 @@ Here are examples of behavior test content and structure:
   <Accordion title="Customer Support Scenarios">
     <Tabs>
       <Tab title="Table View">
-        | Goal | User Persona | Initial Prompt | Stopping Criterias | Max Iterations | Scenario |
+        | Goal | User Persona | Input | Stopping Criterias | Max Iterations | Scenario |
         |------|--------------|----------------|-------------------|----------------|----------|
         | Get help with a defective product | An upset customer who received a broken item | My product arrived broken and I'm very disappointed | Issue is resolved&#124;Customer requests supervisor&#124;Refund is processed | 12 | Product defect resolution |
         | Understand how to use a new feature | A curious but non-technical user | I heard about a new feature but don't know how to use it | User successfully uses the feature&#124;User gives up&#124;Technical support is escalated | 10 | Feature education scenario |
@@ -109,7 +109,7 @@ Here are examples of behavior test content and structure:
       </Tab>
       <Tab title="Raw CSV">
         ```csv
-        goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario
+        goal,user_persona,input,stopping_criterias,max_iterations,scenario
         "Get help with a defective product","An upset customer who received a broken item","My product arrived broken and I'm very disappointed","Issue is resolved|Customer requests supervisor|Refund is processed",12,"Product defect resolution"
         "Understand how to use a new feature","A curious but non-technical user","I heard about a new feature but don't know how to use it","User successfully uses the feature|User gives up|Technical support is escalated",10,"Feature education scenario"
         "Cancel a subscription","A polite customer who wants to downgrade service","I'd like to cancel my subscription please","Subscription is cancelled|Alternative plan is accepted|Retention offer is declined",8,"Subscription cancellation"
@@ -121,7 +121,7 @@ Here are examples of behavior test content and structure:
   <Accordion title="Sales and Consultation Scenarios">
     <Tabs>
       <Tab title="Table View">
-        | Goal | User Persona | Initial Prompt | Stopping Criterias | Max Iterations | Scenario |
+        | Goal | User Persona | Input | Stopping Criterias | Max Iterations | Scenario |
         |------|--------------|----------------|-------------------|----------------|----------|
         | Find the right product for specific needs | A thorough researcher who compares many options | I'm looking for a solution but need help choosing | Product recommendation is accepted&#124;User requests human consultation&#124;User decides to research more | 15 | Product recommendation scenario |
         | Get pricing information for enterprise solution | A business decision maker focused on ROI | What are your enterprise pricing options? | Quote is requested&#124;Meeting is scheduled&#124;User indicates budget constraints | 10 | Enterprise sales scenario |
@@ -129,7 +129,7 @@ Here are examples of behavior test content and structure:
       </Tab>
       <Tab title="Raw CSV">
         ```csv
-        goal,user_persona,initial_prompt,stopping_criterias,max_iterations,scenario
+        goal,user_persona,input,stopping_criterias,max_iterations,scenario
         "Find the right product for specific needs","A thorough researcher who compares many options","I'm looking for a solution but need help choosing","Product recommendation is accepted|User requests human consultation|User decides to research more",15,"Product recommendation scenario"
         "Get pricing information for enterprise solution","A business decision maker focused on ROI","What are your enterprise pricing options?","Quote is requested|Meeting is scheduled|User indicates budget constraints",10,"Enterprise sales scenario"
         "Compare different service tiers","An analytical customer who wants detailed comparisons","Can you help me understand the differences between your plans?","Plan is selected|User requests trial|User needs more time to decide",12,"Service comparison scenario"
@@ -165,7 +165,7 @@ Behavior tests have a specific structure designed to enable realistic conversati
   **Example**: "A busy professional who is direct and values efficiency. They prefer to get things done quickly without much small talk."
 </ResponseField>
 
-<ResponseField name="initial_prompt" type="Text" optional>
+<ResponseField name="input" type="Text" optional>
   The first message the synthetic user sends to start the conversation. If not provided, the system will generate an appropriate opening based on the goal and persona.
   **Example**: "Hello, I need to book a flight."
 </ResponseField>
@@ -189,7 +189,7 @@ Behavior tests have a specific structure designed to enable realistic conversati
 
 Behavior tests are specifically designed to work with Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator). When you run evaluations using behavior tests, the system will:
 
-1. **Initialize the conversation** using the `initial_prompt` and `user_persona`
+1. **Initialize the conversation** using the `input` and `user_persona`
 2. **Generate realistic user responses** based on the `goal` and conversation history  
 3. **Continue the dialogue** until one of the `stopping_criterias` is met or `max_iterations` is reached
 4. **Evaluate the conversation** using your selected [metrics](/concepts/metric) to assess performance
