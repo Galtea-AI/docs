@@ -303,10 +303,9 @@ if evaluations is None or len(evaluations) == 0:
 
 
 # @start inference_result_generate
-# Define an agent function to be used for generation
-def my_agent(input_data: AgentInput) -> AgentResponse:
-    # Implement your agent logic here, using input_data content
-    return AgentResponse(content="Generated response")
+# Define your agent function
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
 
 
 inference_result = galtea.inference_results.generate(
@@ -422,16 +421,14 @@ behavior_session = galtea.sessions.create(
 
 
 # @start simulator_simulate
-def my_custom_agent(input_data: AgentInput) -> AgentResponse:
-    # Implement your agent logic here, using input_data content
-    return AgentResponse(
-        content=f"Generated response for {input_data.last_user_message_str()}"
-    )
+# Define your agent function
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
 
 
 simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
-    agent=my_custom_agent,
+    agent=my_agent,
     max_turns=3,
     log_inference_results=True,
 )
