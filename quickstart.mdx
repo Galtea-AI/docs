@@ -4,6 +4,7 @@ description: "Validate your AI product with Galtea"
 icon: "rocket"
 ---
 
+import AgentCallables from '/snippets/agent-callables.mdx';
 import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
 import InferenceResultCard from '/snippets/cards/inference-result-card.mdx';
 import MetricCard from '/snippets/cards/metric-card.mdx';
@@ -213,49 +214,7 @@ This is where you connect Galtea to your product. Then, for each test case (or s
 
 To do so, you define an **agent function** that translates Galtea's input into calls to your product. The SDK supports three signatures — pick the one that matches how much context your agent needs:
 
-<Tabs>
-  <Tab title="Simple">
-    The quickest way to get started. Your function receives just the latest user message as a string.
-
-```python
-def my_agent(user_message: str) -> str:
-    # In a real scenario, call your model here
-    return f"Your model output to: {user_message}"
-```
-  </Tab>
-
-  <Tab title="Chat History">
-    Use this when your agent needs the full conversation context. Your function receives the message list in the OpenAI format (`{"role": "...", "content": "..."}`).
-
-```python
-def my_agent(messages: list[dict]) -> str:
-    # messages follows the standard chat format:
-    # [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}, ...]
-    user_message = messages[-1]["content"]
-    return f"Your model output to: {user_message}"
-```
-  </Tab>
-
-  <Tab title="Structured">
-    For full control over input and output — including optional usage tracking, cost tracking, and retrieval context for RAG evaluations.
-
-```python
-def my_agent(input_data: AgentInput) -> AgentResponse:
-    user_message = input_data.last_user_message_str()
-    # In a real scenario, call your model here
-    model_output = f"Your model output to: {user_message}"
-    # Return AgentResponse with optional usage/cost tracking
-    return AgentResponse(
-        content=model_output,
-        usage_info={"input_tokens": 100, "output_tokens": 50},
-    )
-```
-  </Tab>
-</Tabs>
-
-<Info>
-  All three signatures work with `generate()` and `simulate()`. Both sync and async functions are supported. The SDK auto-detects which signature you're using from the type hint on the first parameter.
-</Info>
+<AgentCallables />
 
 <Tabs>
   <Tab title="RAG">

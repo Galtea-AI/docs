@@ -4,6 +4,8 @@ sidebarTitle: "Generate"
 description: "Execute an agent and automatically capture traces, latency, and metadata"
 ---
 
+import AgentCallables from '/snippets/agent-callables.mdx';
+
 ## Overview
 
 The `generate()` method is the recommended way to execute your agent when you want automatic trace collection, timing, and inference result creation. It handles the complete lifecycle:
@@ -20,47 +22,7 @@ The `generate()` method is the recommended way to execute your agent when you wa
 
 ## Agent Options
 
-Provide your agent as a plain function with one of three supported signatures:
-
-- **Simple** — `(user_message: str) -> str` — receives just the last user message
-- **Chat History** — `(messages: list[dict]) -> str` — receives the full conversation history in the OpenAI message standard format (`{"role": "...", "content": "..."}`)
-- **Structured** — `(input_data: AgentInput) -> AgentResponse` — structured input/output with access to session context, helper methods, and optional usage/cost tracking
-
-Both sync and async functions are supported.
-
-### Using an Agent Function
-
-```python
-# Simple: receives just the last user message
-def my_agent(user_message: str) -> str:
-    return f"Response to: {user_message}"
-
-
-# Chat History: receives the full conversation history (OpenAI message format)
-def my_agent(messages: list[dict]) -> str:
-    return f"Response to: {messages[-1]['content']}"
-
-
-# Structured: structured input/output (with usage/cost tracking and retrieval context)
-def my_agent(input_data: AgentInput) -> AgentResponse:
-    user_msg = input_data.last_user_message_str()
-    return AgentResponse(
-        content=f"Response to: {user_msg}",
-        usage_info={"input_tokens": 100, "output_tokens": 50},
-    )
-
-
-# Async functions work too
-async def my_async_agent(user_message: str) -> str:
-    return f"Async response to: {user_message}"
-
-
-result = galtea_client.inference_results.generate(
-    agent=my_agent,
-    session=session,
-    user_input="Hello!",
-)
-```
+<AgentCallables />
 
 ## Parameters
 
@@ -92,10 +54,9 @@ Returns an `InferenceResult` object with all captured data.
 ## Example
 
 ```python
-# Define an agent function to be used for generation
-def my_agent(input_data: AgentInput) -> AgentResponse:
-    # Implement your agent logic here, using input_data content
-    return AgentResponse(content="Generated response")
+# Define your agent function
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
 
 
 inference_result = galtea.inference_results.generate(

@@ -5,7 +5,6 @@ Demonstrates how to evaluate multi-turn conversations using Galtea's session-bas
 
 from datetime import datetime
 
-import galtea
 from galtea import Galtea
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -55,10 +54,9 @@ if test_cases is None or len(test_cases) == 0:
     raise ValueError("No test cases found")
 
 
-# Implement your agent function (connect your product/model)
-def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
-    user_message = input_data.last_user_message_str()
-    return galtea.AgentResponse(content=f"Response to: {user_message}")
+# Define your agent function (connect your product/model)
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
 
 
 for test_case in test_cases:

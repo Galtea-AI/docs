@@ -4,50 +4,28 @@ sidebarTitle: "Simulate"
 description: "Run a full conversation simulation between your agent and a synthetic user using the Galtea SDK."
 ---
 
+import AgentCallables from '/snippets/agent-callables.mdx';
+
 ## Returns
 It returns a result object from the [Conversation Simulator](/concepts/product/test/case/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
 
 ## Agent Options
 
-Provide your agent as a plain function with one of three supported signatures:
-
-- **Simple** — `(user_message: str) -> str` — receives just the last user message
-- **Chat History** — `(messages: list[dict]) -> str` — receives the full conversation history in the OpenAI message standard format (`{"role": "...", "content": "..."}`) 
-- **Structured** — `(input_data: AgentInput) -> AgentResponse` — structured input/output with access to session context, helper methods, and optional usage/cost tracking
-
-Both sync and async functions are supported.
+<AgentCallables />
 
 ## Example
 
 ```python
-# Simple: receives just the last user message
+# Define your agent function
 def my_agent(user_message: str) -> str:
     return f"Response to: {user_message}"
 
 
-# Chat History: receives the full conversation history (OpenAI message format)
-def my_agent(messages: list[dict]) -> str:
-    return f"Response to: {messages[-1]['content']}"
-
-
-# Structured: structured input/output (with usage/cost tracking and retrieval context)
-def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
-    user_msg = input_data.last_user_message_str()
-    return galtea.AgentResponse(
-        content=f"Response to: {user_msg}",
-        usage_info={"input_tokens": 100, "output_tokens": 50},
-    )
-
-
-# Async functions work too
-async def my_async_agent(user_message: str) -> str:
-    return f"Async response to: {user_message}"
-
-
-result = galtea_client.simulator.simulate(
-    session_id=session_id,
+simulation_result = galtea.simulator.simulate(
+    session_id=behavior_session.id,
     agent=my_agent,
-    max_turns=10,
+    max_turns=3,
+    log_inference_results=True,
 )
 ```
 

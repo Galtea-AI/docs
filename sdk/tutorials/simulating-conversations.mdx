@@ -4,23 +4,19 @@ description: "Learn how to use Galtea's Conversation Simulator to test your AI w
 icon: "user-group"
 ---
 
+import AgentCallables from '/snippets/agent-callables.mdx';
+
 Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) allows you to test your conversational AI products by simulating realistic user interactions. This guide walks you through integrating your agent and running simulations.
 
 ## Agent Integration Options
 
-Provide your agent as a plain function with one of three supported signatures:
-
-- **Simple** — `(user_message: str) -> str` — receives just the last user message
-- **Chat History** — `(messages: list[dict]) -> str` — receives the full conversation history in the OpenAI message standard format (`{"role": "...", "content": "..."}`)
-- **Structured** — `(input_data: AgentInput) -> AgentResponse` — structured input/output with access to session context, helper methods, and optional usage/cost tracking
-
-Both sync and async functions are supported.
+<AgentCallables />
 
 ## Conversation Simulation Workflow
 
 <Steps>
   <Step title="1. Implement Your Agent">
-    Define an agent function with one of the supported signatures.
+    Define an agent function with one of the supported signatures above.
   </Step>
   <Step title="2. Prepare Scenario Data">
     Create a CSV file with scenario data. Each row is a test case describing the user goal, persona, and input (the first user message).
@@ -35,38 +31,6 @@ Both sync and async functions are supported.
     After simulation, analyze results and optionally trigger evaluations via <code>evaluations.create()</code>.
   </Step>
 </Steps>
-
----
-
-### Quick Start
-
-The simplest way to integrate your agent is with a plain function:
-
-```python
-# Simple: receives just the last user message
-def my_agent(user_message: str) -> str:
-    """Simplest agent function signature."""
-    # Your LLM call here
-    return f"Response to: {user_message}"
-
-
-# Chat History: receives full conversation history (OpenAI message format)
-def my_agent(messages: list[dict]) -> str:
-    """Agent function with access to the full conversation history."""
-    user_message = messages[-1]["content"]
-    # Your LLM call here
-    return f"Response to: {user_message}"
-
-
-# Structured: structured input/output
-def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
-    """Structured agent function with access to session context and rich responses."""
-    user_message = input_data.last_user_message_str()
-    return galtea.AgentResponse(
-        content=f"Response to: {user_message}",
-        usage_info={"input_tokens": 100, "output_tokens": 50},
-    )
-```
 
 ---
 
@@ -99,6 +63,11 @@ After some time you should see the resulting generated test cases in your dashbo
 For each test case/session, use the simulator to run the full simulation with your agent function:
 
 ```python
+# Define your agent function (see Agent Integration Options for all signatures)
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
+
+
 # Run simulations with your agent function
 for test_case in test_cases:
     session = galtea_client.sessions.create(
@@ -106,7 +75,7 @@ for test_case in test_cases:
     )
 
     result = galtea_client.simulator.simulate(
-        session_id=session.id, agent=my_structured_agent, max_turns=10
+        session_id=session.id, agent=my_agent, max_turns=10
     )
 
     # Analyze results

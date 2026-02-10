@@ -176,6 +176,11 @@ if test_cases is None or len(test_cases) == 0:
 
 
 # @start run_simulator
+# Define your agent function (see Agent Integration Options for all signatures)
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
+
+
 # Run simulations with your agent function
 for test_case in test_cases:
     session = galtea_client.sessions.create(
@@ -183,7 +188,7 @@ for test_case in test_cases:
     )
 
     result = galtea_client.simulator.simulate(
-        session_id=session.id, agent=my_structured_agent, max_turns=10
+        session_id=session.id, agent=my_agent, max_turns=10
     )
 
     # Analyze results
