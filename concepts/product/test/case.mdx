@@ -58,6 +58,10 @@ The Galtea SDK allows you to create, view, and manage test cases programmaticall
   Indicates if a test case has been manually reviewed and approved by a user. This is useful for tracking which test cases are considered reliable and validated. The system stores the ID of the user who reviewed the test case, upon creation or update, the one who created or updated the test case is set as the reviewer.
 </ResponseField>
 
+<ResponseField name="Is Augmentated" type="Boolean">
+  Indicates if a test case was generated through the augmentation process. Test cases created via the generate-from-few-shots augmentation feature will have this flag set to `true`, while manually created test cases will have it set to `false`.
+</ResponseField>
+
 <ResponseField name="User Score" type="Integer" optional>
   User vote for the test case quality. Possible values are `1` (upvote), `-1` (downvote), or `0` (unreviewed).
 </ResponseField>
