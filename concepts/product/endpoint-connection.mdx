@@ -109,6 +109,23 @@ To create an Endpoint Connection:
   }
   ```
 
+  **Example (Previous queries array)**:
+  ```jinja2
+  {
+    "model": "gpt-4",
+    "previous_queries": [
+      {% for turn in past_turns %}
+      "{{ turn.input }}"{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ],
+    "current_query": "{{ input }}"
+  }
+  ```
+
+  <Note>
+    When a loop is the **last item** in a JSON array, use `{% if not loop.last %},{% endif %}` after each iteration to prevent a trailing comma. When there's content **after** the loop (like in the OpenAI example above), trailing commas are valid and this pattern is not required.
+  </Note>
+
   **Example (Custom format)**:
   ```jinja2
   {
