@@ -88,6 +88,15 @@ The Galtea SDK allows you to create, view, and manage tests programmatically.
   The name of the test. **Example**: "Legal Document Accuracy Test" or "Customer Support Safety Evaluation"
 </ResponseField>
 
+<ResponseField name="Status" type="Enum">
+  The current status of the test.
+  Possible values:
+  - `PENDING`: Test cases are being generated
+  - `SUCCESS`: Test is ready
+  - `FAILED`: Test generation failed
+  - `AUGMENTING`: Test cases are being augmented with additional generated cases
+</ResponseField>
+
 <ResponseField name="Type" type="Enum" required>
   The type of the test. 
   Possible values:
