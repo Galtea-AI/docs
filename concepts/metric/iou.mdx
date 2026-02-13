@@ -12,8 +12,15 @@ The IOU (Intersection Over Union) metric is part of the [Deterministic Metric](/
 
 To compute the iou metric, the following parameters must be provided:
 
-- **`actual_output`**: A single predicted bounding box in the format.
-- **`expected_output`**: A list of lists of ground truth boxes, each also in the format.
+- **`actual_output`**: A list of predicted bounding boxes. Each box must be in `[x1, y1, x2, y2]` format (coordinates of top-left and bottom-right corners). Accepts two formats:
+  - **JSON array**: `"[[10, 10, 50, 50], [100, 100, 120, 120]]"`
+  - **JSON object with "bboxes" key**: `'{"bboxes": [[10, 10, 50, 50], [100, 100, 120, 120]]}'`
+
+- **`expected_output`**: A single ground truth bounding box in `[x1, y1, x2, y2]` format. Accepts two formats:
+  - **JSON array**: `"[10, 10, 50, 50]"`
+  - **JSON object with "bbox" key** (singular): `'{"bbox": [10, 10, 50, 50]}'`
+
+**Important**: Both `actual_output` and `expected_output` must be valid JSON. Truncated or malformed JSON will cause evaluation failures.
 
 ---
 
