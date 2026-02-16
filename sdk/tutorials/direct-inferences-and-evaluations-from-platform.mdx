@@ -1,0 +1,172 @@
+---
+title: 'Direct Inferences and Evaluations from the Platform'
+description: "Learn how to configure Endpoint Connections to run inferences and evaluations directly from the Galtea Dashboard, without writing any SDK code."
+icon: "tower-broadcast"
+---
+
+Galtea allows you to run inferences against your AI system and evaluate its responses **directly from the Dashboard**, without writing any SDK code. This is made possible by [Endpoint Connections](/concepts/product/endpoint-connection), which tell Galtea how to call your API, extract the response, and manage session state across turns.
+
+<Info>
+  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/create-evaluation) instead.
+</Info>
+
+## Prerequisites
+
+Before you begin, make sure you have the following set up in the [Galtea Dashboard](https://platform.galtea.ai/):
+
+- A [Product](/concepts/product) representing your AI system
+- A [Test](/concepts/product/test) with at least one [Test Case](/concepts/product/test/case) to run against your endpoint
+
+## Workflow Overview
+
+<Steps>
+  <Step title="Create an Endpoint Connection">
+    Define how Galtea should call your AI endpoint — URL, authentication, request format, and response extraction.
+  </Step>
+  <Step title="Create a Version with the Endpoint Connection">
+    Create a new version of your product and attach the endpoint connection to it.
+  </Step>
+  <Step title="Run a Test from the Dashboard">
+    Select a test and run it against the version. Galtea calls your endpoint for each test case and records the inference results.
+  </Step>
+  <Step title="Evaluate the Results">
+    Once inferences are generated, trigger evaluations with the metrics of your choice to assess your AI's performance.
+  </Step>
+</Steps>
+
+---
+
+## Step 1: Create an Endpoint Connection
+
+Navigate to your product in the Dashboard and go to the **Endpoint Connections** section. Click **New Endpoint Connection** and configure the following:
+
+1. **Name** — A descriptive name (e.g., "Production Chat API").
+2. **Type** — Select `CONVERSATION` for the primary request/response endpoint.
+3. **URL** — The full URL of your AI endpoint (e.g., `https://api.company.com/v1/chat`).
+4. **HTTP Method** — Typically `POST`.
+5. **Authentication** — Choose the auth type (`Bearer`, `API_KEY`, `Basic`, or `None`) and provide the token.
+6. **Input Template** — A Jinja2 template that defines the request body Galtea will send.
+7. **Output Mapping** — JSONPath expressions that tell Galtea how to extract values from the response.
+
+### Input Template
+
+The input template uses [Jinja2](https://jinja.palletsprojects.com/) syntax with placeholders that Galtea fills automatically. At minimum, use `{{ input }}` to inject the test case input:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "{{ input }}"}
+  ]
+}
+```
+
+For multi-turn conversations, use `past_turns` to include conversation history:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {% for turn in past_turns %}
+    {"role": "user", "content": "{{ turn.input }}"},
+    {"role": "assistant", "content": "{{ turn.output }}"},
+    {% endfor %}
+    {"role": "user", "content": "{{ input }}"}
+  ]
+}
+```
+
+<Tip>
+  See [Endpoint Connection — Input Template](/concepts/product/endpoint-connection#input-template) for the full list of available placeholders and advanced template examples.
+</Tip>
+
+### Output Mapping
+
+The output mapping tells Galtea how to extract values from the API response using [JSONPath](https://goessner.net/articles/JsonPath/) expressions. The `output` key is required:
+
+```json
+{
+  "output": "$.choices[0].message.content"
+}
+```
+
+You can also extract additional values to store as session metadata:
+
+```json
+{
+  "output": "$.choices[0].message.content",
+  "retrieval_context": "$.choices[0].retrieval_context",
+  "session_id": "$.metadata.session_id"
+}
+```
+
+Any extra keys beyond `output` and `retrieval_context` are saved to the session metadata and become available as `{{ key }}` placeholders in subsequent turns.
+
+<Info>
+  See [Version — Special keys in Output Mapping](/concepts/product/version#special-keys-in-output-mapping) for a complete reference of how extracted values are stored and reused.
+</Info>
+
+---
+
+## Step 2: Create a Version with the Endpoint Connection
+
+Navigate to your product and create a new **Version**. When configuring the version:
+
+1. Fill in the version name, model, and any other relevant properties.
+2. In the **Conversation Endpoint Connection** field, select the endpoint connection you created in Step 1.
+
+The Conversation Endpoint Connection is the only required endpoint connection. For most integrations, this single endpoint handles the entire interaction lifecycle.
+
+<Note>
+  If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. See [Version — Multi-Step Session Lifecycle](/concepts/product/version#multi-step-session-lifecycle-advanced) for details.
+</Note>
+
+---
+
+## Step 3: Run a Test
+
+Once your version is set up with an endpoint connection, you can run tests directly from the Dashboard:
+
+1. Navigate to your product's **Tests** section.
+2. Select the test you want to run.
+3. Choose the version with the configured endpoint connection.
+4. Start the test run.
+
+Galtea will iterate through each test case, call your endpoint using the configured endpoint connection, and record the resulting [Inference Results](/concepts/product/version/session/inference-result). Each test case produces a session with one or more inference results depending on whether it's a single-turn or multi-turn test.
+
+---
+
+## Step 4: Evaluate the Results
+
+After the inferences have been generated, you can trigger evaluations:
+
+1. Navigate to the session results in the Dashboard.
+2. Select the [Metrics](/concepts/metric) you want to use for the evaluation.
+3. Run the evaluation.
+
+Galtea will assess each inference result using the selected metrics and provide scores and explanations.
+
+<Tip>
+  For single-turn tests, metrics like [Factual Accuracy](/concepts/metric/factual-accuracy) and [Answer Relevancy](/concepts/metric/answer-relevancy) work well. For multi-turn conversations, consider [Knowledge Retention](/concepts/metric/knowledge-retention), [Role Adherence](/concepts/metric/role-adherence), and [Conversation Completeness](/concepts/metric/conversation-completeness).
+</Tip>
+
+---
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Endpoint Connection" icon="plug" href="/concepts/product/endpoint-connection">
+    Full reference for configuring endpoint connections
+  </Card>
+  <Card title="Version" icon="code-branch" href="/concepts/product/version">
+    Learn about versions and how endpoint connections integrate with them
+  </Card>
+  <Card title="Evaluations" icon="clipboard-check" href="/concepts/product/version/session/evaluation">
+    Understand how evaluations work
+  </Card>
+  <Card title="Metrics" icon="brackets-curly" href="/concepts/metric">
+    Browse available metrics for evaluating your AI
+  </Card>
+</CardGroup>

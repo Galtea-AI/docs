@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-02-16</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      /* Add a bit of vertical spacing between list items */
+      ul li {
+        margin-bottom: 8px;
+      }
+      /* Avoid extra space after the last item in a list */
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">Reports, Augmentation, and Performance</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2026-02-16">2026-02-16</a>
+
+                <h3 style="color: #171717">Automated Report Generation</h3>
+                <p style="color: #171717; font-size: 16px">
+                  You can now export your analytics data as a comprehensive PDF report directly from the <a href="https://platform.galtea.ai" style="color: #5286ff">Galtea dashboard</a>. The report is generated automatically and includes AI-written summaries for each section &mdash; covering scope,
+                  methodology, product evaluation, and conclusions &mdash; alongside dashboard-style visualizations.
+                </p>
+
+                <h3 style="color: #171717">One-Click Test Case Augmentation</h3>
+                <p style="color: #171717; font-size: 16px">
+                  Scaling your <a href="https://docs.galtea.ai/concepts/product/test/case" style="color: #5286ff">Test Cases</a> just got much simpler. If you have a small base of known-good test cases, you can now augment them with a single click directly from the dashboard. Galtea will
+                  automatically generate additional test cases based on your existing ones, letting you quickly expand coverage without manually writing each entry.
+                </p>
+
+                <h3 style="color: #171717">New Quality Test Tasks</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We have expanded the <a href="https://docs.galtea.ai/concepts/product/test/quality-tests" style="color: #5286ff">Quality Test</a> configuration with two new task types: <strong>Correction</strong> and <strong>Other</strong>. When selecting <strong>Other</strong>, you can provide a
+                  custom task description to better classify your tests.
+                </p>
+
+                <h3 style="color: #171717">New Tutorial: Direct Inferences and Evaluations</h3>
+                <p style="color: #171717; font-size: 16px">
+                  A new step-by-step guide walks you through the full workflow of running inferences and evaluations <a href="https://docs.galtea.ai/sdk/tutorials/direct-inferences-and-evaluations-from-platform" style="color: #5286ff">directly from the Galtea dashboard</a> &mdash; no SDK code
+                  required. It covers creating an <a href="https://docs.galtea.ai/concepts/product/endpoint-connection" style="color: #5286ff">Endpoint Connection</a>, attaching it to a Version, running tests, and reviewing results.
+                </p>
+
+                <h3 style="color: #171717">Performance and Reliability</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Faster Evaluations:</strong> The <a href="https://docs.galtea.ai/concepts/product/version/session/evaluation" style="color: #5286ff">evaluation</a> pipeline has been optimized to reduce redundant database lookups, with improved batch processing and retry logic.</li>
+                  <li>
+                    <strong>Improved Error Messages:</strong> The <a href="https://docs.galtea.ai/concepts/metric/iou" style="color: #5286ff">IOU</a> and <a href="https://docs.galtea.ai/concepts/metric/spatial-match" style="color: #5286ff">Spatial Match</a> metrics now return clearer errors
+                    specifying expected JSON formats.
+                  </li>
+                  <li><strong>Jinja2 Template Fix:</strong> The <a href="https://docs.galtea.ai/concepts/product/test/case/conversation-simulator" style="color: #5286ff">conversation simulator</a> template validator no longer raises false positives for valid for-loop patterns in JSON templates.</li>
+                  <li><strong>Dashboard Polish:</strong> Better dark mode contrast, refined component styling, and a smarter toast notification system.</li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack or Discord channels.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">We are already working on the next set of features:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Granular Test Generation:</strong> More control over how tests are generated, with finer-grained options for targeting specific areas of your product.</li>
+                  <li><strong>Human Judge Evaluators:</strong> Humans will be able to evaluate your Agent manually and serve as judge evaluators directly through the Galtea platform.</li>
+                  <li><strong>Specification-Based Tests:</strong> Create tests designed to evaluate whether your product meets a specific product specification.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

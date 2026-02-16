@@ -86,6 +86,7 @@
               "sdk/tutorials/create-product-description",
               "sdk/tutorials/create-test",
               "sdk/tutorials/create-evaluation",
+              "sdk/tutorials/direct-inferences-and-evaluations-from-platform",
               "sdk/tutorials/monitor-production-responses-to-user-queries",
               "sdk/tutorials/evaluating-conversations",
               "sdk/tutorials/simulating-conversations",
