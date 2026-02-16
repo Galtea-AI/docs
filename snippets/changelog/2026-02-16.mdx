@@ -1,0 +1,33 @@
+<Update label="2026-02-16" description="Reports, Augmentation, and Performance">
+## Automated Report Generation
+
+You can now export your analytics data as a comprehensive PDF report directly from the [Galtea dashboard](https://platform.galtea.ai). The report is generated automatically and includes AI-written summaries for each section — covering scope, methodology, product evaluation, and conclusions — alongside dashboard-style visualizations.
+
+## One-Click Test Case Augmentation
+
+Scaling your [Test Cases](/concepts/product/test/case) just got much simpler. If you have a small base of known-good test cases, you can now augment them with a single click directly from the dashboard. Galtea will automatically generate additional test cases based on your existing ones, letting you quickly expand coverage without manually writing each entry.
+
+## New Quality Test Tasks
+
+We have expanded the [Quality Test](/concepts/product/test/quality-tests) configuration with two new task types: **Correction** and **Other**. When selecting **Other**, you can provide a custom task description to better classify your tests. This makes it easier to define quality evaluations that go beyond the predefined categories.
+
+## New Tutorial: Direct Inferences and Evaluations from the Platform
+
+A new step-by-step guide walks you through the full workflow of running inferences and evaluations [directly from the Galtea dashboard](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) — no SDK code required. It covers creating an [Endpoint Connection](/concepts/product/endpoint-connection), attaching it to a Version, running tests, and reviewing results.
+
+## Performance and Reliability
+
+- **Faster Evaluations:**
+  The [evaluation](/concepts/product/version/session/evaluation) pipeline has been optimized to reduce redundant database lookups. Pre-fetched entities are reused across batch operations, validation order has been improved, and retry logic now groups evaluations by session for significantly faster batch processing.
+
+- **Improved Error Messages:**
+  The [IOU](/concepts/metric/iou) and [Spatial Match](/concepts/metric/spatial-match) metrics now return clearer error messages specifying the expected JSON formats for bounding box inputs.
+
+- **Jinja2 Template Validation Fix:**
+  The [conversation simulator](/concepts/product/test/case/conversation-simulator) template validator no longer raises false positives for valid Jinja2 for-loop patterns in JSON templates, such as the common OpenAI-compatible message format.
+
+- **Dashboard Polish:**
+  Several UI improvements including better dark mode contrast, refined Pill component styling, and a smarter toast notification system that reduces interruptions for frequent users.
+
+
+</Update>
