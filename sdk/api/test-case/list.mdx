@@ -16,8 +16,8 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
 <ResponseField name="test_id" type="string | list[string]" required>
   The ID or IDs of the test you want to get the test cases from.
 </ResponseField>
-<ResponseField name="language" type="list[string]" optional>
-  Language for the test case.
+<ResponseField name="languages" type="list[string]" optional>
+  Languages to filter test cases by.
   Follow this list to know the supported ones:
   - https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
 </ResponseField>

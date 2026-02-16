@@ -79,7 +79,7 @@ The SDK allows you to list existing products, retrieve specific products by thei
     <strong>Example:</strong> "If asked for guaranteed investment returns, respond that all investments carry risk. Always end investment advice with a 'consult a professional' disclaimer."
 </ResponseField>
 
-<ResponseField name="Risk Level" type="Enum" required>
+<ResponseField name="Risk Level" type="Enum" optional>
   The risk level of the product under the EU AI Act.
   Possible values:
   - `GPAI`: General-Purpose AI Model (Article 3(63), Title VIII A - Chapter 1).
@@ -90,7 +90,7 @@ The SDK allows you to list existing products, retrieve specific products by thei
   <Info>Legal definitions available in the [Rules for trustworthy artificial intelligence in the EU](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng).</Info>
 </ResponseField>
 
-<ResponseField name="Operator Type" type="Enum" required>
+<ResponseField name="Operator Type" type="Enum" optional>
   The operator type of the product under the EU AI Act.
   Possible values:
   - `Authorised Representative`: An entity established in the EU, appointed by a provider from a third country, to act on their behalf regarding AI Act obligations.

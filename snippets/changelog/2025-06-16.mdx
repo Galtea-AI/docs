@@ -29,10 +29,10 @@ The new Galtea SDK v2 is here! It includes breaking changes to simplify workflow
   Sessions are created automatically when needed for evaluations.
 
 - **Repurposed [evaluations.create()](/sdk/api/evaluation/create):**  
-  The old method is replaced by `create_single_turn()` for test-based evaluations, while `create()` now exclusively handles [session-based](/sdk/api/session) evaluations.
+  The old method is replaced by `create_single_turn()` for test-based evaluations, while `create()` now exclusively handles [session-based](/sdk/api/session/service) evaluations.
 
 - **New [evaluations.create_single_turn()](/sdk/api/evaluation/create-single-turn) Method:**  
-  Use this for single-turn [test cases](/sdk/api/test-case). It now requires `version_id` instead of `evaluation_id`.
+  Use this for single-turn [test cases](/sdk/api/test-case/service). It now requires `version_id` instead of `evaluation_id`.
 
 - **Simplified [Version Creation](/sdk/api/version/create):**  
   The `galtea.versions.create()` method now accepts all properties directly, no need for an `optional_props` dictionary.

@@ -55,9 +55,10 @@ metric = galtea.metrics.create(
 <ResponseField name="name" type="string" required>
   The name of the metric.
 </ResponseField>
-<ResponseField name="test_type" type="string" required>
+<ResponseField name="test_type" type="string | TestType" required>
   The type of test this metric is designed for.
-  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+  Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
+  Legacy aliases also accepted: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
 </ResponseField>
 <ResponseField name="evaluator_model_name" type="string" optional>
   The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.

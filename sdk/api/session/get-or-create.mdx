@@ -29,8 +29,8 @@ session = galtea.sessions.get_or_create(
 <ResponseField name="test_case_id" type="string" optional>
   The test case ID. Required for non-production sessions.
 </ResponseField>
-<ResponseField name="context" type="dict" optional>
-  A flexible key-value context.
+<ResponseField name="context" type="str" optional>
+  Additional context for the session.
 </ResponseField>
 <ResponseField name="is_production" type="boolean" optional>
   A flag to indicate if the session is from a production environment. Defaults to `False`.
