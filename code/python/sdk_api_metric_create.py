@@ -14,7 +14,7 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 # @start full_prompt_llm_as_a_judge
 metric = galtea.metrics.create(
     name="accuracy_v1_full_" + run_identifier,
-    test_type="ACCURACY",
+
     evaluator_model_name="GPT-4.1",
     source="full_prompt",
     judge_prompt='Determine whether the output is equivalent to the expected output. Output: "{actual_output}". Expected Output: "{expected_output}."',
@@ -30,7 +30,7 @@ galtea.metrics.delete(metric_id=metric.id)
 # @start partial_prompt_llm_as_a_judge
 metric = galtea.metrics.create(
     name="accuracy_v1_partial_" + run_identifier,
-    test_type="ACCURACY",
+
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Determine whether the actual output is equivalent to the expected output",
@@ -47,7 +47,7 @@ galtea.metrics.delete(metric_id=metric.id)
 # @start self_hosted
 metric = galtea.metrics.create(
     name="accuracy_v1_self_" + run_identifier,
-    test_type="ACCURACY",
+
     source="self_hosted",
     tags=["custom", "accuracy"],
     description="A custom accuracy metric calculated by our custom score function.",

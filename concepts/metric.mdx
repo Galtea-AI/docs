@@ -112,16 +112,6 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
   The tags for the metric so it can be easily identified and categorized. **Example**: ["RAG", "Conversational"]
 </ResponseField>
 
-<ResponseField name="Test Type" type="Enum" required>
-  The type of test this metric is designed for. This indicates the evaluation 
-  context where the metric should be used.
-  
-  Possible values:
-  - `ACCURACY` (alias: `QUALITY`) - For quality testing and accuracy evaluations
-  - `SECURITY` (alias: `RED_TEAMING`) - For security and safety testing
-  - `BEHAVIOR` (alias: `SCENARIOS`) - For conversational and multi-turn evaluations
-</ResponseField>
-
 <ResponseField name="Validation method" type="Enum" required>
   The method used to evaluate the metric. This can be one of three options:
 
