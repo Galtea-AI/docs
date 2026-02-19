@@ -180,6 +180,7 @@
                       }
                     ]
                   },
+                  "concepts/product/test/data-augmentation",
                   {
                     "group": "SDK",
                     "icon": "code",
