@@ -47,9 +47,7 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
 </ResponseField>
 
 <ResponseField name="Model" type="Model" required>
-  The AI [Model](/concepts/model) used by this version. This is used for cost tracking and associating the version with a specific LLM's pricing and tokenization characteristics.
-
-  This is used to calculate the cost of the inference for the version during [evaluations](/concepts/product/version/session/evaluation).
+  The AI [Model](/concepts/model) used by this version. Galtea uses this to track costs, calculate per-evaluation inference spend, and associate the version with the model's pricing and tokenization characteristics.
 </ResponseField>
 
 <ResponseField name="System Prompt" type="Text">
@@ -191,7 +189,7 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
   For the full list of available template variables and detailed configuration options, see [Endpoint Connection — Input Template](/concepts/product/endpoint-connection#input-template).
 </Info>
 
-### multi-step session lifecycle (Advanced)
+### Multi-Step Session Lifecycle (Advanced)
 
 Some AI products expose separate endpoints for session setup and cleanup. In those cases, you can configure up to three endpoint connections:
 

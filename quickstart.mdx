@@ -35,10 +35,14 @@ If you’re new to Galtea, start by creating an account and your first product i
 
 Follow the **Onboarding** checklist on the product page (this is the guided setup shown inside your product). It will prompt you for product details and help you generate an API key. The product details you provide there are used to tailor generated tests and evaluations.
 
-Keep your **Product ID** and **API key** handy for the SDK steps below. 
+<Frame>
+  <img src="/images/ai-product-form.png" alt="AI-assisted product creation form" />
+</Frame>
+
+Keep your **Product ID** and **API key** handy for the SDK steps below.
 
 <Info>
-  The product information is crucial – it powers our ability to generate synthetic test data that's specific to your use case.
+  The product information is crucial – it powers our ability to generate synthetic test data that’s specific to your use case.
 </Info>
 
 ## 2. Get Started with the SDK
@@ -72,7 +76,18 @@ Use versions to track iterations of your product and compare evaluation results 
 
 If you completed the **Onboarding** checklist on your product page, you already have an initial version (created automatically).
 
-You can find the IDs in the dashboard (open your product and copy the **Product ID** and **Version ID**, you can find them by clicking on the 3 dots and select 'Copy ID'), or list them via the SDK:
+To find IDs in the dashboard, open your product and click the **3-dot menu** on any item, then select **Copy ID**.
+
+  <video            
+    autoPlay
+    muted                                                                                                           
+    loop
+    playsInline                                                                                                     
+    className="w-full aspect-video rounded-xl"                                                                    
+    src="/videos/copy-id-from-dashboard.mp4"
+  ></video>
+
+Alternatively, list them via the SDK:
 
 ```python
 products = galtea.products.list()
@@ -178,9 +193,7 @@ print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 
 ## 5. Choose Your Metrics
 
-This step is about choosing what you want to measure. In Galtea, metrics score each evaluation output (often using LLM-as-a-judge techniques for non-deterministic criteria), so you can quantify things like quality, correctness, or safety behavior across your test cases.
-
-You can bring your own custom metrics to the table, or you can choose from our wide array of available [metrics](/concepts/metric) (like QA, text-specific metrics, IOU, and many more).
+Metrics define how evaluation outputs are scored. Galtea provides built-in metrics for common use cases (factual accuracy, faithfulness, toxicity, role adherence, and [many more](/concepts/metric)), and you can also create custom metrics with your own judge prompts.
 
 <Tabs>
   <Tab title="RAG">
@@ -210,9 +223,9 @@ metric = galtea.metrics.get_by_name(name="Role Adherence")
 
 ## 6. Run the Evaluation
 
-This is where you connect Galtea to your product. Then, for each test case (or scenario), you run your system to produce an output and submit it to Galtea for scoring via [evaluations](/concepts/product/version/session/evaluation).
+Now connect Galtea to your product. You define an **agent function** — a wrapper that takes a test case input, calls your AI system, and returns its output. The SDK then loops through test cases, calls your agent, and scores the results via [evaluations](/concepts/product/version/session/evaluation).
 
-To do so, you define an **agent function** that translates Galtea's input into calls to your product. The SDK supports three signatures — pick the one that matches how much context your agent needs:
+The SDK supports three agent function signatures — pick the one that matches how much context your agent needs:
 
 <AgentCallables />
 

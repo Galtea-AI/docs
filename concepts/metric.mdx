@@ -29,7 +29,7 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
   *   Numerical range checks (e.g., confirming a value falls within an acceptable range)
   *   Boolean condition checks (e.g., ensuring a specific condition evaluates to true or false as expected)
 
-  Currently the deterministic metrics accessible directly from the platform are [BLEU](/concepts/metric/bleu), [ROUGE](/concepts/metric/rouge), [METEOR](/concepts/metric/meteor), [Text Similarity](/concepts/metric/text-similarity), [Text Match](/concepts/metric/text-match), [IOU](/concepts/metric/iou) and [Spatial Match](/concepts/metric/spatial-match) and [URL Validation](/concepts/metric/url-validation).
+  Currently the deterministic metrics accessible directly from the platform are [BLEU](/concepts/metric/bleu), [ROUGE](/concepts/metric/rouge), [METEOR](/concepts/metric/meteor), [Text Similarity](/concepts/metric/text-similarity), [Text Match](/concepts/metric/text-match), [IOU](/concepts/metric/iou) and [Spatial Match](/concepts/metric/spatial-match), [URL Validation](/concepts/metric/url-validation) and [Tool Correctness](/concepts/metric/tool-correctness).
 
   Additionally you can define your own custom deterministic metrics. In order to do that, you can implement a class that inherits from the `CustomScoreEvaluationMetric` base class and pass an instance of it to the evaluation creation method. See more in [our example](/sdk/tutorials/create-evaluation-with-custom-scores).
 
@@ -69,6 +69,7 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
 | **[IOU](/concepts/metric/iou)** | Deterministic | Measures the spatial overlap between a predicted bounding box and one or more reference boxes to quantify alignment in object detection and layout tasks.  |
 | **[Spatial Match](/concepts/metric/spatial-match)** | Deterministic |Performs a binary evaluation of the spatial alignment between a predicted bounding box and reference boxes using the best Intersection over Union (IoU) score to return a pass/fail signal.|
 | **[URL Validation](/concepts/metric/url-validation)** | Deterministic |Performs a binary evaluation to check if all the URLs present in the model response are valid and safe. |
+| **[Tool Correctness](/concepts/metric/tool-correctness)** | Deterministic | Compares the tools used by the agent against the expected tools to determine if the correct functions were selected. |
 | **[Role Adherence](/concepts/metric/role-adherence)** | Conversational | Determines whether your LLM chatbot is able to adhere to its given role throughout a conversation. |
 | **[Conversation Completeness](/concepts/metric/conversation-completeness)** | Conversational | Determines whether your LLM chatbot is able to complete an end-to-end conversation by satisfying user needs throughout a conversation. |
 | **[Conversation Relevancy](/concepts/metric/conversation-relevancy)** | Conversational | Determines whether your LLM chatbot is able to consistently generate relevant responses throughout a conversation. |
@@ -109,16 +110,6 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
 
 <ResponseField name="Tags" type="Text List" optional>
   The tags for the metric so it can be easily identified and categorized. **Example**: ["RAG", "Conversational"]
-</ResponseField>
-
-<ResponseField name="Test Type" type="Enum" required>
-  The type of test this metric is designed for. This indicates the evaluation 
-  context where the metric should be used.
-  
-  Possible values:
-  - `QUALITY` - For quality testing and accuracy evaluations
-  - `RED_TEAMING` - For security and safety testing
-  - `SCENARIOS` - For conversational and multi-turn evaluations
 </ResponseField>
 
 <ResponseField name="Validation method" type="Enum" required>

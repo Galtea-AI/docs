@@ -154,6 +154,63 @@ Galtea will assess each inference result using the selected metrics and provide 
 
 ---
 
+## Collecting Traces During Direct Inference
+
+When running evaluations via Direct Inference, you can collect [traces](/concepts/product/version/session/trace) from your endpoint handler by passing the `{{ inference_result_id }}` placeholder in your input template. This lets your endpoint know which inference result the call belongs to, so it can link traces back to Galtea.
+
+### 1. Add `{{ inference_result_id }}` to your Input Template
+
+Include the placeholder in your endpoint connection's input template so your handler receives the ID:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "user", "content": "{{ input }}"}
+  ],
+  "metadata": {
+    "inference_result_id": "{{ inference_result_id }}"
+  }
+}
+```
+
+### 2. Use `set_context` in Your Endpoint Handler
+
+In your API endpoint, extract the `inference_result_id` from the request and use the SDK's `set_context` / `clear_context` to associate traces with it:
+
+```python
+@trace(type=TraceType.AGENT)
+def run_agent(query: str) -> str:
+    # Your agent logic here — all nested @trace calls
+    # will be linked to the inference result automatically
+    return "Agent response to: " + query
+
+
+def my_endpoint_handler(request):
+    """Your API endpoint that Galtea calls during Direct Inference."""
+    body = request.json()
+    user_input = body["messages"][-1]["content"]
+    inference_result_id = body["metadata"]["inference_result_id"]
+
+    # Set trace context so all @trace calls are linked to this inference result
+    token = set_context(inference_result_id=inference_result_id)
+    try:
+        response = run_agent(user_input)
+    finally:
+        # Flush traces to Galtea and clear context
+        clear_context(token)
+
+    return {"choices": [{"message": {"content": response}}]}
+```
+
+All `@trace`-decorated functions called while the context is active will be automatically linked to the inference result in Galtea.
+
+<Info>
+  For a complete guide on tracing setup, decorators, and context managers, see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial.
+</Info>
+
+---
+
 ## Learn More
 
 <CardGroup cols={2}>
@@ -168,5 +225,8 @@ Galtea will assess each inference result using the selected metrics and provide 
   </Card>
   <Card title="Metrics" icon="brackets-curly" href="/concepts/metric">
     Browse available metrics for evaluating your AI
+  </Card>
+  <Card title="Tracing Agent Operations" icon="diagram-project" href="/sdk/tutorials/tracing-agent-operations">
+    Capture and analyze your agent's internal operations
   </Card>
 </CardGroup>

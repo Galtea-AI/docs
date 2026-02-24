@@ -1,0 +1,54 @@
+---
+title: "Create Specification"
+sidebarTitle: "Create"
+description: "Create a specification for a product."
+---
+
+## Returns
+
+Returns a [Specification](/concepts/product/specification) object for the given parameters, or `None` if an error occurs.
+
+## Example
+```python
+# POLICY specification — test_type and test_variant are required for QUALITY and RED_TEAMING
+specification = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
+    type="POLICY",
+    test_type="RED_TEAMING",
+    test_variant="misuse",
+)
+
+# CAPABILITY specification — test_type is not needed
+capability_spec = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant accurately retrieves and displays the user's current account balance when asked.",
+    type="CAPABILITY",
+)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product this specification belongs to.
+</ResponseField>
+<ResponseField name="description" type="string" required>
+  A description of the testable behavioral expectation.
+</ResponseField>
+<ResponseField name="type" type="string | SpecificationType" required>
+  The type of specification.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+</ResponseField>
+<ResponseField name="test_type" type="string | TestType" optional>
+  The type of test for this specification. Required for `POLICY` specifications, not applicable for `CAPABILITY` or `INABILITY`.
+  - `QUALITY` (also `ACCURACY`): Evaluates whether the AI provides factually correct responses.
+  - `RED_TEAMING` (also `SECURITY`): Tests for vulnerabilities, jailbreaks, and harmful outputs.
+  - `SCENARIOS` (also `BEHAVIOR`): Simulates real user interactions to evaluate behavior in context.
+</ResponseField>
+<ResponseField name="test_variant" type="string" required>
+  Required when `test_type` is `QUALITY` or `RED_TEAMING`. Not applicable for `SCENARIOS`, `CAPABILITY`, or `INABILITY`.
+  - For `QUALITY`: the AI task type the policy governs — `rag`, `summarization`, `entity_extraction`, `classification`, `translation`, `correction`, `other`.
+  - For `RED_TEAMING`: the threat category the policy addresses — `data_leakage`, `financial_attacks`, `illegal_activities`, `misuse`, `toxicity`, `custom`.
+</ResponseField>
+<ResponseField name="metric_ids" type="list[string]" optional>
+  List of metric IDs to link to this specification upon creation.
+</ResponseField>

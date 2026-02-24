@@ -38,7 +38,7 @@ Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simul
 
 #### 1. Create a Test and Sessions
 
-In order to run simulations of conversations we need to have different behavior test cases, each with their user personas. The easiest way to create these is to use the behavior test creation feature of the platform.
+First, create behavior test cases with user personas and goals. You can generate these from your product description or upload a CSV:
 
 ```python
 # Create a test suite using the behavior test options
@@ -56,7 +56,7 @@ test = galtea_client.tests.create(
 test_cases = galtea_client.test_cases.list(test_id=test.id)
 ```
 
-After some time you should see the resulting generated test cases in your dashboard. Another option is to upload a csv file with the necessary fields, for more information on the fields see [Behavior Tests](/concepts/product/test/scenario-tests) for more details.
+Once generation completes, you'll see the resulting test cases in your dashboard. For the CSV upload format, see [Behavior Tests](/concepts/product/test/scenario-tests).
 
 #### 2. Run the Conversation Simulator
 
@@ -133,4 +133,4 @@ By providing retrieval context, you enable Galtea to evaluate the faithfulness o
 
 ---
 
-By using agent functions and the simulation method, you can quickly evaluate your conversational AI models in realistic, repeatable conditions, leveraging Galtea's powerful simulation and analytics tools.
+With agent functions and the simulator, you can evaluate conversational AI in realistic, repeatable conditions and track improvements over time.

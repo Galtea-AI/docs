@@ -157,7 +157,7 @@ metric_name = "metric-docs-" + run_identifier
 # @start metric_create
 metric = galtea.metrics.create(
     name=metric_name,
-    test_type="ACCURACY",
+
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Evaluate if the actual_output is polite.",
@@ -456,7 +456,7 @@ if self_hosted_metric is not None:
     galtea.metrics.delete(metric_id=self_hosted_metric.id)
 self_hosted_metric = galtea.metrics.create(
     name=self_hosted_metric_name,
-    test_type="ACCURACY",
+
     source="self_hosted",
     description="A self-hosted metric for demonstration",
 )

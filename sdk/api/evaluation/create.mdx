@@ -137,8 +137,19 @@ evaluations = galtea.evaluations.create(
   
   <Note>Either `session_id` or `inference_result_id` must be provided, but not both.</Note>
 </ResponseField>
-<ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" required>
+<ResponseField name="specification_ids" type="List[str]" optional>
+  A list of [Specification](/concepts/product/specification) IDs. When provided, the evaluation uses the metrics linked to these specifications.
+  
+  Can be combined with `metrics` — the API merges and deduplicates by metric ID. If neither `metrics` nor `specification_ids` is provided, the API falls back to metrics from all specifications linked to the product.
+  
+  <Note>
+    This parameter allows you to evaluate against specific product specifications without manually listing all their associated metrics.
+  </Note>
+</ResponseField>
+<ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" optional>
   A list of metrics to use for the evaluation. 
+  
+  Optional when `specification_ids` is provided or when the product has specifications with linked metrics (in which case those metrics are used as a fallback).
   
   The `MetricInput` dictionary supports the following keys:
   - `id` (string, optional): The ID of an existing metric

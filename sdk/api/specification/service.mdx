@@ -1,0 +1,61 @@
+---
+title: 'Specifications Service'
+sidebarTitle: "Service"
+description: "Specifications Service API methods in the Galtea SDK"
+---
+
+import SpecificationCard from '/snippets/cards/specification-card.mdx';
+
+The Specifications Service in the Galtea SDK allows you to manage [specifications](/concepts/product/specification) for your products.
+This Service is exposed by the `galtea.specifications` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a specification:
+```python
+# POLICY specification — test_type and test_variant are required for QUALITY and RED_TEAMING
+specification = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
+    type="POLICY",
+    test_type="RED_TEAMING",
+    test_variant="misuse",
+)
+
+# CAPABILITY specification — test_type is not needed
+capability_spec = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant accurately retrieves and displays the user's current account balance when asked.",
+    type="CAPABILITY",
+)
+```
+
+List specifications:
+```python
+specifications = galtea.specifications.list(
+    product_id=product_id,
+    type="CAPABILITY",
+)
+```
+
+## Service Methods
+- [Create Specification](/sdk/api/specification/create)
+- [Listing Specifications](/sdk/api/specification/list)
+- [Retrieving Specification](/sdk/api/specification/get)
+- [Deleting Specification](/sdk/api/specification/delete)
+- [Link Metrics](/sdk/api/specification/link-metrics)
+- [Unlink Metrics](/sdk/api/specification/unlink-metrics)
+- [Get Linked Metrics](/sdk/api/specification/get-metrics)
+
+## Related Concepts
+
+<SpecificationCard />

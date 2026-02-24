@@ -1,0 +1,77 @@
+---
+title: "Specification"
+sidebarTitle: "Overview"
+description: "A testable behavioral expectation for a product"
+---
+
+import ProductCard from '/snippets/cards/product-card.mdx';
+import MetricCard from '/snippets/cards/metric-card.mdx';
+import SDKSpecificationServiceCard from '/snippets/cards/sdk-specification-service-card.mdx';
+
+## What is a Specification?
+
+A Specification in Galtea represents a single, testable behavioral expectation for a product. Examples include _"Must decline political questions"_, _"Can answer questions about phone specifications"_, or _"Always includes a disclaimer when giving financial advice"_.
+
+Each specification has a **type** that classifies the kind of behavioral expectation:
+
+- **Capability**: A core function the product can perform — what the product is designed to accomplish or deliver. For example: _"Can classify images as containing cats or dogs"_, _"Can retrieve and display the user's account balance"_ (conversational), or _"Can generate personalized product recommendations based on browsing history"_.
+
+- **Inability**: An action or task the product is fundamentally unable to do even if a malicious actor gained full control over it. These represent hard technical constraints where the infrastructure, system access, or architecture simply does not exist. For example: _"Cannot execute wire transfers"_ (no payment gateway connected) or _"Cannot access other customers' data"_ (no system integration exists).
+
+- **Policy**: A mandatory rule or guideline the product must follow — from restrictions to behavioral guidelines. This includes refusal rules (what it must decline), interaction patterns (how it responds), communication style, and mandatory disclaimers. For example: _"Must include a disclaimer when discussing medical topics"_ or _"Refuses requests to share confidential business data"_.
+
+Specifications also have a **test type** that determines the evaluation approach: `QUALITY`, `RED_TEAMING`, or `SCENARIOS`.
+
+<Note>Specifications replace the legacy free-text fields (Capabilities, Inabilities, Policies) on Products with structured, individually testable expectations linked to specific metrics.</Note>
+
+## Related Concepts
+
+A specification in Galtea is associated with:
+
+<CardGroup cols={2}>
+  <ProductCard />
+  <MetricCard />
+</CardGroup>
+
+## SDK Integration
+
+The SDK allows you to create, list, retrieve, and delete specifications, as well as link and unlink metrics. See the [Specification Service API documentation](/sdk/api/specification/service) for more details.
+
+<SDKSpecificationServiceCard />
+
+## Specification Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier of the specification.
+</ResponseField>
+
+<ResponseField name="product_id" type="string" required>
+  The ID of the product this specification belongs to.
+</ResponseField>
+
+<ResponseField name="description" type="string" required>
+  A description of the testable behavioral expectation.
+  **Example**: "Must decline political questions and redirect the user to authoritative sources."
+</ResponseField>
+
+<ResponseField name="type" type="Enum" required>
+  The type of specification.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+</ResponseField>
+
+<ResponseField name="test_type" type="Enum" required>
+  The type of test for this specification.
+  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+</ResponseField>
+
+<ResponseField name="test_variant" type="string" optional>
+  Variant of the test type. Applicable for `QUALITY` and `RED_TEAMING` test types.
+</ResponseField>
+
+<ResponseField name="metric_ids" type="list[string]" optional>
+  List of metric IDs linked to this specification.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Timestamp of when the specification was created (ISO 8601 format).
+</ResponseField>

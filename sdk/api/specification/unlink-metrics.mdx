@@ -1,0 +1,21 @@
+---
+title: "Unlink Metrics"
+sidebarTitle: "Unlink Metrics"
+description: "Unlink metrics from a specification."
+---
+
+## Example
+```python
+galtea.specifications.unlink_metrics(
+    specification_id=specification.id,
+    metric_ids=[metric_id],
+)
+```
+
+## Parameters
+<ResponseField name="specification_id" type="string" required>
+  The ID of the specification to unlink metrics from.
+</ResponseField>
+<ResponseField name="metric_ids" type="list[string]" required>
+  List of metric IDs to unlink from the specification.
+</ResponseField>

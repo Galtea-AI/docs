@@ -35,7 +35,7 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
   Sort sessions by creation date. Valid values are "asc" and "desc".
 </ResponseField>
 <Note>
-  At least one of the 3 parameters (filters) described above must be passed to the method
+  At least one of the 4 filter parameters (`version_id`, `test_case_id`, `custom_id`, `test_id`) described above must be passed to the method
 </Note>
 <ResponseField name="offset" type="int" default="0" optional>
   Number of sessions to skip before starting to collect results. Use for pagination.

@@ -122,11 +122,6 @@ csv_test = galtea.tests.create(
 <ResponseField name="variants" type="list[string]" optional>
   A list of strings that specifies how to generate test cases. The meaning of this parameter depends on the test `type`:
   - **For Security tests (`SECURITY`/`RED_TEAMING`)**: Specifies which [threat categories](/concepts/product/test/red-teaming-threats) to generate test cases for (e.g., `["data_leakage", "Misuse"]`).
-  - **For Accuracy tests (`ACCURACY`/`QUALITY`)**: Specifies which [evolutions](/concepts/product/test/quality-evolutions) to apply to the base test cases, creating variations like paraphrased questions or adding typos (e.g., `["paraphrased", "typos"]`).
-  
-  <Info>
-    **Note on Terminology:** In the context of Security tests, this parameter is used to select "Threats" (as described in [Threat Categories](/concepts/product/test/red-teaming-threats)). In other test types, it refers to specific variations or evolutions.
-  </Info>
 </ResponseField>
 <ResponseField name="strategies" type="list[string]" optional>
   A list of strings that specifies how to generate test cases related to its style. 

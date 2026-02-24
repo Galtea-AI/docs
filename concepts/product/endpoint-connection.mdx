@@ -6,19 +6,17 @@ description: "A reusable connection to an external endpoint that defines how to 
 
 ## What is an Endpoint Connection?
 
-An Endpoint Connection in Galtea represents a reusable configuration for connecting to external API endpoints. Endpoint Connections are associated with a [product](/concepts/product) and allow you to define how Galtea should communicate with your AI system during evaluations.
+An Endpoint Connection tells Galtea how to call your AI system's API. You configure the URL, authentication, request format, and response mapping once, and Galtea uses it to run evaluations against your endpoint automatically.
 
 <Note>
-  Endpoint Connections are only available through the [Galtea Dashboard](https://platform.galtea.ai/). They are not currently accessible via the SDK.
+  Endpoint Connections are configured through the [Galtea Dashboard](https://platform.galtea.ai/) only — they are not currently accessible via the SDK.
 </Note>
 
 ## Use Cases
 
-Endpoint Connections are useful when you want to:
-
-- **Automate evaluations** - Configure how Galtea calls your AI endpoint for automated testing
-- **Standardize API calls** - Define reusable endpoint configurations with consistent authentication and request formatting
-- **Manage multiple environments** - Create separate connections for development, staging, and production endpoints
+- **Automate evaluations** — Galtea calls your endpoint directly for each test case, no manual inference needed
+- **Standardize API calls** — Define reusable configurations with consistent auth and request formatting
+- **Manage multiple environments** — Create separate connections for development, staging, and production
 
 ## Creating an Endpoint Connection
 
@@ -28,6 +26,15 @@ To create an Endpoint Connection:
 2. Go to the "Endpoint Connections" section
 3. Click "New Endpoint Connection"
 4. Configure the connection properties as described below
+
+  <video            
+    autoPlay
+    muted                                                                                                           
+    loop
+    playsInline                                                                                                     
+    className="w-full aspect-video rounded-xl"                                                                    
+    src="/videos/endpoint-connection-setup.mp4"
+  ></video>
 
 ## Endpoint Connection Properties
 
@@ -89,6 +96,7 @@ To create an Endpoint Connection:
   - `{{ test_case_id }}` - The test case ID
   - `{{ test_id }}` - The test ID
   - `{{ galtea_session_id }}` - The Galtea session ID
+  - `{{ inference_result_id }}` - The inference result ID for this turn (useful for [trace collection](/sdk/tutorials/tracing-agent-operations))
   - Any field stored in session metadata (for example `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`)
   - `{% for turn in past_turns %}...{% endfor %}` - Loop through conversation history
     - `{{ turn.input }}` - Previous user input

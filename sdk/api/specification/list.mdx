@@ -1,0 +1,44 @@
+---
+title: 'Listing Specifications'
+sidebarTitle: "List"
+description: "List specifications with optional filters."
+---
+
+## Returns
+Returns a list of [Specification](/concepts/product/specification) objects.
+
+## Example
+```python
+specifications = galtea.specifications.list(
+    product_id=product_id,
+    type="CAPABILITY",
+)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" optional>
+  Filter specifications by product ID.
+</ResponseField>
+<ResponseField name="type" type="string | SpecificationType" optional>
+  Filter by specification type.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+</ResponseField>
+<ResponseField name="test_type" type="string | TestType" optional>
+  Filter by test type.
+  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter specifications created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter specifications created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort specifications by creation date. Valid values are `"asc"` and `"desc"`.
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of specifications to skip before starting to collect results. Use for pagination.
+</ResponseField>
+<ResponseField name="limit" type="int" default="1000" optional>
+  Maximum number of specifications to return in a single request.
+</ResponseField>

@@ -59,7 +59,7 @@ Use `inference_results.generate()` or `simulator.simulate()` for hands-free trac
 3. Flush all collected traces to Galtea
 4. Clean up the context
 
-To achieve this, you must implement the `Agent` abstract class and decorate your methods with `@trace`. This is an example of how to set could be set up:
+To achieve this, implement the `Agent` abstract class and decorate your methods with `@trace`:
 
 ```python
 @trace(type=TraceType.RETRIEVER)
@@ -107,6 +107,10 @@ When using the [Conversation Simulator](/sdk/tutorials/simulating-conversations)
 ```
 
 ### b) Manual Collection
+
+<Info>
+  If you're using [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) (where Galtea calls your endpoint), you can pass `{{ inference_result_id }}` in the input template and use `set_context` in your endpoint handler to collect traces automatically. See [Collecting Traces During Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#collecting-traces-during-direct-inference) for the full walkthrough.
+</Info>
 
 For full control, use `set_context()` and `clear_context()` to manually manage the trace lifecycle:
 

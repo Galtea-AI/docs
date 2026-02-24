@@ -15,7 +15,7 @@ Returns a [Metric](/concepts/metric) object for the given parameters, or `None` 
 ```python
 metric = galtea.metrics.create(
     name=metric_name,
-    test_type="ACCURACY",
+
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Evaluate if the actual_output is polite.",
@@ -28,7 +28,7 @@ metric = galtea.metrics.create(
 ```python
 metric = galtea.metrics.create(
     name="accuracy_v1_partial_" + run_identifier,
-    test_type="ACCURACY",
+
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Determine whether the actual output is equivalent to the expected output",
@@ -42,7 +42,7 @@ metric = galtea.metrics.create(
 ```python
 metric = galtea.metrics.create(
     name="accuracy_v1_self_" + run_identifier,
-    test_type="ACCURACY",
+
     source="self_hosted",
     tags=["custom", "accuracy"],
     description="A custom accuracy metric calculated by our custom score function.",
@@ -55,9 +55,10 @@ metric = galtea.metrics.create(
 <ResponseField name="name" type="string" required>
   The name of the metric.
 </ResponseField>
-<ResponseField name="test_type" type="string" required>
-  The type of test this metric is designed for.
-  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+<ResponseField name="test_type" type="string" optional>
+  <Warning>
+    **Deprecated.** This parameter is ignored and will be removed in a future release.
+  </Warning>
 </ResponseField>
 <ResponseField name="evaluator_model_name" type="string" optional>
   The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.

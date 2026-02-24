@@ -8,13 +8,11 @@ import SDKInferenceResultServiceCard from '/snippets/cards/inference-result-card
 
 ## What is an Inference Result?
 
-An inference result in Galtea represents a single turn in a conversation between a user and an AI system. It captures the user's input and the AI's corresponding output, along with other optional metadata such as latency and token usage.
+An inference result is a single turn in a conversation — one user input paired with one AI output. It belongs to a [session](/concepts/product/version/session) and can optionally include metadata like latency, token usage, cost, and retrieval context (for RAG evaluations).
 
-You can **create**, view and manage your inference results programmatically using the [Galtea SDK](/sdk/api/inference-result/service).
+You can create inference results from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/sdk/api/inference-result/service).
 
 ## SDK Integration
-
-The Galtea SDK allows you to create, view, and manage inference results programmatically. This is particularly useful for logging production data or for evaluating complex conversational flows.
 
 <SDKInferenceResultServiceCard />
 

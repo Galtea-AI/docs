@@ -4,7 +4,9 @@ description: "A practical guide for evaluating your agentic system: use Galtea's
 icon: "lightbulb"
 ---
 
-You can use Galtea's decorator [@trace](/sdk/tutorials/tracing-agent-operations) to capture your agent’s performance. This feature allows you to obtain a new evaluation parameter to use when generating evaluations. It is called `traces` and contains the entire path of your system between a user input and a system output. In Galtea, we provide some metrics like [Tool Correctness](/concepts/metric/tool-correctness);  nevertheless, because these systems tend to be very specific, we encourage you to create your own [Metric](sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt). Here are some ideas that can help detect gaps in your agentic system.
+Use the [`@trace` decorator](/sdk/tutorials/tracing-agent-operations) to capture every operation your agent performs. Once captured, traces become an evaluation parameter called `traces` — the full execution path from user input to system output.
+
+Galtea provides built-in metrics like [Tool Correctness](/concepts/metric/tool-correctness), but agentic systems are often highly specific. We recommend creating [custom judge metrics](/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt) that check the exact behaviors you care about. Below are practical examples to get you started.
 
 ---
 ### Example 1: Was Tool X called before Tool Y

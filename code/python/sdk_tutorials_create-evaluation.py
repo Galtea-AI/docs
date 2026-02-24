@@ -77,5 +77,39 @@ for test_case in test_cases:
 print(f"\nAll evaluations submitted for Version ID: {version_id}")
 # @end create_evaluations
 
+# Create a specification with linked metrics so the specification-based evaluation works
+factual_accuracy = galtea.metrics.get_by_name(name="Factual Accuracy")
+if factual_accuracy is None:
+    raise ValueError("Could not find 'Factual Accuracy' metric")
+
+galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant provides factually correct answers to user questions.",
+    type="CAPABILITY",
+    metric_ids=[factual_accuracy.id],
+)
+
+# @start specification_based_evaluation
+# 1. List the specifications for your product
+specifications = galtea.specifications.list(product_id=product_id)
+spec_ids = [spec.id for spec in specifications]
+print(f"Found {len(spec_ids)} specifications for product {product_id}")
+
+# 2. Create a session and record an inference result
+session = galtea.sessions.create(version_id=version_id, test_case_id=test_cases[0].id)
+inference_result = galtea.inference_results.create(
+    session_id=session.id,
+    input=test_cases[0].input,
+    output=your_product_function(test_cases[0].input),
+)
+
+# 3. Evaluate using specifications — the API resolves linked metrics automatically
+evaluations = galtea.evaluations.create(
+    inference_result_id=inference_result.id,
+    specification_ids=spec_ids,
+)
+print(f"Created {len(evaluations)} evaluations from specifications")
+# @end specification_based_evaluation
+
 # Cleanup
 galtea.products.delete(product_id=product_id)

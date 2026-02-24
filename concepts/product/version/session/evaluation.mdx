@@ -14,9 +14,9 @@ import TestCaseCard from '/snippets/cards/test-case-card.mdx';
 
 An evaluation in Galtea represents the assessment of inference results from a [session](/concepts/product/version/session) using the evaluation criteria of a [metric](/concepts/metric). Evaluations are now directly linked to sessions, allowing for comprehensive evaluation of full sessions containing multiple inference results for multi-turn dialogues.
 
-<Note>Evaluations don't perform inference on the LLM [product](/concepts/product) themselves. Rather, they evaluate outputs that have already been generated. You should perform inference on your product first, then trigger the evaluation.</Note>
+<Note>Evaluations do not call your AI product — they score outputs that have already been generated. Run your product first to produce outputs, then trigger the evaluation to score them.</Note>
 
-The only way to **create** evaluations is programmatically by using the [Galtea SDK](/sdk/api/evaluation/service) but they can be viewed and managed on the [Galtea dashboard](https://platform.galtea.ai/).
+You can create evaluations from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/sdk/api/evaluation/service).
 
 ## Evaluation Lifecycle
 

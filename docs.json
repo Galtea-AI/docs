@@ -152,6 +152,12 @@
               },
 
               {
+                "group": "Endpoint Connection",
+                "icon": "plug",
+                "pages": ["concepts/product/endpoint-connection"]
+              },
+
+              {
                 "group": "Test",
                 "icon": "flask",
                 "pages": [
@@ -217,6 +223,28 @@
               },
 
               {
+                "group": "Specification",
+                "icon": "list-check",
+                "pages": [
+                  "concepts/product/specification",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/specification/service",
+                      "sdk/api/specification/create",
+                      "sdk/api/specification/list",
+                      "sdk/api/specification/get",
+                      "sdk/api/specification/delete",
+                      "sdk/api/specification/link-metrics",
+                      "sdk/api/specification/unlink-metrics",
+                      "sdk/api/specification/get-metrics"
+                    ]
+                  }
+                ]
+              },
+
+              {
                 "group": "Simulator",
                 "icon": "user-group",
                 "pages": [
@@ -247,7 +275,8 @@
                       "sdk/api/session/list",
                       "sdk/api/session/get",
                       "sdk/api/session/get-by-custom-id",
-                      "sdk/api/session/delete"
+                      "sdk/api/session/delete",
+                      "sdk/api/session/update"
                     ]
                   }
                 ]
@@ -293,7 +322,8 @@
                       "sdk/api/trace/create-batch",
                       "sdk/api/trace/list",
                       "sdk/api/trace/get",
-                      "sdk/api/trace/delete"
+                      "sdk/api/trace/delete",
+                      "sdk/api/trace/trace-decorator"
                     ]
                   }
                 ]
@@ -396,12 +426,6 @@
                     ]
                   }
                 ]
-              },
-
-              {
-                "group": "Endpoint Connection",
-                "icon": "plug",
-                "pages": ["concepts/product/endpoint-connection"]
               }
             ]
           }
