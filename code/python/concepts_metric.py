@@ -1,4 +1,7 @@
+from galtea import Galtea
+
 # @start creating_custom_metrics_via_partial
+
 judge_prompt = """
 **Evaluation Criteria:**
 Check if the ACTUAL_OUTPUT is good by comparing it to what was expected. Focus on:
@@ -13,7 +16,7 @@ Score 0 (Bad): The ACTUAL_OUTPUT has major errors, missing parts, ignores import
 """
 # @end creating_custom_metrics_via_partial
 # @start creating_custom_metrics_via_full_prompt
-
+# NOTE: Full Prompt is deprecated in the dashboard. Use source="partial_prompt" for new metrics.
 judge_prompt = """
 You are an expert evaluator. Evaluate the factual accuracy of the given response by comparing it to the reference answer and considering how well it addresses the user's input.
 
@@ -28,7 +31,7 @@ Scoring Guidelines:
 """
 # @end creating_custom_metrics_via_full_prompt
 # @start creating_custom_metrics_via_full_prompt_1
-
+# NOTE: Full Prompt is deprecated in the dashboard. Use source="partial_prompt" for new metrics.
 judge_prompt = """
 Evaluate the following conversation for consistency. The agent should not contradict itself across the conversation.
 
@@ -45,3 +48,13 @@ Evaluate the following conversation for consistency. The agent should not contra
 - Score 0: The agent clearly contradicts itself or provides conflicting information.
 """
 # @end creating_custom_metrics_via_full_prompt_1
+galtea = Galtea(api_key="YOUR_API_KEY")
+# @start human_evaluation_example
+metric = galtea.metrics.create(
+    name="Human Quality Review",
+    source="human_evaluation",
+    judge_prompt="Evaluate the quality of the response based on accuracy, completeness, and clarity.",
+    evaluation_params=["input", "actual_output", "expected_output"],
+    user_group_ids=["quality-reviewers-group-id", "senior-analysts-group-id"]
+)
+# @end human_evaluation_example

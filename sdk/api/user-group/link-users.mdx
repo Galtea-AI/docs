@@ -1,0 +1,21 @@
+---
+title: "Link Users"
+sidebarTitle: "Link Users"
+description: "Link users to a user group."
+---
+
+## Example
+```python
+galtea.user_groups.link_users(
+    user_group_id=user_group_id,
+    user_ids=[user_id_1],
+)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group.
+</ResponseField>
+<ResponseField name="user_ids" type="list[string]" required>
+  List of user IDs to add to the group.
+</ResponseField>

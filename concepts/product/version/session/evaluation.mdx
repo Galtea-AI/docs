@@ -14,9 +14,9 @@ import TestCaseCard from '/snippets/cards/test-case-card.mdx';
 
 An evaluation in Galtea represents the assessment of inference results from a [session](/concepts/product/version/session) using the evaluation criteria of a [metric](/concepts/metric). Evaluations are now directly linked to sessions, allowing for comprehensive evaluation of full sessions containing multiple inference results for multi-turn dialogues.
 
-<Note>Evaluations don't perform inference on the LLM [product](/concepts/product) themselves. Rather, they evaluate outputs that have already been generated. You should perform inference on your product first, then trigger the evaluation.</Note>
+<Note>Evaluations do not call your AI product — they score outputs that have already been generated. Run your product first to produce outputs, then trigger the evaluation to score them.</Note>
 
-The only way to **create** evaluations is programmatically by using the [Galtea SDK](/sdk/api/evaluation/service) but they can be viewed and managed on the [Galtea dashboard](https://platform.galtea.ai/).
+You can create evaluations from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/sdk/api/evaluation/service).
 
 ## Evaluation Lifecycle
 
@@ -112,6 +112,7 @@ Once an evaluation is created, you can access the following information:
   The current status of the evaluation.
   Possible values:
   - **Pending**: The evaluation has been created but not yet processed.
+  - **Pending Human**: The evaluation is waiting for a human annotator to review and score it. This status is used for metrics with `source: "human_evaluation"`.
   - **Success**: The evaluation was processed successfully.
   - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried.
   - **Skipped**: The evaluation was skipped because the metric validation failed (e.g., missing required parameters) or due to insufficient credits. The error message contains details about what was missing. Check the `canRetry` field to determine if this evaluation can be retried.
@@ -135,4 +136,12 @@ Once an evaluation is created, you can access the following information:
 
 <ResponseField name="Can Retry" type="Boolean" default="false">
   Indicates whether the evaluation can be retried. When `true`, the evaluation failed or was skipped due to a temporary condition (e.g., evaluation processing error, insufficient credits) and can be retried later. When `false`, the evaluation cannot be retried. Only evaluations with `canRetry=true` are eligible for the retry operation. Defaults to `false`.
+</ResponseField>
+  
+<ResponseField name="Human Evaluator ID" type="Text" optional>
+  The ID of the human evaluator assigned to this evaluation, if applicable.
+</ResponseField>
+
+<ResponseField name="Human Evaluator Started At" type="Text" optional>
+  The timestamp when the human evaluator started reviewing this evaluation, if applicable.
 </ResponseField>

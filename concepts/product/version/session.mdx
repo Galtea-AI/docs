@@ -8,13 +8,15 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 ## What is a Session?
 
-A session in Galtea is a container for a sequence of interactions that form a complete conversation between a user and an AI product. It groups together multiple [inference results](/concepts/product/version/session/inference-result), allowing for the evaluation of multi-turn dialogues and the analysis of production data.
+A session groups the turns of a single conversation between a user and your AI product. It contains one or more [inference results](/concepts/product/version/session/inference-result) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-You can **create**, view and manage your sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
+Sessions are created in two ways:
+- **Automatically** — when you call `evaluations.create_single_turn()` with a `version_id` and `test_id`, a session is created behind the scenes.
+- **Manually** — when you need to log multi-turn conversations or production data, create a session explicitly with `sessions.create()`.
+
+You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 
 ## SDK Integration
-
-The Galtea SDK allows you to create, view, and manage sessions programmatically. This is particularly useful for logging production data or for evaluating complex conversational flows.
 
 <SDKSessionServiceCard />
 

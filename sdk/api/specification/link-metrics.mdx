@@ -1,0 +1,21 @@
+---
+title: "Link Metrics"
+sidebarTitle: "Link Metrics"
+description: "Link metrics to a specification."
+---
+
+## Example
+```python
+galtea.specifications.link_metrics(
+    specification_id=specification.id,
+    metric_ids=[metric_id],
+)
+```
+
+## Parameters
+<ResponseField name="specification_id" type="string" required>
+  The ID of the specification to link metrics to.
+</ResponseField>
+<ResponseField name="metric_ids" type="list[string]" required>
+  List of metric IDs to link to the specification.
+</ResponseField>

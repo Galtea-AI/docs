@@ -1,0 +1,21 @@
+---
+title: "Unlink Metrics"
+sidebarTitle: "Unlink Metrics"
+description: "Remove metrics from a user group."
+---
+
+## Example
+```python
+galtea.user_groups.unlink_metrics(
+    user_group_id=user_group_id,
+    metric_ids=[metric_id_2],
+)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group.
+</ResponseField>
+<ResponseField name="metric_ids" type="list[string]" required>
+  List of metric IDs to remove from the group.
+</ResponseField>

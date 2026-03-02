@@ -9,7 +9,7 @@ icon: ""
 A **threat** in the context of AI and LLMs is any scenario, input, or technique that could cause the model to behave in an unsafe, insecure, or unintended manner. Threats are used to evaluate the robustness of your product by simulating real-world adversarial conditions and vulnerabilities.
 
 <Info>
-  **SDK Parameter Note:** In the Galtea SDK, "Threats" are specified using the `variants` parameter in the [`galtea.tests.create()`](/sdk/api/test/create) method when creating `RED_TEAMING` tests. For example: `galtea.tests.create(..., type="RED_TEAMING", variants=["Toxicity", "Misuse", "data_leakage"])`.
+  **SDK Parameter Note:** In the Galtea SDK, "Threats" are specified using the `variants` parameter in the [`galtea.tests.create()`](/sdk/api/test/create) method when creating `SECURITY` tests. For example: `galtea.tests.create(..., type="SECURITY", variants=["Toxicity", "Misuse", "data_leakage"])`.
 </Info>
 
 ## Threat Types

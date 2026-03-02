@@ -93,7 +93,8 @@
               "sdk/tutorials/tracing-agent-operations",
               "sdk/tutorials/create-evaluation-with-custom-scores",
               "sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt",
-              "sdk/tutorials/how-to-evaluate-your-agentic-system"
+              "sdk/tutorials/how-to-evaluate-your-agentic-system",
+              "sdk/tutorials/human-evaluation"
             ]
           },
           {
@@ -152,6 +153,12 @@
               },
 
               {
+                "group": "Endpoint Connection",
+                "icon": "plug",
+                "pages": ["concepts/product/endpoint-connection"]
+              },
+
+              {
                 "group": "Test",
                 "icon": "flask",
                 "pages": [
@@ -162,7 +169,7 @@
                       {
                         "group": "Quality",
                         "icon": "certificate",
-                        "pages": ["concepts/product/test/quality-tests", "concepts/product/test/quality-evolutions"]
+                        "pages": ["concepts/product/test/quality-tests"]
                       },
                       {
                         "group": "Red Teaming",
@@ -180,6 +187,7 @@
                       }
                     ]
                   },
+                  "concepts/product/test/data-augmentation",
                   {
                     "group": "SDK",
                     "icon": "code",
@@ -210,6 +218,28 @@
                       "sdk/api/test-case/list",
                       "sdk/api/test-case/get",
                       "sdk/api/test-case/delete"
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "group": "Specification",
+                "icon": "list-check",
+                "pages": [
+                  "concepts/product/specification",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/specification/service",
+                      "sdk/api/specification/create",
+                      "sdk/api/specification/list",
+                      "sdk/api/specification/get",
+                      "sdk/api/specification/delete",
+                      "sdk/api/specification/link-metrics",
+                      "sdk/api/specification/unlink-metrics",
+                      "sdk/api/specification/get-metrics"
                     ]
                   }
                 ]
@@ -322,6 +352,31 @@
               },
 
               {
+                "group": "User Group",
+                "icon": "users",
+                "pages": [
+                  "concepts/user-group",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/user-group/service",
+                      "sdk/api/user-group/create",
+                      "sdk/api/user-group/list",
+                      "sdk/api/user-group/get",
+                      "sdk/api/user-group/get-by-name",
+                      "sdk/api/user-group/update",
+                      "sdk/api/user-group/delete",
+                      "sdk/api/user-group/link-users",
+                      "sdk/api/user-group/unlink-users",
+                      "sdk/api/user-group/link-metrics",
+                      "sdk/api/user-group/unlink-metrics"
+                    ]
+                  }
+                ]
+              },
+
+              {
                 "group": "Model",
                 "icon": "microchip",
                 "pages": ["concepts/model"]
@@ -397,12 +452,6 @@
                     ]
                   }
                 ]
-              },
-
-              {
-                "group": "Endpoint Connection",
-                "icon": "plug",
-                "pages": ["concepts/product/endpoint-connection"]
               }
             ]
           }

@@ -1,0 +1,21 @@
+---
+title: "Get Linked Metrics"
+sidebarTitle: "Get Metrics"
+description: "Get all metrics linked to a specification."
+---
+
+## Returns
+
+Returns a list of [Metric](/concepts/metric) objects linked to the specification.
+
+## Example
+```python
+metrics = galtea.specifications.get_metrics(
+    specification_id=specification.id,
+)
+```
+
+## Parameters
+<ResponseField name="specification_id" type="string" required>
+  The ID of the specification to get linked metrics for.
+</ResponseField>

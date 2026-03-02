@@ -39,7 +39,7 @@ inference_result, evaluations = galtea.inference_results.create_and_evaluate(
 ### With Custom Score Calculation
 ```python
 # With dynamic score calculation using CustomScoreEvaluationMetric
-from galtea.utils.custom_score_metric import CustomScoreEvaluationMetric
+from galtea import CustomScoreEvaluationMetric
 
 
 class MyMetric(CustomScoreEvaluationMetric):

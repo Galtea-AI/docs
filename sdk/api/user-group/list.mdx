@@ -1,0 +1,36 @@
+---
+title: 'Listing User Groups'
+sidebarTitle: "List"
+description: "List user groups with optional filters."
+---
+
+## Returns
+Returns a list of [User Group](/concepts/user-group) objects.
+
+## Example
+```python
+user_groups = galtea.user_groups.list(
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+## Parameters
+<ResponseField name="organization_id" type="string" optional>
+  Filter user groups by organization ID.
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter groups created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter groups created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort groups by creation date. Valid values are `"asc"` and `"desc"`.
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of groups to skip before starting to collect results. Use for pagination.
+</ResponseField>
+<ResponseField name="limit" type="int" default="1000" optional>
+  Maximum number of groups to return in a single request.
+</ResponseField>

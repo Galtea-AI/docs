@@ -1,0 +1,55 @@
+---
+title: "Data Augmentation"
+description: "Automatically expand your test datasets from a handful of examples into comprehensive, realistic test suites"
+sidebarTitle: "Data Augmentation"
+---
+
+## What is Data Augmentation?
+
+Data Augmentation is a Galtea feature that **automatically generates new test cases from a small set of examples**. Instead of manually writing hundreds of test cases, you provide a few representative samples and Galtea produces a diverse test suite that preserves the realism, structure, and domain-specific patterns of your original data.
+
+It is especially useful when you already have a baseline set of test cases and want to expand your coverage without the overhead of manual creation.
+
+<Info>
+  Data Augmentation works with all test types — [Accuracy](/concepts/product/test/quality-tests), [Security & Safety](/concepts/product/test/red-teaming-tests), and [Behavior](/concepts/product/test/scenario-tests). When triggered, your [test](/concepts/product/test) enters the `AUGMENTING` status while new cases are being generated.
+</Info>
+
+<video
+  autoPlay
+  muted
+  loop
+  playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/data-augmentation-demo.mp4"
+></video>
+
+---
+
+## How It Works
+
+Galtea goes beyond simple paraphrasing or template filling. The augmentation engine analyzes your existing test cases to understand their structure, detect domain-specific patterns, and plan diverse scenarios — then generates new cases that are realistic, structurally consistent, and cover different ground from each other.
+
+The result is a larger, high-quality test suite in minutes instead of days, with full control over the output size.
+
+## How to Use Data Augmentation
+
+You can augment any existing test directly from the [Galtea dashboard](https://platform.galtea.ai/):
+
+<Steps>
+  <Step title="Navigate to your test">
+    Go to the **Tests** section and select the test you want to augment.
+  </Step>
+  <Step title="Click Augment Test Cases">
+    Use the **Augment Test Cases** button to start the augmentation process.
+  </Step>
+  <Step title="Wait for generation">
+    Your test will enter the `AUGMENTING` status. Once complete, the new test cases will be added to your test.
+  </Step>
+</Steps>
+
+---
+
+## See Also
+
+- [Tests](/concepts/product/test) — Learn about tests and test types in Galtea
+- [Test Cases](/concepts/product/test/case) — Understand the structure of individual test cases

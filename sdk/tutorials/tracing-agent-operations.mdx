@@ -59,7 +59,7 @@ Use `inference_results.generate()` or `simulator.simulate()` for hands-free trac
 3. Flush all collected traces to Galtea
 4. Clean up the context
 
-To achieve this, you must implement the `Agent` abstract class and decorate your methods with `@trace`. This is an example of how to set could be set up:
+To achieve this, implement the `Agent` abstract class and decorate your methods with `@trace`:
 
 ```python
 @trace(type=TraceType.RETRIEVER)
@@ -107,6 +107,10 @@ When using the [Conversation Simulator](/sdk/tutorials/simulating-conversations)
 ```
 
 ### b) Manual Collection
+
+<Info>
+  If you're using [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) (where Galtea calls your endpoint), you can pass `{{ inference_result_id }}` in the input template and use `set_context` in your endpoint handler to collect traces automatically. See [Collecting Traces During Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#collecting-traces-during-direct-inference) for the full walkthrough.
+</Info>
 
 For full control, use `set_context()` and `clear_context()` to manually manage the trace lifecycle:
 
@@ -159,6 +163,62 @@ finally:
   `clear_context(token, flush=True)` automatically flushes all pending traces for the inference result before clearing. Set `flush=False` if you want to discard traces without sending them.
 </Info>
 
+
+## Remote Agent Tracing
+
+When your agent runs on a remote server (e.g., deployed as a FastAPI service), OpenTelemetry's thread-local context does not cross the HTTP boundary. The remote server cannot discover the `inference_result_id` to correlate traces.
+
+To solve this, `AgentInput` includes an `inference_result_id` field that is automatically populated during `generate()` and `simulate()` calls. Forward this ID to your remote server so it can attach traces to the same inference result.
+
+### Agent / Client Side
+
+In your agent function, read `input_data.inference_result_id` and send it alongside the request payload:
+
+```python
+import httpx
+
+from galtea import AgentInput, AgentResponse, trace, TraceType
+
+REMOTE_URL = "https://my-remote-agent.example.com/invoke"
+
+
+@trace(type=TraceType.AGENT)
+def remote_agent(input_data: AgentInput) -> AgentResponse:
+    """Forward execution to a remote server, passing the inference_result_id for trace correlation."""
+    response = httpx.post(
+        REMOTE_URL,
+        json={
+            "message": input_data.last_user_message_str(),
+            "session_id": input_data.session_id,
+            "inference_result_id": input_data.inference_result_id,
+        },
+    )
+    return AgentResponse(content=response.json()["content"])
+```
+
+### Remote Server Side
+
+On the remote server, use `set_context()` and `clear_context()` with the received `inference_result_id`:
+
+```python
+# On the remote server (e.g. FastAPI endpoint):
+from galtea import set_context, clear_context
+
+
+def handle_request(message: str, session_id: str, inference_result_id: str) -> str:
+    # Attach traces to the same inference result
+    token = set_context(inference_result_id=inference_result_id)
+    try:
+        # All @trace calls here will be associated with the inference result
+        response = run_agent_logic(message)
+        return response
+    finally:
+        clear_context(token)
+```
+
+<Info>
+  The remote server must have the Galtea SDK installed (`pip install galtea`) to use `set_context()` and `clear_context()`.
+</Info>
 
 ## Next Steps
 

@@ -1,0 +1,51 @@
+---
+title: 'User Groups Service'
+sidebarTitle: "Service"
+description: "User Groups Service API methods in the Galtea SDK"
+---
+
+The User Groups Service in the Galtea SDK allows you to manage [user groups](/concepts/user-group) for your organization.
+This Service is exposed by the `galtea.user_groups` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a user group:
+```python
+user_group = galtea.user_groups.create(
+    name="quality-reviewers-" + run_identifier,
+    description="Team responsible for reviewing output quality",
+)
+```
+
+List user groups:
+```python
+user_groups = galtea.user_groups.list(
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+## Service Methods
+- [Create User Group](/sdk/api/user-group/create)
+- [List User Groups](/sdk/api/user-group/list)
+- [Get User Group](/sdk/api/user-group/get)
+- [Get User Group by Name](/sdk/api/user-group/get-by-name)
+- [Update User Group](/sdk/api/user-group/update)
+- [Delete User Group](/sdk/api/user-group/delete)
+- [Link Users](/sdk/api/user-group/link-users)
+- [Unlink Users](/sdk/api/user-group/unlink-users)
+- [Link Metrics](/sdk/api/user-group/link-metrics)
+- [Unlink Metrics](/sdk/api/user-group/unlink-metrics)
+
+## Related Concepts
+
+- [User Group](/concepts/user-group)

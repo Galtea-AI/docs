@@ -6,6 +6,7 @@ description: "A functionality or service evaluated by Galtea"
 
 import VersionCard from '/snippets/cards/version-card.mdx';
 import TestCard from '/snippets/cards/test-card.mdx';
+import SpecificationCard from '/snippets/cards/specification-card.mdx';
 import SDKProductServiceCard from '/snippets/cards/sdk-product-service-card.mdx';
 
 ## What is a Product?
@@ -16,6 +17,8 @@ A product in Galtea represents a functionality or service that you want to evalu
 
 You can **create**, view and manage your products on the [Galtea dashboard](https://platform.galtea.ai/). Products can also be viewed and managed programmatically using the [Galtea SDK](/sdk/api/product/service).
 
+<img src="/images/ai-product-form.png" alt="AI-assisted product onboarding flow" style={{ borderRadius: '0.5rem', maxWidth: '600px', display: 'block', margin: '0 auto' }} />
+
 ## Related Concepts
 
 A product in Galtea is associated with:
@@ -23,13 +26,12 @@ A product in Galtea is associated with:
 <CardGroup cols={2}>
   <VersionCard />
   <TestCard />
+  <SpecificationCard />
 </CardGroup>
 
 ## SDK Integration
 
-The SDK allows you to list existing products, retrieve specific products by their ID or name, and delete products. See the [Product Service API documentation](/sdk/api/product/service) for more details.
-
-<Note>Note that product creation is handled through the Galtea platform.</Note>
+The SDK allows you to list existing products, retrieve specific products by their ID or name, and delete products. Product creation is done through the [Galtea dashboard](https://platform.galtea.ai/). See the [Product Service API documentation](/sdk/api/product/service) for more details.
 
 <SDKProductServiceCard />
 
@@ -54,19 +56,19 @@ The SDK allows you to list existing products, retrieve specific products by thei
 </ResponseField>
 
 <ResponseField name="Capabilities" type="Text" required>
-  List what your product is specifically designed to do, and what kind of information has access to. This helps generate specifically targeted test cases.
+  List what your product is designed to do and what information it has access to. This helps Galtea generate targeted test cases.
 
     <strong>Example:</strong> "Can answer questions about phone specifications, recommend devices based on user preferences, can access past user purchases, compare prices across models, and provide information about warranties and accessories."
 </ResponseField>
 
 <ResponseField name="Inabilities" type="Text" required>
-  List technical limitations such as information and tools that the product do not have access to, and additionally the general scope boundaries. This prevents generation of irrelevant or misleading test cases.
+  List what your product cannot do — information it does not have access to, tools it cannot use, and its general scope boundaries. This prevents generation of irrelevant or misleading test cases.
 
     <strong>Example:</strong> "Cannot process purchases, access customer account information, or provide technical support for device repairs."
 </ResponseField>
 
 <ResponseField name="Security Boundaries" type="Text" required>
-  Things that the product must not do, although theoretically it has the capability to do so.
+  Actions the product must refuse, even though it technically has the capability to perform them.
 
     <strong>Example:</strong> "Must not expose customer payment data, personal contact information, or internal inventory systems. Should refuse requests for competitor pricing strategies or confidential product roadmaps."
 </ResponseField>

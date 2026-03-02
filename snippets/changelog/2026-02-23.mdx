@@ -1,0 +1,56 @@
+<Update label="2026-02-23" description="Specifications, Smarter Reports, and Platform Polish">
+
+## Specifications
+
+[Specifications](/concepts/product/specification) are now live — a structured way to define and test the behavioral expectations of your product.
+
+A Specification represents a single, testable claim about what your product should or should not do. Each specification has a **type** that classifies the expectation:
+
+- **Capability** — a core function the product can perform
+- **Inability** — something the product fundamentally cannot do, regardless of user input
+- **Policy** — a rule the product must follow, such as refusing certain requests or always adding a disclaimer
+
+You also assign a **test type** (`QUALITY`, `RED_TEAMING`, or `SCENARIOS`) that determines how the specification is evaluated.
+
+Specifications replace the legacy free-text Capabilities, Inabilities, and Policies fields that used to live on the Product form. Your behavioral expectations are now discrete, individually traceable, and can be linked directly to the [metrics](/concepts/metric) that validate them.
+
+You can manage specifications from the dashboard or via the [Specification Service](/sdk/api/specification/service) in the SDK.
+
+### AI-Assisted Configuration
+
+Specification creation is AI-assisted. With a single click, the system suggests the specification type, test type, and test variant based on your description — so you can focus on defining what your product should do, not on configuring how it gets tested.
+
+## Improved Report Generation
+
+The automated report generation pipeline has received a set of quality upgrades:
+
+- **Realism analysis:** Before generating narrative content, the engine now runs a realism check on the underlying data to ensure summaries reflect actual conditions rather than statistical artifacts.
+- **Pattern analysis:** A new pattern analysis step examines the diversity and distribution of your test results, informing the structure of each report section. You can toggle this per generation run.
+
+## Better Data Augmentation
+
+[Data Augmentation](/concepts/product/test/data-augmentation) now uses a dedicated **diversity model** alongside the main generation pass. Instead of producing variations that converge on the same patterns, augmented test cases are explicitly steered toward different scenarios, phrasings, and edge cases — giving you broader coverage from the same seed data.
+
+A demo video has also been added to the [Data Augmentation documentation](/concepts/product/test/data-augmentation) to walk you through the full workflow.
+
+## Simplified Metrics
+
+The [Metric](/concepts/metric) entity has been streamlined. Legacy fields — including `criteria`, `evaluation_steps`, `test_type`, `user_persona`, and `stopping_criterias` — have been removed from the metric creation form. These were carry-overs from an older architecture that are no longer needed. If you were passing any of these fields through the SDK, you can safely remove them.
+
+## Platform Improvements
+
+- **403 Forbidden page:** Accessing a route without the required permissions now shows a clear, dedicated error page with an explanatory message, rather than a silent redirect or blank screen.
+- **Sorting fixes:** Table columns that do not support server-side sorting no longer display a sort indicator, removing a common source of confusion in large result sets.
+- **Evaluation prompts:** User prompts in evaluations are now rendered through Jinja2, enabling richer template-based customization.
+
+## Trace Collection During Platform Simulations
+
+When running evaluations via [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform), you can now collect traces from your endpoint and link them back to Galtea automatically.
+
+Add the new `{{ inference_result_id }}` placeholder to your [Endpoint Connection](/concepts/product/endpoint-connection) input template. Your handler receives the ID, passes it to the SDK's `set_context`, and all `@trace`-decorated calls made during that request are automatically linked to the correct inference result in Galtea. See [Collecting Traces During Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#collecting-traces-during-direct-inference) for the full walkthrough.
+
+## Documentation and Examples
+
+Demo videos are now embedded throughout the documentation — covering [test generation](/concepts/product/test), [quality tests](/concepts/product/test/quality-tests), [red teaming tests](/concepts/product/test/red-teaming-tests), [scenario tests](/concepts/product/test/scenario-tests), [endpoint connection setup](/concepts/product/endpoint-connection), and [data augmentation](/concepts/product/test/data-augmentation) — so you can see each workflow in action without leaving the docs.
+
+</Update>

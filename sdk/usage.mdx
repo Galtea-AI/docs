@@ -70,20 +70,16 @@ You can create custom [Metrics](/concepts/metric) tailored to your specific use 
 # 3) Create a standard metric via API
 metric_from_api = galtea.metrics.create(
     name="accuracy-" + run_identifier,
-    test_type="ACCURACY",
     evaluator_model_name="GPT-4.1",
-    source="full_prompt",
-    judge_prompt=(
-        "Determine whether the output is equivalent to the expected output. "
-        'Output: "{actual_output}". Expected Output: "{expected_output}."'
-    ),
+    source="partial_prompt",
+    judge_prompt="Determine whether the actual output is equivalent to the expected output.",
+    evaluation_params=["actual_output", "expected_output"],
 )
 
 
 # 4) Create a custom metric entry in the platform, then define local evaluator
 metric_from_api_custom = galtea.metrics.create(
     name="keyword-check-" + run_identifier,
-    test_type="ACCURACY",
     source="self_hosted",
     description="Checks if the 'actual output' contains the keyword 'expected'.",
 )
