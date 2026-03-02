@@ -1,0 +1,49 @@
+<Update label="2026-03-02" description="Human Evaluators, Smarter Specifications, and Inference Improvements">
+
+## Human Evaluators
+
+You can now bring humans into the evaluation loop. [Human evaluation](/sdk/tutorials/human-evaluation) lets your team members review and annotate inference results directly from the Galtea platform — alongside the automated LLM-as-a-judge scores you already rely on.
+
+To get started, create a [metric](/concepts/metric) with the evaluation type set to **Human**, assign it to the relevant [user group](/concepts/user-group), and invite your evaluators. Each evaluator sees only the inference results assigned to their group and can submit scores through a dedicated annotation interface.
+
+### User Groups
+
+[User Groups](/concepts/user-group) are the organizational layer behind human evaluation. A user group links a set of team members to specific metrics, so you can control who evaluates what. You can manage user groups from the dashboard or programmatically through the [User Group Service](/sdk/api/user-group/service) in the SDK.
+
+## AI-Assisted Specification Configuration
+
+[Specification](/concepts/product/specification) creation is now smarter. AI-assisted configuration has been extended to all specification types — not just policies. When you create a new specification, the system analyzes your description and suggests the test type, test variant, and specification type automatically. You can accept the suggestions with a single click or adjust them before saving.
+
+For **Policy** specifications specifically, the AI also suggests which test type best validates the rule you are defining — helping you choose between `QUALITY`, `RED_TEAMING`, and `SCENARIOS` based on the policy's intent.
+
+You can manage specifications from the dashboard or via the [Specification Service](/sdk/api/specification/service) in the SDK.
+
+## Inference Monitoring and Tracing
+
+Direct inference sessions now surface more visibility into what is happening during evaluation runs:
+
+- **Session status:** Each inference session displays a status indicator — `COMPLETED`, `PENDING`, or `FAILED` — so you can quickly identify which sessions need attention.
+- **Failed inference visibility:** When a direct inference call fails, the error is now surfaced directly in the session view, rather than being silently logged.
+- **Distributed trace collection:** Remote agents can now send traces back to Galtea automatically. Pass the `AgentInput` object to your agent handler, and all `@trace`-decorated calls are linked to the correct session. See [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) for the full setup guide.
+
+## Metrics and Evaluation
+
+- **Flexible text metric validation:** Text-based metrics no longer require a strict `answer` key in the response payload, making it easier to integrate custom output formats.
+- **Version endpoint validation:** Starting an [evaluation](/concepts/product/version/session/evaluation) now checks that the selected version has a valid endpoint connection configured, catching misconfigurations before the run begins.
+- **SDK fix — session custom metrics:** An issue where `actual_output` was always `None` when evaluating [sessions](/concepts/product/version/session) with custom metrics has been resolved.
+- **Filter tests by version:** You can now filter the test list by the selected version, making it faster to find the tests relevant to your current evaluation run.
+- **Specification-aware validation:** Products are now enriched with their linked specifications before evaluation validation runs, ensuring the evaluation engine has the full context it needs.
+
+## Platform Improvements
+
+- **Report terminology:** Automated reports now use clearer dimension names — **Accuracy** instead of "Quality" and **Security & Safety** instead of "Red Teaming" — matching the terminology you see in the dashboard.
+- **Report visualization:** Metric comparison charts now support multi-page groups, so products with more than six metrics per group render correctly without truncation.
+- **Evaluation run form:** The evaluation run form layout has been reorganized for a cleaner workflow when configuring new runs.
+- **Improved augmentation:** The [data augmentation](/concepts/product/test/data-augmentation) pipeline has received quality improvements to produce more diverse and representative test case variations.
+- **SDK improvements:** The SDK now correctly supports JSON request bodies in HTTP DELETE operations and properly escapes JSON string values in inference input templates.
+
+## Documentation
+
+A new [Human Evaluation tutorial](/sdk/tutorials/human-evaluation) walks you through the full workflow — from creating a human metric and setting up user groups to annotating results in the platform. The tutorial includes step-by-step screenshots showing the metric creation form, the evaluator sidebar, and the annotation interface.
+
+</Update>

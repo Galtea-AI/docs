@@ -1,0 +1,28 @@
+---
+title: "Update User Group"
+sidebarTitle: "Update"
+description: "Update an existing user group."
+---
+
+## Returns
+Returns the updated [User Group](/concepts/user-group) object.
+
+## Example
+```python
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    name="senior-quality-reviewers-" + run_identifier,
+    description="Senior team for quality reviews",
+)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the user group.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  New description for the user group.
+</ResponseField>

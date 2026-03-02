@@ -10,12 +10,12 @@ Returns a [Specification](/concepts/product/specification) object for the given 
 
 ## Example
 ```python
-# POLICY specification — test_type and test_variant are required for QUALITY and RED_TEAMING
+# POLICY specification — test_type and test_variant are required for ACCURACY and SECURITY
 specification = galtea.specifications.create(
     product_id=product_id,
     description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
     type="POLICY",
-    test_type="RED_TEAMING",
+    test_type="SECURITY",
     test_variant="misuse",
 )
 
@@ -40,14 +40,14 @@ capability_spec = galtea.specifications.create(
 </ResponseField>
 <ResponseField name="test_type" type="string | TestType" optional>
   The type of test for this specification. Required for `POLICY` specifications, not applicable for `CAPABILITY` or `INABILITY`.
-  - `QUALITY` (also `ACCURACY`): Evaluates whether the AI provides factually correct responses.
-  - `RED_TEAMING` (also `SECURITY`): Tests for vulnerabilities, jailbreaks, and harmful outputs.
-  - `SCENARIOS` (also `BEHAVIOR`): Simulates real user interactions to evaluate behavior in context.
+  - `ACCURACY` (or `QUALITY`): Evaluates whether the AI provides factually correct responses.
+  - `SECURITY` (or `RED_TEAMING`): Tests for vulnerabilities, jailbreaks, and harmful outputs.
+  - `BEHAVIOR` (or `SCENARIOS`): Simulates real user interactions to evaluate behavior in context.
 </ResponseField>
 <ResponseField name="test_variant" type="string" required>
-  Required when `test_type` is `QUALITY` or `RED_TEAMING`. Not applicable for `SCENARIOS`, `CAPABILITY`, or `INABILITY`.
-  - For `QUALITY`: the AI task type the policy governs — `rag`, `summarization`, `entity_extraction`, `classification`, `translation`, `correction`, `other`.
-  - For `RED_TEAMING`: the threat category the policy addresses — `data_leakage`, `financial_attacks`, `illegal_activities`, `misuse`, `toxicity`, `custom`.
+  Required when `test_type` is `ACCURACY` or `SECURITY`. Not applicable for `BEHAVIOR`, `CAPABILITY`, or `INABILITY`.
+  - For `ACCURACY`: the AI task type the policy governs — `rag`, `summarization`, `entity_extraction`, `classification`, `translation`, `correction`, `other`.
+  - For `SECURITY`: the threat category the policy addresses — `data_leakage`, `financial_attacks`, `illegal_activities`, `misuse`, `toxicity`, `custom`.
 </ResponseField>
 <ResponseField name="metric_ids" type="list[string]" optional>
   List of metric IDs to link to this specification upon creation.

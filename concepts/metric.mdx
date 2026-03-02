@@ -112,31 +112,77 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
   The tags for the metric so it can be easily identified and categorized. **Example**: ["RAG", "Conversational"]
 </ResponseField>
 
-<ResponseField name="Validation method" type="Enum" required>
+<ResponseField name="Evaluation Type" type="Enum" required>
   The method used to evaluate the metric. This can be one of three options:
 
   <Tabs>
-    <Tab title="Full Prompt">
-      This method, formerly known as "LLM as a Judge," gives you maximum control. You provide a complete judge prompt template with placeholders (e.g., `{input}`, `{actual_output}`). Galtea will populate the template and use an LLM to evaluate the output based on your exact instructions.
+    <Tab title="AI Evaluation">
+      An LLM scores responses using a scoring rubric you define. You provide the core evaluation logic (your criteria and rubric) in the `judge_prompt`. Then, you select the necessary data (like `input`, `context`, etc.) from the **Evaluation Parameters** list. Galtea dynamically constructs the final prompt by prepending the selected data to the content of your `judge_prompt`, ensuring a consistent structure for the evaluator model.
+
+      <Note>The SDK `source` value is `partial_prompt`.</Note>
     </Tab>
-    <Tab title="Partial Prompt">
-      This method simplifies prompt creation. You provide the core evaluation logic (your criteria and rubric) in the `judge_prompt`. Then, you select the necessary data (like `input`, `context`, etc.) from the **Evaluation Parameters** list. Galtea dynamically constructs the final prompt by prepending the selected data to the content of your `judge_prompt`, ensuring a consistent structure for the evaluator model.
+    <Tab title="Human Evaluation">
+      Human annotators score responses using the evaluation criteria you define. The metric's `judge_prompt` serves as the evaluation rubric for annotators, and `evaluation_params` determines which data fields are displayed to the evaluator.
+
+      When an evaluation is created for a human-evaluated metric, it enters a `PENDING_HUMAN` status and waits for a qualified human evaluator to provide a score.
+
+      **Key features:**
+      - **User Groups**: Link [user groups](/concepts/user-group) to a metric to control which users can annotate evaluations for it.
+      - **Group Membership**: Users in a linked group see pending evaluations for that metric in the Human Evaluations page.
+      - **Claim & Submit**: Evaluators can claim pending evaluations to prevent concurrent editing, then submit their score (0-100 in UI, normalized to 0-1) with an optional reason.
+
+      **Use cases:**
+      - Subjective quality assessments that require human judgment
+      - Edge cases where LLM evaluation may be unreliable
+      - Building gold standard datasets for training custom evaluators
+      - Compliance and audit requirements that mandate human review
+
+      <Note>The SDK `source` value is `human_evaluation`.</Note>
     </Tab>
-    <Tab title="Self Hosted">
+    <Tab title="Self-Hosted">
       This method is for deterministic metrics that you score locally. No evaluation prompt is sent to Galtea. Instead, your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform for tracking and analysis. You can provide the score in two ways via the SDK:
 
-      - **Pre-calculated score**: Pass a `float` value directly in the `score` field of a `MetricInput` dictionary. This is the simplest method.  
+      - **Pre-calculated score**: Pass a `float` value directly in the `score` field of a `MetricInput` dictionary. This is the simplest method.
         Example: `{'name': 'my-custom-metric', 'score': 0.85}`
 
-      - **Dynamic score calculation**: Use the SDK's `CustomScoreEvaluationMetric` class to encapsulate your scoring logic, which will be executed at runtime.  
+      - **Dynamic score calculation**: Use the SDK's `CustomScoreEvaluationMetric` class to encapsulate your scoring logic, which will be executed at runtime.
         Example: `{'score': MyCustomMetric(name='my-custom-metric')}`
+
+      <Note>The SDK `source` value is `self_hosted`.</Note>
     </Tab>
   </Tabs>
+
+  <Accordion title="Legacy: Full Prompt (Deprecated)">
+    <Warning>
+      Full Prompt is deprecated in the dashboard and has been replaced by **AI Evaluation**. It is still accepted via the SDK and API for backward compatibility, but new metrics should use `source="partial_prompt"` (AI Evaluation) instead.
+    </Warning>
+
+    This method gives you maximum control. You provide a complete judge prompt template with placeholders (e.g., `{input}`, `{actual_output}`). Galtea will populate the template and use an LLM to evaluate the output based on your exact instructions.
+
+    <Note>The SDK `source` value is `full_prompt`.</Note>
+  </Accordion>
+</ResponseField>
+
+<ResponseField name="User Groups" type="List[String]" optional>
+  [User groups](/concepts/user-group) that determine which human annotators can evaluate this metric. Only applicable for **Human Evaluation** metrics.
+  - If user groups are linked, only users in those groups can annotate.
+  - If no user groups are linked, any user in the organization can annotate.
+
+  **SDK Example:**
+  ```python
+  metric = galtea.metrics.create(
+      name="Human Quality Review",
+      source="human_evaluation",
+      judge_prompt="Evaluate the quality of the response based on accuracy, completeness, and clarity.",
+      evaluation_params=["input", "actual_output", "expected_output"],
+      user_group_ids=["quality-reviewers-group-id", "senior-analysts-group-id"]
+  )
+  ```
 </ResponseField>
 
 <ResponseField name="Evaluation Parameters" type="List[Enum]" required>
   <Info>
-    This must not be provided if the validation method is set to "Self Hosted".
+    This must not be provided if the evaluation type is set to "Self Hosted".
   </Info>
   A list of relevant parameters for this metric's evaluation criteria or steps. These parameters should be explicitly mentioned in your evaluation criteria or steps to ensure they're taken into account during assessment.
   <table>
@@ -151,17 +197,17 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
       <tr>
         <td>**input**</td>
         <td>The prompt or query sent to the model.</td>
-        <td>Quality Testing, Red Teaming, and User Scenarios (Partial Prompt only)</td>
+        <td>Accuracy Testing, Security & Safety, and Behavior</td>
       </tr>
       <tr>
         <td>**actual_output**</td>
         <td>The actual output generated by the model.</td>
-        <td>Quality Testing, Red Teaming, and User Scenarios (Partial Prompt only)</td>
+        <td>Accuracy Testing, Security & Safety, and Behavior</td>
       </tr>
       <tr>
         <td>**expected_output**</td>
         <td>The ideal answer for the given input.</td>
-        <td>Quality Testing and Red Teaming</td>
+        <td>Accuracy Testing and Security & Safety</td>
       </tr>
       <tr>
         <td>**context**</td>
@@ -171,7 +217,7 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
       <tr>
         <td>**retrieval_context**</td>
         <td>The context retrieved by your RAG system before sending the user query to your LLM.</td>
-        <td>Quality Testing, Red Teaming, and User Scenarios (Partial Prompt only)</td>
+        <td>Accuracy Testing, Security & Safety, and Behavior</td>
       </tr>
       <tr>
         <td>**traces**</td>
@@ -211,47 +257,47 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
       <tr>
         <td>**user_persona**</td>
         <td>Information about the user interacting with the agent.</td>
-        <td>Scenarios tests</td>
+        <td>Behavior tests</td>
       </tr>
       <tr>
         <td>**goal**</td>
         <td>The user's objective in the conversation.</td>
-        <td>Scenarios tests</td>
+        <td>Behavior tests</td>
       </tr>
       <tr>
         <td>**scenario**</td>
         <td>The context or situation for the conversation.</td>
-        <td>Scenarios tests</td>
+        <td>Behavior tests</td>
       </tr>
       <tr>
         <td>**stopping_criterias**</td>
         <td>List of criteria that define when a conversation should end.</td>
-        <td>Scenarios tests</td>
+        <td>Behavior tests</td>
       </tr>
       <tr>
         <td>**conversation_turns**</td>
         <td>All turns in a conversation, including user and assistant messages.</td>
-        <td>User Scenarios tests (Full Prompt only)</td>
+        <td>Behavior tests</td>
       </tr>
     </tbody>
   </table>
 
   <Warning>
-    To ensure accurate evaluation results, only select parameters in the `Evaluation Parameters` list that you need for your evaluation. For `Partial Prompt`, these parameters will be automatically prepended to your `judge_prompt`. For `Full Prompt`, ensure you have corresponding placeholders (e.g., `{input}`) for each selected parameter.
+    To ensure accurate evaluation results, only select parameters in the `Evaluation Parameters` list that you need for your evaluation. For **AI Evaluation**, these parameters are automatically prepended to your `judge_prompt`. For **Human Evaluation**, they determine which data fields are displayed to annotators.
   </Warning>
 </ResponseField>
 
-## Creating Custom Metrics via Partial Prompt (LLM)
+## Creating Custom Metrics via AI Evaluation
 
 <Note title="Our Evaluation Model">
   The non-deterministic metrics, powered by Large Language Models that act as Judges, utilize models that have demonstrated the best performance in our internal benchmarks and testing. We are committed to continuously evolving and improving these evaluator models to ensure the highest quality assessments over time.
 </Note>
 
-Custom Judge metrics use custom judge prompts to evaluate LLM outputs based on your specific requirements. The Partial Prompt method simplifies metric creation by focusing on the core evaluation logic.
+Custom Judge metrics use custom judge prompts to evaluate LLM outputs based on your specific requirements. AI Evaluation simplifies metric creation by focusing on the core evaluation logic.
 
-### How Partial Prompt (LLM) Work
+### How AI Evaluation Works
 
-Partial Prompt (LLM) is a simplified approach where you provide only the core **evaluation criteria** and **scoring rubrics**. Unlike Full Prompt where you write the complete evaluation template with placeholders like `{input}` and `{actual_output}`, Partial Prompt lets Galtea automatically construct the final prompt by combining your criteria with the selected evaluation parameters.
+AI Evaluation is the standard approach for LLM-as-a-judge metrics. You provide only the core **evaluation criteria** and **scoring rubrics**, and Galtea automatically constructs the final prompt by combining your criteria with the selected evaluation parameters.
 
 **The process:**
 1. You write the evaluation criteria (what to check for)
@@ -285,6 +331,7 @@ When creating a Partial Prompt metric, you select which of these parameters are 
 Here's an example of what you provide for a Partial Prompt metric:
 
 ```python
+
 judge_prompt = """
 **Evaluation Criteria:**
 Check if the ACTUAL_OUTPUT is good by comparing it to what was expected. Focus on:
@@ -299,7 +346,13 @@ Score 0 (Bad): The ACTUAL_OUTPUT has major errors, missing parts, ignores import
 """
 ```
 
-## Creating Custom Metrics via Full Prompt (LLM)
+## Creating Custom Metrics via Full Prompt (Legacy)
+
+<Warning>
+  Full Prompt is deprecated in the dashboard and has been replaced by **AI Evaluation**. It is still accepted via the SDK and API for backward compatibility, but new metrics should use AI Evaluation (`source="partial_prompt"`) instead.
+</Warning>
+
+<Accordion title="Full Prompt Documentation">
 
 <Note title="Our Evaluation Model">
   The non-deterministic metrics, powered by Large Language Models that act as Judges, utilize models that have demonstrated the best performance in our internal benchmarks and testing. We are committed to continuously evolving and improving these evaluator models to ensure the highest quality assessments over time.
@@ -338,7 +391,7 @@ Full Prompt (LLM) are templates that tell the evaluator model how to assess your
 ### Example Judge Prompt
 
 ```python
-
+# NOTE: Full Prompt is deprecated in the dashboard. Use source="partial_prompt" for new metrics.
 judge_prompt = """
 You are an expert evaluator. Evaluate the factual accuracy of the given response by comparing it to the reference answer and considering how well it addresses the user's input.
 
@@ -359,11 +412,11 @@ When designing judge prompts, be specific about your scoring criteria and refere
 
 ### Example Judge Prompt with `conversation_turns`
 
-When evaluating a `SCENARIOS` test, you can use the `{conversation_turns}` placeholder to analyze the entire dialogue. The placeholder will be replaced with a formatted string representing the conversation.
+You can use the `{conversation_turns}` placeholder to analyze the entire dialogue. The placeholder will be replaced with a formatted string representing the conversation.
 
 **Example Prompt:**
 ```python
-
+# NOTE: Full Prompt is deprecated in the dashboard. Use source="partial_prompt" for new metrics.
 judge_prompt = """
 Evaluate the following conversation for consistency. The agent should not contradict itself across the conversation.
 
@@ -394,8 +447,10 @@ assistant: No, our return window is 30 days.
 ```
 
 <Info>
-The `conversation_turns` parameter is only available for `SCENARIOS` tests and can only be used with the **Full Prompt** validation method. It provides the complete conversation history, allowing you to evaluate contextual consistency, knowledge retention, and other conversational qualities.
+The `conversation_turns` parameter can only be used with the deprecated **Full Prompt** evaluation type. It provides the complete conversation history, allowing you to evaluate contextual consistency, knowledge retention, and other conversational qualities.
 </Info>
+
+</Accordion>
 
 
 ## SDK Integration

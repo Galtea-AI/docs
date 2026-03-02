@@ -175,5 +175,49 @@ finally:
     clear_context(token)  # flush=True by default
 # @end 3_collect_and_send_traces_to_galtea
 
+# @start remote_agent_tracing
+import httpx
+
+from galtea import AgentInput, AgentResponse, trace, TraceType
+
+REMOTE_URL = "https://my-remote-agent.example.com/invoke"
+
+
+@trace(type=TraceType.AGENT)
+def remote_agent(input_data: AgentInput) -> AgentResponse:
+    """Forward execution to a remote server, passing the inference_result_id for trace correlation."""
+    response = httpx.post(
+        REMOTE_URL,
+        json={
+            "message": input_data.last_user_message_str(),
+            "session_id": input_data.session_id,
+            "inference_result_id": input_data.inference_result_id,
+        },
+    )
+    return AgentResponse(content=response.json()["content"])
+# @end remote_agent_tracing
+
+
+# @start remote_server_handler
+# On the remote server (e.g. FastAPI endpoint):
+from galtea import set_context, clear_context
+
+
+def handle_request(message: str, session_id: str, inference_result_id: str) -> str:
+    # Attach traces to the same inference result
+    token = set_context(inference_result_id=inference_result_id)
+    try:
+        # All @trace calls here will be associated with the inference result
+        response = run_agent_logic(message)
+        return response
+    finally:
+        clear_context(token)
+# @end remote_server_handler
+
+
+def run_agent_logic(message: str) -> str:
+    return "Response to: " + message
+
+
 # === Cleanup ===
 galtea.products.delete(product_id=product_id)

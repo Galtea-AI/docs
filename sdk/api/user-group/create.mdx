@@ -1,0 +1,28 @@
+---
+title: "Create User Group"
+sidebarTitle: "Create"
+description: "Create a new user group."
+---
+
+## Returns
+
+Returns a [User Group](/concepts/user-group) object, or `None` if an error occurs.
+
+## Example
+```python
+user_group = galtea.user_groups.create(
+    name="quality-reviewers-" + run_identifier,
+    description="Team responsible for reviewing output quality",
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the user group.
+</ResponseField>
+<ResponseField name="type" type="string" default="EVALUATOR">
+  Type of user group. Defaults to `"EVALUATOR"`.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  Description of the user group.
+</ResponseField>

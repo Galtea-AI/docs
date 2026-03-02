@@ -5,13 +5,13 @@ from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
+    TraceBase,
     TraceType,
     clear_context,
     set_context,
     start_trace,
     trace,
 )
-from galtea.domain.models.trace import TraceBase
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
@@ -490,7 +490,7 @@ if inference_result is None or evaluations is None:
 
 # @start inference_result_create_and_evaluate_custom
 # With dynamic score calculation using CustomScoreEvaluationMetric
-from galtea.utils.custom_score_metric import CustomScoreEvaluationMetric
+from galtea import CustomScoreEvaluationMetric
 
 
 class MyMetric(CustomScoreEvaluationMetric):

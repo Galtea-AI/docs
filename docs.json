@@ -93,7 +93,8 @@
               "sdk/tutorials/tracing-agent-operations",
               "sdk/tutorials/create-evaluation-with-custom-scores",
               "sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt",
-              "sdk/tutorials/how-to-evaluate-your-agentic-system"
+              "sdk/tutorials/how-to-evaluate-your-agentic-system",
+              "sdk/tutorials/human-evaluation"
             ]
           },
           {
@@ -345,6 +346,31 @@
                       "sdk/api/evaluation/get",
                       "sdk/api/evaluation/retry",
                       "sdk/api/evaluation/delete"
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "group": "User Group",
+                "icon": "users",
+                "pages": [
+                  "concepts/user-group",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/user-group/service",
+                      "sdk/api/user-group/create",
+                      "sdk/api/user-group/list",
+                      "sdk/api/user-group/get",
+                      "sdk/api/user-group/get-by-name",
+                      "sdk/api/user-group/update",
+                      "sdk/api/user-group/delete",
+                      "sdk/api/user-group/link-users",
+                      "sdk/api/user-group/unlink-users",
+                      "sdk/api/user-group/link-metrics",
+                      "sdk/api/user-group/unlink-metrics"
                     ]
                   }
                 ]

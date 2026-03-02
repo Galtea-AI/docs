@@ -6,8 +6,7 @@ Demonstrates usage/cost info and error handling for the generate method.
 from datetime import datetime
 
 import galtea
-from galtea import AgentInput, AgentResponse, Galtea
-from galtea.domain.models.trace import TraceType
+from galtea import AgentInput, AgentResponse, Galtea, TraceType
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 

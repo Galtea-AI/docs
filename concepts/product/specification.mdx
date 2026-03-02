@@ -20,7 +20,7 @@ Each specification has a **type** that classifies the kind of behavioral expecta
 
 - **Policy**: A mandatory rule or guideline the product must follow — from restrictions to behavioral guidelines. This includes refusal rules (what it must decline), interaction patterns (how it responds), communication style, and mandatory disclaimers. For example: _"Must include a disclaimer when discussing medical topics"_ or _"Refuses requests to share confidential business data"_.
 
-Specifications also have a **test type** that determines the evaluation approach: `QUALITY`, `RED_TEAMING`, or `SCENARIOS`.
+Specifications also have a **test type** that determines the evaluation approach: `ACCURACY`, `SECURITY`, or `BEHAVIOR`.
 
 <Note>Specifications replace the legacy free-text fields (Capabilities, Inabilities, Policies) on Products with structured, individually testable expectations linked to specific metrics.</Note>
 
@@ -61,11 +61,11 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
 
 <ResponseField name="test_type" type="Enum" required>
   The type of test for this specification.
-  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+  Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
 </ResponseField>
 
 <ResponseField name="test_variant" type="string" optional>
-  Variant of the test type. Applicable for `QUALITY` and `RED_TEAMING` test types.
+  Variant of the test type. Applicable for `ACCURACY` and `SECURITY` test types.
 </ResponseField>
 
 <ResponseField name="metric_ids" type="list[string]" optional>

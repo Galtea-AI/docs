@@ -40,12 +40,12 @@ if metric is None:
 metric_id: str = metric.id
 
 # @start create
-# POLICY specification — test_type and test_variant are required for QUALITY and RED_TEAMING
+# POLICY specification — test_type and test_variant are required for ACCURACY and SECURITY
 specification = galtea.specifications.create(
     product_id=product_id,
     description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
     type="POLICY",
-    test_type="RED_TEAMING",
+    test_type="SECURITY",
     test_variant="misuse",
 )
 

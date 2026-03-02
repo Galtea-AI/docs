@@ -1,0 +1,48 @@
+---
+title: "User Group"
+sidebarTitle: "Overview"
+description: "Organize users and metrics into groups for human evaluation workflows"
+icon: "users"
+---
+
+A **User Group** organizes users and metrics within an organization to streamline human evaluation workflows.
+
+## How It Works
+
+User Groups serve two key purposes:
+
+1. **Assigning evaluators**: Group users who should review and annotate AI outputs for specific metrics.
+2. **Scoping metrics**: Link metrics to groups so that only users in those groups see pending evaluations for those metrics.
+
+When a [Human Evaluation](/concepts/metric#evaluation-type) metric is linked to a user group, only users in that group will see pending evaluations for that metric in the **Human Evaluations** page of the dashboard.
+
+## Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier for the user group.
+</ResponseField>
+<ResponseField name="organization_id" type="string">
+  The organization this group belongs to.
+</ResponseField>
+<ResponseField name="name" type="string" required>
+  Name of the user group.
+</ResponseField>
+<ResponseField name="type" type="string" required>
+  Type of user group. Currently only `EVALUATOR` is supported.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  Description of the group's purpose.
+</ResponseField>
+<ResponseField name="user_ids" type="list[string]">
+  IDs of users in this group.
+</ResponseField>
+<ResponseField name="metric_ids" type="list[string]">
+  IDs of metrics linked to this group.
+</ResponseField>
+
+## Managing User Groups
+
+User groups can be managed in two places:
+
+- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. From metric and user detail pages, you can also assign and unassign groups.
+- **SDK**: Use the `galtea.user_groups` service for programmatic management.

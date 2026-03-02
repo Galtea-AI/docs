@@ -25,7 +25,7 @@ specifications = galtea.specifications.list(
 </ResponseField>
 <ResponseField name="test_type" type="string | TestType" optional>
   Filter by test type.
-  Possible values: `QUALITY`, `RED_TEAMING`, `SCENARIOS`.
+  Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
   Filter specifications created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.
