@@ -125,6 +125,10 @@ evaluations = galtea.evaluations.create(
   Both options are equally valid for self-hosted metrics. Choose based on your preference: pre-compute for simplicity, or use CustomScoreEvaluationMetric for encapsulation and reusability.
 </Note>
 
+<Info>
+  When using `CustomScoreEvaluationMetric`, your `measure()` method receives an `inference_results` parameter containing `InferenceResult` objects — all turns for session evaluations, or a single-element list for single inference result evaluations. This enables conversation-level custom scoring. See [Evaluate with Custom Metrics](/sdk/tutorials/create-evaluation-with-custom-scores#multi-turn-custom-metrics) for examples.
+</Info>
+
 ## Parameters
 <ResponseField name="session_id" type="string" optional>
   The ID of the session containing the inference results to be evaluated.

@@ -170,12 +170,13 @@ At Galtea, we use two types of metrics to evaluate large language model (LLM) ou
 
   **SDK Example:**
   ```python
+  quality_reviewers_group = galtea.user_groups.get_by_name(quality_reviewers_group_name)
   metric = galtea.metrics.create(
-      name="Human Quality Review",
+      name=metric_name,
       source="human_evaluation",
       judge_prompt="Evaluate the quality of the response based on accuracy, completeness, and clarity.",
       evaluation_params=["input", "actual_output", "expected_output"],
-      user_group_ids=["quality-reviewers-group-id", "senior-analysts-group-id"]
+      user_group_ids=[quality_reviewers_group.id],
   )
   ```
 </ResponseField>

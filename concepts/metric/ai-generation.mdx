@@ -1,0 +1,65 @@
+---
+title: "AI Metric Generation"
+sidebarTitle: "AI Generation"
+description: "Automatically generate evaluation metrics from your product specifications using AI"
+icon: "sparkles"
+---
+
+## Overview
+
+AI Metric Generation lets you automatically create evaluation metrics from your product's [specifications](/concepts/product/specification). Instead of manually crafting judge prompts and configuring evaluation parameters, the AI analyzes your specifications and generates ready-to-use metrics.
+
+<Info>
+  AI-generated metrics use the **Full Prompt** validation method with appropriate evaluation parameters for each specification's test type.
+</Info>
+
+## How It Works
+
+1. **Select specifications** — Choose one or more policy specifications from your product. Only specifications with a test type (QUALITY, RED_TEAMING, or SCENARIOS) can be used.
+2. **AI generates candidates** — The system analyzes your product description, capabilities, and selected specifications to generate tailored metrics.
+3. **Review and edit** — Review each generated metric candidate. You can edit the name, description, judge prompt, tags, and evaluator model before saving.
+4. **Save selectively** — Save the metrics you want and discard the rest. Saved metrics are automatically linked to their source specification.
+
+## Requirements
+
+- A [product](/concepts/product) with a description
+- At least one [specification](/concepts/product/specification) of type **POLICY** with a test type assigned
+
+<Warning>
+  CAPABILITY and INABILITY specifications cannot be used for AI metric generation because they do not have a test type.
+</Warning>
+
+## Using the Dashboard
+
+### From the Product Hub
+
+1. Navigate to your product's **Specifications** tab
+2. Click **Generate Metrics with AI**
+3. Select the specifications you want to generate metrics for
+4. Click **Generate Metrics** and wait for the AI to process
+5. Review the generated candidates — edit, save, or discard each one
+
+### From a Specification
+
+1. Open the dropdown menu on any specification
+2. Click **Generate Metrics** to navigate directly to the generation page with that specification pre-selected
+
+## Generated Metric Properties
+
+Each AI-generated metric candidate includes:
+
+| Property | Description |
+| --- | --- |
+| **Name** | A descriptive name for the metric |
+| **Description** | What the metric evaluates |
+| **Judge Prompt** | The full evaluation prompt with placeholders |
+| **Evaluation Parameters** | The data parameters used in evaluation |
+| **Tags** | Categorization tags |
+| **Evaluator Model** | The LLM model used for evaluation |
+| **Test Type** | Inherited from the source specification |
+
+## Specification Linking
+
+When you save a generated metric, it is automatically linked to the specification it was generated from. This creates a traceable connection between your requirements and your evaluation criteria.
+
+You can view linked specifications directly from a metric's detail page, and manage metric-specification links from the [Specification Hub](/concepts/product/specification).
