@@ -28,4 +28,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
   CMD wget -q --spider http://localhost:3000/ || exit 1
 
-CMD ["node_modules/.bin/mintlify", "dev", "--port", "3000"]
+CMD ["sh", "-c", "node_modules/.bin/mintlify dev --port 3000 < /dev/null"]
