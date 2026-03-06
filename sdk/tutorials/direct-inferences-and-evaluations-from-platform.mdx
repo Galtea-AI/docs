@@ -156,9 +156,71 @@ Galtea will assess each inference result using the selected metrics and provide 
 
 ## Collecting Traces During Direct Inference
 
-When running evaluations via Direct Inference, you can collect [traces](/concepts/product/version/session/trace) from your endpoint handler by passing the `{{ inference_result_id }}` placeholder in your input template. This lets your endpoint know which inference result the call belongs to, so it can link traces back to Galtea.
+There are two ways to collect [traces](/concepts/product/version/session/trace) during Direct Inference:
 
-### 1. Add `{{ inference_result_id }}` to your Input Template
+1. **Output Mapping (no code)** — Extract traces from the API response using a `traces` key in your output mapping.
+2. **SDK `set_context` (in your handler)** — Pass `{{ inference_result_id }}` to your endpoint and use the SDK to create traces from within the handler.
+
+### Option 1: Extract Traces via Output Mapping
+
+If your endpoint returns trace data in its response, you can extract it using the `traces` key in the output mapping. Galtea will store each trace object linked to the inference result automatically.
+
+**Example API response:**
+```json
+{
+  "response": "The answer is 42.",
+  "traces": [
+    {
+      "name": "retrieve_context",
+      "type": "RETRIEVER",
+      "latencyMs": 120,
+      "inputData": { "query": "meaning of life" },
+      "outputData": { "documents": ["..."] }
+    },
+    {
+      "name": "generate_response",
+      "type": "GENERATION",
+      "latencyMs": 350,
+      "inputData": { "context": "..." },
+      "outputData": { "text": "The answer is 42." }
+    }
+  ]
+}
+```
+
+**Output Mapping:**
+```json
+{
+  "output": "$.response",
+  "traces": "$.traces"
+}
+```
+
+Galtea extracts the `traces` array and creates `Trace` entities linked to the inference result. Each object in the array must contain at least a `name` field and can include any [Trace properties](/concepts/product/version/session/trace#trace-properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | string | Yes | Name of the traced operation |
+| `type` | string | No | One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL` |
+| `description` | string | No | Human-readable description of the operation |
+| `inputData` | object | No | Input parameters passed to the operation |
+| `outputData` | object | No | Result returned by the operation |
+| `error` | string | No | Error message if the operation failed |
+| `latencyMs` | number | No | Execution time in milliseconds |
+| `metadata` | object | No | Additional custom metadata |
+| `startTime` | string | No | ISO 8601 timestamp when the operation started |
+| `endTime` | string | No | ISO 8601 timestamp when the operation completed |
+| `parentTraceId` | string | No | ID of the parent trace for hierarchical relationships |
+
+<Tip>
+  This approach requires no SDK code in your endpoint handler — it works purely through configuration.
+</Tip>
+
+### Option 2: Use `set_context` in Your Endpoint Handler
+
+When running evaluations via Direct Inference, you can collect traces from your endpoint handler by passing the `{{ inference_result_id }}` placeholder in your input template. This lets your endpoint know which inference result the call belongs to, so it can link traces back to Galtea.
+
+#### 1. Add `{{ inference_result_id }}` to your Input Template
 
 Include the placeholder in your endpoint connection's input template so your handler receives the ID:
 
@@ -174,7 +236,7 @@ Include the placeholder in your endpoint connection's input template so your han
 }
 ```
 
-### 2. Use `set_context` in Your Endpoint Handler
+#### 2. Use `set_context` in Your Endpoint Handler
 
 In your API endpoint, extract the `inference_result_id` from the request and use the SDK's `set_context` / `clear_context` to associate traces with it:
 

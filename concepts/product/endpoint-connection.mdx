@@ -163,6 +163,7 @@ To create an Endpoint Connection:
 
   **Optional keys:**
   - `retrieval_context` - JSONPath expression to extract retrieval context
+  - `traces` - JSONPath expression to extract an array of [trace](/concepts/product/version/session/trace) objects (stored linked to the inference result). Each object should contain at least a `name` field and can include any of the [Trace properties](/concepts/product/version/session/trace#trace-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`
   - Any additional keys for extra properties to store in session metadata
 
   **JSONPath Syntax Reference:**
@@ -180,7 +181,8 @@ To create an Endpoint Connection:
   {
     "output": "$.choices[0].message.content",
     "retrieval_context": "$.choices[0].retrieval_context",
-    "session_id": "$.metadata.session_id"
+    "session_id": "$.metadata.session_id",
+    "traces": "$.metadata.traces"
   }
   ```
 </ResponseField>

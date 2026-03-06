@@ -183,6 +183,7 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 | `output` | **Required.** The AI's response content. |
 | `session_id` | Stored as the external session identifier, accessible via [`custom_id`](/concepts/product/version/session#session-properties). |
 | `retrieval_context` | Stored as retrieval context for RAG evaluations. |
+| `traces` | Extracts an array of [trace](/concepts/product/version/session/trace) objects and stores them linked to the inference result. Each object should follow the [Trace properties](/concepts/product/version/session/trace#trace-properties) schema (`name` is required). |
 | Any other key | Stored in session metadata and available as `{{ key }}` in templates. |
 
 <Info>
