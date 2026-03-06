@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-03-09</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      ul li {
+        margin-bottom: 8px;
+      }
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">AI-Powered Metrics, Data Catalogs, and Streamlined Evaluations</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2026-03-09">2026-03-09</a>
+
+                <h3 style="color: #171717">AI-Powered Metric Creation</h3>
+                <p style="color: #171717; font-size: 16px">
+                  You can now generate evaluation <a href="https://docs.galtea.ai/concepts/metric" style="color: #5286ff">metrics</a> directly from your product's <a href="https://docs.galtea.ai/concepts/product/specification" style="color: #5286ff">specifications</a>. Select one or more policy specifications, and the AI analyzes your product description and specification rules to produce ready-to-use metric candidates &mdash; complete with judge prompt, evaluation parameters, tags, and evaluator model. You review each candidate, edit anything that needs adjusting, and save the ones you want. Saved metrics are automatically linked back to their source specification.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  Learn more about the full workflow in the <a href="https://docs.galtea.ai/concepts/metric/ai-generation" style="color: #5286ff">AI Metric Generation</a> documentation.
+                </p>
+
+                <h3 style="color: #171717">Data Catalogs for Behavior Tests</h3>
+                <p style="color: #171717; font-size: 16px">
+                  <a href="https://docs.galtea.ai/concepts/product/test/scenario-tests" style="color: #5286ff">Behavior tests</a> can now be grounded in real data. When creating a generated behavior test, you can upload a <strong>Data Catalog</strong> &mdash; a file containing real values like names, IDs, amounts, and dates. The scenario generator injects catalog values into the generated test cases, producing scenarios that reflect your actual data distribution instead of relying on fictional placeholders.
+                </p>
+
+                <h3 style="color: #171717">Simplified Test Creation</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The <a href="https://docs.galtea.ai/concepts/product/test" style="color: #5286ff">test</a> creation form has been reorganized to reduce visual complexity. Optional fields &mdash; Custom User Focus, Data Catalog, and Language &mdash; are now grouped behind an <strong>Advanced Options</strong> toggle, keeping the main form focused on required fields and essential choices.
+                </p>
+
+                <h3 style="color: #171717">Test Your Endpoint Connection</h3>
+                <p style="color: #171717; font-size: 16px">
+                  You can now test your <a href="https://docs.galtea.ai/concepts/product/endpoint-connection" style="color: #5286ff">endpoint connection</a> directly from the creation and edit forms. A dedicated test panel sends a sample request to your endpoint and displays the raw response, so you can verify connectivity and response format before saving.
+                </p>
+
+                <h3 style="color: #171717">Run Evaluations from Any Level</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The <a href="https://docs.galtea.ai/concepts/product/version/session/evaluation" style="color: #5286ff">evaluation</a> run dialog now supports two new entry points: you can trigger a run from a specific test or from an individual test case, in addition to the existing version, session, and inference result levels. The dialog title, description, and available options adapt to the context you start from. As part of this change, the action has been renamed from &ldquo;Run Inference&rdquo; to &ldquo;Run Evaluation&rdquo; across the dashboard to better reflect what it does.
+                </p>
+
+                <h3 style="color: #171717">SDK: Full Conversation Access in Custom Metrics</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444;">CustomScoreEvaluationMetric.measure()</code> method now receives an optional <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444;">inference_results</code> parameter containing all conversation turns for the current session. This lets custom metrics reason over the full conversation history &mdash; not just the latest turn &mdash; when computing scores. This also fixes an issue where evaluating sessions with custom metrics only fetched the most recent turn, making multi-turn custom metric evaluation unreliable. See the <a href="https://docs.galtea.ai/sdk/tutorials/create-evaluation-with-custom-scores" style="color: #5286ff">custom metrics tutorial</a> for usage details.
+                </p>
+
+                <h3 style="color: #171717">Platform Improvements</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Failed turn tracking:</strong> The evaluation engine now detects which conversation turns failed during a <a href="https://docs.galtea.ai/concepts/product/test/case/conversation-simulator" style="color: #5286ff">simulated conversation</a> and records them in a new <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444;">failedTurns</code> field on each <a href="https://docs.galtea.ai/concepts/product/version/session/evaluation" style="color: #5286ff">evaluation</a>. Failed turns are visible in the evaluation detail view and included in CSV exports, making it easier to pinpoint where multi-turn conversations break down.</li>
+                  <li><strong>Clearer metric validation errors:</strong> When a metric is missing required evaluation parameters, the error message now lists exactly which parameters are absent &mdash; instead of the generic &ldquo;at least one is missing&rdquo; message.</li>
+                  <li><strong>Inference error visibility:</strong> When a direct inference call results in an error, the error text is now displayed directly in the inference result view.</li>
+                  <li><strong>Unified form components:</strong> AI-assisted creation forms and table selection dialogs across the dashboard now share a consistent design and interaction model. This also fixes an issue where discarding all AI-generated metric candidates left the review step in a dead end with no navigation options.</li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack or Discord channels.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">We are already working on the next set of features:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Specification-Targeted Test Generation:</strong> Generate tests that target a specific specification of your product, ensuring focused and relevant test coverage.</li>
+                  <li><strong>Structured Triggers for Agent Testing:</strong> Use structured triggers and inputs in agent interactions so programmatic agents can be tested as easily as conversational ones.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

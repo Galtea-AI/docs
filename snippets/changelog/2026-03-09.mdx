@@ -1,0 +1,36 @@
+<Update label="2026-03-09" description="AI-Powered Metrics, Data Catalogs, and Streamlined Evaluations">
+
+## AI-Powered Metric Creation
+
+You can now generate evaluation [metrics](/concepts/metric) directly from your product's [specifications](/concepts/product/specification). Select one or more policy specifications, and the AI analyzes your product description and specification rules to produce ready-to-use metric candidates — complete with judge prompt, evaluation parameters, tags, and evaluator model. You review each candidate, edit anything that needs adjusting, and save the ones you want. Saved metrics are automatically linked back to their source specification.
+
+Learn more about the full workflow in the [AI Metric Generation](/concepts/metric/ai-generation) documentation.
+
+## Data Catalogs for Behavior Tests
+
+[Behavior tests](/concepts/product/test/scenario-tests) can now be grounded in real data. When creating a generated behavior test, you can upload a **Data Catalog** — a file containing real values like names, IDs, amounts, and dates. The scenario generator injects catalog values into the generated test cases, producing scenarios that reflect your actual data distribution instead of relying on fictional placeholders.
+
+## Simplified Test Creation
+
+The [test](/concepts/product/test) creation form has been reorganized to reduce visual complexity. Optional fields — Custom User Focus, Data Catalog, and Language — are now grouped behind an **Advanced Options** toggle, keeping the main form focused on required fields and essential choices.
+
+## Test Your Endpoint Connection
+
+You can now test your [endpoint connection](/concepts/product/endpoint-connection) directly from the creation and edit forms. A dedicated test panel sends a sample request to your endpoint and displays the raw response, so you can verify connectivity and response format before saving.
+
+## Run Evaluations from Any Level
+
+The [evaluation](/concepts/product/version/session/evaluation) run dialog now supports two new entry points: you can trigger a run from a specific test or from an individual test case, in addition to the existing version, session, and inference result levels. The dialog title, description, and available options adapt to the context you start from. As part of this change, the action has been renamed from "Run Inference" to "Run Evaluation" across the dashboard to better reflect what it does.
+
+## SDK: Full Conversation Access in Custom Metrics
+
+The `CustomScoreEvaluationMetric.measure()` method now receives an optional `inference_results` parameter containing all conversation turns for the current session. This lets custom metrics reason over the full conversation history — not just the latest turn — when computing scores. This also fixes an issue where evaluating sessions with custom metrics only fetched the most recent turn, making multi-turn custom metric evaluation unreliable. See the [custom metrics tutorial](/sdk/tutorials/create-evaluation-with-custom-scores) for usage details.
+
+## Platform Improvements
+
+- **Failed turn tracking:** The evaluation engine now detects which conversation turns failed during a [simulated conversation](/concepts/product/test/case/conversation-simulator) and records them in a new `failedTurns` field on each [evaluation](/concepts/product/version/session/evaluation). Failed turns are visible in the evaluation detail view and included in CSV exports, making it easier to pinpoint where multi-turn conversations break down.
+- **Clearer metric validation errors:** When a metric is missing required evaluation parameters, the error message now lists exactly which parameters are absent — instead of the generic "at least one is missing" message.
+- **Inference error visibility:** When a direct inference call results in an error, the error text is now displayed directly in the inference result view.
+- **Unified form components:** AI-assisted creation forms and table selection dialogs across the dashboard now share a consistent design and interaction model. This also fixes an issue where discarding all AI-generated metric candidates left the review step in a dead end with no navigation options.
+
+</Update>
