@@ -194,6 +194,48 @@ galtea_client.evaluations.create(
   </Tab>
 </Tabs>
 
+## Custom Metrics with Full Conversation Access
+
+When you use `CustomScoreEvaluationMetric`, your `measure()` method always receives an `inference_results` parameter containing `InferenceResult` objects. For session evaluations this includes all turns; for single inference result evaluations it contains one item. This enables conversation-level scoring (e.g., consistency checks, cross-turn analysis).
+
+```python
+from galtea import CustomScoreEvaluationMetric, InferenceResult
+
+
+class ConversationConsistency(CustomScoreEvaluationMetric):
+    """Scores how consistently the assistant responds across all turns."""
+
+    def __init__(self):
+        super().__init__(name=metric_name)
+
+    def measure(
+        self, *args, inference_results: list[InferenceResult] | None = None, **kwargs
+    ) -> float:
+        if not inference_results:
+            return 0.0
+        # Access the full conversation for cross-turn analysis
+        assistant_outputs = [
+            ir.actual_output for ir in inference_results if ir.actual_output
+        ]
+        if len(assistant_outputs) < 2:
+            return 1.0
+        # Your custom logic here (e.g., check for contradictions across turns)
+        return 0.9
+
+
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},
+        {"score": ConversationConsistency()},  # Custom multi-turn metric
+    ],
+)
+```
+
+<Info>
+  Each `InferenceResult` object provides `actual_input`, `actual_output`, `retrieval_context`, `latency`, `index`, and other fields. See the [custom metrics tutorial](/sdk/tutorials/create-evaluation-with-custom-scores) for more on custom metrics.
+</Info>
+
 ## Learn More
 
 <CardGroup cols={2}>

@@ -387,6 +387,7 @@
                 "icon": "brackets-curly",
                 "pages": [
                   "concepts/metric",
+                  "concepts/metric/ai-generation",
                   {
                     "group": "SDK",
                     "icon": "code",

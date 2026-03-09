@@ -120,3 +120,46 @@ Both approaches are equally valid and current. Choose based on your preference:
   - Your scoring logic is complex and benefits from encapsulation
   - You want the SDK to handle score calculation automatically
   - You need to reuse the same metric logic across multiple evaluations
+
+## Multi-Turn Custom Metrics
+
+When using `CustomScoreEvaluationMetric`, your `measure()` method always receives an `inference_results` parameter with `InferenceResult` objects. For session evaluations (`session_id=...`) this includes all turns; for single inference result evaluations (`inference_result_id=...`) it contains one item. This enables conversation-level scoring such as consistency checks, cross-turn analysis, or aggregated metrics.
+
+```python
+from galtea import InferenceResult
+
+
+class AllOutputsContainKeyword(CustomScoreEvaluationMetric):
+    """Checks if a keyword appears in every assistant response across the conversation."""
+
+    def __init__(self, keyword: str):
+        self.keyword = keyword.lower()
+        super().__init__(name=f"all-outputs-contain-{self.keyword}")
+
+    def measure(self, *args, actual_output: str | None = None, inference_results: list[InferenceResult] | None = None, **kwargs) -> float:
+        """
+        Uses inference_results to check every turn in the conversation.
+        Falls back to actual_output when inference_results is not available.
+        """
+        if inference_results:
+            outputs = [ir.actual_output for ir in inference_results if ir.actual_output]
+            if not outputs:
+                return 0.0
+            matches = sum(1 for output in outputs if self.keyword in output.lower())
+            return matches / len(outputs)
+        # Fallback for when inference_results is not provided
+        if not actual_output:
+            return 0.0
+        return 1.0 if self.keyword in actual_output.lower() else 0.0
+
+
+# Use with session-based evaluation for multi-turn scoring
+# galtea.evaluations.create(
+#     session_id="your_session_id",
+#     metrics=[{"score": AllOutputsContainKeyword(keyword="helpful")}],
+# )
+```
+
+<Info>
+  The `inference_results` parameter is always a list ordered chronologically. For single-turn evaluations (via `inference_result_id`), it contains one item. For session evaluations, it contains all turns. See [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) for the full session-based workflow.
+</Info>

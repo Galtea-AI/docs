@@ -205,6 +205,45 @@ Behavior tests are specifically designed to work with Galtea's [Conversation Sim
 
 For detailed implementation examples, see the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations).
 
+## Data Catalog
+
+When generating behavior tests, you can optionally upload a **Data Catalog** — a file containing
+reference data from your product's domain. This helps the generator produce scenarios grounded in
+realistic values rather than fully fictional ones.
+
+<Info>
+  The data catalog does not need to contain real production data. Synthetic samples, anonymized
+  records, or representative mock data all work equally well — what matters is that the values
+  reflect the shape and variety of your domain.
+</Info>
+
+### How it works
+
+Values from the data catalog are incorporated into the **scenario** field of each generated test
+case. User personas remain fully synthetic and are never populated from the catalog.
+
+For example, if your product is a banking assistant, a data catalog might include sample account
+types, transaction descriptions, and card IDs. The generator would then reference those values
+in scenarios like *"User asks about a pending charge of €47.80 at REST LA BARRACA on card C-001"*
+instead of inventing generic placeholders.
+
+### Supported formats
+
+CSV, JSON, JSONL, XML, YAML, and TXT files up to 50 MB.
+
+### What to include
+
+- Domain entities your users would reference (product names, plan tiers, category labels)
+- Sample identifiers (order IDs, ticket numbers, account codes)
+- Representative amounts, dates, or statuses
+- Any reference data that makes scenarios feel grounded in your specific domain
+
+### What to avoid
+
+- Actual customer PII or production credentials
+- Internal system IDs or backend states that end users would never see
+- Extremely large datasets — the generator uses up to ~50,000 characters of content
+
 ## Best Practices for Manually Creating Behavior Tests
 
 <AccordionGroup>

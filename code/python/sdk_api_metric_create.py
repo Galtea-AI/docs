@@ -80,4 +80,3 @@ metric = galtea.metrics.create(
 if metric is None:
     raise ValueError("metric is None")
 galtea.metrics.delete(metric_id=metric.id)
-galtea.user_groups.delete(user_group_id=user_group_id)

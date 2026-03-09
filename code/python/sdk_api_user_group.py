@@ -11,14 +11,6 @@ run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
-# Setup: fetch a real user ID for link/unlink demos
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-users_response = client.get("users", params={"limit": 1})
-users_data = users_response.json()
-user_id_1 = users_data["data"][0]["id"]
-
 # Setup: create two self-hosted metrics for link/unlink demos
 metric_1 = galtea.metrics.create(
     name="ug-demo-metric-1-" + run_identifier,
@@ -49,6 +41,16 @@ if user_group is None:
     raise ValueError("user_group is None")
 
 user_group_id = user_group.id
+
+# Setup: fetch a real user ID for link/unlink demos (filtered by organization)
+client = getattr(galtea, "_Galtea__client", None)
+if client is None:
+    raise ValueError("Could not access Galtea client for direct API call")
+users_response = client.get(
+    "users", params={"organizationIds": user_group.organization_id, "limit": 1}
+)
+users_data = users_response.json()
+user_id_1 = users_data[0]["id"]
 
 # @start list
 user_groups = galtea.user_groups.list(
@@ -100,6 +102,12 @@ galtea.user_groups.unlink_metrics(
     metric_ids=[metric_id_2],
 )
 # @end unlink_metrics
+
+# Cleanup: unlink remaining metric before deleting
+galtea.user_groups.unlink_metrics(
+    user_group_id=user_group_id,
+    metric_ids=[metric_id_1],
+)
 
 # @start delete
 galtea.user_groups.delete(user_group_id=user_group_id)

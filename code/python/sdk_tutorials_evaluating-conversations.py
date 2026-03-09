@@ -178,6 +178,56 @@ galtea_client.evaluations.create(
 )
 # @end monitoring_evaluate
 
+metric_name = "conversation-consistency"
+metric_created = None
+try:
+    metric_created = galtea_client.metrics.get_by_name(metric_name)
+except Exception:
+    pass
+if metric_created is None:
+    metric_created = galtea_client.metrics.create(
+        name=metric_name,
+        source="self_hosted",
+    )
+print(f"Custom metric created: {metric_created}")
+
+
+# @start custom_metric_multi_turn
+from galtea import CustomScoreEvaluationMetric, InferenceResult
+
+
+class ConversationConsistency(CustomScoreEvaluationMetric):
+    """Scores how consistently the assistant responds across all turns."""
+
+    def __init__(self):
+        super().__init__(name=metric_name)
+
+    def measure(
+        self, *args, inference_results: list[InferenceResult] | None = None, **kwargs
+    ) -> float:
+        if not inference_results:
+            return 0.0
+        # Access the full conversation for cross-turn analysis
+        assistant_outputs = [
+            ir.actual_output for ir in inference_results if ir.actual_output
+        ]
+        if len(assistant_outputs) < 2:
+            return 1.0
+        # Your custom logic here (e.g., check for contradictions across turns)
+        return 0.9
+
+
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},
+        {"score": ConversationConsistency()},  # Custom multi-turn metric
+    ],
+)
+# @end custom_metric_multi_turn
+
 
 # === Cleanup ===
 galtea_client.products.delete(product_id=product_id)
+if metric_created:
+    galtea_client.metrics.delete(metric_id=metric_created.id)

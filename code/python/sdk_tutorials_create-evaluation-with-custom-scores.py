@@ -134,6 +134,42 @@ galtea.evaluations.create_single_turn(
 # @end option_2_custom_class
 
 
+# @start multi_turn_custom_metric
+from galtea import InferenceResult
+
+
+class AllOutputsContainKeyword(CustomScoreEvaluationMetric):
+    """Checks if a keyword appears in every assistant response across the conversation."""
+
+    def __init__(self, keyword: str):
+        self.keyword = keyword.lower()
+        super().__init__(name=f"all-outputs-contain-{self.keyword}")
+
+    def measure(self, *args, actual_output: str | None = None, inference_results: list[InferenceResult] | None = None, **kwargs) -> float:
+        """
+        Uses inference_results to check every turn in the conversation.
+        Falls back to actual_output when inference_results is not available.
+        """
+        if inference_results:
+            outputs = [ir.actual_output for ir in inference_results if ir.actual_output]
+            if not outputs:
+                return 0.0
+            matches = sum(1 for output in outputs if self.keyword in output.lower())
+            return matches / len(outputs)
+        # Fallback for when inference_results is not provided
+        if not actual_output:
+            return 0.0
+        return 1.0 if self.keyword in actual_output.lower() else 0.0
+
+
+# Use with session-based evaluation for multi-turn scoring
+# galtea.evaluations.create(
+#     session_id="your_session_id",
+#     metrics=[{"score": AllOutputsContainKeyword(keyword="helpful")}],
+# )
+# @end multi_turn_custom_metric
+
+
 # === Cleanup ===
 galtea.products.delete(product_id=product_id)
 metric = galtea.metrics.get_by_name(name=CUSTOM_METRIC_NAME)

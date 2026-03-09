@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from galtea import Galtea
 
 # @start creating_custom_metrics_via_partial
@@ -48,13 +50,41 @@ Evaluate the following conversation for consistency. The agent should not contra
 - Score 0: The agent clearly contradicts itself or provides conflicting information.
 """
 # @end creating_custom_metrics_via_full_prompt_1
+run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
+metric_name = "Human Quality Review " + run_identifier
 galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Setup: create user groups for the human evaluation example
+quality_reviewers_group = galtea.user_groups.create(
+    name="quality-reviewers-" + run_identifier,
+    description="Quality reviewers for human evaluation",
+)
+if quality_reviewers_group is None:
+    raise ValueError("Failed to create quality reviewers user group")
+quality_reviewers_group_name = (
+    quality_reviewers_group.name if quality_reviewers_group else ""
+)
+
 # @start human_evaluation_example
+quality_reviewers_group = galtea.user_groups.get_by_name(quality_reviewers_group_name)
 metric = galtea.metrics.create(
-    name="Human Quality Review",
+    name=metric_name,
     source="human_evaluation",
     judge_prompt="Evaluate the quality of the response based on accuracy, completeness, and clarity.",
     evaluation_params=["input", "actual_output", "expected_output"],
-    user_group_ids=["quality-reviewers-group-id", "senior-analysts-group-id"]
+    user_group_ids=[quality_reviewers_group.id],
 )
 # @end human_evaluation_example
+
+if metric is None:
+    raise ValueError("Failed to create human evaluation metric")
+
+# Cleanup
+try:
+    galtea.metrics.delete(metric_id=metric.id)
+except Exception:
+    pass
+try:
+    galtea.user_groups.delete(user_group_id=quality_reviewers_group.id)
+except Exception:
+    pass
