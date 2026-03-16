@@ -302,6 +302,32 @@ if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create_and_evaluate is None or empty")
 
 
+# Create a specification and link a metric so we can evaluate by specification_ids
+specification = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant provides accurate and relevant answers to user questions.",
+    type="CAPABILITY",
+)
+galtea.specifications.link_metrics(
+    specification_id=specification.id,
+    metric_ids=[metric_id],
+)
+
+# @start inference_result_create_and_evaluate_specification_ids
+# Evaluate using metrics linked to specifications (no need to list metrics manually)
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="The capital of France is Paris.",
+    specification_ids=[specification.id],
+)
+# @end inference_result_create_and_evaluate_specification_ids
+if inference_result is None:
+    raise ValueError("inference_result from create_and_evaluate with spec_ids is None")
+if evaluations is None or len(evaluations) == 0:
+    raise ValueError("evaluations from create_and_evaluate with spec_ids is None or empty")
+
+
 # @start inference_result_generate
 # Define your agent function
 def my_agent(user_message: str) -> str:

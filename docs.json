@@ -340,6 +340,7 @@
                     "icon": "code",
                     "pages": [
                       "sdk/api/evaluation/service",
+                      "sdk/api/evaluation/run",
                       "sdk/api/evaluation/create-single-turn",
                       "sdk/api/evaluation/create",
                       "sdk/api/evaluation/list",
@@ -469,8 +470,16 @@
   },
   "redirects": [
     {
-      "source": "sdk/introduction",
-      "destination": "sdk/installation"
+      "source": "/sdk/api/version/evaluate",
+      "destination": "/sdk/api/evaluation/run"
+    },
+    {
+      "source": "/sdk/api/evaluation/launch",
+      "destination": "/sdk/api/evaluation/run"
+    },
+    {
+      "source": "/sdk/introduction",
+      "destination": "/sdk/installation"
     },
     {
       "source": "/concepts/metric-type",

@@ -215,6 +215,16 @@ def my_agent(input_data: AgentInput) -> AgentResponse:
 # @end define_agent_structured_function
 
 
+# @start run_evaluation_run
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+)
+
+print(f"Evaluated {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
+print(f"View results at: https://platform.galtea.ai/product/{product_id}")
+# @end run_evaluation_run
+
 # For demo purposes, use the structured function
 MyAgentInstance = my_agent
 
