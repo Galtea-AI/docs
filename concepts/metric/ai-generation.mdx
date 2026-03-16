@@ -10,39 +10,60 @@ icon: "sparkles"
 AI Metric Generation lets you automatically create evaluation metrics from your product's [specifications](/concepts/product/specification). Instead of manually crafting judge prompts and configuring evaluation parameters, the AI analyzes your specifications and generates ready-to-use metrics.
 
 <Info>
-  AI-generated metrics use the **Full Prompt** validation method with appropriate evaluation parameters for each specification's test type.
+  Evaluation parameters are automatically selected based on each specification's description and test type. The generated judge prompt follows a format optimized for reliable LLM-based evaluation across different evaluator models.
 </Info>
 
-## How It Works
-
-1. **Select specifications** — Choose one or more policy specifications from your product. Only specifications with a test type (QUALITY, RED_TEAMING, or SCENARIOS) can be used.
-2. **AI generates candidates** — The system analyzes your product description, capabilities, and selected specifications to generate tailored metrics.
-3. **Review and edit** — Review each generated metric candidate. You can edit the name, description, judge prompt, tags, and evaluator model before saving.
-4. **Save selectively** — Save the metrics you want and discard the rest. Saved metrics are automatically linked to their source specification.
+<video
+  autoPlay
+  muted
+  loop
+  playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/metrics-generation.mp4"
+></video>
 
 ## Requirements
 
 - A [product](/concepts/product) with a description
-- At least one [specification](/concepts/product/specification) of type **POLICY** with a test type assigned
+- At least one [specification](/concepts/product/specification) of type **POLICY** with a test type assigned (Accuracy, Security, or Behavior)
 
 <Warning>
   CAPABILITY and INABILITY specifications cannot be used for AI metric generation because they do not have a test type.
 </Warning>
 
-## Using the Dashboard
+## How to Generate Metrics
 
-### From the Product Hub
+There are two ways to trigger AI metric generation from the dashboard:
+
+### From the Specifications Page
 
 1. Navigate to your product's **Specifications** tab
-2. Click **Generate Metrics with AI**
-3. Select the specifications you want to generate metrics for
-4. Click **Generate Metrics** and wait for the AI to process
+2. Open the dropdown menu on the specification you want to generate metrics for
+3. Click **Generate Metrics** — this takes you to the generation page with that specification pre-selected
+4. Click **Generate** and wait for the AI to process
 5. Review the generated candidates — edit, save, or discard each one
 
-### From a Specification
+### From the Metrics Page
 
-1. Open the dropdown menu on any specification
-2. Click **Generate Metrics** to navigate directly to the generation page with that specification pre-selected
+1. Navigate to your product's **Metrics** tab
+2. Click **Generate Metrics with AI**
+3. Select the specifications you want to generate metrics for
+4. Click **Generate** and wait for the AI to process
+5. Review the generated candidates — edit, save, or discard each one
+
+In both cases, the AI analyzes your product name, description, and the selected specifications to generate tailored metrics.
+
+## Evaluation Parameter Selection
+
+The AI automatically selects the evaluation parameters each metric needs based on what the specification describes. For example:
+
+- A specification about **citation accuracy** or **knowledge-grounded answers** will include `retrieval_context` so the judge can verify answers against retrieved source material.
+- A specification about **internal processes, workflows, or tool orchestration** will include `traces` (and often `tools_used`) so the judge can inspect the execution path — not just the final output.
+- A specification about **refusal or safety boundaries** typically only needs `input` and `actual_output`, since compliance is fully observable from what was asked and answered.
+
+<Warning>
+  If a metric includes `traces` or `retrieval_context` as evaluation parameters, the product under test must capture that data during test execution (e.g., via tracing integrations). If the data is not available at evaluation time, the evaluation will fail.
+</Warning>
 
 ## Generated Metric Properties
 
@@ -52,8 +73,8 @@ Each AI-generated metric candidate includes:
 | --- | --- |
 | **Name** | A descriptive name for the metric |
 | **Description** | What the metric evaluates |
-| **Judge Prompt** | The full evaluation prompt with placeholders |
-| **Evaluation Parameters** | The data parameters used in evaluation |
+| **Judge Prompt** | The evaluation prompt with placeholders for dynamic data |
+| **Evaluation Parameters** | The data parameters the judge needs for evaluation (automatically selected based on the specification) |
 | **Tags** | Categorization tags |
 | **Evaluator Model** | The LLM model used for evaluation |
 | **Test Type** | Inherited from the source specification |
