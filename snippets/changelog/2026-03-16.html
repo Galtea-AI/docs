@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-03-16</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+      ul li {
+        margin-bottom: 8px;
+      }
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; text-align: center; font-family: Geist, Poppins, Arial, sans-serif; background-color: #f6f6f5">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f4; text-align: left; margin: 20px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 10px; max-width: 600px">
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img src="https://galtea.ai/img/galtea_mod.png" style="width: 250px; height: auto" />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">Smarter Data Generation and Platform Refinements</h1>
+                <a style="color: #5286ff; font-size: 12px; text-decoration: none" href="https://docs.galtea.ai/changelog#2026-03-16">2026-03-16</a>
+
+                <h3 style="color: #171717">Improved Golden Dataset Generation</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The <a href="https://docs.galtea.ai/concepts/product/test/data-augmentation" style="color: #5286ff">data augmentation</a> pipeline for golden datasets has been redesigned. You can expect more diverse questions, more accurate source attribution, and fewer duplicated or low-quality entries in your generated test cases.
+                </p>
+
+                <h3 style="color: #171717">Platform Improvements</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Automatic text truncation:</strong> Long text in table cells across the dashboard is now automatically clamped to two rows. Click any truncated cell to expand and view the full content rendered as Markdown. This replaces inconsistent truncation behavior across tables and keeps the interface clean without hiding information.</li>
+                  <li><strong>AI metric saving fix:</strong> An issue that prevented non-admin users from saving <a href="https://docs.galtea.ai/concepts/metric/ai-generation" style="color: #5286ff">AI-generated metric</a> candidates has been resolved. All team members can now review and accept metric suggestions without encountering permission errors.</li>
+                  <li><strong>Evaluation link fix:</strong> The evaluation link generated in the SDK code snippets now navigates to the correct tab, ensuring you land on the evaluations view as expected.</li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">Enjoy the improvements!</p>
+                <p style="color: #171717; font-size: 16px"><strong>We'd love to hear your thoughts</strong> on these new features. Just reply to this email or ping us in the Slack or Discord channels.</p>
+
+                <hr style="margin-top: 40px; width: 20%; border: 1px solid #e4e4e7" />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">We are already working on the next set of features:</p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li><strong>Specification-Driven Generation:</strong> Metrics and test cases will be auto-generated directly from your product specifications, letting you focus on defining what matters rather than configuring each piece manually.</li>
+                  <li><strong>One-Click Evaluations:</strong> A new <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444;">evaluations.run()</code> SDK method will handle the entire evaluation lifecycle in a single call &mdash; from creating the evaluation to polling for results.</li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">Stay tuned!</p>
+                <p style="margin-left: 35px"><strong> - Galtea Team</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
