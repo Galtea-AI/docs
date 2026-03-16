@@ -1,0 +1,13 @@
+<Update label="2026-03-16" description="Smarter Data Generation and Platform Refinements">
+
+## Improved Golden Dataset Generation
+
+The [data augmentation](/concepts/product/test/data-augmentation) pipeline for golden datasets has been redesigned. You can expect more diverse questions, more accurate source attribution, and fewer duplicated or low-quality entries in your generated test cases.
+
+## Platform Improvements
+
+- **Automatic text truncation:** Long text in table cells across the dashboard is now automatically clamped to two rows. Click any truncated cell to expand and view the full content rendered as Markdown. This replaces inconsistent truncation behavior across tables and keeps the interface clean without hiding information.
+- **AI metric saving fix:** An issue that prevented non-admin users from saving [AI-generated metric](/concepts/metric/ai-generation) candidates has been resolved. All team members can now review and accept metric suggestions without encountering permission errors.
+- **Evaluation link fix:** The evaluation link generated in the SDK code snippets now navigates to the correct tab, ensuring you land on the evaluations view as expected.
+
+</Update>

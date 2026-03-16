@@ -30,6 +30,12 @@ metrics = galtea.metrics.list(limit=20)
 
 <ResponseField name="limit" type="int" default="1000" optional>
   Maximum number of metrics to return in a single request.
-  
+
   **Default:** `1000`
+</ResponseField>
+
+<ResponseField name="include_legacy" type="bool" default="False">
+  Whether to include deprecated (legacy) metrics in the results.
+
+  **Default:** `False` — deprecated metrics are excluded. Set to `True` to also retrieve metrics that have been deprecated.
 </ResponseField>
