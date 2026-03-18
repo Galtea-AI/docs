@@ -8,25 +8,21 @@ from datetime import datetime
 import galtea
 from galtea import AgentInput, AgentResponse, Galtea, TraceType
 
+from _test_helpers import create_test_product
+
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
 galtea_client = Galtea(api_key="YOUR_API_KEY")
 
 # Create a product for this demo
-client = getattr(galtea_client, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-response = client.post(
-    "products",
-    json={
-        "name": "Generate Demo " + run_identifier,
-        "description": "Demo product for inference result generate API",
-        "capabilities": "Demo capabilities",
-        "inabilities": "Demo inabilities",
-        "securityBoundaries": "Demo security boundaries",
-    },
+product_id = create_test_product(
+    galtea_client,
+    name="Generate Demo " + run_identifier,
+    description="Demo product for inference result generate API",
+    capabilities="Demo capabilities",
+    inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
-product_id = response.json()["id"]
 
 version = galtea_client.versions.create(
     name="Version-" + run_identifier,

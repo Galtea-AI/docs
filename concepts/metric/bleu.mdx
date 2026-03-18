@@ -5,7 +5,6 @@ description: "Primarily used for machine translation evaluation, measuring how m
 
 The BLEU (bilingual evaluation understudy) metric is one of the [Deterministic Metric](/concepts/metric) Galtea exposes to objectively compare a model’s output against ground‑truth references. It is most appropriate when you expect the model to reproduce wording very close to the reference (e.g., machine translation or tightly constrained generation).
 
----
 ## Evaluation Parameters
 
 To compute the `bleu` metric, the following parameters are required:
@@ -13,7 +12,6 @@ To compute the `bleu` metric, the following parameters are required:
 - **`actual_output`**: The model's generated text.
 - **`expected_output`**: The reference (or gold) text to compare against.
 
----
 ## How Is It Calculated?
 
 Conceptually, BLEU is computed as:
@@ -44,15 +42,12 @@ Conceptually, BLEU is computed as:
 
    where $p_n$ are the modified n‑gram precisions and $w_n$ are their weights (uniform, $w_n = \frac{1}{4}$ \).
 
-
 BLEU returns a value between **0 and 1** in this implementation.
 
 - **≥ 0.6** – Very strong overlap / near-reference quality.
 - **0.3 – 0.6** – Moderate overlap; acceptable for some machine translation tasks.
 - **< 0.3** – Low overlap; likely poor or very different phrasing.
 
-
----
 ## Suggested Test Case Types
 
 Use BLEU when you have **deterministic, reference-style outputs**, such as:
@@ -61,9 +56,3 @@ Use BLEU when you have **deterministic, reference-style outputs**, such as:
 - **Data-to-Text Generation** where the wording is tightly constrained.
 - **Template-like Summaries or Headline Generation** where near-exact phrasing matters.
 - **Paraphrase Detection (strict)** when you want to reward lexical overlap (with caution).
-
----
-## Related Topics
-
-- [ROUGE](/concepts/metric/rouge)
-- [METEOR](/concepts/metric/meteor)

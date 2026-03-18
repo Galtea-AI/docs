@@ -33,7 +33,7 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
 **Endpoint connection (no agent):**
 ```python
 # Run evaluation using your deployed endpoint connection
-result = galtea.evaluations.run(version_id="ver_abc123")
+result = galtea.evaluations.run(version_id=version_id)
 print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
 for spec in result["specifications"]:
     print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
@@ -43,8 +43,8 @@ for spec in result["specifications"]:
 ```python
 # Evaluate only specific specifications
 result = galtea.evaluations.run(
-    version_id="ver_abc123",
-    specification_ids=["spec_001", "spec_002"],
+    version_id=version_id,
+    specification_ids=specification_ids,
 )
 ```
 
@@ -56,9 +56,9 @@ def my_agent(user_message: str) -> str:
     return "Agent response"
 
 result = galtea.evaluations.run(
-    version_id="ver_abc123",
+    version_id=version_id,
     agent=my_agent,
-    specification_ids=["spec_001"],
+    specification_ids=specification_ids[:1],
 )
 print(f"Processed {result['testCaseCount']} test cases")
 print(f"Created {len(result['evaluations'])} evaluations")

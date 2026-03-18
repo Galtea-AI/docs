@@ -34,9 +34,15 @@ Before you begin, make sure you have the following set up in the [Galtea Dashboa
   </Step>
 </Steps>
 
----
-
 ## Step 1: Create an Endpoint Connection
+
+{/* <!-- VIDEO PLACEHOLDER: Endpoint connection template authoring walkthrough (90s)
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/endpoint-connection-template-authoring.mp4"
+></video>
+--> */}
 
 Navigate to your product in the Dashboard and go to the **Endpoint Connections** section. Click **New Endpoint Connection** and configure the following:
 
@@ -108,8 +114,6 @@ Any extra keys beyond `output` and `retrieval_context` are saved to the session 
   See [Version — Special keys in Output Mapping](/concepts/product/version#special-keys-in-output-mapping) for a complete reference of how extracted values are stored and reused.
 </Info>
 
----
-
 ## Step 2: Create a Version with the Endpoint Connection
 
 Navigate to your product and create a new **Version**. When configuring the version:
@@ -123,8 +127,6 @@ The Conversation Endpoint Connection is the only required endpoint connection. F
   If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. See [Version — Multi-Step Session Lifecycle](/concepts/product/version#multi-step-session-lifecycle-advanced) for details.
 </Note>
 
----
-
 ## Step 3: Run a Test
 
 Once your version is set up with an endpoint connection, you can run tests directly from the Dashboard:
@@ -135,8 +137,6 @@ Once your version is set up with an endpoint connection, you can run tests direc
 4. Start the test run.
 
 Galtea will iterate through each test case, call your endpoint using the configured endpoint connection, and record the resulting [Inference Results](/concepts/product/version/session/inference-result). Each test case produces a session with one or more inference results depending on whether it's a single-turn or multi-turn test.
-
----
 
 ## Step 4: Evaluate the Results
 
@@ -151,8 +151,6 @@ Galtea will assess each inference result using the selected metrics and provide 
 <Tip>
   For single-turn tests, metrics like [Factual Accuracy](/concepts/metric/factual-accuracy) and [Answer Relevancy](/concepts/metric/answer-relevancy) work well. For multi-turn conversations, consider [Knowledge Retention](/concepts/metric/knowledge-retention), [Role Adherence](/concepts/metric/role-adherence), and [Conversation Completeness](/concepts/metric/conversation-completeness).
 </Tip>
-
----
 
 ## Collecting Traces During Direct Inference
 
@@ -271,8 +269,6 @@ All `@trace`-decorated functions called while the context is active will be auto
   For a complete guide on tracing setup, decorators, and context managers, see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial.
 </Info>
 
----
-
 ## Learn More
 
 <CardGroup cols={2}>
@@ -288,7 +284,8 @@ All `@trace`-decorated functions called while the context is active will be auto
   <Card title="Metrics" icon="brackets-curly" href="/concepts/metric">
     Browse available metrics for evaluating your AI
   </Card>
-  <Card title="Tracing Agent Operations" icon="diagram-project" href="/sdk/tutorials/tracing-agent-operations">
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
     Capture and analyze your agent's internal operations
   </Card>
 </CardGroup>
+

@@ -3,11 +3,9 @@ title: "Contextual Precision"
 description: "Evaluates whether relevant documents in the retrieval context are ranked higher than irrelevant ones."
 ---
 
-The **Contextual Precision** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to assess how well your RAG pipeline's retriever prioritizes relevant content. Specifically, it checks whether relevant items in the `retrieval_context` are ranked higher than irrelevant ones, based on their contribution to answering the user's query.
+The **Contextual Precision** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to assess how well your RAG pipeline's retriever prioritizes relevant content. Specifically, it checks whether relevant items in the `retrieval_context` are ranked higher than irrelevant ones, based on their contribution to answering the user's query.
 
 High contextual precision means that the retriever is efficiently surfacing the most useful information near the top.
-
----
 
 ## Evaluation Parameters
 
@@ -17,8 +15,6 @@ To compute the `contextual_precision` metric, the following are required:
 - **`retrieval_context`**: The list of retrieved documents or nodes, in ranked order.
 
 This setup allows for a rank-sensitive evaluation of retrieval effectiveness.
-
----
 
 ## How Is It Calculated?
 
@@ -39,11 +35,4 @@ Where **k** is a configurable cutoff (e.g., top 5 or top 10). This helps gauge w
 
 ## Suggested Test Case Types
 
-The Contextual Precision metric is effective for evaluating quality test cases in Galtea for products that use RAG, since it measures the whether the model was able to gather useful information in retrieval for accurate and efficient response generation.
-
----
-
-## Related Topics
-
-- [Contextual Relevancy](/concepts/metric/contextual-relevancy)
-- [Faithfulness](/concepts/metric/faithfulness)
+The Contextual Precision metric is effective for evaluating Accuracy test cases in Galtea for products that use RAG, since it measures the whether the model was able to gather useful information in retrieval for accurate and efficient response generation.

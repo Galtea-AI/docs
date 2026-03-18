@@ -5,6 +5,7 @@ Demonstrates how to create, list, get, update, delete user groups, and link/unli
 
 from datetime import datetime
 
+from _test_helpers import list_users
 from galtea import Galtea
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
@@ -43,13 +44,7 @@ if user_group is None:
 user_group_id = user_group.id
 
 # Setup: fetch a real user ID for link/unlink demos (filtered by organization)
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-users_response = client.get(
-    "users", params={"organizationIds": user_group.organization_id, "limit": 1}
-)
-users_data = users_response.json()
+users_data = list_users(galtea, organization_id=user_group.organization_id)
 user_id_1 = users_data[0]["id"]
 
 # @start list
@@ -95,6 +90,22 @@ galtea.user_groups.link_metrics(
     metric_ids=[metric_id_1, metric_id_2],
 )
 # @end link_metrics
+
+# @start create_human_evaluation_metric
+metric = galtea.metrics.create(
+    name="domain-expert-review",
+    source="human_evaluation",
+    judge_prompt="Review the assistant's response for accuracy and helpfulness. Score 1 if the response is correct and useful, 0 if it contains errors or is unhelpful.",
+    evaluation_params=["input", "actual_output", "expected_output"],
+    description="Domain expert review of response quality",
+)
+
+# Link the metric to the user group
+galtea.user_groups.link_metrics(
+    user_group_id=user_group_id,
+    metric_ids=[metric.id],
+)
+# @end create_human_evaluation_metric
 
 # @start unlink_metrics
 galtea.user_groups.unlink_metrics(

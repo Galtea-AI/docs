@@ -40,10 +40,10 @@ galtea.metrics.create(
 )
 
 # Run evaluation with your pre-computed score
-galtea.evaluations.create_single_turn(
-    version_id=version_id,
-    test_case_id=test_case_id,
-    actual_output=actual_output,
+session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id)
+galtea.inference_results.create_and_evaluate(
+    session_id=session.id,
+    output=actual_output,
     metrics=[
         {"name": "Role Adherence"},  # Standard Galtea metric
         {
@@ -91,10 +91,10 @@ actual_output_2 = "This response is relevant and helpful."
 
 # Run evaluation with your custom metric class
 # Important: Do NOT provide 'id' or 'name' in the dict when using CustomScoreEvaluationMetric
-galtea.evaluations.create_single_turn(
-    version_id=version_id,
-    test_case_id=test_case_id,
-    actual_output=actual_output_2,
+session_2 = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id)
+galtea.inference_results.create_and_evaluate(
+    session_id=session_2.id,
+    output=actual_output_2,
     metrics=[
         {"name": "Role Adherence"},  # Standard Galtea metric
         {"score": accuracy_metric},  # Self-hosted with dynamic scoring
@@ -163,3 +163,14 @@ class AllOutputsContainKeyword(CustomScoreEvaluationMetric):
 <Info>
   The `inference_results` parameter is always a list ordered chronologically. For single-turn evaluations (via `inference_result_id`), it contains one item. For session evaluations, it contains all turns. See [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) for the full session-based workflow.
 </Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Create Your Own Judge Prompt" icon="wand-magic-sparkles" href="/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt">
+    Write custom LLM-as-a-judge prompts for AI Evaluation metrics.
+  </Card>
+  <Card title="Evaluating Conversations" icon="comments" href="/sdk/tutorials/evaluating-conversations">
+    Apply custom metrics to multi-turn conversation evaluations.
+  </Card>
+</CardGroup>

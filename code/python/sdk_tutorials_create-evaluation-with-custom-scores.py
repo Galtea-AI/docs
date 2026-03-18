@@ -5,6 +5,7 @@ Demonstrates how to run evaluations with your own custom, self-hosted metrics.
 
 from datetime import datetime
 
+from _test_helpers import create_test_product
 from galtea import CustomScoreEvaluationMetric, Galtea
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -12,20 +13,14 @@ run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 galtea = Galtea(api_key="YOUR_API_KEY")
 
 # Create a product for this demo
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-response = client.post(
-    "products",
-    json={
-        "name": "Custom Metrics Demo " + run_identifier,
-        "description": "Demo product for custom metrics tutorial",
-        "capabilities": "Demo capabilities",
-        "inabilities": "Demo inabilities",
-        "securityBoundaries": "Demo security boundaries",
-    },
+product_id = create_test_product(
+    galtea,
+    name="Custom Metrics Demo " + run_identifier,
+    description="Demo product for custom metrics tutorial",
+    capabilities="Demo capabilities",
+    inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
-product_id = response.json()["id"]
 
 version = galtea.versions.create(
     name="Version-" + run_identifier,
@@ -74,10 +69,10 @@ galtea.metrics.create(
 )
 
 # Run evaluation with your pre-computed score
-galtea.evaluations.create_single_turn(
-    version_id=version_id,
-    test_case_id=test_case_id,
-    actual_output=actual_output,
+session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id)
+galtea.inference_results.create_and_evaluate(
+    session_id=session.id,
+    output=actual_output,
     metrics=[
         {"name": "Role Adherence"},  # Standard Galtea metric
         {
@@ -122,10 +117,10 @@ actual_output_2 = "This response is relevant and helpful."
 
 # Run evaluation with your custom metric class
 # Important: Do NOT provide 'id' or 'name' in the dict when using CustomScoreEvaluationMetric
-galtea.evaluations.create_single_turn(
-    version_id=version_id,
-    test_case_id=test_case_id,
-    actual_output=actual_output_2,
+session_2 = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id)
+galtea.inference_results.create_and_evaluate(
+    session_id=session_2.id,
+    output=actual_output_2,
     metrics=[
         {"name": "Role Adherence"},  # Standard Galtea metric
         {"score": accuracy_metric},  # Self-hosted with dynamic scoring

@@ -3,7 +3,7 @@ title: "Resilience To Noise"
 description: "Measures a language model's robustness to input noise such as typos, OCR/ASR errors, grammatical mistakes, and distracting content."
 ---
 
-The **Resilience To Noise** metric is one of several [RAG Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to maintain response accuracy and coherence when faced with noisy or corrupted input. This includes:
+The **Resilience To Noise** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to maintain response accuracy and coherence when faced with noisy or corrupted input. This includes:
 
 - Typographical errors.
 - Optically Character Recognition (OCR) errors.
@@ -13,16 +13,12 @@ The **Resilience To Noise** metric is one of several [RAG Metrics](/concepts/met
 
 This metric is essential for assessing how well your product performs in real-world scenarios where user input may not always be clean or well-formed.
 
----
-
 ## Evaluation Parameters
 
 To compute the `resilience_to_noise` metric, the following parameters are required in every turn of the conversation:
 
 - **`input`**: The user message in the conversation, which is assumed to contain some form of noise or irrelevant information.
 - **`actual_output`**: The chatbot's corresponding response. This metric specifically evaluates the model's ability to handle noisy input, so it is not meaningful to apply it to clean or noise-free data.
-
----
 
 ## How Is It Calculated?
 
@@ -40,9 +36,10 @@ This approach helps monitor and improve your model's resilience in practical, no
 
 <Note>This metric is inspired by best practices in the open source community and is implemented natively in the Galtea platform.</Note>
 
----
+## Suggested Test Case Types
 
-## Related Topics
+The Resilience To Noise metric is effective for evaluating Accuracy test cases in Galtea, particularly:
 
-- [Factual Accuracy](/concepts/metric/factual-accuracy)
-- [Faithfulness](/concepts/metric/faithfulness)
+- **Noisy user input** containing typos, OCR/ASR artifacts, or grammatical errors.
+- **Real-world query simulation** where input quality varies significantly.
+- **Robustness regression tests** to verify the model handles messy input after updates.

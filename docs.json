@@ -81,18 +81,32 @@
             "pages": ["introduction", "registration", "quickstart"]
           },
           {
-            "group": "Tutorials",
+            "group": "Core Workflows",
+            "icon": "play",
             "pages": [
               "sdk/tutorials/create-product-description",
+              "sdk/tutorials/specifications",
+              "sdk/tutorials/simulating-conversations",
               "sdk/tutorials/create-test",
               "sdk/tutorials/create-evaluation",
-              "sdk/tutorials/direct-inferences-and-evaluations-from-platform",
+              "sdk/tutorials/direct-inferences-and-evaluations-from-platform"
+            ]
+          },
+          {
+            "group": "Production & Monitoring",
+            "icon": "chart-line",
+            "pages": [
               "sdk/tutorials/monitor-production-responses-to-user-queries",
-              "sdk/tutorials/evaluating-conversations",
-              "sdk/tutorials/simulating-conversations",
-              "sdk/tutorials/tracing-agent-operations",
-              "sdk/tutorials/create-evaluation-with-custom-scores",
+              "sdk/tutorials/evaluating-conversations"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "icon": "wand-magic-sparkles",
+            "pages": [
               "sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt",
+              "sdk/tutorials/create-evaluation-with-custom-scores",
+              "sdk/tutorials/tracing-agent-operations",
               "sdk/tutorials/how-to-evaluate-your-agentic-system",
               "sdk/tutorials/human-evaluation"
             ]
@@ -133,6 +147,28 @@
               },
 
               {
+                "group": "Specification",
+                "icon": "bullseye",
+                "pages": [
+                  "concepts/product/specification",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/specification/service",
+                      "sdk/api/specification/create",
+                      "sdk/api/specification/list",
+                      "sdk/api/specification/get",
+                      "sdk/api/specification/delete",
+                      "sdk/api/specification/link-metrics",
+                      "sdk/api/specification/unlink-metrics",
+                      "sdk/api/specification/get-metrics"
+                    ]
+                  }
+                ]
+              },
+
+              {
                 "group": "Version",
                 "icon": "code-branch",
                 "pages": [
@@ -155,39 +191,37 @@
               {
                 "group": "Endpoint Connection",
                 "icon": "plug",
-                "pages": ["concepts/product/endpoint-connection"]
+                "pages": [
+                  "concepts/product/endpoint-connection",
+                  "concepts/product/endpoint-connection-configuration"
+                ]
               },
 
               {
                 "group": "Test",
-                "icon": "flask",
+                "icon": "vial-circle-check",
                 "pages": [
                   "concepts/product/test",
+                  "concepts/product/test/data-augmentation",
                   {
-                    "group": "Test Types",
+                    "group": "Accuracy",
+                    "icon": "certificate",
+                    "pages": ["concepts/product/test/accuracy-tests"]
+                  },
+                  {
+                    "group": "Security & Safety",
+                    "icon": "shield-check",
                     "pages": [
-                      {
-                        "group": "Quality",
-                        "icon": "certificate",
-                        "pages": ["concepts/product/test/quality-tests"]
-                      },
-                      {
-                        "group": "Red Teaming",
-                        "icon": "shield-check",
-                        "pages": [
-                          "concepts/product/test/red-teaming-tests",
-                          "concepts/product/test/red-teaming-threats",
-                          "concepts/product/test/red-teaming-strategies"
-                        ]
-                      },
-                      {
-                        "group": "Scenarios",
-                        "icon": "user-group",
-                        "pages": ["concepts/product/test/scenario-tests"]
-                      }
+                      "concepts/product/test/security-tests",
+                      "concepts/product/test/security-threats",
+                      "concepts/product/test/security-strategies"
                     ]
                   },
-                  "concepts/product/test/data-augmentation",
+                  {
+                    "group": "Behavior",
+                    "icon": "person-walking",
+                    "pages": ["concepts/product/test/behavior-tests"]
+                  },
                   {
                     "group": "SDK",
                     "icon": "code",
@@ -224,35 +258,13 @@
               },
 
               {
-                "group": "Specification",
-                "icon": "list-check",
-                "pages": [
-                  "concepts/product/specification",
-                  {
-                    "group": "SDK",
-                    "icon": "code",
-                    "pages": [
-                      "sdk/api/specification/service",
-                      "sdk/api/specification/create",
-                      "sdk/api/specification/list",
-                      "sdk/api/specification/get",
-                      "sdk/api/specification/delete",
-                      "sdk/api/specification/link-metrics",
-                      "sdk/api/specification/unlink-metrics",
-                      "sdk/api/specification/get-metrics"
-                    ]
-                  }
-                ]
-              },
-
-              {
-                "group": "Simulator",
-                "icon": "user-group",
+                "group": "Conversation Simulator",
+                "icon": "comments",
                 "pages": [
                   "concepts/product/test/case/conversation-simulator",
                   {
-                    "group": "Simulator",
-                    "icon": "user-group",
+                    "group": "SDK",
+                    "icon": "code",
                     "pages": [
                       "sdk/api/simulator/service",
                       "sdk/api/simulator/simulate"
@@ -263,7 +275,7 @@
 
               {
                 "group": "Session",
-                "icon": "comments",
+                "icon": "clock-rotate-left",
                 "pages": [
                   "concepts/product/version/session",
                   {
@@ -285,7 +297,7 @@
 
               {
                 "group": "Inference Result",
-                "icon": "diagram-project",
+                "icon": "arrow-right-from-bracket",
                 "pages": [
                   "concepts/product/version/session/inference-result",
                   {
@@ -325,6 +337,80 @@
                       "sdk/api/trace/get",
                       "sdk/api/trace/delete",
                       "sdk/api/trace/trace-decorator"
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "group": "Metrics",
+                "icon": "gauge",
+                "pages": [
+                  "concepts/metric",
+                  "concepts/metric/evaluation-types",
+                  "concepts/metric/evaluation-parameters",
+                  "concepts/metric/ai-generation",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/metric/service",
+                      "sdk/api/metric/create",
+                      "sdk/api/metric/list",
+                      "sdk/api/metric/get",
+                      "sdk/api/metric/get-by-name",
+                      "sdk/api/metric/delete"
+                    ]
+                  },
+                  {
+                    "group": "RAG",
+                    "icon": "magnifying-glass-chart",
+                    "pages": [
+                      "concepts/metric/factual-accuracy",
+                      "concepts/metric/resilience-to-noise",
+                      "concepts/metric/answer-relevancy",
+                      "concepts/metric/faithfulness",
+                      "concepts/metric/contextual-precision",
+                      "concepts/metric/contextual-recall",
+                      "concepts/metric/contextual-relevancy"
+                    ]
+                  },
+                  {
+                    "group": "Conversational",
+                    "icon": "message",
+                    "pages": [
+                      "concepts/metric/knowledge-retention",
+                      "concepts/metric/role-adherence",
+                      "concepts/metric/conversation-completeness",
+                      "concepts/metric/conversation-relevancy",
+                      "concepts/metric/user-satisfaction",
+                      "concepts/metric/user-objective-accomplished"
+                    ]
+                  },
+                  {
+                    "group": "Security & Safety",
+                    "icon": "shield-check",
+                    "pages": [
+                      "concepts/metric/misuse-resilience",
+                      "concepts/metric/non-toxic",
+                      "concepts/metric/unbiased",
+                      "concepts/metric/jailbreak-resilience",
+                      "concepts/metric/data-leakage"
+                    ]
+                  },
+                  {
+                    "group": "Deterministic",
+                    "icon": "calculator",
+                    "pages": [
+                      "concepts/metric/bleu",
+                      "concepts/metric/rouge",
+                      "concepts/metric/meteor",
+                      "concepts/metric/text-similarity",
+                      "concepts/metric/text-match",
+                      "concepts/metric/iou",
+                      "concepts/metric/spatial-match",
+                      "concepts/metric/url-validation",
+                      "concepts/metric/tool-correctness"
                     ]
                   }
                 ]
@@ -381,79 +467,6 @@
                 "group": "Model",
                 "icon": "microchip",
                 "pages": ["concepts/model"]
-              },
-
-              {
-                "group": "Metrics",
-                "icon": "brackets-curly",
-                "pages": [
-                  "concepts/metric",
-                  "concepts/metric/ai-generation",
-                  {
-                    "group": "SDK",
-                    "icon": "code",
-                    "pages": [
-                      "sdk/api/metric/service",
-                      "sdk/api/metric/create",
-                      "sdk/api/metric/list",
-                      "sdk/api/metric/get",
-                      "sdk/api/metric/get-by-name",
-                      "sdk/api/metric/delete"
-                    ]
-                  },
-                  {
-                    "group": "RAG metrics",
-                    "icon": "magnifying-glass-chart",
-                    "pages": [
-                      "concepts/metric/factual-accuracy",
-                      "concepts/metric/resilience-to-noise",
-                      "concepts/metric/answer-relevancy",
-                      "concepts/metric/faithfulness",
-                      "concepts/metric/contextual-precision",
-                      "concepts/metric/contextual-recall",
-                      "concepts/metric/contextual-relevancy",
-                      "concepts/metric/custom-judge"
-                    ]
-                  },
-                  {
-                    "group": "Conversational",
-                    "icon": "message",
-                    "pages": [
-                      "concepts/metric/knowledge-retention",
-                      "concepts/metric/role-adherence",
-                      "concepts/metric/conversation-completeness",
-                      "concepts/metric/conversation-relevancy",
-                      "concepts/metric/user-satisfaction",
-                      "concepts/metric/user-objective-accomplished"
-                    ]
-                  },
-                  {
-                    "group": "Red Teaming",
-                    "icon": "shield-check",
-                    "pages": [
-                      "concepts/metric/misuse-resilience",
-                      "concepts/metric/non-toxic",
-                      "concepts/metric/unbiased",
-                      "concepts/metric/jailbreak-resilience",
-                      "concepts/metric/data-leakage"
-                    ]
-                  },
-                  {
-                    "group": "Deterministic metrics",
-                    "icon": "calculator",
-                    "pages": [
-                      "concepts/metric/bleu",
-                      "concepts/metric/rouge",
-                      "concepts/metric/meteor",
-                      "concepts/metric/text-similarity",
-                      "concepts/metric/text-match",
-                      "concepts/metric/iou",
-                      "concepts/metric/spatial-match",
-                      "concepts/metric/url-validation",
-                      "concepts/metric/tool-correctness"
-                    ]
-                  }
-                ]
               }
             ]
           }
@@ -469,6 +482,26 @@
     }
   },
   "redirects": [
+    {
+      "source": "/concepts/product/test/quality-tests",
+      "destination": "/concepts/product/test/accuracy-tests"
+    },
+    {
+      "source": "/concepts/product/test/red-teaming-tests",
+      "destination": "/concepts/product/test/security-tests"
+    },
+    {
+      "source": "/concepts/product/test/red-teaming-threats",
+      "destination": "/concepts/product/test/security-threats"
+    },
+    {
+      "source": "/concepts/product/test/red-teaming-strategies",
+      "destination": "/concepts/product/test/security-strategies"
+    },
+    {
+      "source": "/concepts/product/test/scenario-tests",
+      "destination": "/concepts/product/test/behavior-tests"
+    },
     {
       "source": "/sdk/api/version/evaluate",
       "destination": "/sdk/api/evaluation/run"
@@ -515,7 +548,11 @@
     },
     {
       "source": "/concepts/metric-type/custom-judge",
-      "destination": "/concepts/metric/custom-judge"
+      "destination": "/concepts/metric/evaluation-types#ai-evaluation"
+    },
+    {
+      "source": "/concepts/metric/custom-judge",
+      "destination": "/concepts/metric/evaluation-types#ai-evaluation"
     },
     {
       "source": "/concepts/metric-type/data-leakage",

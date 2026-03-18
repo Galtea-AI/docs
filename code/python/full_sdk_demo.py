@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
 
+from _test_helpers import create_test_product
+
 from galtea import (
     AgentInput,
     AgentResponse,
@@ -26,19 +28,13 @@ products = galtea.products.list(limit=10)
 
 # If none exist, Create a product with direct API call since SDK does not have create product method
 if products is None or len(products) == 0:
-    client = getattr(galtea, "_Galtea__client", None)
-    if client is None:
-        raise ValueError("Could not access Galtea client for direct API call")
-    response = client.post(
-        "products",
-        json={
-            "name": "Financial Assistant " + run_identifier,
-            "description": "A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
-            "securityBoundaries": "* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
-            "capabilities": "* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
-            "inabilities": "* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
-            "policies": "",
-        },
+    create_test_product(
+        galtea,
+        name="Financial Assistant " + run_identifier,
+        description="A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
+        security_boundaries="* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
+        capabilities="* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
+        inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
     )
     products = galtea.products.list(limit=10)
 
@@ -293,7 +289,7 @@ inference_result, evaluations = galtea.inference_results.create_and_evaluate(
     session_id=session_id,
     input="What is the capital of France?",
     output="The capital of France is Paris.",
-    metrics=["Factual Accuracy", "Answer Relevancy"],
+    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
 # @end inference_result_create_and_evaluate_basic
 if inference_result is None:
@@ -456,7 +452,7 @@ simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
     agent=my_agent,
     max_turns=3,
-    log_inference_results=True,
+
 )
 # @end simulator_simulate
 if simulation_result is None:
@@ -573,7 +569,7 @@ evaluation_id = evaluations[0].id
 # Evaluate a specific inference result by providing its ID
 evaluations = galtea.evaluations.create(
     inference_result_id=inference_result_id,
-    metrics=["Factual Accuracy", "Answer Relevancy"],
+    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
 # @end evaluation_create_from_inference_result
 if evaluations is None or len(evaluations) == 0:
@@ -598,6 +594,11 @@ evaluations = galtea.evaluations.create(
 # @end evaluation_create_production
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
+
+# @start evaluation_retry
+retry_result = galtea.evaluations.retry(id=evaluation_id)
+print(f"Retried: {retry_result['retried']}, Skipped: {retry_result['skipped']}")
+# @end evaluation_retry
 
 # @start evaluation_list
 evaluations = galtea.evaluations.list(session_id=session_id)

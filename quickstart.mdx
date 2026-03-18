@@ -15,31 +15,34 @@ import TestCard from '/snippets/cards/test-card.mdx';
 import TraceCard from '/snippets/cards/trace-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
 
-This quickstart walks you through running your first evaluation in Galtea using the Python SDK. By the end, you'll have evaluation results for your AI product.
+This quickstart walks you through running your first evaluation in Galtea for a conversational product using the Python SDK. It is intended for a technical audience and covers RAG pipelines, conversational scenarios, and security or safety checks.
 
 ## Evaluation Workflow Overview
 
 <Steps>
-  <Step title="Tell Us About Your Product">Create your product and let the platform generate specifications, tests, and metrics.</Step>
+  <Step title="Tell Us About Your Product">Provide details about your product so our models can create tailored testing content.</Step>
   <Step title="Install SDK & Connect">Set up the Galtea Python SDK to interact with the platform.</Step>
-  <Step title="Run Your Evaluation">Define your agent function and launch the evaluation with a single SDK call.</Step>
+  <Step title="Version Your Product">Track different implementations to compare improvements over time.</Step>
+  <Step title="Create Your Tests">Create a test dataset to generate the test cases you’ll evaluate.</Step>
+  <Step title="Choose Your Metrics">Select from our metrics library or bring your own custom metrics.</Step>
+  <Step title="Run Evaluations">Test your product version with the selected test and metrics.</Step>
   <Step title="See Your Results">Explore detailed insights and compare versions on the dashboard.</Step>
 </Steps>
 
 ## 1. Tell Us About Your Product
 
-If you're new to Galtea, start by creating an account and your first product in the dashboard: [Go to the dashboard](https://platform.galtea.ai/).
+If you’re new to Galtea, start by creating an account and your first product in the dashboard: [Go to the dashboard](https://platform.galtea.ai/).
 
-Follow the **Onboarding** checklist on the product page. It will prompt you for product details and guide you through generating specifications, tests, and metrics. These are all linked together — each specification defines what to test and how to score it.
+Follow the **Onboarding** checklist on the product page (this is the guided setup shown inside your product). It will prompt you for product details and help you generate an API key. The product details you provide there are used to tailor generated tests and evaluations.
 
 <Frame>
   <img src="/images/ai-product-form.png" alt="AI-assisted product creation form" />
 </Frame>
 
-Keep your **API key** handy for the SDK steps below.
+Keep your **Product ID** and **API key** handy for the SDK steps below.
 
 <Info>
-  The product information is crucial — it powers our ability to generate synthetic test data, metrics, and specifications specific to your use case.
+  The product information is crucial – it powers our ability to generate synthetic test data that’s specific to your use case.
 </Info>
 
 ## 2. Get Started with the SDK
@@ -67,11 +70,24 @@ You can use Galtea from the dashboard or via the Python SDK. This quickstart use
   </Step>
 </Steps>
 
-## 3. Run Your Evaluation
+## 3. Version Your Product
 
-Now connect Galtea to your product. You define an **agent function** — a wrapper that takes user input, calls your AI system, and returns its output. Then `evaluations.run()` handles everything: it resolves your specifications, iterates through test cases, runs your agent, and triggers evaluations using the linked metrics.
+Use versions to track iterations of your product and compare evaluation results over time. Each evaluation is tied to a version, so you can see how changes impact metrics.
 
-First, find your product and version IDs. You can copy them from the dashboard (click the **3-dot menu** on any item, then select **Copy ID**) or list them via the SDK:
+If you completed the **Onboarding** checklist on your product page, you already have an initial version (created automatically).
+
+To find IDs in the dashboard, open your product and click the **3-dot menu** on any item, then select **Copy ID**.
+
+  <video            
+    autoPlay
+    muted                                                                                                           
+    loop
+    playsInline                                                                                                     
+    className="w-full aspect-video rounded-xl"                                                                    
+    src="/videos/copy-id-from-dashboard.mp4"
+  ></video>
+
+Alternatively, list them via the SDK:
 
 ```python
 products = galtea.products.list()
@@ -83,36 +99,241 @@ for v in versions:
     print(v.id, v.name)
 ```
 
-Then set them:
+Then set them once here:
 
 ```python
 product_id = "your_product_id"
 version_id = "your_version_id"
 ```
 
-Next, define your agent. The SDK supports three agent function signatures — pick the one that matches how much context your agent needs:
+## 4. Create Your Tests
+
+<Tip>
+  **Prefer to generate tests automatically?** If you've defined [Specifications](/concepts/product/specification) for your product, Galtea can generate tests and metrics for you — see the [Specification-Driven Evaluations](/sdk/tutorials/specifications) tutorial.
+</Tip>
+
+A single conversational product typically includes multiple components. In Galtea, you evaluate each component by creating a different [test](/concepts/product/test) type, think of each test as a lens on the same system:
+
+- **RAG pipelines** → create an **Accuracy** test (`type="ACCURACY"`)
+- **Security or safety aspects** → create a **Security & Safety** test (`type="SECURITY"`)
+- **Conversational scenarios** → create a **Behavior** test (`type="BEHAVIOR"`)
+
+You can create one or multiple test types for the same product, depending on which components you want to evaluate.
+
+<Note>
+  After creating a test, give it a moment to finish generating test cases. You can track progress in the dashboard.
+</Note>
+
+<Info>
+  If you already created a test during onboarding, you can reuse it here—skip the `tests.create(...)` step and just list its test cases using the test ID from the dashboard.
+</Info>
+
+<Tabs>
+  <Tab title="RAG">
+    Accuracy tests are used to evaluate RAG pipelines and QA-style components within a conversational product. Galtea generates single-turn test cases (input and expected output) from a knowledge base to assess response quality and factual correctness.
+
+```python
+test = galtea.tests.create(
+    name="rag-accuracy-test",
+    type="ACCURACY",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=20,
+)
+```
+
+After a brief wait for test case generation, list the test cases:
+
+```python
+test_cases = galtea.test_cases.list(test_id=test.id)
+print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
+```
+
+Learn more about [Accuracy Tests](/concepts/product/test/accuracy-tests) and their configuration options.
+  </Tab>
+
+  <Tab title="Security">
+    Security & Safety tests probe safety and security boundaries (e.g., misuse, toxicity, data leakage). For this quickstart, we’ll create a small **Misuse** test.
+
+```python
+test = galtea.tests.create(
+    name="misuse-security-test",
+    type="SECURITY",
+    product_id=product_id,
+    variants=["misuse"],
+    strategies=["original"],  # original must always be included
+    max_test_cases=20,
+)
+```
+
+After a brief wait for test case generation, list the test cases:
+
+```python
+test_cases = galtea.test_cases.list(test_id=test.id)
+print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
+```
+
+Learn more about [Security & Safety Tests](/concepts/product/test/security-tests), [threats](/concepts/product/test/security-threats), and [strategies](/concepts/product/test/security-strategies).
+  </Tab>
+
+  <Tab title="Conversational">
+    Behavior tests evaluate multi-turn conversations. Each test case defines a goal/persona/scenario and is meant to be run with the [Conversation Simulator](/concepts/product/test/case/conversation-simulator).
+
+```python
+test = galtea.tests.create(
+    name="conversation-behavior-test",
+    type="BEHAVIOR",
+    product_id=product_id,
+    language="english",
+    max_test_cases=20,
+    strategies=["written"],
+)
+```
+
+After a brief wait for test case generation, list the test cases:
+
+```python
+test_cases = galtea.test_cases.list(test_id=test.id)
+print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
+```
+
+Learn more about [Behavior Tests](/concepts/product/test/behavior-tests) and [Conversation Simulation](/concepts/product/test/case/conversation-simulator).
+  </Tab>
+</Tabs>
+
+## 5. Choose Your Metrics
+
+Metrics define how evaluation outputs are scored. Galtea provides built-in metrics for common use cases (factual accuracy, faithfulness, toxicity, role adherence, and [many more](/concepts/metric)), and you can also create custom metrics with your own judge prompts. You can also [generate metrics from specifications](/concepts/metric/ai-generation) — the AI creates tailored judge prompts for each spec.
+
+<Tabs>
+  <Tab title="RAG">
+    For a RAG-style Accuracy test, a good default is **[Factual Accuracy](/concepts/metric/factual-accuracy)**.
+
+```python
+metric = galtea.metrics.get_by_name(name="Factual Accuracy")
+```
+  </Tab>
+
+  <Tab title="Security">
+    For Misuse Security & Safety tests, we’ll use **[Misuse Resilience](/concepts/metric/misuse-resilience)**.
+
+```python
+metric = galtea.metrics.get_by_name(name="Misuse Resilience")
+```
+  </Tab>
+
+  <Tab title="Conversational">
+    For conversational evaluations, start with a metric like **[Role Adherence](/concepts/metric/role-adherence)**.
+
+```python
+metric = galtea.metrics.get_by_name(name="Role Adherence")
+```
+  </Tab>
+</Tabs>
+
+## 6. Run the Evaluation
+
+Now connect Galtea to your product. You define an **agent function** — a wrapper that takes a test case input, calls your AI system, and returns its output. The SDK then loops through test cases, calls your agent, and scores the results via [evaluations](/concepts/product/version/session/evaluation).
+
+The SDK supports three agent function signatures — pick the one that matches how much context your agent needs:
 
 <AgentCallables />
 
-Finally, launch the evaluation:
+<Tabs>
+  <Tab title="RAG">
+  ```python
+  for test_case in test_cases:
+      # Create a session linked to the test case and version
+      session = galtea.sessions.create(
+          version_id=version_id,
+          test_case_id=test_case.id,
+      )
 
-```python
-result = galtea.evaluations.run(
-    version_id=version_id,
-    agent=my_agent,
-)
+      # Run a synthetic user conversation against your agent
+      inference_result = galtea.inference_results.generate(
+          session=session,
+          agent=my_agent,
+          user_input=test_case.input,
+      )
 
-print(f"Evaluated {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
-print(f"View results at: https://platform.galtea.ai/product/{product_id}")
-```
+      # Evaluate the full conversation (session)
+      galtea.evaluations.create(
+          session_id=session.id,
+          metrics=[{"name": metric.name}],
+      )
 
-That's it. The SDK resolves all specifications with linked metrics and tests, creates sessions for each test case, runs your agent, and submits evaluations — all in one call.
+  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
+  ```
+
+  </Tab>
+
+  <Tab title="Security">
+  ```python
+  for test_case in test_cases:
+      # Create a session linked to the test case and version
+      session = galtea.sessions.create(
+          version_id=version_id,
+          test_case_id=test_case.id,
+      )
+
+      # Run a synthetic user conversation against your agent
+      inference_result = galtea.inference_results.generate(
+          session=session,
+          agent=my_agent,
+          user_input=test_case.input,
+      )
+
+      # Evaluate the full conversation (session)
+      galtea.evaluations.create(
+          session_id=session.id,
+          metrics=[{"name": metric.name}],
+      )
+
+  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
+  ```
+  </Tab>
+
+  <Tab title="Conversational">
+  ```python
+  for test_case in test_cases:
+      # Create a session linked to the test case and version
+      session = galtea.sessions.create(
+          version_id=version_id,
+          test_case_id=test_case.id,
+      )
+
+      # Run a synthetic user conversation against your agent
+      galtea.simulator.simulate(
+          session_id=session.id,
+          agent=my_agent,
+          max_turns=test_case.max_iterations or 10,
+      )
+
+      # Evaluate the full conversation (session)
+      galtea.evaluations.create(
+          session_id=session.id,
+          metrics=[{"name": metric.name}],
+      )
+
+  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
+  ```
+  </Tab>
+</Tabs>
 
 <Note>
-  `evaluations.run()` handles both single-turn tests (RAG, security) and multi-turn conversational scenarios uniformly. No need to differentiate between test types in your code.
+  If you already computed a score, you can upload it directly: `{"name": "my-metric", "score": 0.85}`.
 </Note>
 
-## 4. See Your Results
+## 7. See Your Results
+
+{/* <!-- VIDEO PLACEHOLDER: Analytics results review walkthrough (60-90s)
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/analytics-results-review.mp4"
+></video>
+--> */}
 
 Once your evaluations are submitted, open your product in the [Galtea platform](https://platform.galtea.ai/) and head to **Analytics**. Start with the aggregate scores to get a quick baseline, then slice by **version**, **test**, and **metric** to see where performance shifts.
 
@@ -124,16 +345,19 @@ print(f"View results at: https://platform.galtea.ai/product/{product_id}")
 
 ## Next Steps
 
-Congratulations! You've completed your first evaluation with Galtea.
+Congratulations! You’ve completed your first evaluation with Galtea. 
 
 You can now explore more advanced features like:
 
 <CardGroup cols={2}>
-<Card title="Tracing Agent Operations" icon="diagram-project" href="/sdk/tutorials/tracing-agent-operations">
+<Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
   Learn how to capture and analyze the internal operations of your AI agent.
 </Card>
-<Card title="Evaluating Production" icon="diagram-project" href="/sdk/tutorials/monitor-production-responses-to-user-queries">
+<Card title="Evaluating Production" icon="chart-line" href="/sdk/tutorials/monitor-production-responses-to-user-queries">
   Learn how to log and evaluate user queries from your production environment.
+</Card>
+<Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specifications">
+  Use specifications to automate test type selection and metric generation.
 </Card>
 
 </CardGroup>
@@ -149,6 +373,7 @@ Explore these concepts to tailor tests, metrics, and workflows to your product:
   <SessionCard />
   <InferenceResultCard />
   <EvaluationCard />
+  <MetricCard />
 </CardGroup>
 
 If you have any questions or need assistance, contact us at [support@galtea.ai](mailto:support@galtea.ai).

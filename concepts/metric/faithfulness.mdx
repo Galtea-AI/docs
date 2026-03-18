@@ -3,11 +3,9 @@ title: "Faithfulness"
 description: "Evaluates whether the generated output aligns with the retrieved context in a RAG pipeline."
 ---
 
-The **Faithfulness** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate the factual alignment between the model's generated response (`actual_output`) and the information found in the `retrieval_context`. It is a core indicator of hallucination risk in retrieval-augmented generation systems.
+The **Faithfulness** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to evaluate the factual alignment between the model's generated response (`actual_output`) and the information found in the `retrieval_context`. It is a core indicator of hallucination risk in retrieval-augmented generation systems.
 
 A high faithfulness score indicates that the model grounds its answer in retrieved content, rather than introducing unsupported or fabricated information.
-
----
 
 ## Evaluation Parameters
 
@@ -16,8 +14,6 @@ To compute the `faithfulness` metric, the following inputs are required:
 - **`input`**: The user's original prompt.
 - **`actual_output`**: The LLM-generated response.
 - **`retrieval_context`**: The retrieved passages or nodes used by the model.
-
----
 
 ## How Is It Calculated?
 
@@ -33,20 +29,8 @@ The LLM assigns a **binary score**:
 - **1 (Faithful):** All factual claims in the response are substantiated by the provided retrieval context with no hallucinations or contradictions.
 - **0 (Unfaithful):** The response contains at least one unsupported, fabricated, or contradictory claim relative to the retrieval context.
 
----
-
 This binary scoring system helps teams monitor hallucination risk and improve trust in generated responses.
-
----
 
 ## Suggested Test Case Types
 
-The Faithfulness metric is effective for evaluating quality test cases in Galtea, for products that use RAG, since it measures the model's ability to maintain alignment with retrieved context.
-
----
-
-## Related Topics
-
-- [Answer Relevancy](/concepts/metric/answer-relevancy)
-- [Contextual Recall](/concepts/metric/contextual-recall)
-- [Contextual Relevancy](/concepts/metric/contextual-relevancy)
+The Faithfulness metric is effective for evaluating Accuracy test cases in Galtea, for products that use RAG, since it measures the model's ability to maintain alignment with retrieved context.

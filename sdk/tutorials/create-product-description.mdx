@@ -1,146 +1,137 @@
 ---
-title: 'Creating Product Descriptions'
-description: "Learn how to create effective product descriptions that power comprehensive AI evaluation."
-icon: "bullseye"
-iconType: "solid"
+title: 'Writing Effective Specifications'
+sidebarTitle: "Writing Specifications"
+description: "Learn how to write clear specification descriptions that power AI-generated tests and metrics."
+icon: "pen-to-square"
 ---
 
-**Product context** forms the cornerstone of your AI evaluation strategy in Galtea. It clearly defines what your AI system is intended to accomplish, allowing the platform to generate relevant test cases, deliver meaningful evaluations, and provide actionable insights tailored to your use case. Galtea organizes product context into five key categories: **product description, capabilities, inabilities, security boundaries, and policies**. Below, we explain how to effectively provide each category for optimal evaluation results.
+[Specifications](/concepts/product/specification) are the foundation of Galtea's AI-powered evaluation workflow. Each specification is a single, testable behavioral expectation — and the quality of your specification descriptions directly impacts the quality of the tests and metrics generated from them.
 
-## What Is a Product Description?
+This guide shows you how to write clear, effective specification descriptions for each type: **Capability**, **Inability**, and **Policy**.
 
-A product description is a concise, natural-language explanation that answers: **"What is this AI product designed to do?"**
+<Tip>
+  **Galtea can generate specifications for you.** During product creation in the dashboard, the AI analyzes your product description and optionally any documentation you upload (PDFs, docs, markdown — up to 50 files) to automatically generate a full set of specifications. You can review, edit, and refine them before saving. This works even without uploading docs, but documentation produces more targeted specs.
+</Tip>
+<video
+  controls muted playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/ai-specification-generation.mp4"
+></video>
 
-This description becomes the blueprint that guides Galtea's evaluation engine to create test scenarios that mirror real-world usage.
+This guide helps you write better descriptions — whether you're writing from scratch or refining AI-generated ones.
 
-## Why Product Descriptions Matter
+## Why Descriptions Matter
 
-Your product description directly impacts the quality and relevance of your evaluations. A well-crafted description enables Galtea to:
+Your specification descriptions are used by Galtea to:
 
-- Generate test cases that reflect actual user interactions
-- Create adversarial scenarios relevant to your domain
-- Tailor evaluation metrics to your specific use case
-- Provide actionable insights for improving AI reliability
+- **Generate test cases** that target the specific behavior described
+- **Generate metrics** with tailored judge prompts via [AI Metric Generation](/concepts/metric/ai-generation)
+- **Auto-derive test types** — the system chooses Accuracy, Security, or Behavior based on your description
+- Provide context to **LLM-as-a-judge** evaluators when scoring
 
-## Writing Effective Product Descriptions
+A vague description produces generic tests. A precise description produces targeted, meaningful evaluations.
+
+## General Writing Principles
 
 ### Be Specific and Purpose-Driven
 
-Focus on three key elements:
-- **What** the product does
-- **Who** it serves
-- **Which** domain or tasks it handles
+Focus on: **what** the behavior is, **who** it affects, and **when** it applies.
 
-**Good Examples:**
-- "A customer support assistant that helps telecom subscribers resolve billing inquiries and plan changes through natural conversation."
-- "An AI system that transforms lengthy legal contracts into executive summaries with key terms and risk highlights for compliance teams."
+**Good:**
+- "Must refuse to provide personalized investment recommendations, even when users frame the request as hypothetical"
+- "Can retrieve and display the user's current account balance when asked"
 
-**Avoid Generic Descriptions:**
-- "A chatbot that answers questions"
-- "An AI assistant for our company"
+**Avoid:**
+- "Handles financial questions" (too broad)
+- "Uses GPT-4 to process financial data through LangChain" (too technical)
 
-### Focus on User Experience, Not Architecture
+### Focus on Observable Behavior
 
-Describe your product from the end-user perspective rather than technical implementation details.
+Describe what the user sees, not how the system works internally.
 
-**✅ User-Focused:**
-> "A financial advisor assistant that provides personalized investment recommendations based on user goals and risk tolerance."
+**Good:** "Always includes a disclaimer when discussing financial topics that could be interpreted as advice"
 
-**❌ Technical-Focused:**
-> "A RAG pipeline using GPT-4 and vector databases to process financial data through LangChain workflows."
+**Bad:** "The RAG pipeline retrieves context from the compliance vector database before generating responses"
 
-### Best Practices
+### One Expectation Per Specification
 
-**Keep It Concise**: Aim for 2-3 sentences that capture the essence without unnecessary detail.
+Each specification should describe exactly one testable claim. If your description contains "and", consider splitting it.
 
-**Use Plain Language**: Avoid technical jargon or internal terminology that might confuse the evaluation process.
+**Good:** Two separate specifications:
+- "Can explain basic investment concepts like stocks, bonds, and mutual funds"
+- "Can calculate retirement planning scenarios based on user goals"
 
-**Be Honest About Scope**: Include what your product does AND doesn't do to set appropriate evaluation boundaries.
+**Bad:** One overloaded specification:
+- "Can explain investments, calculate retirement plans, compare products, and generate strategies"
 
-**Consider Your Users**: Think about who actually interacts with your AI and what they're trying to accomplish.
+## Writing by Specification Type
 
-### Common Pitfalls to Avoid
+We'll use this example product throughout:
+> "A personal finance assistant that provides investment guidance, portfolio analysis, and financial planning for individual investors."
 
-- **Too Broad**: "An AI that helps with business tasks" → **Better**: "An AI that automates invoice processing and expense categorization for accounting teams"
-- **Too Technical**: "A transformer model fine-tuned on domain data" → **Better**: "A legal research assistant that finds relevant case law and statutes"
-- **Feature Lists**: Avoid listing capabilities like "can answer questions, summarize text, and translate" → **Better**: Focus on the primary use case and user outcome
+### Capability Specifications
 
-## Extended Product Descriptions
-To maximize the effectiveness of test case generation—especially for security and adversarial scenarios—provide detailed, structured definitions for your product’s **capabilities, inabilities, and security boundaries**. Be explicit: use clear, bullet-point lists for each category to ensure comprehensive coverage and minimize ambiguity.
+Describe what the product **can do** — its core functions and the information it can access.
 
-Below, we outline each category and illustrate them with specific examples, using the following product description as a reference:
+<Tip>
+  Start each description with **"Can..."** or a verb that explains what the product is capable of doing.
+</Tip>
 
+**Examples:**
+- "Can analyze investment portfolios and suggest rebalancing strategies"
+- "Can provide market insights and explain financial concepts in simple terms"
+- "Can calculate retirement planning scenarios and savings goals based on user-provided data"
+- "Can compare investment products (stocks, bonds, ETFs, mutual funds) side by side"
 
-**Example Product Description:**
->"A personal finance assistant that provides investment recommendations, portfolio analysis, and financial planning guidance for individual investors based on their goals, risk tolerance, and market conditions."
+### Inability Specifications
 
-Here are the extra product context categories:
+Describe what the product **cannot do** due to hard technical limits — tools it lacks, data it can't access, actions it can't perform.
 
-### Capabilities
-List what your product is specifically designed to do, and what kind of information has access to. This helps generate specifically targeted test cases.
+<Tip>
+  Start with **"Cannot..."** or equivalent. Focus on plausible expectations the product explicitly does not support.
+</Tip>
 
-<Info>
-  Each capability should start with **can** or simply with a **verb** that explains what the product is capable of doing.
-</Info>
-```
-* Analyze investment portfolios and suggest rebalancing strategies
-* Provide market insights and explain financial concepts
-* Calculate retirement planning scenarios and savings goals
-* Compare investment products (stocks, bonds, ETFs, mutual funds)
-* Generate personalized investment strategies based on user profiles
-* Offer tax-efficient investment guidance and strategies
-```
+**Examples:**
+- "Cannot execute trades or access brokerage accounts"
+- "Cannot provide tax preparation services or file tax returns"
+- "Cannot access users' bank accounts or financial institutions"
+- "Cannot store or transmit banking credentials or account numbers"
 
-### Inabilities
-Clearly list technical limitations, including information and tools the product cannot access, as well as general scope boundaries. This helps further refine the product description by clarifying plausible capabilities that the product explicitly does not support. Being explicit about these inabilities prevents the generation of irrelevant or misleading test cases.
-<Info>
-  Inability elements start with **cannot** or equivalent to signify what the system is not able to do. The inabilities could be functional or access related.
-</Info>
-```
-* Cannot execute trades or access brokerage accounts
-* Cannot provide tax preparation services or file tax returns
-* Cannot guarantee investment returns or provide insider trading information
-* Cannot provide legal advice on complex financial structures
-* Cannot access users' bank accounts or financial institutions
-* Is not able to store or transmit banking credentials or account numbers
-* Cannot access real-time trading platforms or execute financial transactions
-```
+### Policy Specifications
 
-### Security Boundaries
-Things that the product must not do, although theoretically it has the capability to do so.
-<Info>
-  Security boundaries consist of **must not** or **should not** statements to outline the security requirements of the product 
-</Info>
-```
-* Should refuse requests for market manipulation strategies or insider information
-* Must not provide advice on illegal tax avoidance schemes
-* Should decline to share proprietary trading algorithms or investment firm strategies
-```
+Describe rules the product **must follow** — refusal rules, mandatory disclaimers, interaction patterns, and behavioral guardrails. Policies are the most powerful specification type because they drive both Security and Behavior test generation.
 
-### Policies
-These are very specific instructions that the product needs to do, when it is faced with certain situations or user inputs.
-<Info>
-  Policies consist of expressions such as "**always** answer with **x** if asked about **y**" or "add \<specific disclaimer text\> at the end of your responses when asked about **z**"
-</Info>
-```
-* If asked for guaranteed returns, respond that all investments carry risk.
-* Always end investment advice with a "consult a professional" disclaimer.
-* If asked to execute a trade, state this is not possible and direct users to their brokerage platform.
-* Always conclude guidance on tax-efficient strategies with a recommendation to consult a qualified tax professional for personalized advice.
-* Always include a risk warning when discussing aggressive investments.
-```
+<Tip>
+  Use **"Must..."**, **"Always..."**, **"If asked about X, respond with Y"** patterns. Be specific about the trigger and the expected behavior.
+</Tip>
 
+**Security policy examples** (drives Security test generation):
+- "Must refuse requests for market manipulation strategies or insider information"
+- "Must not provide advice on illegal tax avoidance schemes"
+- "Must decline to share proprietary trading algorithms"
 
-## Testing Your Product Context, and extended Description
+**Behavior policy examples** (drives Behavior test generation):
+- "If asked for guaranteed returns, must respond that all investments carry risk"
+- "Always ends investment advice with a 'consult a licensed professional' disclaimer"
+- "Always includes a risk warning when discussing aggressive or speculative investments"
 
-A good product context should allow someone unfamiliar with your product to:
-1. Understand what problem it solves
-2. Identify who would use it
-3. Predict what kinds of questions or tasks it should handle well
-4. Recognize what it shouldn't be expected to do
+## Testing Your Descriptions
 
-If your all your enhanced product definitions pass this test, it will help Galtea create more effective evaluations for your AI system.
+A good specification description should allow someone unfamiliar with your product to:
+1. Understand **what specific behavior** is being tested
+2. Predict **what a passing response** looks like
+3. Predict **what a failing response** looks like
+4. Know **when this rule applies** (for policies)
 
----
+If your description passes this test, it will produce high-quality AI-generated tests and metrics.
 
-**Next Steps**: Once you've crafted your product description, you'll use it when [creating a new product](../../concepts/product) in the Galtea platform, where it becomes the foundation for all subsequent evaluation activities.
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specifications">
+    End-to-end tutorial: create specs, generate metrics, run evaluations.
+  </Card>
+  <Card title="AI Metric Generation" icon="sparkles" href="/concepts/metric/ai-generation">
+    Let AI generate judge prompts from your specification descriptions.
+  </Card>
+</CardGroup>

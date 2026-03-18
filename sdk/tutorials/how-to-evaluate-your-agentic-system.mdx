@@ -8,7 +8,6 @@ Use the [`@trace` decorator](/sdk/tutorials/tracing-agent-operations) to capture
 
 Galtea provides built-in metrics like [Tool Correctness](/concepts/metric/tool-correctness), but agentic systems are often highly specific. We recommend creating [custom judge metrics](/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt) that check the exact behaviors you care about. Below are practical examples to get you started.
 
----
 ### Example 1: Was Tool X called before Tool Y
 
 *Example of Judge Prompt:*
@@ -25,7 +24,6 @@ Score 0 (Bad): Tool Y is called before Tool X, or Tool X is never called.
 
 ```
 
----
 ### Example 2: Were all attributes collected before calling Tool X?
 
 *Example of Judge Prompt:*
@@ -41,7 +39,6 @@ Score 1 (Good): All required attributes are explicitly present and correctly sou
 Score 0 (Bad): Any attribute is missing, implicit, or invented before calling Tool X.
 ```
 
----
 ### Example 3: Do attributes come from the correct sources?
 
 *Example of Judge Prompt:*
@@ -58,7 +55,6 @@ Score 0 (Bad): Any attribute is sourced incorrectly, reused improperly, or overr
 
 ```
 
----
 ### Example 4: Are tools used under required conditions?
 
 *Example of Judge Prompt:*
@@ -74,7 +70,6 @@ Score 1 (Good): Tools are invoked or skipped strictly according to the required 
 Score 0 (Bad): Any tool is called or skipped in violation of the defined conditions.
 ```
 
----
 ### Example 5: Are the tool outputs actually used?
 
 Ensure tool outputs are actually *used*.
@@ -92,4 +87,14 @@ Score 1 (Good): Tool outputs are explicitly used and consistently reflected in l
 Score 0 (Bad): Tool outputs are ignored, unused, or contradicted.
 ```
 
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Capture traces from your agent — required for these metrics to work.
+  </Card>
+  <Card title="Create Your Own Judge Prompt" icon="wand-magic-sparkles" href="/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt">
+    Write and refine custom judge prompts for any evaluation criteria.
+  </Card>
+</CardGroup>
 

@@ -1,0 +1,198 @@
+---
+title: "Templates & Mapping"
+sidebarTitle: "Templates & Mapping"
+description: "Configure how Galtea formats requests to your endpoint and extracts values from responses."
+icon: "code"
+---
+
+This page covers the detailed configuration for [Endpoint Connection](/concepts/product/endpoint-connection) request formatting, response extraction, and retry behavior.
+
+## Input Template
+
+The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template string that defines how Galtea formats the request body before sending it to your endpoint.
+
+### Available Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{{ input }}` | The test case input (required) |
+| `{{ context }}` | The test case context |
+| `{{ session_id }}` | The external session ID (if available) |
+| `{{ test_case_id }}` | The test case ID |
+| `{{ test_id }}` | The test ID |
+| `{{ galtea_session_id }}` | The Galtea session ID |
+| `{{ inference_result_id }}` | The inference result ID for this turn (useful for [trace collection](/sdk/tutorials/tracing-agent-operations)) |
+| Any metadata key | Any field stored in session metadata (e.g., `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`) |
+
+### Conversation History
+
+Use `{% for turn in past_turns %}...{% endfor %}` to loop through previous conversation turns. Each turn exposes:
+- `{{ turn.input }}` — Previous user input
+- `{{ turn.output }}` — Previous assistant response
+
+### Examples
+
+**OpenAI-compatible format:**
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {% for turn in past_turns %}
+    {"role": "user", "content": "{{ turn.input }}"},
+    {"role": "assistant", "content": "{{ turn.output }}"},
+    {% endfor %}
+    {"role": "user", "content": "{{ input }}"}
+  ]
+}
+```
+
+**Previous queries array:**
+```jinja2
+{
+  "model": "gpt-4",
+  "previous_queries": [
+    {% for turn in past_turns %}
+    "{{ turn.input }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "current_query": "{{ input }}"
+}
+```
+
+**Custom format:**
+```jinja2
+{
+  "data": {
+    "names": ["query", "contexto"],
+    "ndarray": [
+      [
+        "{{ input }}",
+        [
+          {% for turn in past_turns %}
+          "{{ turn.input }}",
+          "{{ turn.output }}"{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ]
+      ]
+    ]
+  }
+}
+```
+
+<Note>
+  When a loop is the **last item** in a JSON array, use `{% if not loop.last %},{% endif %}` after each iteration to prevent a trailing comma. When there's content **after** the loop (like in the OpenAI example above), trailing commas are valid and this pattern is not required.
+</Note>
+
+## Output Mapping
+
+A JSON object defining how to extract values from the API response using [JSONPath](https://goessner.net/articles/JsonPath/) expressions.
+
+### Special Keys
+
+| Key | Behavior |
+|-----|----------|
+| `output` | **Required.** The AI's response content. |
+| `session_id` | Stored as the external session identifier, accessible via [`custom_id`](/concepts/product/version/session#session-properties). |
+| `retrieval_context` | Stored as retrieval context for RAG evaluations. |
+| `traces` | Extracts an array of [trace](/concepts/product/version/session/trace) objects and stores them linked to the inference result. Each object should contain at least a `name` field and can include any of the [Trace properties](/concepts/product/version/session/trace#trace-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`. |
+| Any other key | Stored in session metadata and available as `{{ key }}` in templates. |
+
+### JSONPath Syntax Reference
+
+| Expression | Description |
+|------------|-------------|
+| `$` | Root object |
+| `.` | Child operator |
+| `[]` | Array index or child operator |
+| `[*]` | Wildcard (all elements) |
+| `[0]` | First array element |
+| `[-1]` | Last array element |
+
+### Example
+
+```json
+{
+  "output": "$.choices[0].message.content",
+  "retrieval_context": "$.choices[0].retrieval_context",
+  "session_id": "$.metadata.session_id",
+  "traces": "$.metadata.traces"
+}
+```
+
+### State Management
+
+If your API returns values that need to be sent in subsequent requests (e.g., `session_id`, `tenant_id`), Galtea can automatically manage this state:
+
+1. **Extract** — Use Output Mapping to pull values from the API response using JSONPath expressions
+2. **Store** — Extracted values are saved in the session and become available as template variables
+3. **Reuse** — Reference any stored value in the Input Template or URL using `{{ variable_name }}` syntax
+
+<Tip>
+  On the first turn, undefined placeholders resolve to empty strings. After the first response, all extracted values become available for subsequent turns.
+</Tip>
+
+**Example:** capture `session_id` and `tenant_id` from responses:
+
+<CodeGroup>
+```json Output Mapping
+{
+  "output": "$.text",
+  "session_id": "$.session_id",
+  "tenant_id": "$.tenant"
+}
+```
+
+```json Input Template
+{
+  "role": "user",
+  "content": "{{ input }}",
+  "session_id": "{{ session_id }}",
+  "tenant": "{{ tenant_id }}"
+}
+```
+</CodeGroup>
+
+## Retry Configuration
+
+Configure automatic retry behavior for failed requests. When enabled, Galtea will automatically retry requests that fail with specific HTTP status codes.
+
+<ResponseField name="Retry Enabled" type="Boolean">
+  Whether automatic retry is enabled. Default: `false`
+</ResponseField>
+
+<ResponseField name="Max Retry Attempts" type="Number">
+  Maximum number of retry attempts. Default: `3`
+</ResponseField>
+
+<ResponseField name="Initial Delay" type="Number">
+  Initial delay in milliseconds before the first retry. Default: `1000` (1 second)
+</ResponseField>
+
+<ResponseField name="Backoff Strategy" type="Enum">
+  Strategy for increasing delay between retry attempts:
+  - `exponential` - Delay doubles with each attempt (recommended)
+  - `linear` - Delay increases linearly
+  - `fixed` - Constant delay between attempts
+
+  Default: `exponential`
+</ResponseField>
+
+<ResponseField name="Max Delay" type="Number">
+  Maximum delay cap in milliseconds. Default: `30000` (30 seconds)
+</ResponseField>
+
+<ResponseField name="Retryable Status Codes" type="Array of Numbers">
+  HTTP status codes that should trigger a retry. Default: `[429, 500, 502, 503, 504]`
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Endpoint Connection Overview" icon="plug" href="/concepts/product/endpoint-connection">
+    What endpoint connections are and how to create one.
+  </Card>
+  <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
+    Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+</CardGroup>

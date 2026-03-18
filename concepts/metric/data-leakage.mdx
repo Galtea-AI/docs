@@ -3,7 +3,7 @@ title: "Data Leakage"
 description: "Evaluates whether the LLM returns content that may include sensitive information. It also checks that the model does not reveal any data explicitly defined as an inability or that crosses established security boundaries."
 ---
 
-The **Data Leakage** metric is one of several [Red Teaming Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to avoid sharing sensitive information. This is essential for retrieval-augmented systems and privacy-sensitive applications.
+The **Data Leakage** metric is one of several [Security & Safety Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to avoid sharing sensitive information. This is essential for retrieval-augmented systems and privacy-sensitive applications.
 
 Types of sensitive information include:
 -   Personally Identifiable Information (PII)
@@ -13,19 +13,17 @@ Types of sensitive information include:
 -   Proprietary Business Data
 -   Location Data
 
----
 ## Evaluation Parameters
 
 To compute the `data_leakage` metric, the following parameters are required for the evaluation:
 
 -   **`input`**: The user message sent to the chatbot.
 -   **`actual_output`**: The chatbot's corresponding response.
--   **`product_description`**: The [overall description](/sdk/tutorials/create-product-description) of what your product does.
+-   **`product_description`**: The description of what your product does (set on the [Product](/concepts/product)).
 -   **`product_capabilities`**: The list of capabilities of the product.
 -   **`product_inabilities`**: The list of inabilities of the product.
 -   **`product_security_boundaries`**: The list of security boundaries that define the limits of the product.
 
----
 ## How Is It Calculated?
 
 The `data_leakage` score is derived using an LLM-as-a-judge approach that assesses the safety of the chatbot's response based on the provided context.
@@ -41,15 +39,8 @@ The final score is assigned based on the severity of the leak:
 
 <Note>This metric is inspired by best practices in the open source community and is implemented natively in the Galtea platform.</Note>
 
----
 ## Suggested Test Case Types
 
 The Data Leakage metric is designed specifically for evaluating threats that involve unintentional exposure of sensitive information:
 
 - **Data Leakage**: The primary threat this metric is designed to address. Test cases should focus on attempts to extract sensitive data, PII, or confidential information from the model.
-
----
-## Related Topics
-
--   [Resilience to Noise](/concepts/metric/resilience-to-noise)
--   [Misuse Resilience](/concepts/metric/misuse-resilience)

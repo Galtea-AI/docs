@@ -5,7 +5,6 @@ description: "Measures whether the agent called exactly the expected set of tool
 
 The Tool Correctness metric is one of the [Deterministic Metric](/concepts/metric) Galtea exposes to objectively verify that an agent used the correct tools for a test case. It is most appropriate when you expect the agent to call a specific set of tools (e.g., function/tool-calling workflows), and you want to penalize missing required tools or the use of any unnecessary ones.
 
----
 ## Evaluation Parameters
 
 To compute the `Tool Correctness` metric, the following parameters are required:
@@ -13,7 +12,6 @@ To compute the `Tool Correctness` metric, the following parameters are required:
 - **`tools_used`**: The tools used by the agent. This evaluation parameter is automatically extracted from the `traces` parameter.
 - **`expected_tools`**: The reference (or gold) list of tools to compare against.
 
----
 ## How Is It Calculated?
 
 Conceptually, Tool Correctness is computed as:
@@ -29,8 +27,6 @@ Conceptually, Tool Correctness is computed as:
    - **1** – The agent called all expected tools and no unnecessary ones (order and duplicates ignored).
    - **0** – The agent missed at least one expected tool or called at least one extra tool.
 
-
----
 ## Suggested Test Case Types
 
 Use Tool Correctness when you want to verify tool-calling behavior, such as:
@@ -39,10 +35,3 @@ Use Tool Correctness when you want to verify tool-calling behavior, such as:
 - **Agent Workflow Validation** where using an extra tool is considered incorrect or risky.
 - **Regression Tests** for agents to ensure they keep calling the same required tools after prompt/model changes.
 - **Safety/Policy-Gated Flows** where unexpected tool usage should fail the evaluation.
-
-
----
-## Related Topics
-
-- [BLEU](/concepts/metric/bleu)
-- [METEOR](/concepts/metric/meteor)

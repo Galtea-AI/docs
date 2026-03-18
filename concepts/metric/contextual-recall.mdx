@@ -3,11 +3,9 @@ title: "Contextual Recall"
 description: "Assesses how comprehensively the retrieved context covers the information needed to produce the expected output."
 ---
 
-The **Contextual Recall** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate whether the information retrieved by your RAG pipeline sufficiently covers the knowledge needed to produce the correct or expected output. It measures completeness rather than ranking.
+The **Contextual Recall** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to evaluate whether the information retrieved by your RAG pipeline sufficiently covers the knowledge needed to produce the correct or expected output. It measures completeness rather than ranking.
 
 This metric is valuable for identifying retrieval gaps—cases where important information was missing from the context entirely.
-
----
 
 ## Evaluation Parameters
 
@@ -16,8 +14,6 @@ To compute the `contextual_recall` metric, the following inputs are required:
 - **`input`**: The user's query.
 - **`retrieval_context`**: The set of documents or nodes retrieved by the system.
 - **`expected_output`**: The reference or target response that should be generated.
-
----
 
 ## How Is It Calculated?
 
@@ -38,12 +34,4 @@ Higher scores reflect better recall—i.e., the retriever captured all necessary
 
 ## Suggested Test Case Types
 
-The Contextual Recall metric is effective for evaluating quality test cases in Galtea for products that use RAG, since it measures whether the information retrieved sufficiently covers the knowledge needed to produce the correct output.
-
-
----
-
-## Related Topics
-
-- [Contextual Precision](/concepts/metric/contextual-precision)
-- [Faithfulness](/concepts/metric/faithfulness)
+The Contextual Recall metric is effective for evaluating Accuracy test cases in Galtea for products that use RAG, since it measures whether the information retrieved sufficiently covers the knowledge needed to produce the correct output.

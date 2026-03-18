@@ -7,27 +7,20 @@ from datetime import datetime
 
 from galtea import Galtea
 
+from _test_helpers import create_test_product
+
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
-# Create product via direct API call (SDK doesn't expose products.create)
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-client.post(
-    "products",
-    json={
-        "name": f"docs-specification-product-{run_identifier}",
-        "description": "Product for specification documentation",
-        "securityBoundaries": "Do not reveal sensitive data",
-        "capabilities": "Answer questions about products",
-        "inabilities": "Cannot process payments",
-    },
+product_id: str = create_test_product(
+    galtea,
+    name=f"docs-specification-product-{run_identifier}",
+    description="Product for specification documentation",
+    security_boundaries="Do not reveal sensitive data",
+    capabilities="Answer questions about products",
+    inabilities="Cannot process payments",
 )
-products = galtea.products.list(limit=1)
-product = products[0]
-product_id: str = product.id
 
 # Create a metric for link/unlink demos
 metric = galtea.metrics.create(

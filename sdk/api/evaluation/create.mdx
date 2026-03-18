@@ -11,7 +11,6 @@ This method evaluates either:
 ## Returns
 Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric provided.
 
-
 ## Usage
 This method evaluates inference results using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
 
@@ -43,7 +42,7 @@ You can evaluate a specific inference result by providing its ID instead of a se
 # Evaluate a specific inference result by providing its ID
 evaluations = galtea.evaluations.create(
     inference_result_id=inference_result_id,
-    metrics=["Factual Accuracy", "Answer Relevancy"],
+    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
 ```
 

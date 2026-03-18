@@ -10,7 +10,6 @@ Galtea's tracing feature captures every operation your agent performs—tool cal
   For detailed information about trace properties, node types, and hierarchy, see the [Trace concept page](/concepts/product/version/session/trace).
 </Info>
 
-
 ## **Setup**
 
 There are two primary ways to set up tracing in your agent. Choose the option that fits your needs.
@@ -163,7 +162,6 @@ finally:
   `clear_context(token, flush=True)` automatically flushes all pending traces for the inference result before clearing. Set `flush=False` if you want to discard traces without sending them.
 </Info>
 
-
 ## Remote Agent Tracing
 
 When your agent runs on a remote server (e.g., deployed as a FastAPI service), OpenTelemetry's thread-local context does not cross the HTTP boundary. The remote server cannot discover the `inference_result_id` to correlate traces.
@@ -223,7 +221,7 @@ def handle_request(message: str, session_id: str, inference_result_id: str) -> s
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="Trace Concept" icon="diagram-project" href="/concepts/product/version/session/trace">
+  <Card title="Trace Concept" icon="sitemap" href="/concepts/product/version/session/trace">
     Node types, hierarchy, and best practices.
   </Card>
   <Card title="Trace API Reference" icon="code" href="/sdk/api/trace/service">

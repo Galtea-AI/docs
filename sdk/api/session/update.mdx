@@ -10,26 +10,33 @@ The `update()` method allows you to modify an existing session after it has been
 
 ## Parameters
 
-
-<ParamField path="session_id" type="string">
+<ResponseField name="session_id" type="string" required>
   The ID of the session to update.
-</ParamField>
+</ResponseField>
 
-<ParamField path="custom_id" type="string">
+<ResponseField name="custom_id" type="string" optional>
   The custom ID associated with the session.
-</ParamField>
+</ResponseField>
 
-<ParamField path="context" type="string">
+<ResponseField name="status" type="string" optional>
+  The status of the session. Valid values are `PENDING`, `COMPLETED`, `FAILED`.
+</ResponseField>
+
+<ResponseField name="context" type="string" optional>
   The context provided to the AI product during the session or ground-truth related context.
-</ParamField>
+</ResponseField>
 
-<ParamField path="metadata" type="object">
+<ResponseField name="stopping_reason" type="string" optional>
+  The reason the session was stopped. Useful for recording why a conversation ended.
+</ResponseField>
+
+<ResponseField name="metadata" type="object" optional>
   Additional metadata to associate with the session.
-</ParamField>
+</ResponseField>
 
-<ParamField path="error" type="string">
-  Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
-</ParamField>
+<ResponseField name="error" type="string" optional>
+  Any error message associated with the session. Useful for tracking failed sessions or sessions that encountered issues.
+</ResponseField>
 
 ## Returns
 

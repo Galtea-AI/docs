@@ -43,7 +43,7 @@ version = galtea.versions.create(
 ### Creating a Test
 
 With a [Test](/concepts/product/test) you define the [test cases](/concepts/product/test/case) to evaluate your [product](/concepts/product).
-You can create [quality](/concepts/product/test/quality-tests) or [red teaming](/concepts/product/test/red-teaming-tests) tests depending on your evaluation needs.
+You can create [accuracy](/concepts/product/test/accuracy-tests) or [security](/concepts/product/test/security-tests) tests depending on your evaluation needs.
 
 ```python
 # 2) Create a test
@@ -59,7 +59,6 @@ test = galtea.tests.create(
 <Info>
     More information about creating a test can be found [here](/sdk/api/test/service#create-test).
 </Info>
-
 
 ### Creating a Metric
 
@@ -103,7 +102,6 @@ class MyKeywordMetric(CustomScoreEvaluationMetric):
     More information about creating a metric can be found [here](/sdk/api/metric/service#create-metric).
 </Info>
 
-
 ### Launching Evaluations
 
 [Evaluations](/concepts/product/version/session/evaluation) assess the performance of a [product](/concepts/product) [version](/concepts/product/version) against [test cases](/concepts/product/test/case) using specific [metrics](/concepts/metric). They are now directly linked to [sessions](/concepts/product/version/session) that contain all inference results.
@@ -123,15 +121,16 @@ for test_case in test_cases:
         "This is the expected output"  # your_product_function(test_case.input, ...)
     )
 
-    galtea.evaluations.create_single_turn(
-        version_id=version.id,
-        test_case_id=test_case.id,
+    session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=actual_output,
+        retrieval_context=retrieval_context,
         metrics=[
             {"name": metric_from_api.name},
             {"score": keyword_metric},
         ],
-        actual_output=actual_output,
-        retrieval_context=retrieval_context,
+    )
 ```
 
 <Info>

@@ -3,11 +3,9 @@ title: "Role Adherence"
 description: "Checks whether your chatbot stays within its defined role across the entire conversation."
 ---
 
-The **Role Adherence** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate whether your LLM-based chatbot maintains consistency with its assigned role throughout a conversation. This role could be defined by system prompts (e.g., "you are a travel assistant") or contextual constraints (e.g., tone, domain, responsibilities).
+The **Role Adherence** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to evaluate whether your LLM-based chatbot maintains consistency with its assigned role throughout a conversation. This role could be defined by system prompts (e.g., "you are a travel assistant") or contextual constraints (e.g., tone, domain, responsibilities).
 
 This is especially important in enterprise and safety-sensitive applications, where the chatbot must not deviate from its designated behavior or scope.
-
----
 
 ## Evaluation Parameters
 
@@ -17,8 +15,6 @@ To compute the `role_adherence` metric, the following inputs are required in eve
 - **`actual_output`**: The corresponding chatbot response.
 
 This metric will evaluate the whole conversation, including all turns, to evaluate consistency with the assigned role over time.
-
----
 
 ## How Is It Calculated?
 
@@ -33,9 +29,10 @@ The metric assigns a **binary score**:
 - **Score 1.0 (Adherent):** The agent consistently maintained its role, tone, and persona throughout all turns.
 - **Score 0.0 (Non-Adherent):** The agent deviated from its role, broke character, or adopted an inconsistent tone at any point.
 
----
+## Suggested Test Case Types
 
-## Related Topics
+The Role Adherence metric is effective for evaluating Behavior test cases in Galtea, particularly:
 
-- [Knowledge Retention](/concepts/metric/knowledge-retention)
-- [Conversation Completeness](/concepts/metric/conversation-completeness)
+- **Persona-driven conversations** where the agent has a defined character or role.
+- **Adversarial prompts** that attempt to make the agent break character.
+- **Enterprise scenarios** where consistent professional tone and scope adherence are required.

@@ -1,12 +1,16 @@
 ---
 title: 'Simulating User Conversations'
-description: "Learn how to use Galtea's Conversation Simulator to test your AI with a synthetic user."
+description: "Learn how to use Galtea's Conversation Simulator to test your AI with simulated multi-turn conversations."
 icon: "user-group"
 ---
 
 import AgentCallables from '/snippets/agent-callables.mdx';
 
-Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) allows you to test your conversational AI products by simulating realistic user interactions. This guide walks you through integrating your agent and running simulations.
+Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) allows you to test your AI products — chatbots, assistants, and agents — by simulating realistic multi-turn user interactions. This guide walks you through integrating your agent and running simulations using [Behavior Tests](/concepts/product/test/behavior-tests).
+
+<Tip>
+  **Using the specification-driven workflow?** If you've defined [Specifications](/concepts/product/specification) with linked metrics and tests, the evaluation pipeline handles simulation automatically — no manual session creation needed. See [Evaluations from Specs](/sdk/tutorials/specifications).
+</Tip>
 
 ## Agent Integration Options
 
@@ -15,24 +19,22 @@ Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simul
 ## Conversation Simulation Workflow
 
 <Steps>
-  <Step title="1. Implement Your Agent">
+  <Step title="Implement Your Agent">
     Define an agent function with one of the supported signatures above.
   </Step>
-  <Step title="2. Prepare Scenario Data">
-    Create a CSV file with scenario data. Each row is a test case describing the user goal, persona, and input (the first user message).
+  <Step title="Prepare Scenario Data">
+    Create a CSV file with scenario data, or generate test cases from your [specifications](/concepts/product/specification). Each row describes a user goal, persona, scenario, and the first user message.
   </Step>
-  <Step title="3. Create a Test and Sessions">
-    Upload your scenario CSV to create a test. The platform generates a session for each scenario.
+  <Step title="Create a Test and Sessions">
+    Upload your scenario CSV to create a test, or use AI-generated tests from the dashboard. The platform generates a session for each test case.
   </Step>
-  <Step title="4. Run the Simulator with Your Agent">
-    Use <code>SimulatorService.simulate()</code> to execute the conversation between your agent and the synthetic user, for each session.
+  <Step title="Run the Simulator with Your Agent">
+    Use `simulator.simulate()` to execute the conversation between your agent and the simulated user for each session.
   </Step>
-  <Step title="5. Evaluate the Results">
-    After simulation, analyze results and optionally trigger evaluations via <code>evaluations.create()</code>.
+  <Step title="Evaluate the Results">
+    After simulation, trigger evaluations via `evaluations.create()` or review results in the dashboard's **Analytics** tab.
   </Step>
 </Steps>
-
----
 
 ### Step-by-Step Guide
 
@@ -56,7 +58,7 @@ test = galtea_client.tests.create(
 test_cases = galtea_client.test_cases.list(test_id=test.id)
 ```
 
-Once generation completes, you'll see the resulting test cases in your dashboard. For the CSV upload format, see [Behavior Tests](/concepts/product/test/scenario-tests).
+Once generation completes, you'll see the resulting test cases in your dashboard. For the CSV upload format, see [Behavior Tests](/concepts/product/test/behavior-tests).
 
 #### 2. Run the Conversation Simulator
 
@@ -87,8 +89,8 @@ for test_case in test_cases:
 ```
 
 <Info>
-    You can optionally use the `@trace` decorator to capture internal operations during simulation. Traces are automatically collected and saved per turn.
-    See the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) guide for more details on using the `@trace` decorator.
+  You can optionally use the `@trace` decorator to capture internal operations during simulation. Traces are automatically collected and saved per turn.
+  See the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) guide for more details.
 </Info>
 
 #### 3. Evaluate the Session
@@ -103,11 +105,9 @@ for test_case in test_cases:
         print(f"Evaluation created: {evaluation.id}")
 ```
 
----
-
 ## Advanced Usage: RAG Agents with Retrieval Context
 
-For Retrieval-Augmented Generation (RAG) agents, you can return the context that was retrieved and used to generate the response. This context will be logged with the inference result, enabling powerful evaluations with metrics like `Faithfulness` and `Contextual Relevancy`.
+For Retrieval-Augmented Generation (RAG) agents, you can return the context that was retrieved and used to generate the response. This context will be logged with the inference result, enabling evaluations with metrics like `Faithfulness` and `Contextual Relevancy`.
 
 ```python
 def my_rag_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
@@ -129,8 +129,15 @@ The `retrieval_context` field is optional and can contain:
 - Formatted context strings
 - JSON-serializable data structures
 
-By providing retrieval context, you enable Galtea to evaluate the faithfulness of your model's responses relative to the retrieved information, which is crucial for assessing RAG system quality.
+By providing retrieval context, you enable Galtea to evaluate the faithfulness of your model's responses relative to the retrieved information.
 
----
+## Next Steps
 
-With agent functions and the simulator, you can evaluate conversational AI in realistic, repeatable conditions and track improvements over time.
+<CardGroup cols={2}>
+  <Card title="Specification-Driven Evaluations" icon="play" href="/sdk/tutorials/specifications">
+    Automate simulation + evaluation from specifications with `evaluations.run()`.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Capture internal operations of your AI agent during simulations.
+  </Card>
+</CardGroup>

@@ -40,11 +40,11 @@ capability_spec = galtea.specifications.create(
 </ResponseField>
 <ResponseField name="test_type" type="string | TestType" optional>
   The type of test for this specification. Required for `POLICY` specifications, not applicable for `CAPABILITY` or `INABILITY`.
-  - `ACCURACY` (or `QUALITY`): Evaluates whether the AI provides factually correct responses.
-  - `SECURITY` (or `RED_TEAMING`): Tests for vulnerabilities, jailbreaks, and harmful outputs.
-  - `BEHAVIOR` (or `SCENARIOS`): Simulates real user interactions to evaluate behavior in context.
+  - `ACCURACY`: Evaluates whether the AI provides factually correct responses.
+  - `SECURITY`: Tests for vulnerabilities, jailbreaks, and harmful outputs.
+  - `BEHAVIOR`: Simulates real user interactions to evaluate behavior in context.
 </ResponseField>
-<ResponseField name="test_variant" type="string" required>
+<ResponseField name="test_variant" type="string" optional>
   Required when `test_type` is `ACCURACY` or `SECURITY`. Not applicable for `BEHAVIOR`, `CAPABILITY`, or `INABILITY`.
   - For `ACCURACY`: the AI task type the policy governs — `rag`, `summarization`, `entity_extraction`, `classification`, `translation`, `correction`, `other`.
   - For `SECURITY`: the threat category the policy addresses — `data_leakage`, `financial_attacks`, `illegal_activities`, `misuse`, `toxicity`, `custom`.
