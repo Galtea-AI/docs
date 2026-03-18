@@ -56,7 +56,7 @@ metric_from_api = galtea.metrics.create(
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Determine whether the actual output is equivalent to the expected output.",
-    evaluation_params=["actual_output", "expected_output"],
+    evaluation_params=["input", "actual_output", "expected_output"],
 )
 
 

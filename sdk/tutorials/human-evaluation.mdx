@@ -72,6 +72,7 @@ metric = galtea.metrics.create(
     source="human_evaluation",
     judge_prompt="Review the assistant's response for accuracy and helpfulness. Score 1 if the response is correct and useful, 0 if it contains errors or is unhelpful.",
     evaluation_params=["input", "actual_output", "expected_output"],
+    user_group_ids=[user_group_id],
     description="Domain expert review of response quality",
 )
 

@@ -157,7 +157,7 @@ metric = galtea.metrics.create(
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Evaluate if the actual_output is polite.",
-    evaluation_params=["actual_output"],
+    evaluation_params=["input", "actual_output"],
     description="Checks politeness",
 )
 # @end metric_create

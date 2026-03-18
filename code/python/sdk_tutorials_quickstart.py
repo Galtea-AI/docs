@@ -210,6 +210,19 @@ def my_agent(input_data: AgentInput) -> AgentResponse:
 # @end define_agent_structured_function
 
 
+# Setup: create a specification and link a metric so evaluations.run() can discover it
+_spec = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant provides factually accurate financial information.",
+    type="CAPABILITY",
+)
+if _spec is None:
+    raise ValueError("Failed to create specification")
+galtea.specifications.link_metrics(
+    specification_id=_spec.id,
+    metric_ids=[accuracy_metric.id],
+)
+
 # @start run_evaluation_run
 result = galtea.evaluations.run(
     version_id=version_id,
