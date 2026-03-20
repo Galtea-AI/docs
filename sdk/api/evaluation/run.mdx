@@ -32,20 +32,20 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
 
 **Endpoint connection (no agent):**
 ```python
-# Run evaluation using your deployed endpoint connection
-result = galtea.evaluations.run(version_id=version_id)
-print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
-for spec in result["specifications"]:
-    print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
+    # Run evaluation using your deployed endpoint connection
+    result = galtea.evaluations.run(version_id=version_id)
+    print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
+    for spec in result["specifications"]:
+        print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
 ```
 
 **With specific specifications:**
 ```python
-# Evaluate only specific specifications
-result = galtea.evaluations.run(
-    version_id=version_id,
-    specification_ids=specification_ids,
-)
+    # Evaluate only specific specifications
+    result = galtea.evaluations.run(
+        version_id=version_id,
+        specification_ids=specification_ids,
+    )
 ```
 
 **With a local agent:**

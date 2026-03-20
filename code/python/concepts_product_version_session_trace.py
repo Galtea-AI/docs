@@ -13,7 +13,7 @@ def my_function_1():
     print("Doing something...")
 
 
-# Name only (type defaults to None, for unclassified operations)
+# Name only (type defaults to SPAN)
 @trace(name="custom_name")
 def my_function_2():
     # Function implementation ...
