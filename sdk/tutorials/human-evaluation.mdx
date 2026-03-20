@@ -68,7 +68,7 @@ Go to the **[Metrics creation](https://platform.galtea.ai/metric-new)** form and
 
 ```python
 metric = galtea.metrics.create(
-    name="domain-expert-review",
+    name="domain-expert-review-" + run_identifier,
     source="human_evaluation",
     judge_prompt="Review the assistant's response for accuracy and helpfulness. Score 1 if the response is correct and useful, 0 if it contains errors or is unhelpful.",
     evaluation_params=["input", "actual_output", "expected_output"],

@@ -81,11 +81,12 @@ flowchart TD
 | **[ROUGE](/concepts/metric/rouge)** | Deterministic | Measures longest common subsequence between actual and expected output. |
 | **[METEOR](/concepts/metric/meteor)** | Deterministic | Aligns words using exact matches, stems, or synonyms. |
 | **[Text Similarity](/concepts/metric/text-similarity)** | Deterministic | Quantifies textual resemblance using character-level fuzzy matching. |
-| **[Text Match](/concepts/metric/text-match)** | Deterministic | Binary match using character-level fuzzy matching with a threshold. |
+| **[Text Match](/concepts/metric/text-match)** *(deprecated)* | Deterministic | Binary match using character-level fuzzy matching with a threshold. Use [Text Similarity](/concepts/metric/text-similarity) instead. |
 | **[IOU](/concepts/metric/iou)** | Deterministic | Measures spatial overlap between predicted and reference bounding boxes. |
 | **[Spatial Match](/concepts/metric/spatial-match)** | Deterministic | Binary evaluation of spatial alignment using IoU score. |
 | **[URL Validation](/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |
 | **[Tool Correctness](/concepts/metric/tool-correctness)** | Deterministic | Compares tools used by the agent against expected tools. |
+| **[JSON Field Match](/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. |
 | **[Role Adherence](/concepts/metric/role-adherence)** | Conversational | Evaluates whether the chatbot adheres to its given role throughout a conversation. |
 | **[Conversation Completeness](/concepts/metric/conversation-completeness)** | Conversational | Evaluates whether the chatbot satisfies user needs throughout a conversation. |
 | **[Conversation Relevancy](/concepts/metric/conversation-relevancy)** | Conversational | Evaluates whether the chatbot generates relevant responses throughout a conversation. |

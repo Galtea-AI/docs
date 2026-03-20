@@ -301,8 +301,9 @@ if evaluations is None or len(evaluations) == 0:
 # Create a specification and link a metric so we can evaluate by specification_ids
 specification = galtea.specifications.create(
     product_id=product_id,
-    description="The assistant provides accurate and relevant answers to user questions.",
-    type="CAPABILITY",
+    description="The assistant must provide accurate and relevant answers to user questions.",
+    type="POLICY",
+    test_type="BEHAVIOR",
 )
 galtea.specifications.link_metrics(
     specification_id=specification.id,
@@ -563,8 +564,6 @@ evaluations = galtea.evaluations.create(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
-evaluation_id = evaluations[0].id
-
 # @start evaluation_create_from_inference_result
 # Evaluate a specific inference result by providing its ID
 evaluations = galtea.evaluations.create(
@@ -595,16 +594,18 @@ evaluations = galtea.evaluations.create(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
-# @start evaluation_retry
-retry_result = galtea.evaluations.retry(id=evaluation_id)
-print(f"Retried: {retry_result['retried']}, Skipped: {retry_result['skipped']}")
-# @end evaluation_retry
-
 # @start evaluation_list
 evaluations = galtea.evaluations.list(session_id=session_id)
 # @end evaluation_list
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations_list from list is None or empty")
+
+evaluation_id = evaluations[0].id
+
+# @start evaluation_retry
+retry_result = galtea.evaluations.retry(id=evaluation_id)
+print(f"Retried: {retry_result['retried']}, Skipped: {retry_result['skipped']}")
+# @end evaluation_retry
 
 # @start evaluation_display_results
 print(f"Total evaluations: {len(evaluations)}")

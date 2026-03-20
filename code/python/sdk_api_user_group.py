@@ -93,7 +93,7 @@ galtea.user_groups.link_metrics(
 
 # @start create_human_evaluation_metric
 metric = galtea.metrics.create(
-    name="domain-expert-review",
+    name="domain-expert-review-" + run_identifier,
     source="human_evaluation",
     judge_prompt="Review the assistant's response for accuracy and helpfulness. Score 1 if the response is correct and useful, 0 if it contains errors or is unhelpful.",
     evaluation_params=["input", "actual_output", "expected_output"],
@@ -120,6 +120,10 @@ galtea.user_groups.unlink_metrics(
     user_group_id=user_group_id,
     metric_ids=[metric_id_1],
 )
+
+# Cleanup: delete human evaluation metric before deleting user group
+# (user group can't be deleted while it's the only group on a metric)
+galtea.metrics.delete(metric_id=metric.id)
 
 # @start delete
 galtea.user_groups.delete(user_group_id=user_group_id)

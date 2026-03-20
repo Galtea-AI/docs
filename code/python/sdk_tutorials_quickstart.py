@@ -213,8 +213,9 @@ def my_agent(input_data: AgentInput) -> AgentResponse:
 # Setup: create a specification and link a metric so evaluations.run() can discover it
 _spec = galtea.specifications.create(
     product_id=product_id,
-    description="The assistant provides factually accurate financial information.",
-    type="CAPABILITY",
+    description="The assistant must provide factually accurate financial information.",
+    type="POLICY",
+    test_type="BEHAVIOR",
 )
 if _spec is None:
     raise ValueError("Failed to create specification")

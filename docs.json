@@ -410,7 +410,8 @@
                       "concepts/metric/iou",
                       "concepts/metric/spatial-match",
                       "concepts/metric/url-validation",
-                      "concepts/metric/tool-correctness"
+                      "concepts/metric/tool-correctness",
+                      "concepts/metric/json-field-match"
                     ]
                   }
                 ]
