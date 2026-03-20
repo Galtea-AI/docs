@@ -2,6 +2,8 @@ import time
 from datetime import datetime
 
 from _test_helpers import create_test_product
+from requests.exceptions import HTTPError
+
 from galtea import (
     AgentInput,
     AgentResponse,
@@ -16,7 +18,12 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 products = galtea.products.list(limit=100)
 print(f"Cleaning up {len(products)} products")
 for product in products:
-    galtea.products.delete(product_id=product.id)
+    try:
+        galtea.products.delete(product_id=product.id)
+    except HTTPError as e:
+        # Known API issue: cascade soft-delete may hit unique constraint
+        if e.response.status_code != 500:
+            raise
 products = galtea.products.list(limit=100)
 print(f"Remaining products after cleanup: {len(products)}")
 # === End cleanup code ===
