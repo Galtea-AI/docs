@@ -93,3 +93,8 @@ if sessions:
     for evaluation in evaluations:
         print(f"Evaluation {evaluation.id}: status={evaluation.status}")
 # @end list_pending_evaluations
+
+# Cleanup
+galtea.products.delete(product_id=product_id)
+galtea.metrics.delete(metric_id=metric.id)
+galtea.user_groups.delete(user_group_id=user_group_id)

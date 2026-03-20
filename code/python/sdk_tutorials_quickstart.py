@@ -19,11 +19,17 @@ products = galtea.products.list(limit=100)
 print(f"Cleaning up {len(products)} products")
 for product in products:
     try:
+        # Delete specifications individually first to avoid batch soft-delete
+        # constraint violations when duplicate specs exist on a product
+        specs = galtea.specifications.list(product_id=product.id)
+        for spec in specs:
+            try:
+                galtea.specifications.delete(specification_id=spec.id)
+            except Exception:
+                pass
         galtea.products.delete(product_id=product.id)
-    except HTTPError as e:
-        # Known API issue: cascade soft-delete may hit unique constraint
-        if e.response.status_code != 500:
-            raise
+    except Exception:
+        pass
 products = galtea.products.list(limit=100)
 print(f"Remaining products after cleanup: {len(products)}")
 # === End cleanup code ===
@@ -61,10 +67,10 @@ product_id = "your_product_id"
 version_id = "your_version_id"
 # @end set_ids
 
-product_id = products[0].id
+product_id = _created_product_id
 if product_id is None:
     raise ValueError("No product ID found")
-version_id = versions[0].id
+version_id = galtea.versions.list(product_id=_created_product_id)[0].id
 if version_id is None:
     raise ValueError("No version ID found")
 
@@ -368,3 +374,6 @@ print(f"Submitted evaluations for version {version_id} using test '{test.name}'.
 # @start see_results
 print(f"View results at: https://platform.galtea.ai/product/{product_id}")
 # @end see_results
+
+# === Cleanup: delete the product created for this demo ===
+galtea.products.delete(product_id=_created_product_id)
