@@ -84,7 +84,7 @@
             "group": "Core Workflows",
             "icon": "play",
             "pages": [
-              "sdk/tutorials/create-product-description",
+              "sdk/tutorials/writing-specifications",
               "sdk/tutorials/specifications",
               "sdk/tutorials/simulating-conversations",
               "sdk/tutorials/create-test",
@@ -694,6 +694,10 @@
     {
       "source": "/sdk/api/evaluation-task/delete",
       "destination": "/sdk/api/evaluation/delete"
+    },
+    {
+      "source": "/sdk/tutorials/create-product-description",
+      "destination": "/sdk/tutorials/writing-specifications"
     }
   ]
 }
