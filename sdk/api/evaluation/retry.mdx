@@ -11,9 +11,10 @@ Returns a dictionary containing retry results:
 - `errors` (list[str]): Error messages for any failed retries.
 
 ## Example
+
 ```python
-result = galtea.evaluations.retry(id="eval_abc123")
-print(f"Retried: {result['retried']}, Skipped: {result['skipped']}")
+    retry_result = galtea.evaluations.retry(id=evaluation_id)
+    print(f"Retried: {retry_result['retried']}, Skipped: {retry_result['skipped']}")
 ```
 
 ## Parameters

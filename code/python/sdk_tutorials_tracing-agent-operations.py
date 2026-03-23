@@ -16,25 +16,21 @@ from galtea import (
     trace,
 )
 
+from _test_helpers import create_test_product
+
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
 # Create a product for this demo
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-response = client.post(
-    "products",
-    json={
-        "name": "Tracing Demo " + run_identifier,
-        "description": "Demo product for tracing tutorial",
-        "capabilities": "Demo capabilities",
-        "inabilities": "Demo inabilities",
-        "securityBoundaries": "Demo security boundaries",
-    },
+product_id = create_test_product(
+    galtea,
+    name="Tracing Demo " + run_identifier,
+    description="Demo product for tracing tutorial",
+    capabilities="Demo capabilities",
+    inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
-product_id = response.json()["id"]
 
 # Create version
 version = galtea.versions.create(

@@ -3,13 +3,9 @@ title: "Conversation Completeness"
 description: "Evaluates whether your chatbot can guide a user to successfully complete their task across multiple turns."
 ---
 
-## Conversation Completeness
-
-The **Conversation Completeness** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to measure the ability of your LLM-based chatbot to guide a user through an end-to-end conversation that successfully satisfies their initial request or goal. It evaluates whether the dialogue includes all necessary steps and logical transitions needed to fulfill the user's intent.
+The **Conversation Completeness** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to measure the ability of your LLM-based chatbot to guide a user through an end-to-end conversation that successfully satisfies their initial request or goal. It evaluates whether the dialogue includes all necessary steps and logical transitions needed to fulfill the user's intent.
 
 This metric is especially relevant for transactional or task-based agents (e.g., booking systems, support bots).
-
----
 
 ## Evaluation Parameters
 
@@ -19,8 +15,6 @@ To compute the `conversation_completeness` metric, the following parameters are 
 - **`actual_output`**: The chatbot's response to the user message.
 
 This metric will evaluate the whole conversation, including all turns, to judge whether the full task was completed or abandoned partway.
-
----
 
 ## How Is It Calculated?
 
@@ -35,10 +29,10 @@ The metric assigns a **binary score**:
 - **Score 1.0 (Complete):** The user's intent was fully satisfied and the conversation reached a logical conclusion. A closure message is not required if the agent provided a solution.
 - **Score 0.0 (Incomplete):** The conversation was abandoned, the agent failed to provide a solution, or the user's goal remains unfulfilled.
 
+## Suggested Test Case Types
 
----
+The Conversation Completeness metric is effective for evaluating Behavior test cases in Galtea, particularly:
 
-## Related Topics
-
-- [Conversation Relevancy](/concepts/metric/conversation-relevancy)
-- [Role Adherence](/concepts/metric/role-adherence)
+- **Task completion flows** where the user has a clear objective (e.g., booking, purchasing, troubleshooting).
+- **Multi-step processes** that require gathering information across several turns.
+- **Support interactions** where the conversation must reach a resolution.

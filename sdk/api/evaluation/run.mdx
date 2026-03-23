@@ -1,0 +1,84 @@
+---
+title: 'Run Evaluation'
+sidebarTitle: "Run"
+description: "Run an evaluation pipeline for a version, using either your deployed endpoint or a local agent."
+---
+
+Run an evaluation pipeline for a [Version](/concepts/product/version). This resolves all [Specifications](/concepts/product/specification) linked to the version's product, collects their linked [Metrics](/concepts/metric) and [Tests](/concepts/product/test), and runs the evaluation.
+
+## Two Execution Modes
+
+<Tabs>
+  <Tab title="Endpoint Connection">
+    When no `agent` is provided, the evaluation is delegated to the server. The API calls your deployed HTTP endpoint for each test case, generates inference results, and evaluates them. Requires the version to have a `conversation_endpoint_connection_id` configured.
+
+    ### Returns
+    - `jobId` — the inference batch job ID for tracking progress
+    - `testCaseCount` — total number of test cases queued
+    - `message` — a human-readable status message
+    - `specifications` — summary of each specification evaluated
+  </Tab>
+  <Tab title="Agent (SDK-side)">
+    When an `agent` is provided, the SDK runs the agent locally for each test case. For every specification, the method resolves linked tests and test cases, creates sessions, executes the agent, and triggers server-side evaluation.
+
+    ### Returns
+    - `evaluations` — list of all Evaluation objects created
+    - `testCaseCount` — total number of test cases processed
+    - `specifications` — summary of each specification evaluated, including `testCaseCount`
+  </Tab>
+</Tabs>
+
+## Examples
+
+**Endpoint connection (no agent):**
+```python
+    # Run evaluation using your deployed endpoint connection
+    result = galtea.evaluations.run(version_id=version_id)
+    print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
+    for spec in result["specifications"]:
+        print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
+```
+
+**With specific specifications:**
+```python
+    # Evaluate only specific specifications
+    result = galtea.evaluations.run(
+        version_id=version_id,
+        specification_ids=specification_ids,
+    )
+```
+
+**With a local agent:**
+```python
+# Run evaluation with a local agent (SDK-side loop)
+def my_agent(user_message: str) -> str:
+    # Replace with your actual agent logic
+    return "Agent response"
+
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+    specification_ids=specification_ids[:1],
+)
+print(f"Processed {result['testCaseCount']} test cases")
+print(f"Created {len(result['evaluations'])} evaluations")
+```
+
+## Parameters
+<ResponseField name="version_id" type="string" required>
+  The ID of the version to evaluate.
+</ResponseField>
+<ResponseField name="agent" type="AgentType" optional>
+  The agent to execute locally. Accepts:
+  - An `Agent` class instance with a `call()` method
+  - An agent function (sync or async) with one of three signatures: `(str) -> str`, `(list[dict]) -> str`, or `(AgentInput) -> AgentResponse`
+
+  When omitted, the server-side endpoint connection pipeline is used.
+</ResponseField>
+<ResponseField name="specification_ids" type="List[str]" optional>
+  A list of [Specification](/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and tests are used.
+
+  <Note>
+    Specifications without linked metrics or without linked tests are silently skipped.
+  </Note>
+</ResponseField>

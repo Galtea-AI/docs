@@ -5,6 +5,7 @@ Demonstrates how to log and evaluate user queries from your production environme
 
 from datetime import datetime
 
+from _test_helpers import create_test_product
 from galtea import Galtea
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -12,20 +13,14 @@ run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 galtea = Galtea(api_key="YOUR_API_KEY")
 
 # Create a product for this demo
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-response = client.post(
-    "products",
-    json={
-        "name": "Production Monitor Demo " + run_identifier,
-        "description": "Demo product for production monitoring tutorial",
-        "capabilities": "Demo capabilities",
-        "inabilities": "Demo inabilities",
-        "securityBoundaries": "Demo security boundaries",
-    },
+product_id = create_test_product(
+    galtea,
+    name="Production Monitor Demo " + run_identifier,
+    description="Demo product for production monitoring tutorial",
+    capabilities="Demo capabilities",
+    inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
-product_id = response.json()["id"]
 
 version = galtea.versions.create(
     name="Version-" + run_identifier,
@@ -49,17 +44,17 @@ def handle_user_query(user_query: str, retrieval_context: str | None = None) -> 
     model_response = your_product_function(user_query, retrieval_context)
 
     # Log and evaluate the interaction in Galtea
-    galtea.evaluations.create_single_turn(
-        version_id=VERSION_ID,
-        is_production=True,
+    session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        input=user_query,
+        output=model_response,
+        retrieval_context=retrieval_context,
         metrics=[
             {"name": "Role Adherence"},
             {"name": "Answer Relevancy"},
             {"name": "Faithfulness"},
         ],
-        input=user_query,
-        actual_output=model_response,
-        retrieval_context=retrieval_context,
     )
 
     return model_response

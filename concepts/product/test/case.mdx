@@ -83,11 +83,11 @@ The Galtea SDK allows you to create, view, and manage test cases programmaticall
 The following properties apply specifically to test cases of type `BEHAVIOR` used with the [Conversation Simulator](/concepts/product/test/case/conversation-simulator):
 
 <ResponseField name="Goal" type="Text">
-  The objective the synthetic user is trying to achieve in a conversation scenario. This defines what the synthetic user wants to accomplish during the interaction. **Example**: "Book a flight to New York"
+  The objective the simulated user is trying to achieve in a conversation scenario. This defines what the simulated user wants to accomplish during the interaction. **Example**: "Book a flight to New York"
 </ResponseField>
 
 <ResponseField name="User Persona" type="Text">
-  The personality of the synthetic user for a conversation scenario. This shapes how the synthetic user will behave and communicate during the conversation. **Example**: "A busy professional who values efficiency"
+  The personality of the simulated user for a conversation scenario. This shapes how the simulated user will behave and communicate during the conversation. **Example**: "A busy professional who values efficiency"
 </ResponseField>
 
 <ResponseField name="Scenario" type="Text">
@@ -95,7 +95,7 @@ The following properties apply specifically to test cases of type `BEHAVIOR` use
 </ResponseField>
 
 <ResponseField name="Input" type="Text">
-  The first message from the synthetic user that starts the conversation. If not provided, the simulator will generate an appropriate opening message based on the goal and persona. **Example**: "I need to book a flight"
+  The first message from the simulated user that starts the conversation. If not provided, the simulator will generate an appropriate opening message based on the goal and persona. **Example**: "I need to book a flight"
 </ResponseField>
 
 <ResponseField name="Stopping Criterias" type="Text">
@@ -105,6 +105,17 @@ The following properties apply specifically to test cases of type `BEHAVIOR` use
 <ResponseField name="Max Iterations" type="Number">
   The maximum number of conversation turns allowed in the simulation. This prevents conversations from running indefinitely. **Example**: 10
 </ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Conversation Simulator" icon="comments" href="/concepts/product/test/case/conversation-simulator">
+    Run multi-turn conversations against scenario-based test cases.
+  </Card>
+  <Card title="Test" icon="flask" href="/concepts/product/test">
+    The tests that contain these test cases.
+  </Card>
+</CardGroup>
 
 <Note>
   For Scenarios test cases, only `Goal` and `User Persona` are mandatory. All other scenario properties are optional but can help create more realistic and controlled conversation simulations.

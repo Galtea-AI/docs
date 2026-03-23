@@ -107,6 +107,11 @@ version_id = "your_version_id"
 ```
 
 ## 4. Create Your Tests
+
+<Tip>
+  **Prefer to generate tests automatically?** If you've defined [Specifications](/concepts/product/specification) for your product, Galtea can generate tests and metrics for you — see the [Specification-Driven Evaluations](/sdk/tutorials/specifications) tutorial.
+</Tip>
+
 A single conversational product typically includes multiple components. In Galtea, you evaluate each component by creating a different [test](/concepts/product/test) type, think of each test as a lens on the same system:
 
 - **RAG pipelines** → create an **Accuracy** test (`type="ACCURACY"`)
@@ -125,7 +130,7 @@ You can create one or multiple test types for the same product, depending on whi
 
 <Tabs>
   <Tab title="RAG">
-    Quality tests are used to evaluate RAG pipelines and QA-style components within a conversational product. Galtea generates single-turn test cases (input and expected output) from a knowledge base to assess response quality and factual correctness.
+    Accuracy tests are used to evaluate RAG pipelines and QA-style components within a conversational product. Galtea generates single-turn test cases (input and expected output) from a knowledge base to assess response quality and factual correctness.
 
 ```python
 test = galtea.tests.create(
@@ -144,18 +149,20 @@ After a brief wait for test case generation, list the test cases:
 test_cases = galtea.test_cases.list(test_id=test.id)
 print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 ```
+
+Learn more about [Accuracy Tests](/concepts/product/test/accuracy-tests) and their configuration options.
   </Tab>
 
   <Tab title="Security">
-    Red Teaming tests probe safety and security boundaries (e.g., misuse, toxicity, data leakage). For this quickstart, we’ll create a small **Misuse** test.
+    Security & Safety tests probe safety and security boundaries (e.g., misuse, toxicity, data leakage). For this quickstart, we’ll create a small **Misuse** test.
 
 ```python
 test = galtea.tests.create(
     name="misuse-security-test",
     type="SECURITY",
     product_id=product_id,
-    variants=["Misuse"],
-    strategies=["Original"],  # Original must always be included
+    variants=["misuse"],
+    strategies=["original"],  # original must always be included
     max_test_cases=20,
 )
 ```
@@ -166,10 +173,12 @@ After a brief wait for test case generation, list the test cases:
 test_cases = galtea.test_cases.list(test_id=test.id)
 print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 ```
+
+Learn more about [Security & Safety Tests](/concepts/product/test/security-tests), [threats](/concepts/product/test/security-threats), and [strategies](/concepts/product/test/security-strategies).
   </Tab>
 
   <Tab title="Conversational">
-    Scenario tests evaluate multi-turn conversations. Each test case defines a goal/persona/scenario and is meant to be run with the [Conversation Simulator](/concepts/product/test/case/conversation-simulator).
+    Behavior tests evaluate multi-turn conversations. Each test case defines a goal/persona/scenario and is meant to be run with the [Conversation Simulator](/concepts/product/test/case/conversation-simulator).
 
 ```python
 test = galtea.tests.create(
@@ -188,16 +197,18 @@ After a brief wait for test case generation, list the test cases:
 test_cases = galtea.test_cases.list(test_id=test.id)
 print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 ```
+
+Learn more about [Behavior Tests](/concepts/product/test/behavior-tests) and [Conversation Simulation](/concepts/product/test/case/conversation-simulator).
   </Tab>
 </Tabs>
 
 ## 5. Choose Your Metrics
 
-Metrics define how evaluation outputs are scored. Galtea provides built-in metrics for common use cases (factual accuracy, faithfulness, toxicity, role adherence, and [many more](/concepts/metric)), and you can also create custom metrics with your own judge prompts.
+Metrics define how evaluation outputs are scored. Galtea provides built-in metrics for common use cases (factual accuracy, faithfulness, toxicity, role adherence, and [many more](/concepts/metric)), and you can also create custom metrics with your own judge prompts. You can also [generate metrics from specifications](/concepts/metric/ai-generation) — the AI creates tailored judge prompts for each spec.
 
 <Tabs>
   <Tab title="RAG">
-    For a RAG-style Quality test, a good default is **[Factual Accuracy](/concepts/metric/factual-accuracy)**.
+    For a RAG-style Accuracy test, a good default is **[Factual Accuracy](/concepts/metric/factual-accuracy)**.
 
 ```python
 metric = galtea.metrics.get_by_name(name="Factual Accuracy")
@@ -205,7 +216,7 @@ metric = galtea.metrics.get_by_name(name="Factual Accuracy")
   </Tab>
 
   <Tab title="Security">
-    For Misuse Red Teaming tests, we’ll use **[Misuse Resilience](/concepts/metric/misuse-resilience)**.
+    For Misuse Security & Safety tests, we’ll use **[Misuse Resilience](/concepts/metric/misuse-resilience)**.
 
 ```python
 metric = galtea.metrics.get_by_name(name="Misuse Resilience")
@@ -316,6 +327,14 @@ The SDK supports three agent function signatures — pick the one that matches h
 
 ## 7. See Your Results
 
+{/* <!-- VIDEO PLACEHOLDER: Analytics results review walkthrough (60-90s)
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/analytics-results-review.mp4"
+></video>
+--> */}
+
 Once your evaluations are submitted, open your product in the [Galtea platform](https://platform.galtea.ai/) and head to **Analytics**. Start with the aggregate scores to get a quick baseline, then slice by **version**, **test**, and **metric** to see where performance shifts.
 
 The most useful part is drilling into individual test cases: you can inspect the exact prompt/output pair (or the full conversation for scenarios) and understand which specific inputs move the score up or down. This makes it easier to identify failure patterns, validate fixes in new versions, and iterate with confidence as you move toward production.
@@ -331,11 +350,14 @@ Congratulations! You’ve completed your first evaluation with Galtea.
 You can now explore more advanced features like:
 
 <CardGroup cols={2}>
-<Card title="Tracing Agent Operations" icon="diagram-project" href="/sdk/tutorials/tracing-agent-operations">
+<Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
   Learn how to capture and analyze the internal operations of your AI agent.
 </Card>
-<Card title="Evaluating Production" icon="diagram-project" href="/sdk/tutorials/monitor-production-responses-to-user-queries">
+<Card title="Evaluating Production" icon="chart-line" href="/sdk/tutorials/monitor-production-responses-to-user-queries">
   Learn how to log and evaluate user queries from your production environment.
+</Card>
+<Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specifications">
+  Use specifications to automate test type selection and metric generation.
 </Card>
 
 </CardGroup>
@@ -351,6 +373,7 @@ Explore these concepts to tailor tests, metrics, and workflows to your product:
   <SessionCard />
   <InferenceResultCard />
   <EvaluationCard />
+  <MetricCard />
 </CardGroup>
 
 If you have any questions or need assistance, contact us at [support@galtea.ai](mailto:support@galtea.ai).

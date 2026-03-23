@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from _test_helpers import create_test_product
 from galtea import Galtea
 
 # Initialize Galtea SDK
@@ -7,23 +8,12 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create product via direct API call (SDK doesn't expose products.create)
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-client.post(
-    "products",
-    json={
-        "name": f"docs-human-eval-product-{run_identifier}",
-        "description": "Product for human evaluation tutorial",
-        "securityBoundaries": "none",
-        "capabilities": "answer questions",
-        "inabilities": "none",
-    },
+# Create product via helper (SDK doesn't expose products.create)
+product_id: str = create_test_product(
+    galtea,
+    name=f"docs-human-eval-product-{run_identifier}",
+    description="Product for human evaluation tutorial",
 )
-products = galtea.products.list(limit=1)
-product = products[0]
-product_id: str = product.id
 
 # Create a version
 version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
@@ -82,13 +72,13 @@ print(f"Found {len(test_cases)} test cases")
 for test_case in test_cases:
     actual_output = your_product_function(test_case.input)
 
-    # Create evaluation — since the metric source is human_evaluation,
+    # Create session and evaluate — since the metric source is human_evaluation,
     # the evaluation status will be PENDING_HUMAN instead of running an LLM judge
-    galtea.evaluations.create_single_turn(
-        version_id=version_id,
-        test_case_id=test_case.id,
+    session = galtea.sessions.create(version_id=version_id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=actual_output,
         metrics=[{"name": metric.name}],
-        actual_output=actual_output,
     )
 
 print("All evaluations submitted!")
@@ -103,3 +93,8 @@ if sessions:
     for evaluation in evaluations:
         print(f"Evaluation {evaluation.id}: status={evaluation.status}")
 # @end list_pending_evaluations
+
+# Cleanup
+galtea.products.delete(product_id=product_id)
+galtea.metrics.delete(metric_id=metric.id)
+galtea.user_groups.delete(user_group_id=user_group_id)

@@ -5,6 +5,8 @@ Demonstrates common SDK usage patterns.
 
 from datetime import datetime
 
+from _test_helpers import create_test_product
+
 # @start importing_the_sdk
 from galtea import Galtea
 
@@ -14,21 +16,15 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create a product for this demo via direct API call
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-response = client.post(
-    "products",
-    json={
-        "name": "SDK Usage Demo " + run_identifier,
-        "description": "Demo product for SDK usage tutorial",
-        "capabilities": "Demo capabilities",
-        "inabilities": "Demo inabilities",
-        "securityBoundaries": "Demo security boundaries",
-    },
+# Create a product for this demo
+product_id = create_test_product(
+    galtea,
+    name="SDK Usage Demo " + run_identifier,
+    description="Demo product for SDK usage tutorial",
+    capabilities="Demo capabilities",
+    inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
-product_id = response.json()["id"]
 
 # Get the product for use in examples
 product = galtea.products.get(product_id=product_id)
@@ -60,7 +56,7 @@ metric_from_api = galtea.metrics.create(
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Determine whether the actual output is equivalent to the expected output.",
-    evaluation_params=["actual_output", "expected_output"],
+    evaluation_params=["input", "actual_output", "expected_output"],
 )
 
 
@@ -103,17 +99,17 @@ for test_case in test_cases:
         "This is the expected output"  # your_product_function(test_case.input, ...)
     )
 
-    galtea.evaluations.create_single_turn(
-        version_id=version.id,
-        test_case_id=test_case.id,
+    session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=actual_output,
+        retrieval_context=retrieval_context,
         metrics=[
             {"name": metric_from_api.name},
             {"score": keyword_metric},
         ],
-        actual_output=actual_output,
-        retrieval_context=retrieval_context,
-        # @end launching_evaluations
     )
+# @end launching_evaluations
 # @start retrieving_evaluation_results
 
 # 7) List sessions for the version and print evaluations

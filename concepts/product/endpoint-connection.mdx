@@ -27,14 +27,86 @@ To create an Endpoint Connection:
 3. Click "New Endpoint Connection"
 4. Configure the connection properties as described below
 
-  <video            
-    autoPlay
-    muted                                                                                                           
-    loop
-    playsInline                                                                                                     
-    className="w-full aspect-video rounded-xl"                                                                    
+  <video
+    controls
+    muted
+    playsInline
+    className="w-full aspect-video rounded-xl"
     src="/videos/endpoint-connection-setup.mp4"
   ></video>
+
+## Quick Start: Single Conversation Endpoint
+
+Most integrations only need **one Conversation endpoint**. At its simplest, you just need to configure:
+
+- **Input Template** — How to format the request body (using `{{ input }}` for the simulated user message)
+- **Output Mapping** — How to extract your product's AI response (using a JSONPath expression for the `output` key)
+
+<CodeGroup>
+```json Input Template
+{
+  "message": "{{ input }}"
+}
+```
+
+```json Output Mapping
+{
+  "output": "$.response"
+}
+```
+</CodeGroup>
+
+This is all you need to start running evaluations against your endpoint. For advanced template syntax, conversation history loops, state management, and output mapping options, see [Templates & Mapping](/concepts/product/endpoint-connection-configuration).
+
+## Multi-Step Session Lifecycle (Advanced)
+
+Some AI products expose separate endpoints for session setup and cleanup. In those cases, you can configure up to three endpoint connections:
+
+- **Initialization** (optional): runs before conversation
+- **Conversation** (required): runs for each turn
+- **Finalization** (optional): runs after conversation
+
+### Session Lifecycle Flow
+
+When a version has initialization and/or finalization endpoints configured, the evaluation follows this lifecycle:
+
+```mermaid
+%%{init: {"theme": "neutral"}}%%
+sequenceDiagram
+    participant Galtea
+    participant Init as Initialization Endpoint
+    participant Conv as Conversation Endpoint
+    participant Final as Finalization Endpoint
+
+    Galtea->>Galtea: Create Session
+    opt If Initialization Configured
+        Galtea->>Init: Initialize Session
+        Init-->>Galtea: Return session_id
+        Galtea->>Galtea: Store session_id for future requests
+    end
+    loop For Each Turn
+        Galtea->>Conv: Send Message (with session_id + metadata)
+        Conv-->>Galtea: Return Response
+        Galtea->>Galtea: Store Inference Result
+    end
+    opt If Finalization Configured
+        Galtea->>Final: Finalize Session (always runs)
+    end
+```
+
+### Example Use Case: Multi-Step Chatbot
+
+Some chatbot APIs require multiple steps:
+
+- **Initialization**: create a session and return a `session_id`
+- **Conversation**: send messages using that `session_id`
+- **Finalization**: clean up the session
+
+In this setup:
+
+- Your **Initialization** connection extracts `session_id` via `outputMapping`.
+- Your **Conversation** connection can reuse it in the URL/body using `{{ session_id }}`.
+- Any additional fields extracted via `outputMapping` are stored in **session metadata** and can also be reused in later turns.
 
 ## Endpoint Connection Properties
 
@@ -43,189 +115,46 @@ To create an Endpoint Connection:
 </ResponseField>
 
 <ResponseField name="Type" type="Enum" required>
-  A type that defines the purpose of the endpoint connection. Supported values:
-  - `INITIALIZATION` - Connection used for initializing a session
-  - `CONVERSATION` - Connection used for conversational interactions
-  - `FINALIZATION` - Connection used for finalizing a session
-
-  This is done for complex session lifecycles where a single endpoint connection is not enough.
+  The purpose of the endpoint connection:
+  - `INITIALIZATION` - Runs before the conversation
+  - `CONVERSATION` - Runs for each turn
+  - `FINALIZATION` - Runs after the conversation
 </ResponseField>
 
 <ResponseField name="URL" type="Text" required>
-  The full URL of the endpoint to connect to. Must be a valid HTTP or HTTPS URL. **Example**: "https://api.company.com/v1/chat"
+  The full URL of the endpoint. Must be a valid HTTP or HTTPS URL. **Example**: "https://api.company.com/v1/chat"
 </ResponseField>
 
 <ResponseField name="HTTP Method" type="Enum" required>
-  The HTTP method to use when calling the endpoint. Supported values:
-  - `GET`
-  - `POST`
-  - `PUT`
-  - `PATCH`
-  - `DELETE`
+  The HTTP method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`.
 </ResponseField>
 
 <ResponseField name="Auth Type" type="Enum" required>
-  The authentication method to use. Supported values:
-  - `NONE` - No authentication
-  - `BEARER` - Bearer token authentication
-  - `API_KEY` - API key authentication
-  - `BASIC` - Basic HTTP authentication
+  Authentication method: `NONE`, `BEARER`, `API_KEY`, or `BASIC`.
 </ResponseField>
 
 <ResponseField name="Auth Token" type="Text">
-  The authentication token or credentials, depending on the selected auth type. This value is securely stored.
+  The authentication token or credentials. This value is securely stored.
 </ResponseField>
 
 <ResponseField name="Headers" type="JSON">
-  Optional custom headers to include with each request. **Example**:
-  ```json
-  {
-    "Content-Type": "application/json",
-    "X-Custom-Header": "value"
-  }
-  ```
+  Optional custom headers to include with each request.
 </ResponseField>
 
 <ResponseField name="Input Template" type="String (Jinja2)" required>
-  A Jinja2 template string defining how to format the request body. This template is rendered before sending the request to your endpoint.
-
-  **Available placeholders:**
-  - `{{ input }}` - The test case input (required)
-  - `{{ context }}` - The test case context
-  - `{{ session_id }}` - The external session ID (if available)
-  - `{{ test_case_id }}` - The test case ID
-  - `{{ test_id }}` - The test ID
-  - `{{ galtea_session_id }}` - The Galtea session ID
-  - `{{ inference_result_id }}` - The inference result ID for this turn (useful for [trace collection](/sdk/tutorials/tracing-agent-operations))
-  - Any field stored in session metadata (for example `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`)
-  - `{% for turn in past_turns %}...{% endfor %}` - Loop through conversation history
-    - `{{ turn.input }}` - Previous user input
-    - `{{ turn.output }}` - Previous assistant response
-
-  **Example (OpenAI-compatible format)**:
-  ```jinja2
-  {
-    "model": "gpt-4",
-    "messages": [
-      {"role": "system", "content": "You are a helpful assistant."},
-      {% for turn in past_turns %}
-      {"role": "user", "content": "{{ turn.input }}"},
-      {"role": "assistant", "content": "{{ turn.output }}"},
-      {% endfor %}
-      {"role": "user", "content": "{{ input }}"}
-    ]
-  }
-  ```
-
-  **Example (Previous queries array)**:
-  ```jinja2
-  {
-    "model": "gpt-4",
-    "previous_queries": [
-      {% for turn in past_turns %}
-      "{{ turn.input }}"{% if not loop.last %},{% endif %}
-      {% endfor %}
-    ],
-    "current_query": "{{ input }}"
-  }
-  ```
-
-  <Note>
-    When a loop is the **last item** in a JSON array, use `{% if not loop.last %},{% endif %}` after each iteration to prevent a trailing comma. When there's content **after** the loop (like in the OpenAI example above), trailing commas are valid and this pattern is not required.
-  </Note>
-
-  **Example (Custom format)**:
-  ```jinja2
-  {
-    "data": {
-      "names": ["query", "contexto"],
-      "ndarray": [
-        [
-          "{{ input }}",
-          [
-            {% for turn in past_turns %}
-            "{{ turn.input }}",
-            "{{ turn.output }}"{% if not loop.last %},{% endif %}
-            {% endfor %}
-          ]
-        ]
-      ]
-    }
-  }
-  ```
+  A Jinja2 template defining the request body. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template) for the full placeholder reference and examples.
 </ResponseField>
 
 <ResponseField name="Output Mapping" type="JSON" required>
-  A JSON object defining how to extract values from the API response using [JSONPath](https://goessner.net/articles/JsonPath/) expressions.
-
-  **Required keys:**
-  - `output` - JSONPath expression to extract the main response (required)
-
-  **Optional keys:**
-  - `retrieval_context` - JSONPath expression to extract retrieval context
-  - `traces` - JSONPath expression to extract an array of [trace](/concepts/product/version/session/trace) objects (stored linked to the inference result). Each object should contain at least a `name` field and can include any of the [Trace properties](/concepts/product/version/session/trace#trace-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`
-  - Any additional keys for extra properties to store in session metadata
-
-  **JSONPath Syntax Reference:**
-  | Expression | Description |
-  |------------|-------------|
-  | `$` | Root object |
-  | `.` | Child operator |
-  | `[]` | Array index or child operator |
-  | `[*]` | Wildcard (all elements) |
-  | `[0]` | First array element |
-  | `[-1]` | Last array element |
-
-  **Example**:
-  ```json
-  {
-    "output": "$.choices[0].message.content",
-    "retrieval_context": "$.choices[0].retrieval_context",
-    "session_id": "$.metadata.session_id",
-    "traces": "$.metadata.traces"
-  }
-  ```
+  A JSON object defining how to extract values from the response using JSONPath. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) for special keys and examples.
 </ResponseField>
 
 <ResponseField name="Timeout" type="Number">
-  Request timeout in seconds. Must be between 1 and 300 seconds. Default: 30 seconds.
+  Request timeout in seconds (1–300). Default: 30 seconds.
 </ResponseField>
 
 <ResponseField name="Rate Limit" type="Number">
-  Optional rate limit for requests per minute. Use this to avoid exceeding your API's rate limits.
-</ResponseField>
-
-## Retry Configuration
-
-Configure automatic retry behavior for failed requests. When enabled, Galtea will automatically retry requests that fail with specific HTTP status codes.
-
-<ResponseField name="Retry Enabled" type="Boolean">
-  Whether automatic retry is enabled. Default: `false`
-</ResponseField>
-
-<ResponseField name="Max Retry Attempts" type="Number">
-  Maximum number of retry attempts. Default: `3`
-</ResponseField>
-
-<ResponseField name="Initial Delay" type="Number">
-  Initial delay in milliseconds before the first retry. Default: `1000` (1 second)
-</ResponseField>
-
-<ResponseField name="Backoff Strategy" type="Enum">
-  Strategy for increasing delay between retry attempts:
-  - `exponential` - Delay doubles with each attempt (recommended)
-  - `linear` - Delay increases linearly
-  - `fixed` - Constant delay between attempts
-  
-  Default: `exponential`
-</ResponseField>
-
-<ResponseField name="Max Delay" type="Number">
-  Maximum delay cap in milliseconds. Default: `30000` (30 seconds)
-</ResponseField>
-
-<ResponseField name="Retryable Status Codes" type="Array of Numbers">
-  HTTP status codes that should trigger a retry. Default: `[429, 500, 502, 503, 504]`
+  Optional rate limit for requests per minute.
 </ResponseField>
 
 ## Best Practices
@@ -234,16 +163,30 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea wil
   <Accordion title="Use descriptive names">
     Choose names that clearly identify the endpoint's purpose and environment, such as "Production Chat API" or "Staging Document Analyzer".
   </Accordion>
-  
+
   <Accordion title="Configure appropriate timeouts">
     Set timeouts based on your endpoint's expected response time. For complex AI operations, you may need longer timeouts (60-120 seconds).
   </Accordion>
-  
+
   <Accordion title="Use retry configuration">
-    Configure retries for endpoints that may experience transient failures. Start with 2-3 retries with exponential backoff.
+    Configure retries for endpoints that may experience transient failures. Start with 2-3 retries with exponential backoff. See [Retry Configuration](/concepts/product/endpoint-connection-configuration#retry-configuration).
   </Accordion>
-  
+
   <Accordion title="Secure your credentials">
     Never share your auth tokens. Galtea securely stores and encrypts all authentication credentials.
   </Accordion>
 </AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Templates & Mapping" icon="code" href="/concepts/product/endpoint-connection-configuration">
+    Full reference for Input Templates, Output Mapping, state management, and retry configuration.
+  </Card>
+  <Card title="Version" icon="code-branch" href="/concepts/product/version">
+    Attach endpoint connections to a version for evaluation.
+  </Card>
+  <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
+    Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+</CardGroup>

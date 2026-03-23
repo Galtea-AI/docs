@@ -1,36 +1,47 @@
 ---
 title: "Conversation Simulator"
 sidebarTitle: "Overview"
-description: "Test your conversational AI by simulating realistic user interactions with a synthetic user."
+description: "Test your conversational AI by simulating realistic multi-turn user interactions."
+icon: "comments"
 ---
+
+import SDKSimulatorServiceCard from '/snippets/cards/sdk-conversation-simulator-service-card.mdx';
 
 ## What is the Conversation Simulator?
 
-The Conversation Simulator, also known as the **Synthetic User**, is a Galtea feature for testing conversational AI systems. It programmatically generates realistic user messages to simulate multi-turn dialogues, helping you evaluate your AI's ability to handle complex interactions, maintain context, and achieve user goals.
+The Conversation Simulator is a Galtea feature for testing any AI system that interacts with users through multi-turn conversations — from customer-facing chatbots to autonomous AI agents that execute tasks, call tools, and make decisions. It programmatically generates realistic user messages to simulate dialogues, helping you evaluate your AI's ability to handle complex interactions, maintain context, and achieve user goals.
 
-You can run simulations programmatically using the Galtea SDK. Each simulation is guided by a [Scenario](/concepts/product/test/scenario-tests) attached to a [Test Case](/concepts/product/test/case).
-
----
+Each simulation is guided by a [Behavior Test Case](/concepts/product/test/case) containing a user persona, goal, scenario, and stopping criteria. You can run simulations directly via `simulator.simulate()` or as part of the specification-driven [`evaluations.run()`](/sdk/tutorials/specifications) workflow, which handles simulation and evaluation together.
 
 ## Typical Uses
 
 - **Dialogue flow testing** — Verify your AI produces coherent, natural conversations across multiple turns
 - **Role adherence** — Confirm your AI stays in character and follows its assigned role
 - **Task completion** — Test whether your AI guides users to successfully complete their goals
+- **Agent workflow validation** — Evaluate whether your AI agent calls the right tools, follows the correct steps, and reaches the expected outcome
 - **Robustness** — Evaluate how your AI handles unexpected, off-topic, or challenging user inputs
+
+## Communication Strategies
+
+The simulator supports two communication strategies that control how the simulated user messages are generated:
+
+- **Written** (default) — Concise, text-based messages mimicking real chat or messaging interactions
+- **Spoken** — Natural speech patterns with filler words, hesitations, and a conversational tone
+
+The strategy is set on the [Test Case](/concepts/product/test/case) (via CSV upload or SDK) and is passed to the simulator automatically.
 
 ## Simulation Result Structure
 
-The simulator returns a result object containing the complete conversation history and metadata:
+The `simulate()` method returns a `SimulationResult` object containing the complete conversation history and metadata:
 
-| Field             | Type    | Description                                                           |
-|-------------------|---------|-----------------------------------------------------------------------|
-| `session_id`      | str     | The identifier for the simulation session.                            |
-| `total_turns`     | int     | Total number of conversation turns in the simulation.                 |
-| `messages`        | list    | The full message history as a list of conversation messages.          |
-| `finished`        | bool    | Whether the simulation ended naturally (true) or was stopped (false). |
-| `stopping_reason` | str/None| If stopped, the reason why the simulation ended.                      |
-| `metadata`        | dict/None | Any additional metadata for the simulation.                         |
+| Field             | Type                  | Description                                                           |
+|-------------------|-----------------------|-----------------------------------------------------------------------|
+| `session_id`      | `str`                 | The identifier for the simulation session.                            |
+| `total_turns`     | `int`                 | Total number of conversation turns in the simulation.                 |
+| `messages`        | `List[ConversationMessage]` | The full message history. Each message has `role`, `content`, and optional `retrieval_context` and `metadata`. |
+| `finished`        | `bool`                | Whether the simulation ended naturally (`True`) or was stopped (`False`). |
+| `stopping_reason` | `Optional[str]`       | If stopped, the reason why the simulation ended.                      |
+| `metadata`        | `Optional[Dict]`      | Additional simulation metadata (when `include_metadata=True`).        |
 
 ### Example Output
 
@@ -40,25 +51,30 @@ The simulator returns a result object containing the complete conversation histo
   "total_turns": 5,
   "messages": [
     {"role": "user", "content": "I need to book a flight."},
-    {"role": "agent", "content": "Where are you flying to?"},
-    ...
+    {"role": "assistant", "content": "Where are you flying to?"},
+    {"role": "user", "content": "New York, next Tuesday."},
+    {"role": "assistant", "content": "I found several options for SFO to JFK next Tuesday..."}
   ],
   "finished": true,
-  "stopping_reason": null,
-  "metadata": {"scenario": "Flight booking scenario"}
+  "stopping_reason": "goal_achieved",
+  "metadata": null
 }
 ```
 
----
-
 ## SDK Integration
 
-Use the Galtea SDK to [automate conversation simulations](/sdk/api/simulator/service) and integrate them into your testing pipelines.
+<SDKSimulatorServiceCard />
 
----
+## Related
 
-## See Also
-
-- [Scenarios](/concepts/product/test/scenario-tests)
-- [Test Cases](/concepts/product/test/case)
-- [Simulate Conversation (SDK)](/sdk/api/simulator/service)
+<CardGroup cols={2}>
+  <Card title="Behavior Tests" icon="user-group" href="/concepts/product/test/behavior-tests">
+    The scenario-based tests that drive conversation simulations.
+  </Card>
+  <Card title="Simulating Conversations Tutorial" icon="comments" href="/sdk/tutorials/simulating-conversations">
+    Step-by-step guide to running multi-turn conversation simulations.
+  </Card>
+  <Card title="Specification-Driven Evaluations" icon="play" href="/sdk/tutorials/specifications">
+    Run behavior evaluations automatically from specifications using `evaluations.run()`.
+  </Card>
+</CardGroup>

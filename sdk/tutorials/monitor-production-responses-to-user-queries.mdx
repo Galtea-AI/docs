@@ -8,7 +8,7 @@ You can use Galtea to log and evaluate real user interactions from your producti
 
 ### Single-Turn Production Monitoring
 
-For simple, single-turn interactions, you can send the details to Galtea using `create_single_turn` with `is_production=True`.
+For simple, single-turn interactions, create a production session and use `galtea.inference_results.create_and_evaluate()` to log and evaluate the interaction in a single call.
 
 ```python
 # In your application's request handler...
@@ -17,17 +17,17 @@ def handle_user_query(user_query: str, retrieval_context: str | None = None) -> 
     model_response = your_product_function(user_query, retrieval_context)
 
     # Log and evaluate the interaction in Galtea
-    galtea.evaluations.create_single_turn(
-        version_id=VERSION_ID,
-        is_production=True,
+    session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        input=user_query,
+        output=model_response,
+        retrieval_context=retrieval_context,
         metrics=[
             {"name": "Role Adherence"},
             {"name": "Answer Relevancy"},
             {"name": "Faithfulness"},
         ],
-        input=user_query,
-        actual_output=model_response,
-        retrieval_context=retrieval_context,
     )
 
     return model_response
@@ -130,3 +130,14 @@ print(f"Logged and evaluated production session {session.id}")
 <Info>
 For more details on evaluating multi-turn conversations, see the [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) guide.
 </Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Evaluating Conversations" icon="comments" href="/sdk/tutorials/evaluating-conversations">
+    Evaluate full multi-turn production conversations.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Capture and analyze internal agent operations in production.
+  </Card>
+</CardGroup>

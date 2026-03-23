@@ -4,16 +4,15 @@ description: "Learn how to create and upload custom tests using the SDK"
 icon: "clipboard-list"
 ---
 
-While Galtea can automatically generate tests from a knowledge file, you can also create custom [Tests](/concepts/product/test) by providing your own set of [Test Cases](/concepts/product/test/case).
+<Note>
+  **Looking for the fastest way to create tests?** If you've defined [Specifications](/concepts/product/specification), Galtea can [generate tests automatically](/sdk/tutorials/specifications#step-3-create-tests-from-specifications) — including type, variants, and test cases. Use this tutorial when you need full control over test creation or want to upload your own test data.
+</Note>
+
+You can create [Tests](/concepts/product/test) by uploading your own test data or by having Galtea generate test cases from a knowledge file.
 
 ## Creating Tests with the SDK
 
-<Info>
-  Tests can be generated automatically by Galtea providing a knowledge file [via the SDK](/sdk/api/test/create) or the dashboard.
-</Info>
-
-The Galtea SDK provides methods to create [Accuracy Tests](/concepts/product/test/quality-tests), [Security & Safety Tests](/concepts/product/test/red-teaming-tests), and [Behavior Tests](/concepts/product/test/scenario-tests).
-
+The Galtea SDK provides methods to create [Accuracy Tests](/concepts/product/test/accuracy-tests), [Security & Safety Tests](/concepts/product/test/security-tests), and [Behavior Tests](/concepts/product/test/behavior-tests).
 
 <Tabs>
   <Tab title="Upload Existing Test File">
@@ -31,15 +30,15 @@ test = galtea.tests.create(
     
     <Warning>
       The test file must follow the structure specified for:
-      - [Accuracy Tests](/concepts/product/test/quality-tests#example-accuracy-tests-and-file-format): Standard format with `input`, `expected_output`, etc.
-      - [Security & Safety Tests](/concepts/product/test/red-teaming-tests#example-security-safety-tests-and-file-format): Standard format with adversarial inputs
+      - [Accuracy Tests](/concepts/product/test/accuracy-tests#example-accuracy-tests-and-file-format): Standard format with `input`, `expected_output`, etc.
+      - [Security & Safety Tests](/concepts/product/test/security-tests#example-security-safety-tests-and-file-format): Standard format with adversarial inputs
       - [Behavior Tests](/sdk/tutorials/simulating-conversations): Conversation simulator format with `goal`, `user_persona`, etc.
       
       If the file is not correctly formatted, test cases will not be created automatically, but you can still [add them manually](/sdk/api/test-case/create).
     </Warning>
     
     <Info>
-      **Behavior Tests**: Use `type="BEHAVIOR"` to create conversation simulation tests that enable multi-turn dialogue evaluation with synthetic users. See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for complete examples.
+      **Behavior Tests**: Use `type="BEHAVIOR"` to create conversation simulation tests that enable multi-turn dialogue evaluation with simulated users. See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for complete examples.
     </Info>
   </Tab>
 

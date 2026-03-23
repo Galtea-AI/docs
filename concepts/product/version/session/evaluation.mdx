@@ -28,18 +28,9 @@ Evaluations follow a specific lifecycle:
   <Step title="Completion">Once processed, the status changes to "completed" and the [results](/concepts/product/version/session/evaluation#evaluation-properties) are available</Step>
 </Steps>
 
-## Related Concepts
-
-<CardGroup cols={2}>
-  <TestCard />
-  <TestCaseCard />
-  <SessionCard />
-  <MetricCard />
-</CardGroup>
-
 ## SDK Integration
 
-The Galtea SDK allows you to create, view, and manage evaluations programmatically. This is particularly useful for organizations that want to automate their versioning process or integrate it into their CI/CD pipeline.
+The Galtea SDK allows you to create, view, and manage evaluations programmatically. This is particularly useful for organizations that want to automate their evaluation process or integrate it into their CI/CD pipeline.
 
 <CardGroup cols={2}>
   <SDKEvaluationServiceCard />
@@ -50,63 +41,9 @@ The Galtea SDK allows you to create, view, and manage evaluations programmatical
 
 ## Evaluation Properties
 
-The properties required for an evaluation depend on which method you use:
+### Result Properties
 
-### For `create_single_turn()` (Single-Turn Evaluations)
-
-<ResponseField name="Version ID" type="string" required>
-  The ID of the version you want to evaluate.
-</ResponseField>
-
-<ResponseField name="Session ID" type="string" required>
-  The ID of the session containing the inference results to be evaluated.
-</ResponseField>
-
-<ResponseField name="Metrics IDs" type="list[Metrics]" required>
-  A list of the metrics used for the evaluation.
-</ResponseField>
-
-<ResponseField name="Actual Output" type="Text" required>
-  The actual output produced by the product's version. **Example**: "The iPhone 16 costs $950."
-</ResponseField>
-
-<ResponseField name="Test Case ID" type="Test Case" optional>
-  The test case to be evaluated. Required for non-production evaluations.
-</ResponseField>
-
-<ResponseField name="Input" type="Text" optional>
-  The user query that your model needs to answer. Required for production evaluations where no `test_case_id` is provided.
-</ResponseField>
-
-<ResponseField name="Is Production" type="boolean" optional>
-  Set to `True` to indicate the evaluation is from a production environment. Defaults to `False`.
-</ResponseField>
-
-<ResponseField name="Retrieval Context" type="Text" optional>
-  The context retrieved by your RAG system that was used to generate the actual output.
-  <Note>
-    Including retrieval context enables more comprehensive evaluation of RAG systems.
-  </Note>
-</ResponseField>
-
-<ResponseField name="Latency" type="float" optional>
-  Time lapsed (in ms) from the moment the request was sent to the LLM to the moment the response was received.
-</ResponseField>
-
-<ResponseField name="Usage Info" type="Object" optional>
-  Token count information of the LLM call. Use snake_case keys: `input_tokens`, `output_tokens`, `cache_read_input_tokens`.
-</ResponseField>
-
-<ResponseField name="Cost Info" type="Object" optional>
-  The costs associated with the LLM call. Keys may include `cost_per_input_token`, `cost_per_output_token`, etc.
-  <Warning>
-    If cost information is properly configured in the [Model](/concepts/model) selected by the [Version](/concepts/product/version), the system will automatically calculate the cost. Provided values will override the system's calculation.
-  </Warning>
-</ResponseField>
-
-### Evaluation Results Properties
-
-Once an evaluation is created, you can access the following information:
+Once an evaluation completes, the following fields are available:
 
 <ResponseField name="Status" type="Enum">
   The current status of the evaluation.
@@ -145,3 +82,12 @@ Once an evaluation is created, you can access the following information:
 <ResponseField name="Human Evaluator Started At" type="Text" optional>
   The timestamp when the human evaluator started reviewing this evaluation, if applicable.
 </ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <TestCard />
+  <TestCaseCard />
+  <SessionCard />
+  <MetricCard />
+</CardGroup>

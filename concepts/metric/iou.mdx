@@ -6,8 +6,6 @@ description: "Measures the spatial overlap between a predicted bounding box and 
 
 The IOU (Intersection Over Union) metric is part of the [Deterministic Metric](/concepts/metric) options in Galtea. It evaluates the degree of spatial overlap between a single predicted bounding box and a set of ground truth boxes. This is especially useful for tasks involving layout analysis, bounding box prediction, or image-based text extraction, where location matters as much as content.
 
----
-
 ## Evaluation Parameters
 
 To compute the iou metric, the following parameters must be provided:
@@ -21,8 +19,6 @@ To compute the iou metric, the following parameters must be provided:
   - **JSON object with "bbox" key** (singular): `'{"bbox": [10, 10, 50, 50]}'`
 
 **Important**: Both `actual_output` and `expected_output` must be valid JSON. Truncated or malformed JSON will cause evaluation failures.
-
----
 
 ## How Is It Calculated?
 
@@ -38,8 +34,6 @@ To compute the iou metric, the following parameters must be provided:
 
 This method is particularly useful when the ground truth includes multiple bounding boxes for a single answer (e.g., one box per word in a multi-word phrase).
 
----
-
 ## Interpretation of Scores
 
 - **≥ 0.7** – Strong spatial alignment.
@@ -48,8 +42,6 @@ This method is particularly useful when the ground truth includes multiple bound
 
 Note: These thresholds may be adjusted based on task-specific precision requirements.
 
----
-
 ## Suggested Test Case Types
 
 Use IoU when evaluating:
@@ -57,13 +49,3 @@ Use IoU when evaluating:
 - **Layout-aware predictions**, such as bounding boxes in OCR or form extraction.
 - **Visual document understanding**, where spatial positioning is essential.
 - **Object or text region detection** in image or PDF-based tasks.
-
-
----
-## Related Topics
-
-- [Text Match](/concepts/metric/text-match)
-- [Text Similarity](/concepts/metric/text-similarity)
-- [Spatial Match](/concepts/metric/spatial-match)
-
-

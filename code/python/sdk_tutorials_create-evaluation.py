@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from _test_helpers import create_test_product
 from galtea import Galtea
 
 # Initialize Galtea SDK
@@ -7,23 +8,12 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create product via direct API call (SDK doesn't expose products.create)
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-client.post(
-    "products",
-    json={
-        "name": f"docs-create-eval-product-{run_identifier}",
-        "description": "Product for create evaluation tutorial",
-        "securityBoundaries": "none",
-        "capabilities": "answer questions",
-        "inabilities": "none",
-    },
+# Create product via helper (SDK doesn't expose products.create)
+product_id: str = create_test_product(
+    galtea,
+    name=f"docs-create-eval-product-{run_identifier}",
+    description="Product for create evaluation tutorial",
 )
-products = galtea.products.list(limit=1)
-product = products[0]
-product_id: str = product.id
 
 # Create version and test
 version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
@@ -65,13 +55,12 @@ for test_case in test_cases:
     # Get your product's actual response to the input
     actual_output = your_product_function(test_case.input)
 
-    # Create the evaluation
-    # An evaluation is created implicitly on the first call
-    galtea.evaluations.create_single_turn(
-        version_id=version_id,
-        test_case_id=test_case.id,
+    # Create a session and evaluate
+    session = galtea.sessions.create(version_id=version_id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=actual_output,
         metrics=METRICS_TO_EVALUATE,
-        actual_output=actual_output,
     )
 
 print(f"\nAll evaluations submitted for Version ID: {version_id}")

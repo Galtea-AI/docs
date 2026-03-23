@@ -6,15 +6,11 @@ description: "Ensures that all URLs in the model’s output are safe, properly f
 The **URL Validation** metric is one of the [Deterministic Metric](/concepts/metric) options available in Galtea.  
 It is specifically designed to validate and safeguard hyperlinks produced by model outputs. Unlike simple format checks, this metric enforces **HTTPS-only schemes**, validates against known top-level domains, and uses **SSRF protection** to prevent malicious or unsafe URLs from passing. It also verifies that the link is live and accessible.
 
----
-
 ## Evaluation Parameters
 
 To compute the `url_validation` metric, the following input must be provided:
 
 - **`actual_output`**: The generated text, summary, or other model output that may contain one or more URLs.
-
----
 
 ## How Is It Calculated?
 
@@ -30,8 +26,6 @@ To compute the `url_validation` metric, the following input must be provided:
    - Valid if the server responds with a status code between **200–399**.  
    - Invalid if unreachable, timed out, blocked, or returning errors.  
 
----
-
 ## Interpretation of Scores
 
 - **1** – All URLs are safe, valid, and resolvable.  
@@ -39,15 +33,11 @@ To compute the `url_validation` metric, the following input must be provided:
 - **0** – At least one URL is unsafe, invalid, or unreachable.  
   *Detailed error reasons are included, such as invalid scheme, blocked by SSRF protection, connection failure, timeout, or HTTP status code.*
 
----
-
 ## Example Error Messages
 
 - `Unsafe URL was found in the model response: http://example.com`  
 - `The model provided some invalid url(s): badsite.com: Connection failed - URL may not exist or server is down (Status: N/A)`  
 - `The model provided some invalid url(s): malicious.local: SSRF protection blocked request: disallowed domain (Status: N/A)`  
-
----
 
 ## Suggested Test Case Types
 
@@ -55,11 +45,4 @@ Use URL Validation when evaluating outputs in which:
 
 - The model is expected to generate links to references, citations, or resources.  
 - The correctness and safety of URLs are critical (e.g., documentation, knowledge bases, search results, chatbots with external references).  
-- Invalid or unsafe URLs could harm trust, security, or user experience.  
-
----
-## Related Topics
-
-- [Factual Accuracy](/concepts/metric/factual-accuracy)
-- [Resilience to Noise](/concepts/metric/resilience-to-noise)
-
+- Invalid or unsafe URLs could harm trust, security, or user experience.

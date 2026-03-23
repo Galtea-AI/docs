@@ -1,0 +1,121 @@
+---
+title: "Evaluation Types"
+sidebarTitle: "Evaluation Types"
+description: "How metrics are scored: Self-Hosted, AI Evaluation, or Human Evaluation"
+icon: "layer-group"
+---
+
+Every metric in Galtea has an **Evaluation Type** that determines how responses are scored. Choose the type that matches your scoring needs.
+
+## Self-Hosted
+
+This method is for deterministic metrics that you score locally. No evaluation prompt is sent to Galtea. Instead, your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform for tracking and analysis.
+
+You can provide the score in two ways via the SDK:
+
+- **Pre-calculated score**: Pass a `float` value directly in the `score` field of a `MetricInput` dictionary. This is the simplest method.
+  Example: `{'name': 'my-custom-metric', 'score': 0.85}`
+
+- **Dynamic score calculation**: Use the SDK's `CustomScoreEvaluationMetric` class to encapsulate your scoring logic, which will be executed at runtime.
+  Example: `{'score': MyCustomMetric(name='my-custom-metric')}`
+
+<Card title="Custom Scores Tutorial" icon="code" href="/sdk/tutorials/create-evaluation-with-custom-scores">
+  Learn how to implement and use custom scoring metrics with the SDK.
+</Card>
+
+## AI Evaluation
+
+An LLM scores responses using a scoring rubric you define. You provide the core evaluation logic (your criteria and rubric) in the `judge_prompt`, then select the necessary data fields (like `input`, `context`, etc.) from the [Evaluation Parameters](/concepts/metric/evaluation-parameters) list. Galtea dynamically constructs the final prompt by prepending the selected data to the content of your `judge_prompt`, ensuring a consistent structure for the evaluator model.
+
+<Note title="Our Evaluation Model">
+  The non-deterministic metrics, powered by Large Language Models that act as Judges, utilize models that have demonstrated the best performance in our internal benchmarks and testing. We are committed to continuously evolving and improving these evaluator models to ensure the highest quality assessments over time.
+</Note>
+
+### How It Works
+
+1. You write the evaluation criteria (what to check for)
+2. You define the scoring rubrics (how to score)
+3. You select which [evaluation parameters](/concepts/metric/evaluation-parameters) to include
+4. Galtea automatically constructs the complete evaluation prompt
+
+### Example Judge Prompt
+
+```python
+
+judge_prompt = """
+**Evaluation Criteria:**
+Check if the ACTUAL_OUTPUT is good by comparing it to what was expected. Focus on:
+1. Factual accuracy and correctness
+2. Completeness of the ACTUAL_OUTPUT, regarding the user INPUT
+3. Appropriate use of provided CONTEXT information to answer the user INPUT
+4. Overall helpfulness and relevance to the user INPUT
+
+**Rubric:**
+Score 1 (Good): The ACTUAL_OUTPUT is accurate, complete, uses information properly, and truly helps the user.
+Score 0 (Bad): The ACTUAL_OUTPUT has major errors, missing parts, ignores important info, or doesn't help the user.
+"""
+```
+
+<Info>
+When designing judge prompts, be specific about your scoring criteria and reference the evaluation parameters explicitly. This ensures consistent and reliable evaluations.
+</Info>
+
+### Best Suited For
+
+Custom AI Evaluation metrics are ideal when standard built-in metrics don't cover your specific needs:
+
+- **Behavioral Evaluation** — Ensuring model behavior aligns with defined product guidelines or safety constraints
+- **Policy Adherence** — Checking compliance with brand tone, content rules, or moderation policies
+- **Security Testing** — Validating that responses do not cross ethical, privacy, or safety boundaries
+- **Retrieval Use** — Evaluating whether the model made appropriate use of retrieved context
+
+### AI-Generated Metrics
+
+You can also generate metrics directly from your [Specifications](/concepts/product/specification). Select one or more specifications, and the AI produces ready-to-use metric candidates — complete with judge prompt, evaluation parameters, tags, and evaluator model. See [AI Metric Generation](/concepts/metric/ai-generation) for the full workflow.
+
+## Human Evaluation
+
+Human annotators score responses using the evaluation criteria you define. The metric's `judge_prompt` serves as the evaluation rubric for annotators, and `evaluation_params` determines which data fields are displayed to the evaluator.
+
+When an evaluation is created for a human-evaluated metric, it enters a `PENDING_HUMAN` status and waits for a qualified human evaluator to provide a score.
+
+### Key Features
+
+- **User Groups**: Link [user groups](/concepts/user-group) to a metric to control which users can annotate evaluations for it.
+- **Group Membership**: Users in a linked group see pending evaluations for that metric in the Human Evaluations page.
+- **Claim & Submit**: Evaluators can claim pending evaluations to prevent concurrent editing, then submit their score (0-100 in UI, normalized to 0-1) with an optional reason.
+
+### Use Cases
+
+- Subjective quality assessments that require human judgment
+- Edge cases where LLM evaluation may be unreliable
+- Building gold standard datasets for training custom evaluators
+- Compliance and audit requirements that mandate human review
+
+### SDK Example
+
+```python
+quality_reviewers_group = galtea.user_groups.get_by_name(quality_reviewers_group_name)
+metric = galtea.metrics.create(
+    name=metric_name,
+    source="human_evaluation",
+    judge_prompt="Evaluate the quality of the response based on accuracy, completeness, and clarity.",
+    evaluation_params=["input", "actual_output", "expected_output"],
+    user_group_ids=[quality_reviewers_group.id],
+)
+```
+
+<Card title="Human Evaluation Tutorial" icon="clipboard-check" href="/sdk/tutorials/human-evaluation">
+  Step-by-step guide to setting up human evaluation with user groups, from metric creation to annotation.
+</Card>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Evaluation Parameters" icon="sliders" href="/concepts/metric/evaluation-parameters">
+    Full reference of data fields available to evaluators.
+  </Card>
+  <Card title="Metrics Overview" icon="chart-bar" href="/concepts/metric">
+    Browse all available metrics and understand the two metric families.
+  </Card>
+</CardGroup>

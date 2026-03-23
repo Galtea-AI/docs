@@ -10,9 +10,7 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 A session groups the turns of a single conversation between a user and your AI product. It contains one or more [inference results](/concepts/product/version/session/inference-result) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-Sessions are created in two ways:
-- **Automatically** — when you call `evaluations.create_single_turn()` with a `version_id` and `test_id`, a session is created behind the scenes.
-- **Manually** — when you need to log multi-turn conversations or production data, create a session explicitly with `sessions.create()`.
+Sessions must be created explicitly with `sessions.create()` before logging inference results and evaluations. This gives you full control over session lifecycle and grouping.
 
 You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 
@@ -36,19 +34,39 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 </ResponseField>
 
 <ResponseField name="Is Production" type="Boolean" optional>
-  Indicates whether the session is a production session. This is typically used to differentiate production data from test data.
-  It should be set to `True` if there is no associated test case.
+  A creation-time parameter that indicates whether the session is a production session. When set to `True`, no `test_case_id` is required and the provided `context` is used directly. When `False` (the default), a `test_case_id` must be provided and the context is derived from the test case.
+  <Note>This is not a stored field on the session. Whether a session is a production session can be inferred at read time by checking whether `test_case_id` is `null`.</Note>
 </ResponseField>
 
 <ResponseField name="Context" type="Text" optional>
-  The context provided to the AI product during the session or ground-truth related context.
+  The context provided to the AI product during the session or ground-truth related context. For production sessions, this value is taken from the request. For non-production sessions, it is derived from the linked test case.
 </ResponseField>
 
 <ResponseField name="Metadata" type="Object" optional>
   Additional custom metadata about the session. This can be used to store any relevant information that doesn't fit into the other fields.
 </ResponseField>
 
+<ResponseField name="Status" type="Enum">
+  The current status of the session. Possible values:
+  - `PENDING`: The session has been created but has not yet received all inference results.
+  - `COMPLETED`: The session has finished successfully.
+  - `FAILED`: The session encountered an error during processing.
+</ResponseField>
+
 <ResponseField name="Error" type="Text" optional>
   Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
 </ResponseField>
 
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Evaluation" icon="clipboard-check" href="/concepts/product/version/session/evaluation">
+    Learn how evaluations score inference results within a session.
+  </Card>
+  <Card title="Inference Result" icon="message-bot" href="/concepts/product/version/session/inference-result">
+    Understand the input/output pairs that make up a session.
+  </Card>
+  <Card title="Simulating Conversations" icon="comments" href="/sdk/tutorials/simulating-conversations">
+    Tutorial on running multi-turn conversation simulations.
+  </Card>
+</CardGroup>

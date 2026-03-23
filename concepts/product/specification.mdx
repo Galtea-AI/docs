@@ -24,14 +24,24 @@ Specifications also have a **test type** that determines the evaluation approach
 
 <Note>Specifications replace the legacy free-text fields (Capabilities, Inabilities, Policies) on Products with structured, individually testable expectations linked to specific metrics.</Note>
 
-## Related Concepts
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/specifications-overview.mp4"
+></video>
 
-A specification in Galtea is associated with:
+## The Specification-Driven Workflow
 
-<CardGroup cols={2}>
-  <ProductCard />
-  <MetricCard />
-</CardGroup>
+Specifications are at the center of Galtea's recommended evaluation flow:
+
+1. **Define specifications** for your product (Capability, Inability, Policy)
+2. **Generate metrics** from specifications using [AI Metric Generation](/concepts/metric/ai-generation)
+3. **Create tests** from specifications — the test type is auto-derived
+4. **Run evaluations** with `evaluations.run()` — resolves specs, tests, and metrics automatically
+
+<Card title="Specification-Driven Evaluations Tutorial" icon="rocket" href="/sdk/tutorials/specifications">
+  End-to-end guide: define specs, generate metrics, create tests, and run evaluations — all from specifications.
+</Card>
 
 ## SDK Integration
 
@@ -59,9 +69,10 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
   Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
 </ResponseField>
 
-<ResponseField name="test_type" type="Enum" required>
+<ResponseField name="test_type" type="Enum" optional>
   The type of test for this specification.
   Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
+  <Note>Required for `POLICY` specifications. Must not be provided for `CAPABILITY` or `INABILITY` specifications.</Note>
 </ResponseField>
 
 <ResponseField name="test_variant" type="string" optional>
@@ -75,3 +86,10 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
 <ResponseField name="created_at" type="string">
   Timestamp of when the specification was created (ISO 8601 format).
 </ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ProductCard />
+  <MetricCard />
+</CardGroup>

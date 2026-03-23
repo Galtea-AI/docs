@@ -3,11 +3,9 @@ title: "User Objective Accomplished"
 description: "Evaluates whether the user's stated objective was successfully and correctly achieved during the conversation."
 ---
 
-The **User Objective Accomplished** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate whether a conversation led to the user’s intended goal being fulfilled. Unlike satisfaction-based measures, this metric centers on *objective correctness*—whether the agent actually met the user’s stated objective.  
+The **User Objective Accomplished** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to evaluate whether a conversation led to the user’s intended goal being fulfilled. Unlike satisfaction-based measures, this metric centers on *objective correctness*—whether the agent actually met the user’s stated objective.  
 
 This metric is particularly useful for use cases where accuracy and goal fulfillment matter more than tone or fluency, such as customer support resolutions, fact-based Q&A, or task execution scenarios.
-
----
 
 ## Evaluation Parameters
 
@@ -16,8 +14,6 @@ To compute the `user_objective_accomplished` metric, the following parameters ar
 - **`input`**: The user messages sent to the chatbot.
 - **`actual_output`**: The chatbot's corresponding responses.
 - **`goal`**: The stated objective or intent of the user.  
-
----
 
 ## How Is It Calculated?
 
@@ -32,9 +28,10 @@ Based on this process, the LLM assigns a **binary score**:
 - **1 (Accomplished):** The agent successfully and correctly fulfilled the user’s objective. 
 - **0 (Not Accomplished):** The agent failed to fulfill the user’s objective.
 
----
+## Suggested Test Case Types
 
-## Related Topics
+The User Objective Accomplished metric is effective for evaluating Behavior test cases in Galtea, particularly:
 
-- [User Satisfaction](/concepts/metric/user-satisfaction)  
-- [Conversation Relevancy](/concepts/metric/conversation-relevancy)  
+- **Goal-driven conversations** where the user has a specific, verifiable objective.
+- **Task execution scenarios** such as booking, purchasing, or information retrieval.
+- **Support interactions** where resolution of the user’s issue is the primary success criterion.

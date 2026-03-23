@@ -5,7 +5,6 @@ description: "Performs a binary evaluation of the spatial alignment between a pr
 
 The Spatial Match metric is part of the [Deterministic Metric](/concepts/metric) options in Galtea. It determines whether a predicted bounding box sufficiently overlaps with any of the reference boxes by computing the Intersection over Union ([IOU](/concepts/metric/iou)) and applying a threshold. This binary variant of the [IOU](/concepts/metric/iou) metric is particularly useful when an exact spatial match is not required, but a minimum quality of alignment must be enforced.
 
----
 ## Evaluation Parameters
 
 To compute the spatial\_match metric, the following parameters must be provided:
@@ -20,7 +19,6 @@ To compute the spatial\_match metric, the following parameters must be provided:
 
 **Important**: Both `actual_output` and `expected_output` must be valid JSON. Truncated or malformed JSON will cause evaluation failures.
 
----
 ## How Is It Calculated?
 
 1. The predicted box is compared against each reference box.
@@ -37,13 +35,10 @@ To compute the spatial\_match metric, the following parameters must be provided:
 
 This approach accommodates situations where reference answers span multiple boxes (e.g., one box per word), and only the best alignment needs to be evaluated.
 
----
 ## Interpretation of Scores
 
 - **1.0** – Strong spatial match; high alignment.
 - **0.0** – Low spatial match; poor alignment.
-
----
 
 ## Suggested Test Case Types
 
@@ -52,11 +47,3 @@ Use Spatial Match when evaluating:
 - **Document layout tasks** requiring accurate box alignment.
 - **OCR or form field extraction** where exact box positioning matters.
 - **Visual QA and multi-box alignment tasks** that benefit from flexible but spatially aware comparisons.
-
----
-## Related Topics
-
-- [Text Match](/concepts/metric/text-match)
-- [IOU](/concepts/metric/iou)
-- [Text Similarity](/concepts/metric/text-similarity)
-

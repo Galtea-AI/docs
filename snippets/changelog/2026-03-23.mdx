@@ -1,0 +1,31 @@
+<Update label="2026-03-23" description="Specification Analytics, CSV Export, and Expanded Documentation">
+
+## Specifications in Analytics
+
+The analytics dashboard now includes a dedicated [Specifications](/concepts/product/specification) section that aggregates evaluation scores per specification, giving you a clear picture of how each policy area is performing across [versions](/concepts/product/version). Specification-level radar charts let you compare coverage at a glance, and clicking any specification label filters the entire dashboard to show only [metrics](/concepts/metric) linked to that specification.
+
+Version comparison charts have also been improved with click-to-highlight and double-click-to-navigate directly to the [evaluations](/concepts/product/version/session/evaluation) list.
+
+## Test Case CSV Export
+
+You can now export your [test cases](/concepts/product/test/case) as CSV files directly from the dashboard. Select specific test cases or export all visible ones — the platform generates a CSV with 22 columns covering input, expected output, strategy, language, scores, and more, then provides a direct download link. Use exported data for offline review, spreadsheet analysis, or integration with external workflows.
+
+## Documentation and Video Guides
+
+The documentation has been significantly expanded with new video walkthroughs and reference pages:
+
+- **Video guides** now cover [specifications](/concepts/product/specification), [versions](/concepts/product/version), [traces](/sdk/tutorials/tracing-agent-operations), [human evaluation](/sdk/tutorials/human-evaluation), [endpoint connection setup](/concepts/product/endpoint-connection), and AI-powered specification generation — each embedded directly in the relevant docs page
+- A new [Writing Specifications](/sdk/tutorials/writing-specifications) guide covers how to define specifications for your product — behavioral expectations, policies, and rules that drive metric generation and test creation
+- New reference pages for [evaluation types](/concepts/metric/evaluation-types), [evaluation parameters](/concepts/metric/evaluation-parameters), and [endpoint connection configuration](/concepts/product/endpoint-connection-configuration) provide deeper detail on evaluation setup
+- A runnable [evaluation demo](/sdk/api/evaluation/run) covers endpoint-based, specification-filtered, and local-agent evaluation modes
+
+## Platform Improvements
+
+- **JSON field matching metric:** A new deterministic [metric](/concepts/metric/json-field-match) that compares top-level JSON fields between actual and expected output, returning the ratio of matching fields as the score. Supports lenient parsing of actual output wrapped in markdown code fences or surrounding text.
+- **Endpoint connection validation:** Before running an [evaluation](/concepts/product/version/session/evaluation), the platform now validates that all required [endpoint connections](/concepts/product/endpoint-connection) on the version still exist — preventing runtime failures from deleted connections.
+- **Credit warning badge:** A visual indicator in the sidebar shows your organization's credit status — amber when credits are running low, red when exhausted — so you always know where you stand before launching evaluations.
+- **Retry defaults:** New [endpoint connections](/concepts/product/endpoint-connection) default to retries enabled with 3 attempts and exponential backoff, improving reliability out of the box.
+- **Sidebar overlay:** The navigation sidebar now overlays content on hover instead of pushing the page layout, reducing visual disruption while browsing.
+- **Form and table polish:** Clearer validation errors when switching to AI generation mode, a clear button for optional form fields, improved column width handling in tables, better form field reset behavior, and more consistent UI across the dashboard.
+
+</Update>

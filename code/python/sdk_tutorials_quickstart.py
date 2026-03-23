@@ -1,6 +1,9 @@
 import time
 from datetime import datetime
 
+from _test_helpers import create_test_product
+from requests.exceptions import HTTPError
+
 from galtea import (
     AgentInput,
     AgentResponse,
@@ -15,31 +18,36 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 products = galtea.products.list(limit=100)
 print(f"Cleaning up {len(products)} products")
 for product in products:
-    galtea.products.delete(product_id=product.id)
+    try:
+        # Delete specifications individually first to avoid batch soft-delete
+        # constraint violations when duplicate specs exist on a product
+        specs = galtea.specifications.list(product_id=product.id)
+        for spec in specs:
+            try:
+                galtea.specifications.delete(specification_id=spec.id)
+            except Exception:
+                pass
+        galtea.products.delete(product_id=product.id)
+    except Exception:
+        pass
 products = galtea.products.list(limit=100)
 print(f"Remaining products after cleanup: {len(products)}")
 # === End cleanup code ===
 
 # Create a product for this demo
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-response = client.post(
-    "products",
-    json={
-        "name": "Financial Assistant " + run_identifier,
-        "description": "A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
-        "securityBoundaries": "* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
-        "capabilities": "* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
-        "inabilities": "* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
-        "policies": "",
-    },
+_created_product_id = create_test_product(
+    galtea,
+    name="Financial Assistant " + run_identifier,
+    description="A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
+    security_boundaries="* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
+    capabilities="* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
+    inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
+    policies="",
 )
-products = galtea.products.list(limit=10)
-versions = galtea.versions.list(product_id=products[0].id)
+versions = galtea.versions.list(product_id=_created_product_id)
 if versions is None or len(versions) == 0:
     galtea.versions.create(
-        product_id=products[0].id,
+        product_id=_created_product_id,
         name="quickstart-version-" + run_identifier,
         description="Created via the Galtea SDK quickstart example",
     )
@@ -59,14 +67,14 @@ product_id = "your_product_id"
 version_id = "your_version_id"
 # @end set_ids
 
-product_id = products[0].id
+product_id = _created_product_id
 if product_id is None:
     raise ValueError("No product ID found")
-version_id = versions[0].id
+version_id = galtea.versions.list(product_id=_created_product_id)[0].id
 if version_id is None:
     raise ValueError("No version ID found")
 
-# @start create_quality_test
+# @start create_accuracy_test
 test = galtea.tests.create(
     name="rag-accuracy-test",
     type="ACCURACY",
@@ -75,26 +83,26 @@ test = galtea.tests.create(
     language="english",
     max_test_cases=20,
 )
-# @end create_quality_test
+# @end create_accuracy_test
 if test is None:
     raise ValueError("Failed to create accuracy test")
 accuracy_test = test
 
-# @start create_red_teaming_test
+# @start create_security_test
 test = galtea.tests.create(
     name="misuse-security-test",
     type="SECURITY",
     product_id=product_id,
-    variants=["Misuse"],
-    strategies=["Original"],  # Original must always be included
+    variants=["misuse"],
+    strategies=["original"],  # original must always be included
     max_test_cases=20,
 )
-# @end create_red_teaming_test
+# @end create_security_test
 if test is None:
     raise ValueError("Failed to create security test")
 security_test = test
 
-# @start create_scenarios_test
+# @start create_behavior_test
 test = galtea.tests.create(
     name="conversation-behavior-test",
     type="BEHAVIOR",
@@ -103,7 +111,7 @@ test = galtea.tests.create(
     max_test_cases=20,
     strategies=["written"],
 )
-# @end create_scenarios_test
+# @end create_behavior_test
 if test is None:
     raise ValueError("Failed to create behavior test")
 behavior_test = test
@@ -214,6 +222,30 @@ def my_agent(input_data: AgentInput) -> AgentResponse:
 
 # @end define_agent_structured_function
 
+
+# Setup: create a specification and link a metric so evaluations.run() can discover it
+_spec = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant must provide factually accurate financial information.",
+    type="POLICY",
+    test_type="BEHAVIOR",
+)
+if _spec is None:
+    raise ValueError("Failed to create specification")
+galtea.specifications.link_metrics(
+    specification_id=_spec.id,
+    metric_ids=[accuracy_metric.id],
+)
+
+# @start run_evaluation_run
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+)
+
+print(f"Evaluated {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
+print(f"View results at: https://platform.galtea.ai/product/{product_id}")
+# @end run_evaluation_run
 
 # For demo purposes, use the structured function
 MyAgentInstance = my_agent
@@ -342,3 +374,6 @@ print(f"Submitted evaluations for version {version_id} using test '{test.name}'.
 # @start see_results
 print(f"View results at: https://platform.galtea.ai/product/{product_id}")
 # @end see_results
+
+# === Cleanup: delete the product created for this demo ===
+galtea.products.delete(product_id=_created_product_id)

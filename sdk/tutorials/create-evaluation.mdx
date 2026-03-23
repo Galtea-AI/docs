@@ -4,6 +4,10 @@ description: "Learn how to run evaluations for a single-turn, test-based workflo
 icon: "clipboard-check"
 ---
 
+<Note>
+  **Using specifications?** If your tests and metrics are linked to [Specifications](/concepts/product/specification), you can use [Specification-Based Evaluation](#specification-based-evaluation) below — it resolves metrics automatically. This tutorial also covers the manual loop approach for full control over each test case.
+</Note>
+
 To evaluate a product version against a predefined [Test](/concepts/product/test), you can loop through its [Test Cases](/concepts/product/test/case) and run an evaluation for each one. This workflow is ideal for regression testing and standardized quality checks.
 
 <Info>
@@ -20,7 +24,7 @@ To evaluate a product version against a predefined [Test](/concepts/product/test
         Fetch all test cases associated with the test using `galtea.test_cases.list()`.
     </Step>
     <Step title="Generate and Evaluate Output">
-        For each test case, call your product to get its output, then use `galtea.evaluations.create_single_turn()` to create the evaluations.
+        For each test case, call your product to get its output, create a session with `galtea.sessions.create()`, then use `galtea.inference_results.create_and_evaluate()` to log and evaluate the result.
     </Step>
 </Steps>
 
@@ -38,13 +42,12 @@ for test_case in test_cases:
     # Get your product's actual response to the input
     actual_output = your_product_function(test_case.input)
 
-    # Create the evaluation
-    # An evaluation is created implicitly on the first call
-    galtea.evaluations.create_single_turn(
-        version_id=version_id,
-        test_case_id=test_case.id,
+    # Create a session and evaluate
+    session = galtea.sessions.create(version_id=version_id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=actual_output,
         metrics=METRICS_TO_EVALUATE,
-        actual_output=actual_output,
     )
 
 print(f"\nAll evaluations submitted for Version ID: {version_id}")
@@ -83,3 +86,14 @@ print(f"Created {len(evaluations)} evaluations from specifications")
 <Info>
     If you omit both `metrics` and `specification_ids`, the API falls back to all metrics from every specification linked to the product.
 </Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specifications">
+    Automate test resolution, agent execution, and evaluation with specifications.
+  </Card>
+  <Card title="Evaluating Conversations" icon="comments" href="/sdk/tutorials/evaluating-conversations">
+    Evaluate multi-turn conversations and production sessions.
+  </Card>
+</CardGroup>

@@ -1,7 +1,7 @@
 ---
 title: 'Simulate Conversation'
 sidebarTitle: "Simulate"
-description: "Run a full conversation simulation between your agent and a synthetic user using the Galtea SDK."
+description: "Run a full conversation simulation between your agent and a simulated user using the Galtea SDK."
 ---
 
 import AgentCallables from '/snippets/agent-callables.mdx';
@@ -25,7 +25,7 @@ simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
     agent=my_agent,
     max_turns=3,
-    log_inference_results=True,
+
 )
 ```
 

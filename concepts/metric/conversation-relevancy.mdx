@@ -3,11 +3,9 @@ title: "Conversation Relevancy"
 description: "Checks if your product consistently responds in a contextually relevant way during a multi-turn conversation."
 ---
 
-The **Conversation Relevancy** metric is one of several [non-deterministic Metrics](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to generate contextually appropriate and relevant responses across the course of a multi-turn dialogue. It assesses whether each response aligns with the user's intent, prior inputs, and the evolving context of the conversation.
+The **Conversation Relevancy** metric is one of several [non-deterministic Metric](/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to generate contextually appropriate and relevant responses across the course of a multi-turn dialogue. It assesses whether each response aligns with the user's intent, prior inputs, and the evolving context of the conversation.
 
 This metric is particularly useful for ensuring coherent, on-topic conversations that maintain engagement and avoid misunderstandings or irrelevant diversions.
-
----
 
 ## Evaluation Parameters
 
@@ -17,8 +15,6 @@ To compute the `conversation_relevancy` metric, the following parameters are req
 - **`actual_output`**: The chatbot's corresponding response.
 
 This metric will evaluate the whole conversation, including all turns, to evaluate the relevance of the response in context, not just in isolation.
-
----
 
 ## How Is It Calculated?
 
@@ -33,10 +29,10 @@ The metric assigns a **binary score**:
 - **Score 1.0 (Relevant):** The agent maintains overall coherence with only minor or justifiable deviations. Responses align with the user's intent and conversation history.
 - **Score 0.0 (Irrelevant):** The agent demonstrates significant irrelevance issues—repeatedly ignoring context, contradicting established information, or going off-topic without justification.
 
+## Suggested Test Case Types
 
----
+The Conversation Relevancy metric is effective for evaluating Behavior test cases in Galtea, particularly:
 
-## Related Topics
-
-- [Knowledge Retention](/concepts/metric/knowledge-retention)
-- [Conversation Completeness](/concepts/metric/conversation-completeness)
+- **Open-ended dialogues** where maintaining topical coherence is critical.
+- **Multi-turn scenarios** with shifting context or follow-up questions.
+- **Edge-case conversations** that test the agent's ability to stay on-topic under pressure.

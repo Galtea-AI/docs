@@ -33,6 +33,16 @@ Models in Galtea are primarily used for:
   </Card>
 </CardGroup>
 
+## Models vs. Evaluator Models
+
+It's important to distinguish between a **Model** and an **Evaluator Model** in Galtea:
+
+- **Model (This Page):** Represents the AI model your product is using. Its primary purpose in Galtea is for **cost estimation and tracking**. You link a Version to a Model to calculate the cost of its inference results.
+
+- **Evaluator Model:** This is an LLM used by Galtea to perform "LLM-as-a-judge" evaluations for non-deterministic [Metrics](/concepts/metric). You select an Evaluator Model when creating a custom metric with a `judge_prompt`.
+
+While both are LLMs, their roles within the Galtea platform are distinct: one is being tested, and the other is doing the testing.
+
 ## Model Properties
 
 When creating a model in Galtea, you'll need to provide the following information:
@@ -75,7 +85,7 @@ When creating a model in Galtea, you'll need to provide the following informatio
 <ResponseField name="Tokenizer Provider" type="Text">
   The provider of the tokenizer used by the model. This is important for accurate token counting and cost estimation.
   Right now, the only supported tokenizers are:
-  **Examples**: 
+  **Examples**:
   - "OpenAI" (uses [tiktoken](https://github.com/openai/tiktoken))
   - "Anthropic" (uses [anthropic-tokenizer](https://lunary.ai/anthropic-tokenizer))
 </ResponseField>
@@ -85,14 +95,13 @@ When creating a model in Galtea, you'll need to provide the following informatio
   For instance: https://openai.com/api/pricing/
 </ResponseField>
 
----
+## Related
 
-## Models vs. Evaluator Models
-
-It's important to distinguish between a **Model** and an **Evaluator Model** in Galtea:
-
-- **Model (This Page):** Represents the AI model your product is using. Its primary purpose in Galtea is for **cost estimation and tracking**. You link a Version to a Model to calculate the cost of its inference results.
-
-- **Evaluator Model:** This is an LLM used by Galtea to perform "LLM-as-a-judge" evaluations for non-deterministic [Metrics](/concepts/metric). You select an Evaluator Model when creating a custom metric with a `judge_prompt`.
-
-While both are LLMs, their roles within the Galtea platform are distinct: one is being tested, and the other is doing the testing.
+<CardGroup cols={2}>
+  <Card title="Version" icon="code-branch" href="/concepts/product/version">
+    Link a model to a version for cost tracking.
+  </Card>
+  <Card title="Metrics" icon="brackets-curly" href="/concepts/metric">
+    Select evaluator models when creating custom metrics.
+  </Card>
+</CardGroup>

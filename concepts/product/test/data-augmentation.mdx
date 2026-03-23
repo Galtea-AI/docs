@@ -11,19 +11,16 @@ Data Augmentation is a Galtea feature that **automatically generates new test ca
 It is especially useful when you already have a baseline set of test cases and want to expand your coverage without the overhead of manual creation.
 
 <Info>
-  Data Augmentation works with all test types — [Accuracy](/concepts/product/test/quality-tests), [Security & Safety](/concepts/product/test/red-teaming-tests), and [Behavior](/concepts/product/test/scenario-tests). When triggered, your [test](/concepts/product/test) enters the `AUGMENTING` status while new cases are being generated.
+  Data Augmentation works with all test types — [Accuracy](/concepts/product/test/accuracy-tests), [Security & Safety](/concepts/product/test/security-tests), and [Behavior](/concepts/product/test/behavior-tests). When triggered, your [test](/concepts/product/test) enters the `AUGMENTING` status while new cases are being generated.
 </Info>
 
 <video
-  autoPlay
+  controls
   muted
-  loop
   playsInline
   className="w-full aspect-video rounded-xl"
   src="/videos/data-augmentation-demo.mp4"
 ></video>
-
----
 
 ## How It Works
 
@@ -47,9 +44,13 @@ You can augment any existing test directly from the [Galtea dashboard](https://p
   </Step>
 </Steps>
 
----
+## Related
 
-## See Also
-
-- [Tests](/concepts/product/test) — Learn about tests and test types in Galtea
-- [Test Cases](/concepts/product/test/case) — Understand the structure of individual test cases
+<CardGroup cols={2}>
+  <Card title="Tests" icon="flask" href="/concepts/product/test">
+    Learn about tests and test types in Galtea.
+  </Card>
+  <Card title="Test Cases" icon="list" href="/concepts/product/test/case">
+    Understand the structure of individual test cases.
+  </Card>
+</CardGroup>

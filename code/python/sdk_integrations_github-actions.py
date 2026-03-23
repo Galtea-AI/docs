@@ -1,28 +1,18 @@
 from datetime import datetime
 
+from _test_helpers import create_test_product
 from galtea import Galtea
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create product via direct API call (SDK doesn't expose products.create)
-client = getattr(galtea, "_Galtea__client", None)
-if client is None:
-    raise ValueError("Could not access Galtea client for direct API call")
-client.post(
-    "products",
-    json={
-        "name": f"docs-github-actions-product-{run_identifier}",
-        "description": "Product for GitHub Actions integration documentation",
-        "securityBoundaries": "none",
-        "capabilities": "answer questions",
-        "inabilities": "none",
-    },
+# Create product via helper (SDK doesn't expose products.create)
+PRODUCT_ID: str = create_test_product(
+    galtea,
+    name=f"docs-github-actions-product-{run_identifier}",
+    description="Product for GitHub Actions integration documentation",
 )
-products = galtea.products.list(limit=1)
-product = products[0]
-PRODUCT_ID: str = product.id
 
 # Create a test with test cases
 test = galtea.tests.create(
@@ -40,18 +30,18 @@ version = galtea.versions.create(name=f"v1.X-{run_identifier}", product_id=PRODU
 
 test_cases = galtea.test_cases.list(test_id=test.id)
 
-metrics = ["Factual Accuracy"]
+metrics = [{"name": "Factual Accuracy"}]
 
 # Placeholder for where the model's answer would be generated
 # In a real scenario, this would involve calling your model with test_case.input
 model_answer = "This is a placeholder model answer."
 
 for test_case in test_cases:
-    galtea.evaluations.create_single_turn(
-        version_id=version.id,
-        test_case_id=test_case.id,
+    session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=model_answer,
         metrics=metrics,
-        actual_output=model_answer,
     )
 # @end github_actions_workflow
 

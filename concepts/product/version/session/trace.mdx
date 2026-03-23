@@ -10,6 +10,12 @@ import SDKTraceServiceCard from '/snippets/cards/trace-service-card.mdx';
 
 A trace in Galtea represents a single operation or function call that occurs during an AI agent's execution. Traces capture the internal workings of your agent—such as tool calls, retrieval operations, chain orchestrations, and LLM invocations—providing deep visibility into how your agent processes requests.
 
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/traces-overview.mp4"
+></video>
+
 Traces are **always linked to an [inference result](/concepts/product/version/session/inference-result)**, enabling you to understand not just *what* your agent responded, but *how* it arrived at that response. Every trace must belong to a specific inference result.
 
 ## Why Use Traces?
@@ -66,88 +72,25 @@ Traces are classified by type to help you understand the nature of each operatio
 | **EMBEDDING** | Embedding model calls. | Vector embedding operations for semantic search or similarity. |
 | **GUARDRAIL** | Components that protect against malicious content. | Safety checks that filter or validate inputs/outputs. |
 
-## The `@trace` Decorator
+## Best Practices
 
-The `@trace` decorator automatically captures function inputs, outputs, timing, errors, and parent-child relationships.
+<AccordionGroup>
+  <Accordion title="Use meaningful trace names">
+    Choose descriptive names that clearly indicate the operation being traced — e.g., `search_documents` rather than `step_2`.
+  </Accordion>
 
-### Syntax Options
+  <Accordion title="Trace at meaningful boundaries">
+    Trace operations that represent logical units of work (tool calls, LLM invocations, retrieval steps), not every single function.
+  </Accordion>
 
-```python
-from galtea import Galtea, TraceType, trace
+  <Accordion title="Select appropriate trace types">
+    Classify operations correctly (TOOL, GENERATION, RETRIEVER, etc.) to enable better filtering and analysis in the dashboard.
+  </Accordion>
 
-
-# Full specification
-@trace(name="my_operation", type=TraceType.TOOL)
-def my_function_1():
-    # Function implementation ...
-    print("Doing something...")
-
-
-# Name only (type defaults to None, for unclassified operations)
-@trace(name="custom_name")
-def my_function_2():
-    # Function implementation ...
-    print("Doing something else...")
-
-
-# Include function docstring as trace description
-@trace(type=TraceType.TOOL, include_docstring=True)
-def my_function_3(user_id: str):
-    """Fetch user data from the database given a user ID."""
-    # Function implementation ...
-    print(f"Fetching data for user {user_id}...")
-
-
-# Bare decorator (uses function name)
-@trace()
-def my_function_4():
-    # Function implementation ...
-    print("Doing another thing...")
-```
-
-### Error Tracking
-
-The decorator automatically captures exceptions. When an error occurs, the trace records:
-- The error message in the `error` field
-- The execution time until the error
-- Input data that caused the error
-
-```python
-@trace(name="risky_operation", type=TraceType.TOOL)
-def risky_call(self, data: str) -> str:
-    if not data:
-        raise ValueError("Data cannot be empty")
-    return f"Processed: {data}"
-```
-
-### Viewing Trace Hierarchy
-
-After collecting traces, you can visualize the execution in the Dashboard or by usign the following code:
-
-```python
-traces = galtea.traces.list(inference_result_id=inference_result.id)
-
-print("Trace Hierarchy:")
-
-
-def print_trace_tree(traces, parent_id=None, indent=0):
-    for trace in traces:
-        if trace.parent_trace_id == parent_id:
-            prefix = "  " * indent + ("└─ " if indent > 0 else "")
-            print(f"{prefix}{trace.name} ({trace.type}) - {trace.latency_ms:.2f}ms")
-            print_trace_tree(traces, trace.id, indent + 1)
-
-
-print_trace_tree(traces)
-```
-
-**Example output:**
-```
-main_agent (AGENT) - 245.30ms
-└─ route_query (CHAIN) - 0.15ms
-└─ search_documents (RETRIEVER) - 120.50ms
-└─ call_llm (GENERATION) - 124.20ms
-```
+  <Accordion title="Keep input/output data reasonable">
+    The `@trace` decorator captures function arguments automatically. Avoid tracing functions that receive very large inputs (e.g., full documents) — pass summaries or IDs instead.
+  </Accordion>
+</AccordionGroup>
 
 ## SDK Integration
 
@@ -207,57 +150,13 @@ main_agent (AGENT) - 245.30ms
   Additional custom metadata about the trace. Maximum size: 128KB.
 </ResponseField>
 
-## Best Practices
+## Related
 
-<AccordionGroup>
-  <Accordion title="Use meaningful trace names">
-    Choose descriptive names that clearly indicate the operation being traced:
-    ```python
-    # ✅ Good - descriptive
-    @trace(name="fetch_customer_orders")
-    # ❌ Bad - generic
-    @trace(name="step_1")
-    ```
-  </Accordion>
-  
-  <Accordion title="Trace at meaningful boundaries">
-    Trace operations that represent logical units of work, not every single function:
-    ```python
-    # ✅ Good - meaningful operation
-    @trace(name="search_products", type=TraceType.RETRIEVER)
-    def search_products(self, query):
-        results = self._query_vector_db(query)  # Internal, not traced
-        return self._format_results(results)  # Internal, not traced
-    ```
-  </Accordion>
-  
-  <Accordion title="Select appropriate node types">
-    Classify operations correctly to enable better filtering and analysis in the dashboard.
-    ```python
-    # ✅ Good - correct classification
-    @trace(name="generate_evaluation_metrics", type=TraceType.RETRIEVER)
-    def fetch_user_data(self, user_id: str) -> dict:
-        # Function implementation ...
-        return {"user_id": user_id, "data": "Sample data"}
-
-
-    # ❌ Bad - incorrect classification
-    @trace(name="generate_evaluation_metrics", type=TraceType.TOOL)
-    def fetch_user_data_incorrect(self, user_id: str) -> dict:
-        # Function implementation ...
-        return {"user_id": user_id, "data": "Sample data"}
-    ```
-  </Accordion>
-  
-  <Accordion title="Keep input/output data reasonable">
-    The decorator captures function arguments automatically. Consider what's useful for debugging:
-    ```python
-    @trace(name="process_document", type=TraceType.TOOL)
-    def process(self, doc_id: str) -> dict:
-        # Only doc_id is captured as input, not the full document
-        doc = self.fetch_document(doc_id)
-        return {"summary": doc.summary, "status": "processed"}
-    ```
-  </Accordion>
-
-</AccordionGroup>
+<CardGroup cols={2}>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Step-by-step guide to capturing and analyzing agent traces.
+  </Card>
+  <Card title="Inference Result" icon="message-bot" href="/concepts/product/version/session/inference-result">
+    The inference results that traces are linked to.
+  </Card>
+</CardGroup>

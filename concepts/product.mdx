@@ -19,16 +19,6 @@ You can **create**, view and manage your products on the [Galtea dashboard](http
 
 <img src="/images/ai-product-form.png" alt="AI-assisted product onboarding flow" style={{ borderRadius: '0.5rem', maxWidth: '600px', display: 'block', margin: '0 auto' }} />
 
-## Related Concepts
-
-A product in Galtea is associated with:
-
-<CardGroup cols={2}>
-  <VersionCard />
-  <TestCard />
-  <SpecificationCard />
-</CardGroup>
-
 ## SDK Integration
 
 The SDK allows you to list existing products, retrieve specific products by their ID or name, and delete products. Product creation is done through the [Galtea dashboard](https://platform.galtea.ai/). See the [Product Service API documentation](/sdk/api/product/service) for more details.
@@ -104,4 +94,30 @@ The SDK allows you to list existing products, retrieve specific products by thei
   <Info>Legal definitions available in the [EU AI Act](https://artificialintelligenceact.eu/article/3/).</Info>
 </ResponseField>
 
+## How Everything Connects
 
+```mermaid
+%%{init: {"theme": "neutral"}}%%
+flowchart TD
+    P[Product] --> Spec[Specifications]
+    P --> V[Version]
+    P --> T[Test]
+    Spec -.->|links to| M[Metrics]
+    Spec -.->|auto-derives| T
+    T --> TC[Test Cases]
+    V --> S[Session]
+    TC -.->|linked to| S
+    S --> IR[Inference Results]
+    IR --> E[Evaluations]
+    M -.->|scores| E
+```
+
+## Related
+
+A product in Galtea is associated with:
+
+<CardGroup cols={2}>
+  <VersionCard />
+  <TestCard />
+  <SpecificationCard />
+</CardGroup>
