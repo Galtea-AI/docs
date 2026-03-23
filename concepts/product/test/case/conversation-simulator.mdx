@@ -11,7 +11,7 @@ import SDKSimulatorServiceCard from '/snippets/cards/sdk-conversation-simulator-
 
 The Conversation Simulator is a Galtea feature for testing any AI system that interacts with users through multi-turn conversations — from customer-facing chatbots to autonomous AI agents that execute tasks, call tools, and make decisions. It programmatically generates realistic user messages to simulate dialogues, helping you evaluate your AI's ability to handle complex interactions, maintain context, and achieve user goals.
 
-Each simulation is guided by a [Behavior Test Case](/concepts/product/test/case) containing a user persona, goal, scenario, and stopping criteria. You can run simulations directly via `simulator.simulate()` or as part of the specification-driven [`evaluations.run()`](/sdk/tutorials/specifications) workflow, which handles simulation and evaluation together.
+Each simulation is guided by a [Behavior Test Case](/concepts/product/test/case) containing a user persona, goal, scenario, and stopping criteria. You can run simulations directly via `simulator.simulate()` or as part of the specification-driven [`evaluations.run()`](/sdk/tutorials/specification-driven-evaluations) workflow, which handles simulation and evaluation together.
 
 ## Typical Uses
 
@@ -74,7 +74,7 @@ The `simulate()` method returns a `SimulationResult` object containing the compl
   <Card title="Simulating Conversations Tutorial" icon="comments" href="/sdk/tutorials/simulating-conversations">
     Step-by-step guide to running multi-turn conversation simulations.
   </Card>
-  <Card title="Specification-Driven Evaluations" icon="play" href="/sdk/tutorials/specifications">
+  <Card title="Specification-Driven Evaluations" icon="play" href="/sdk/tutorials/specification-driven-evaluations">
     Run behavior evaluations automatically from specifications using `evaluations.run()`.
   </Card>
 </CardGroup>

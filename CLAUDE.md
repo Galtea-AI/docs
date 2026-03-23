@@ -47,6 +47,14 @@ docs/
 
 Component usage (Callouts, Tabs, Cards), SDK API reference page template, redirects, and image conventions are documented in `docs/component_reference.md`.
 
+## Architecture Decision Records
+
+Docs-specific ADRs live in `docs/adr/`. Consult them before making structural changes to the documentation.
+
+| ADR | Topic |
+|-----|-------|
+| `0001-docs-file-renames-and-redirects.md` | How to rename pages: file rename + `docs.json` navigation update + redirect + internal link updates (excluding old changelogs) |
+
 ## Local Development
 
 ```bash
