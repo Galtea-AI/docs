@@ -430,6 +430,7 @@
                       "sdk/api/evaluation/run",
                       "sdk/api/evaluation/create-single-turn",
                       "sdk/api/evaluation/create",
+                      "sdk/api/evaluation/wait-for",
                       "sdk/api/evaluation/list",
                       "sdk/api/evaluation/get",
                       "sdk/api/evaluation/retry",

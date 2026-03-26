@@ -36,7 +36,9 @@ evaluations = galtea.evaluations.list(session_id=session_id)
 
 Display the results:
 
-> You might need to await the evaluation completion depending on the type of evaluation you are creating.
+<Tip>
+  Evaluations start in `PENDING` status while the evaluation engine processes them. Use [`wait_for()`](/sdk/api/evaluation/wait-for) to poll until all evaluations have completed before reading results.
+</Tip>
 ```python
 print(f"Total evaluations: {len(evaluations)}")
 scores = [ev.score for ev in evaluations if ev.score is not None]
@@ -58,6 +60,7 @@ for evaluation in evaluations:
 - [Run Evaluation](/sdk/api/evaluation/run)
 - [Create Single-Turn Evaluation](/sdk/api/evaluation/create-single-turn)
 - [Create Evaluations](/sdk/api/evaluation/create)
+- [Wait for Evaluations](/sdk/api/evaluation/wait-for)
 - [Listing Evaluations](/sdk/api/evaluation/list)
 - [Retrieving Evaluation](/sdk/api/evaluation/get)
 - [Deleting Evaluation](/sdk/api/evaluation/delete)
