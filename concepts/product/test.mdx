@@ -129,6 +129,12 @@ The Galtea SDK allows you to create, view, and manage tests programmatically.
   - [Behavior](/concepts/product/test/behavior-tests) (`BEHAVIOR`): Tests that use conversation simulation to evaluate multi-turn dialogue interactions
 </ResponseField>
 
+<ResponseField name="Metadata" type="Any">
+  An open field where you can store any value for tracking or organizational purposes. Accepts plain text, numbers, JSON objects, arrays, or booleans.
+
+  **Example**: `{"environment": "staging", "team": "ml-ops"}` or `"my tracking note"`
+</ResponseField>
+
 <Tabs>
   <Tab title="Generated">
     <ResponseField name="Few Shot Examples" type="Text">
