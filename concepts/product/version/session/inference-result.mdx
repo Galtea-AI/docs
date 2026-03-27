@@ -46,6 +46,10 @@ You can create inference results from the [Galtea dashboard](https://platform.ga
   Cost information for the inference result.
 </ResponseField>
 
+<ResponseField name="Trace ID" type="string" optional>
+  The W3C trace ID for the root span created during [Direct Inference](/concepts/product/endpoint-connection). This is the same trace ID propagated to your endpoint via the `traceparent` header, enabling correlation with your OTEL-instrumented service. Only present when the inference was generated via Direct Inference with W3C trace context propagation enabled.
+</ResponseField>
+
 ## Related
 
 <CardGroup cols={3}>
