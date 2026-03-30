@@ -85,10 +85,10 @@
             "icon": "play",
             "pages": [
               "sdk/tutorials/writing-specifications",
-              "sdk/tutorials/specifications",
+              "sdk/tutorials/specification-driven-evaluations",
               "sdk/tutorials/simulating-conversations",
               "sdk/tutorials/create-test",
-              "sdk/tutorials/create-evaluation",
+              "sdk/tutorials/run-test-based-evaluations",
               "sdk/tutorials/direct-inferences-and-evaluations-from-platform"
             ]
           },
@@ -105,7 +105,7 @@
             "icon": "wand-magic-sparkles",
             "pages": [
               "sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt",
-              "sdk/tutorials/create-evaluation-with-custom-scores",
+              "sdk/tutorials/evaluate-with-custom-metrics",
               "sdk/tutorials/tracing-agent-operations",
               "sdk/tutorials/how-to-evaluate-your-agentic-system",
               "sdk/tutorials/human-evaluation"
@@ -411,7 +411,8 @@
                       "concepts/metric/spatial-match",
                       "concepts/metric/url-validation",
                       "concepts/metric/tool-correctness",
-                      "concepts/metric/json-field-match"
+                      "concepts/metric/json-field-match",
+                      "concepts/metric/json-field-match-normalized"
                     ]
                   }
                 ]
@@ -430,6 +431,7 @@
                       "sdk/api/evaluation/run",
                       "sdk/api/evaluation/create-single-turn",
                       "sdk/api/evaluation/create",
+                      "sdk/api/evaluation/wait-for",
                       "sdk/api/evaluation/list",
                       "sdk/api/evaluation/get",
                       "sdk/api/evaluation/retry",
@@ -698,6 +700,19 @@
     {
       "source": "/sdk/tutorials/create-product-description",
       "destination": "/sdk/tutorials/writing-specifications"
+    },
+    {
+      "source": "/sdk/tutorials/create-evaluation",
+      "destination": "/sdk/tutorials/run-test-based-evaluations"
+    },
+    {
+      "source": "/sdk/tutorials/create-evaluation-with-custom-scores",
+      "destination": "/sdk/tutorials/evaluate-with-custom-metrics"
+    },
+    {
+      "source": "/sdk/tutorials/specifications",
+      "destination": "/sdk/tutorials/specification-driven-evaluations"
     }
   ]
 }
+

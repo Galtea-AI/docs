@@ -163,11 +163,16 @@ csv_test = galtea.tests.create(
 </ResponseField>
 <ResponseField name="test_file_path" type="string" optional>
   Path to a local CSV file containing predefined test cases. This file is uploaded to Galtea.
-  
+
   **File Format by Test Type:**
   - **Accuracy/Security tests**: Standard format with `input`, `expected_output`, `tag`, `source` columns
   - **Behavior tests**: Conversation simulator format with `goal`, `user_persona`, `input`, `stopping_criterias`, `max_iterations`, `scenario` columns
-  
+
   See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for detailed Behavior test CSV format examples.
+</ResponseField>
+<ResponseField name="metadata" type="Any" optional>
+  An open field where you can store any value for tracking or organizational purposes. Accepts plain text, numbers, JSON objects, arrays, or booleans.
+
+  **Example**: `{"environment": "staging", "team": "ml-ops"}` or `"my tracking note"`
 </ResponseField>
 

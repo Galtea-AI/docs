@@ -5,6 +5,8 @@ description: "Compares JSON objects field by field, checking whether all fields 
 
 The JSON Field Match metric is one of the [Deterministic Metric](/concepts/metric) options in Galtea. It performs a field-level comparison between two JSON objects, giving a more granular and interpretable score than text-based matching when the expected output is structured JSON.
 
+<Tip>If your use case involves entity extraction where accents or capitalization may vary (e.g., "Sí" vs "SI"), consider [JSON Field Match (Normalized)](/concepts/metric/json-field-match-normalized) instead.</Tip>
+
 ## Evaluation Parameters
 
 To compute the `JSON Field Match` metric, the following parameters are required:

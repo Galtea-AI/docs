@@ -1,0 +1,85 @@
+---
+title: 'Waiting for Evaluations'
+sidebarTitle: "Wait For"
+description: "Poll evaluations until they leave PENDING status, then return the completed results."
+---
+
+## Overview
+
+After creating evaluations (via [`create()`](/sdk/api/evaluation/create) or [`run()`](/sdk/api/evaluation/run)), they start in `PENDING` status while the evaluation engine processes them. Use `wait_for()` to block until all evaluations have completed.
+
+An evaluation is considered **complete** when its status is anything other than `PENDING`. This includes:
+- `SUCCESS` — evaluation finished successfully
+- `FAILED` — evaluation encountered an error
+- `SKIPPED` — evaluation was skipped
+- `PENDING_HUMAN` — evaluation is waiting for human review (no further automated processing)
+
+## Returns
+
+Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects in the same order as the input `evaluation_ids`, once all have left `PENDING` status.
+
+## Examples
+
+**Basic usage — create and wait:**
+```python
+# Create evaluations and wait for them to complete
+evaluations = galtea.evaluations.create(
+    session_id=session.id,
+    metrics=[{"name": "Non-Toxic"}, {"name": "Unbiased"}],
+)
+
+# Wait for all evaluations to leave PENDING status
+completed = galtea.evaluations.wait_for(
+    evaluation_ids=[e.id for e in evaluations],
+)
+
+for evaluation in completed:
+    print(f"{evaluation.id}: {evaluation.status} — score: {evaluation.score}")
+```
+
+**Custom timeout and poll interval:**
+```python
+# Wait with a custom timeout and poll interval
+completed = galtea.evaluations.wait_for(
+    evaluation_ids=[e.id for e in evaluations],
+    timeout=600,       # wait up to 10 minutes
+    poll_interval=10,  # check every 10 seconds
+)
+```
+
+**Full lifecycle with `run()` and `wait_for()`:**
+```python
+# Full async evaluation lifecycle: run, then wait for results
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+)
+
+# Collect evaluation IDs from the run result
+evaluation_ids = [e.id for e in result["evaluations"]]
+
+# Wait for all evaluations to complete
+completed = galtea.evaluations.wait_for(evaluation_ids)
+
+for evaluation in completed:
+    print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
+```
+
+## Parameters
+
+<ResponseField name="evaluation_ids" type="list[str]" required>
+  A list of evaluation IDs to wait for. All must be valid evaluation IDs.
+</ResponseField>
+<ResponseField name="timeout" type="int" default="300">
+  Maximum number of seconds to wait before raising a `TimeoutError`. Defaults to 300 (5 minutes).
+</ResponseField>
+<ResponseField name="poll_interval" type="int" default="5">
+  Number of seconds to sleep between polling cycles. Defaults to 5.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `ValueError` | `evaluation_ids` is empty or contains an invalid ID |
+| `TimeoutError` | The timeout was exceeded before all evaluations left `PENDING` status. The error message includes the IDs that are still pending. |

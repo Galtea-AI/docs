@@ -7,7 +7,7 @@ icon: "tower-broadcast"
 Galtea allows you to run inferences against your AI system and evaluate its responses **directly from the Dashboard**, without writing any SDK code. This is made possible by [Endpoint Connections](/concepts/product/endpoint-connection), which tell Galtea how to call your API, extract the response, and manage session state across turns.
 
 <Info>
-  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/create-evaluation) instead.
+  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/run-test-based-evaluations) instead.
 </Info>
 
 ## Prerequisites
@@ -154,10 +154,11 @@ Galtea will assess each inference result using the selected metrics and provide 
 
 ## Collecting Traces During Direct Inference
 
-There are two ways to collect [traces](/concepts/product/version/session/trace) during Direct Inference:
+There are three ways to collect [traces](/concepts/product/version/session/trace) during Direct Inference:
 
 1. **Output Mapping (no code)** — Extract traces from the API response using a `traces` key in your output mapping.
 2. **SDK `set_context` (in your handler)** — Pass `{{ inference_result_id }}` to your endpoint and use the SDK to create traces from within the handler.
+3. **W3C Trace Context Propagation (zero code)** — Enable the `traceparent` header to automatically correlate your OTEL spans with Galtea inference results.
 
 ### Option 1: Extract Traces via Output Mapping
 
@@ -268,6 +269,96 @@ All `@trace`-decorated functions called while the context is active will be auto
 <Info>
   For a complete guide on tracing setup, decorators, and context managers, see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial.
 </Info>
+
+### Option 3: W3C Trace Context Propagation
+
+If your service is instrumented with [OpenTelemetry](https://opentelemetry.io/), you can automatically correlate your internal spans with Galtea inference results using the [W3C Trace Context](https://www.w3.org/TR/trace-context/) standard — no code changes required on your side.
+
+#### How it works
+
+When enabled, Galtea creates a unique [W3C trace ID](https://www.w3.org/TR/trace-context/#trace-id) for each direct inference call and injects a `traceparent` header into the outbound request to your endpoint. Your OTEL-instrumented service automatically creates child spans under that trace. The trace ID is also stored on the inference result for collector-side correlation.
+
+#### 1. Enable trace context propagation on your endpoint connection
+
+In your **Conversation** endpoint connection, expand the **Advanced Options** section and scroll to **Headers**. Check the **Enable W3C trace context propagation** checkbox. This adds a `traceparent` header that Galtea will populate with the correct trace and span IDs on each inference call:
+
+```
+traceparent: 00-{trace-id}-{span-id}-01
+```
+
+<Frame>
+  <img src="/images/w3c-traceparent-checkbox.png" alt="W3C trace context propagation checkbox in the Headers section of Advanced Options" />
+</Frame>
+
+When the checkbox is unchecked, no `traceparent` header is sent to your endpoint, and trace context is not propagated.
+
+<Note>
+  This option is only available for **Conversation** endpoint connections — the ones that handle inference calls. Initialization and Finalization endpoints are session lifecycle calls where trace correlation does not apply.
+</Note>
+
+<Tip>
+  The trace ID is stored on each inference result and visible in the dashboard, so you can correlate traces even without checking your observability platform.
+</Tip>
+
+#### 2. Configure your service for OTEL
+
+Ensure your service has OpenTelemetry instrumentation enabled. Most frameworks support [auto-instrumentation](https://opentelemetry.io/docs/zero-code/) which requires no code changes:
+
+```bash
+# Python example
+pip install opentelemetry-distro opentelemetry-exporter-otlp
+opentelemetry-bootstrap -a install
+```
+
+#### 3. Point your OTEL exporter to the Galtea collector
+
+Configure your OTEL exporter to send traces to the Galtea collector:
+
+```bash
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel.platform.galtea.ai:4318/otel/traces"
+```
+
+<Note>
+  Use `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` (the per-signal variant), not `OTEL_EXPORTER_OTLP_ENDPOINT`. The base variable auto-appends `/v1/traces` to the URL, but the Galtea collector expects the `/otel/traces` path.
+</Note>
+
+The collector also accepts gRPC on port 4317. If your service uses a gRPC exporter:
+
+```bash
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel.platform.galtea.ai:4317"
+export OTEL_EXPORTER_OTLP_TRACES_PROTOCOL="grpc"
+```
+
+Once configured, spans from your service will be automatically linked to the corresponding Galtea inference results via the shared trace ID.
+
+<Warning>
+  This approach only works for **Direct Inference** (where Galtea initiates the call to your endpoint). For SDK-based connections where your code calls the Galtea API, use the SDK's [trace context](/sdk/api/trace/set-context) mechanism instead.
+</Warning>
+
+#### 4. Controlling how spans map to Trace records
+
+When using the OTel Collector path, you can set Galtea-specific attributes on your spans to control how data maps to Trace records. If you don't set any, spans are still ingested using the automatically mapped OTel fields.
+
+**Galtea span attributes:**
+
+| Attribute Key | Type | Maps To | Description |
+|---|---|---|---|
+| `galtea.trace.type` | `string` | `type` | Trace type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. |
+| `galtea.trace.description` | `string` | `description` | Human-readable description of the operation. Max 32KB. |
+| `galtea.trace.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 128KB. |
+| `galtea.trace.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 128KB. |
+| `galtea.trace.error` | `string` | `error` | Error message. Takes precedence over OTel span status error. |
+| `galtea.trace.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 128KB. |
+| `galtea.inference_result.id` | `string` | `inferenceResultId` | Explicitly links the span to an inference result. Only needed if the automatic `traceId` correlation does not apply (e.g., spans not originating from a Galtea direct inference call). |
+
+**Automatically mapped OTel fields** (no custom attributes needed):
+
+- **`span.name`** → `name`
+- **`startTimeUnixNano` / `endTimeUnixNano`** → `startTime` / `endTime` + `latencyMs` (computed)
+- **`span.status`** → `error` (fallback when `galtea.trace.error` is not set; only for `STATUS_CODE_ERROR`)
+- **`parentSpanId`** → `parentTraceId` (parent-child hierarchy)
+
+All remaining unmapped span attributes are collected into the `metadata` field so no data is lost.
 
 ## Learn More
 

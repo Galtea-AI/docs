@@ -27,7 +27,7 @@ You can **create**, view and manage your metrics on the [Galtea dashboard](https
 
 ## Two Families of Metrics
 
-- **Deterministic metrics** apply rule-based logic — string matching, numerical checks, bounding box overlap. Results are consistent and reproducible. Built-in examples: [BLEU](/concepts/metric/bleu), [ROUGE](/concepts/metric/rouge), [Text Similarity](/concepts/metric/text-similarity), [Tool Correctness](/concepts/metric/tool-correctness). You can also define your own using the SDK's `CustomScoreEvaluationMetric` class — see [our tutorial](/sdk/tutorials/create-evaluation-with-custom-scores).
+- **Deterministic metrics** apply rule-based logic — string matching, numerical checks, bounding box overlap. Results are consistent and reproducible. Built-in examples: [BLEU](/concepts/metric/bleu), [ROUGE](/concepts/metric/rouge), [Text Similarity](/concepts/metric/text-similarity), [Tool Correctness](/concepts/metric/tool-correctness). You can also define your own using the SDK's `CustomScoreEvaluationMetric` class — see [our tutorial](/sdk/tutorials/evaluate-with-custom-metrics).
 
 - **Non-deterministic metrics** use an LLM-as-a-judge to assess open-ended qualities like factual accuracy, misuse resilience, and task completion. Galtea's judges are human-aligned and optimized for each evaluation type. You can also [create your own AI Evaluation metrics](/concepts/metric/evaluation-types#ai-evaluation) with a custom scoring rubric.
 
@@ -87,6 +87,7 @@ flowchart TD
 | **[URL Validation](/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |
 | **[Tool Correctness](/concepts/metric/tool-correctness)** | Deterministic | Compares tools used by the agent against expected tools. |
 | **[JSON Field Match](/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. |
+| **[JSON Field Match (Normalized)](/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. |
 | **[Role Adherence](/concepts/metric/role-adherence)** | Conversational | Evaluates whether the chatbot adheres to its given role throughout a conversation. |
 | **[Conversation Completeness](/concepts/metric/conversation-completeness)** | Conversational | Evaluates whether the chatbot satisfies user needs throughout a conversation. |
 | **[Conversation Relevancy](/concepts/metric/conversation-relevancy)** | Conversational | Evaluates whether the chatbot generates relevant responses throughout a conversation. |
