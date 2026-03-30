@@ -51,8 +51,8 @@ completed = galtea.evaluations.wait_for(
 ```python
 # Full async evaluation lifecycle: run, then wait for results
 result = galtea.evaluations.run(
-    version_id="version_123",
-    agent=lambda msg: "Agent response",
+    version_id=version_id,
+    agent=my_agent,
 )
 
 # Collect evaluation IDs from the run result

@@ -1,7 +1,7 @@
 
 from datetime import datetime
 from _test_helpers import create_test_product
-from galtea import Galtea
+from galtea import Galtea, SpecificationType, TestType
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
@@ -55,11 +55,57 @@ completed = galtea.evaluations.wait_for(
 )
 # @end wait_for_custom_timeout
 
+specification = galtea.specifications.create(
+    product_id,
+    "The user should always salute the user with a greeting before providing an answer.",
+    SpecificationType.POLICY,
+    TestType.BEHAVIOR,
+)
+
+if specification is None:
+    raise ValueError("specification is None")
+
+metric = galtea.metrics.create(
+    name="accuracy_v1_" + run_identifier,
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Determine whether the actual output contains a greeting before the answer.",
+    evaluation_params=["input", "actual_output"],
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric.",
+)
+if metric is None:
+    raise ValueError("metric is None")
+metric_id: str = metric.id
+
+galtea.specifications.link_metrics(
+    specification_id=specification.id,
+    metric_ids=[metric_id],
+)
+
+behavior_test = galtea.tests.create(
+    product_id=product_id,
+    name="behavior-test-from-file-docs-" + run_identifier,
+    type="BEHAVIOR",
+    test_file_path="path/to/behavior_test.csv",
+)
+
+if behavior_test is None:
+    raise ValueError("behavior_test is None")
+
+galtea.specifications.link_tests(
+    specification_id=specification.id,
+    test_ids=[behavior_test.id],
+)
+
+def my_agent(messages: list[dict]) -> str:
+    return f"Your model output"
+
 # @start wait_for_run_lifecycle
 # Full async evaluation lifecycle: run, then wait for results
 result = galtea.evaluations.run(
-    version_id="version_123",
-    agent=lambda msg: "Agent response",
+    version_id=version_id,
+    agent=my_agent,
 )
 
 # Collect evaluation IDs from the run result
