@@ -1,12 +1,40 @@
+
+from datetime import datetime
+from _test_helpers import create_test_product
 from galtea import Galtea
 
+run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
+
 galtea = Galtea(api_key="YOUR_API_KEY")
+
+# Create a product for this demo
+product_id = create_test_product(galtea, name="Trace Examples Demo " + run_identifier)
+
+version = galtea.versions.create(
+    name="Version-" + run_identifier,
+    product_id=product_id,
+    description="Demo version for trace examples",
+)
+if version is None:
+    raise ValueError("version is None")
+version_id = version.id
+
+session = galtea.sessions.create(version_id=version_id, is_production=True)
+if session is None:
+    raise ValueError("session is None")
+
+galtea.inference_results.create(
+    session.id,
+    "Dummy Input",
+    "Dummy Output",
+)
+
 
 # @start wait_for_basic
 # Create evaluations and wait for them to complete
 evaluations = galtea.evaluations.create(
-    session_id="session_123",
-    metrics=[{"name": "accuracy"}, {"name": "relevance"}],
+    session_id=session.id,
+    metrics=[{"name": "Non-Toxic"}, {"name": "Unbiased"}],
 )
 
 # Wait for all evaluations to leave PENDING status

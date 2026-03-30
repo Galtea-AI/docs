@@ -24,8 +24,8 @@ Returns a list of [Evaluation](/concepts/product/version/session/evaluation) obj
 ```python
 # Create evaluations and wait for them to complete
 evaluations = galtea.evaluations.create(
-    session_id="session_123",
-    metrics=[{"name": "accuracy"}, {"name": "relevance"}],
+    session_id=session.id,
+    metrics=[{"name": "Non-Toxic"}, {"name": "Unbiased"}],
 )
 
 # Wait for all evaluations to leave PENDING status

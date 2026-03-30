@@ -312,10 +312,21 @@ opentelemetry-bootstrap -a install
 
 #### 3. Point your OTEL exporter to the Galtea collector
 
-Set the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable on your service to point to the Galtea OTEL collector:
+Configure your OTEL exporter to send traces to the Galtea collector:
 
 ```bash
-export OTEL_EXPORTER_OTLP_ENDPOINT="https://collector.galtea.ai"
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel.platform.galtea.ai:4318/otel/traces"
+```
+
+<Note>
+  Use `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` (the per-signal variant), not `OTEL_EXPORTER_OTLP_ENDPOINT`. The base variable auto-appends `/v1/traces` to the URL, but the Galtea collector expects the `/otel/traces` path.
+</Note>
+
+The collector also accepts gRPC on port 4317. If your service uses a gRPC exporter:
+
+```bash
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel.platform.galtea.ai:4317"
+export OTEL_EXPORTER_OTLP_TRACES_PROTOCOL="grpc"
 ```
 
 Once configured, spans from your service will be automatically linked to the corresponding Galtea inference results via the shared trace ID.
