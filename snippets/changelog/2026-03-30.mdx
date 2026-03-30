@@ -1,0 +1,37 @@
+<Update label="2026-03-30" description="Zero-Code Trace Ingestion, Structured JSON Inputs, and SDK Improvements">
+
+## Zero-Code Trace Ingestion via OpenTelemetry
+
+If your service is already instrumented with [OpenTelemetry](https://opentelemetry.io/), you can now send traces to Galtea without writing any Galtea-specific code. The platform exposes an OTLP-compatible trace ingestion endpoint that accepts standard OTLP/JSON payloads from your existing OTel Collector.
+
+When you run a [direct inference](/concepts/product/endpoint-connection) through Galtea, the platform automatically injects a W3C `traceparent` header into the request to your endpoint. If your service propagates that header internally (as most OTel-instrumented services do), all resulting spans are automatically correlated with the corresponding Galtea [inference result](/concepts/product/version/session/inference-result). No manual ID passing, no SDK calls for trace creation, just your existing instrumentation working end to end.
+
+For services that are not OTel-instrumented, the Galtea SDK's [`@trace` decorator](/sdk/api/trace/trace-decorator) and [`start_trace` context manager](/sdk/api/trace/start-trace) continue to work as before. A step-by-step guide covering all tracing methods, including [W3C trace context propagation](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation), is available in the documentation.
+
+## Structured JSON Inputs
+
+[Test case](/concepts/product/test/case) inputs and [session](/concepts/product/version/session) contexts now support structured JSON objects in addition to plain text strings. This means you can store complex, multi-field payloads directly in the platform database. Existing string-based inputs continue to work unchanged.
+
+In upcoming releases, structured JSON inputs will be more broadly supported across the platform, including endpoint connections and SDK methods.
+
+## SDK: Synchronous Evaluation Polling
+
+The Python SDK now includes [`evaluations.wait_for()`](/sdk/api/evaluation/wait-for), which polls one or more evaluations until they leave `PENDING` status and raises a `TimeoutError` if the deadline is exceeded. This simplifies scripts and CI pipelines that need to block until results are ready.
+
+## Normalized JSON Field Match Metric
+
+The [JSON Field Match](/concepts/metric/json-field-match-normalized) metric now supports a normalized comparison mode that performs case-insensitive and accent-insensitive matching within field values. For example, `"Sí"` and `"SI"` are treated as equal. This is useful when evaluating outputs in multilingual contexts or when casing differences are not meaningful.
+
+## Editable Test Metadata
+
+[Tests](/concepts/product/test) now include an editable `metadata` field where you can store free-form notes or custom tracking information. The field is available in the dashboard, the API, and the [SDK](/sdk/api/test/service), giving you a lightweight way to annotate tests without modifying their structure.
+
+## Platform Improvements
+
+- **Time-of-day filters:** Date filters throughout the dashboard now support hour, minute, and second precision, so you can narrow results to a specific time window rather than a full day.
+- **Augmented column:** The test cases table now includes an **Augmented** column indicating which test cases were generated through AI augmentation.
+- **Double-click prevention:** The **Save Accepted** button during metric generation no longer triggers duplicate submissions if clicked rapidly.
+- **Pagination stability:** Table pagination no longer resets unexpectedly when navigating between pages via URL.
+- **Show Details navigation:** The **Show Details** action in entity tables now opens directly to the details tab.
+
+</Update>

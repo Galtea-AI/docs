@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-03-30</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      ul li {
+        margin-bottom: 8px;
+      }
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-family: Geist, Poppins, Arial, sans-serif;
+      background-color: #f6f6f5;
+    "
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            style="
+              background-color: #f9f8f4;
+              text-align: left;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #e4e4e7;
+              border-radius: 10px;
+              max-width: 600px;
+            "
+          >
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img
+                      src="https://galtea.ai/img/galtea_mod.png"
+                      style="width: 250px; height: auto"
+                    />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">
+                  Zero-Code Trace Ingestion, Structured JSON Inputs, and SDK
+                  Improvements
+                </h1>
+                <a
+                  style="color: #5286ff; font-size: 12px; text-decoration: none"
+                  href="https://docs.galtea.ai/changelog#2026-03-30"
+                  >2026-03-30</a
+                >
+
+                <h3 style="color: #171717">
+                  Zero-Code Trace Ingestion via OpenTelemetry
+                </h3>
+                <p style="color: #171717; font-size: 16px">
+                  If your service is already instrumented with OpenTelemetry, you
+                  can now send traces to Galtea without writing any
+                  Galtea-specific code. The platform exposes an OTLP-compatible
+                  trace ingestion endpoint that accepts standard OTLP/JSON
+                  payloads from your existing OTel Collector.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  When you run a
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/endpoint-connection"
+                    style="color: #5286ff"
+                    >direct inference</a
+                  >
+                  through Galtea, the platform automatically injects a W3C
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >traceparent</code
+                  >
+                  header into the request to your endpoint. If your service
+                  propagates that header internally (as most OTel-instrumented
+                  services do), all resulting spans are automatically correlated
+                  with the corresponding Galtea
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/version/session/inference-result"
+                    style="color: #5286ff"
+                    >inference result</a
+                  >. No manual ID passing, no SDK calls for trace creation
+                  &mdash; just your existing instrumentation working end to end.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  For services that are not OTel-instrumented, the Galtea SDK's
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/trace/trace-decorator"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >@trace</code
+                    >
+                    decorator</a
+                  >
+                  and
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/trace/start-trace"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >start_trace</code
+                    >
+                    context manager</a
+                  >
+                  continue to work as before. A step-by-step guide covering all
+                  tracing methods, including
+                  <a
+                    href="https://docs.galtea.ai/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation"
+                    style="color: #5286ff"
+                    >W3C trace context propagation</a
+                  >, is available in the documentation.
+                </p>
+
+                <h3 style="color: #171717">Structured JSON Inputs</h3>
+                <p style="color: #171717; font-size: 16px">
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/test/case"
+                    style="color: #5286ff"
+                    >Test case</a
+                  >
+                  inputs and
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/version/session"
+                    style="color: #5286ff"
+                    >session</a
+                  >
+                  contexts now support structured JSON objects in addition to
+                  plain text strings. This means you can store complex,
+                  multi-field payloads directly in the platform database.
+                  Existing string-based inputs continue to work unchanged.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  In upcoming releases, structured JSON inputs will be more
+                  broadly supported across the platform, including endpoint
+                  connections and SDK methods.
+                </p>
+
+                <h3 style="color: #171717">
+                  SDK: Synchronous Evaluation Polling
+                </h3>
+                <p style="color: #171717; font-size: 16px">
+                  The Python SDK now includes
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/evaluation/wait-for"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >evaluations.wait_for()</code
+                    ></a
+                  >, which polls one or more evaluations until they leave
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >PENDING</code
+                  >
+                  status and raises a
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >TimeoutError</code
+                  >
+                  if the deadline is exceeded. This simplifies scripts and CI
+                  pipelines that need to block until results are ready.
+                </p>
+
+                <h3 style="color: #171717">
+                  Normalized JSON Field Match Metric
+                </h3>
+                <p style="color: #171717; font-size: 16px">
+                  The
+                  <a
+                    href="https://docs.galtea.ai/concepts/metric/json-field-match-normalized"
+                    style="color: #5286ff"
+                    >JSON Field Match</a
+                  >
+                  metric now supports a normalized comparison mode that performs
+                  case-insensitive and accent-insensitive matching within field
+                  values. For example,
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >"S&iacute;"</code
+                  >
+                  and
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >"SI"</code
+                  >
+                  are treated as equal. This is useful when evaluating outputs in
+                  multilingual contexts or when casing differences are not
+                  meaningful.
+                </p>
+
+                <h3 style="color: #171717">Editable Test Metadata</h3>
+                <p style="color: #171717; font-size: 16px">
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/test"
+                    style="color: #5286ff"
+                    >Tests</a
+                  >
+                  now include an editable
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >metadata</code
+                  >
+                  field where you can store free-form notes or custom tracking
+                  information. The field is available in the dashboard, the API,
+                  and the
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/test/service"
+                    style="color: #5286ff"
+                    >SDK</a
+                  >, giving you a lightweight way to annotate tests without
+                  modifying their structure.
+                </p>
+
+                <h3 style="color: #171717">Platform Improvements</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <strong>Time-of-day filters:</strong> Date filters throughout
+                    the dashboard now support hour, minute, and second precision, so you
+                    can narrow results to a specific time window rather than a
+                    full day.
+                  </li>
+                  <li>
+                    <strong>Augmented column:</strong> The test cases table now
+                    includes an <strong>Augmented</strong> column indicating
+                    which test cases were generated through AI augmentation.
+                  </li>
+                  <li>
+                    <strong>Double-click prevention:</strong> The
+                    <strong>Save Accepted</strong> button during metric
+                    generation no longer triggers duplicate submissions if
+                    clicked rapidly.
+                  </li>
+                  <li>
+                    <strong>Pagination stability:</strong> Table pagination no
+                    longer resets unexpectedly when navigating between pages via
+                    URL.
+                  </li>
+                  <li>
+                    <strong>Show Details navigation:</strong> The
+                    <strong>Show Details</strong> action in entity tables now
+                    opens directly to the details tab.
+                  </li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">
+                  Enjoy the improvements!
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  <strong>We'd love to hear your thoughts</strong> on these new
+                  features. Just reply to this email or ping us in the Slack or
+                  Discord channels.
+                </p>
+
+                <hr
+                  style="
+                    margin-top: 40px;
+                    width: 20%;
+                    border: 1px solid #e4e4e7;
+                  "
+                />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We are already working on the next set of features:
+                </p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <strong>JSON Inputs Across Endpoint Connections and SDKs:</strong>
+                    Full support for structured JSON payloads in endpoint
+                    connections and SDK methods, completing the transition from
+                    plain text to rich, multi-field inputs throughout the
+                    platform.
+                  </li>
+                  <li>
+                    <strong>Automated Actionable Insights:</strong> AI-generated
+                    insights from your evaluation results, surfacing patterns and
+                    recommendations so you can act on findings faster.
+                  </li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">
+                  Stay tuned!
+                </p>
+                <p style="margin-left: 35px">
+                  <strong> - Galtea Team</strong>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
