@@ -1,0 +1,225 @@
+---
+title: 'Langfuse Integration'
+sidebarTitle: "Overview"
+description: "Send your Langfuse traces to Galtea for evaluation — swap one import, zero extra config"
+icon: "eye"
+---
+
+## Overview
+
+If you already instrument your LLM app with [Langfuse](https://langfuse.com) using `@observe` decorators, you can send the same traces to Galtea for evaluation by swapping a single import. Under the hood, one span per function call flows to both Langfuse and Galtea simultaneously.
+
+<CardGroup cols={2}>
+  <Card title="Real-Time Dual Export" icon="bolt">
+    Every span flows to both Langfuse and Galtea simultaneously — no polling, no extra API credentials needed.
+  </Card>
+  <Card title="Transparent to Langfuse" icon="eye-slash">
+    Nothing changes in Langfuse. Your dashboard, trace IDs, alerts, and URLs are completely unaffected.
+  </Card>
+  <Card title="Any Init Order" icon="shuffle">
+    Initialize Galtea or Langfuse first — both orders work. The libraries detect each other automatically.
+  </Card>
+  <Card title="Selective Export" icon="filter">
+    Galtea only exports traces when you explicitly link an `inference_result_id`. Otherwise, it does nothing.
+  </Card>
+</CardGroup>
+
+<Info>
+  Worried about impact on your Langfuse setup? See the [Migration Guide](/sdk/integrations/langfuse/migration-guide) for a detailed breakdown of what changes and what doesn't.
+</Info>
+
+## Setup
+
+### 1. Install
+
+```bash
+pip install 'galtea[langfuse]'
+```
+
+<Note>
+  Requires **Langfuse v3.0.0+** — v2.x is not supported.
+</Note>
+
+### 2. Initialize the Galtea client
+
+Initialization order with Langfuse doesn't matter.
+
+```python
+import galtea
+
+client = galtea.Galtea(api_key="YOUR_API_KEY")
+```
+
+<Note>
+  To get your API key, go to the [settings page](https://platform.galtea.ai/settings) on the Galtea platform.
+</Note>
+
+### 3. Swap the import
+
+Replace your Langfuse `observe` import with the Galtea wrapper. The decorator API is identical — all `@observe` parameters (`name`, `as_type`, etc.) work the same way.
+
+```python
+# Before:
+# from langfuse import observe
+
+# After:
+from galtea.integrations.langfuse import observe
+```
+
+## Instrumenting Your Agent
+
+Decorate your agent functions with `@observe`, exactly as you would with Langfuse. Nested decorators create a parent-child trace hierarchy automatically.
+
+```python
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="retrieve")
+def retrieve(query: str) -> list[str]:
+    # Your retrieval logic (vector DB, search, etc.)
+    return ["relevant document 1", "relevant document 2"]
+
+
+@observe(name="generate")
+def generate(query: str, context: list[str]) -> str:
+    # Your LLM call
+    return "Generated response based on context"
+
+
+@observe(name="my-agent")
+def my_agent(user_input: str) -> str:
+    context = retrieve(user_input)
+    return generate(user_input, context)
+```
+
+When `my_agent("Hello", inference_result_id=ir_id)` runs, Galtea receives a 3-level trace:
+
+```
+my-agent (root)
+├── retrieve
+└── generate
+```
+
+### Observation types
+
+Use the `as_type` parameter on `@observe` to set the [observation type](https://langfuse.com/docs/observability/features/observation-types). Each type maps to a Galtea trace type automatically:
+
+```python
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="my-retriever", as_type="retriever")
+def search_docs(query: str) -> list[str]:
+    return ["doc1", "doc2"]
+
+
+@observe(name="my-llm-call", as_type="generation")
+def call_llm(prompt: str) -> str:
+    return "LLM response"
+
+
+@observe(name="my-tool", as_type="tool")
+def call_api(endpoint: str) -> dict:
+    return {"status": "ok"}
+
+
+@observe(name="my-agent", as_type="agent")
+def agent(user_input: str) -> str:
+    docs = search_docs(user_input)
+    api_result = call_api("/check")
+    return call_llm(f"Context: {docs}, API: {api_result}, Question: {user_input}")
+```
+
+| Langfuse `as_type` | Galtea trace type | Description |
+|---|---|---|
+| `span` (default) | `SPAN` | Generic unit of work |
+| `generation` | `GENERATION` | LLM call with token usage |
+| `agent` | `AGENT` | Agent orchestrating tools |
+| `tool` | `TOOL` | Tool/function call |
+| `retriever` | `RETRIEVER` | Vector DB or search query |
+| `chain` | `CHAIN` | Link between steps |
+| `evaluator` | `EVALUATOR` | Output quality assessment |
+| `embedding` | `EMBEDDING` | Embedding model call |
+| `guardrail` | `GUARDRAIL` | Content safety check |
+
+<Info>
+  Unknown Langfuse observation types are automatically mapped to `SPAN` in Galtea. Your traces are never dropped.
+</Info>
+
+### Context manager API
+
+If you use Langfuse's `start_as_current_observation` context manager instead of the `@observe` decorator, Galtea provides an equivalent wrapper:
+
+```python
+from galtea.integrations.langfuse import start_as_current_observation
+
+# Create spans using context managers instead of decorators
+with start_as_current_observation(
+    name="process-query",
+    as_type="span",
+    inference_result_id="inferenceResult_abc123",
+) as root_span:
+    # All child spans (decorator or context manager) are children of root_span
+    docs = search_docs("user query")
+
+    with start_as_current_observation(name="generate-response", as_type="generation") as gen:
+        response = "Generated response"
+        gen.update(output=response, model="gpt-4")
+
+    root_span.update(output=response)
+```
+
+Both APIs can be mixed freely — an `@observe`-decorated function can be called inside a `start_as_current_observation` block (or vice versa) and the parent-child hierarchy is preserved.
+
+<Note>
+  Only the **root** `start_as_current_observation` call needs the Galtea wrapper. Child calls on yielded spans (e.g., `root.start_as_current_observation(...)`) are native Langfuse — no change needed.
+</Note>
+
+## Linking Traces to an Inference Result
+
+Galtea **only** exports trace data when an `inference_result_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified. There are three ways to link traces:
+
+### Using SDK methods (recommended)
+
+When using `generate()` or `simulate()`, the SDK manages `inference_result_id` automatically — zero extra code:
+
+```python
+# With generate() — zero extra lines, SDK manages context internally:
+result = client.inference_results.generate(agent=my_agent, session=session)
+
+# With simulate() — same, each turn gets its own IR and traces:
+result = client.simulator.simulate(session_id=session.id, agent=my_agent)
+```
+
+### Passing `inference_result_id` as a kwarg
+
+Pass `inference_result_id` to the outermost `@observe`-decorated function. The wrapper manages the trace context automatically:
+
+```python
+# The wrapper handles set_context/clear_context automatically:
+result = my_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
+```
+
+The `inference_result_id` kwarg is consumed by the wrapper — it does not reach your function's parameters.
+
+### Manual `set_context` / `clear_context`
+
+For full control, manage the context lifecycle yourself:
+
+```python
+from galtea.utils.tracing import clear_context, set_context
+
+token = set_context(inference_result_id="inferenceResult_abc123")
+try:
+    result = my_agent("What is gestational diabetes?")
+finally:
+    clear_context(token)
+```
+
+<Warning>
+  `set_context` must wrap **outside** the `@observe`-decorated call. If called inside the decorated function, the outermost span will be missed.
+</Warning>
+
+## How It Works
+
+Both Galtea and Langfuse use OpenTelemetry internally. When both are initialized, they share the same tracing infrastructure — each span created by `@observe` flows to both Langfuse cloud and the Galtea API. Galtea only processes spans that have an `inference_result_id` linked; everything else is ignored. Langfuse observation attributes (type, input, output, metadata) are automatically mapped to their Galtea equivalents.

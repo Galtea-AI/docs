@@ -217,11 +217,19 @@ Galtea extracts the `traces` array and creates `Trace` entities linked to the in
 
 ### Option 2: Use `set_context` in Your Endpoint Handler
 
-When running evaluations via Direct Inference, you can collect traces from your endpoint handler by passing the `{{ inference_result_id }}` placeholder in your input template. This lets your endpoint know which inference result the call belongs to, so it can link traces back to Galtea.
+When running evaluations via Direct Inference, you can collect traces from your endpoint handler by linking the `inference_result_id` to your tracing context. Galtea automatically sends the `X-Galtea-Inference-Id` HTTP header with every Direct Inference request, so your endpoint can read it directly — no template changes needed.
 
-#### 1. Add `{{ inference_result_id }}` to your Input Template
+Alternatively, you can pass `{{ inference_result_id }}` in the input template if you prefer to receive it in the request body.
 
-Include the placeholder in your endpoint connection's input template so your handler receives the ID:
+#### 1. Get the `inference_result_id`
+
+**From the HTTP header (recommended)** — available automatically on every Direct Inference call:
+
+```python
+inference_result_id = request.headers.get("X-Galtea-Inference-Id")
+```
+
+**From the input template** — include the placeholder in your endpoint connection's input template:
 
 ```jinja2
 {
