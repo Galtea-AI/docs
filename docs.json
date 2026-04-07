@@ -113,7 +113,26 @@
           },
           {
             "group": "Integrations",
-            "pages": ["sdk/integrations/github-actions"]
+            "pages": [
+              {
+                "group": "Langfuse",
+                "icon": "eye",
+                "pages": [
+                  "sdk/integrations/langfuse/overview",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/langfuse/service",
+                      "sdk/api/langfuse/observe",
+                      "sdk/api/langfuse/start-as-current-observation"
+                    ]
+                  },
+                  "sdk/integrations/langfuse/migration-guide"
+                ]
+              },
+              "sdk/integrations/github-actions"
+            ]
           }
         ]
       },

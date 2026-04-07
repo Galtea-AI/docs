@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-04-07</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      ul li {
+        margin-bottom: 8px;
+      }
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-family: Geist, Poppins, Arial, sans-serif;
+      background-color: #f6f6f5;
+    "
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            style="
+              background-color: #f9f8f4;
+              text-align: left;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #e4e4e7;
+              border-radius: 10px;
+              max-width: 600px;
+            "
+          >
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img
+                      src="https://galtea.ai/img/galtea_mod.png"
+                      style="width: 250px; height: auto"
+                    />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">
+                  Langfuse Integration, Public REST API Reference, and Platform
+                  Improvements
+                </h1>
+                <a
+                  style="color: #5286ff; font-size: 12px; text-decoration: none"
+                  href="https://docs.galtea.ai/changelog#2026-04-07"
+                  >2026-04-07</a
+                >
+
+                <h3 style="color: #171717">Langfuse Integration</h3>
+                <p style="color: #171717; font-size: 16px">
+                  If you already use
+                  <a href="https://langfuse.com" style="color: #5286ff"
+                    >Langfuse</a
+                  >
+                  to observe your LLM application, you can now send the same
+                  traces to Galtea for evaluation by swapping a single import.
+                  Replace
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >from langfuse import observe</code
+                  >
+                  with
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >from galtea.integrations.langfuse import observe</code
+                  >, and every span will flow to both Langfuse and Galtea
+                  simultaneously.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  The integration is fully transparent to Langfuse: your
+                  Langfuse dashboard, trace IDs, and alerts remain completely
+                  unaffected. Galtea only exports traces when you explicitly
+                  link an
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >inference_result_id</code
+                  >, so there is no overhead for unrelated function calls.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  Two wrappers are available:
+                </p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <a
+                      href="https://docs.galtea.ai/sdk/api/langfuse/observe"
+                      style="color: #5286ff"
+                      ><code
+                        style="
+                          background-color: #ececec;
+                          padding: 2px 4px;
+                          border-radius: 3px;
+                          font-family: 'Courier New', monospace;
+                          font-size: 14px;
+                          color: #444;
+                        "
+                        >observe</code
+                      >
+                      decorator</a
+                    >
+                    for the standard
+                    <code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >@observe</code
+                    >
+                    pattern
+                  </li>
+                  <li>
+                    <a
+                      href="https://docs.galtea.ai/sdk/api/langfuse/start-as-current-observation"
+                      style="color: #5286ff"
+                      ><code
+                        style="
+                          background-color: #ececec;
+                          padding: 2px 4px;
+                          border-radius: 3px;
+                          font-family: 'Courier New', monospace;
+                          font-size: 14px;
+                          color: #444;
+                        "
+                        >start_as_current_observation</code
+                      >
+                      context manager</a
+                    >
+                    for manual span control
+                  </li>
+                </ul>
+                <p style="color: #171717; font-size: 16px">
+                  Get started with the
+                  <a
+                    href="https://docs.galtea.ai/sdk/integrations/langfuse/overview"
+                    style="color: #5286ff"
+                    >Langfuse Integration overview</a
+                  >, or check the
+                  <a
+                    href="https://docs.galtea.ai/sdk/integrations/langfuse/migration-guide"
+                    style="color: #5286ff"
+                    >Migration Guide</a
+                  >
+                  if you are moving an existing Langfuse-instrumented codebase
+                  to Galtea.
+                </p>
+
+                <h3 style="color: #171717">Public REST API Reference</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The platform now exposes a public
+                  <a
+                    href="https://api.galtea.ai/openapi.json"
+                    style="color: #5286ff"
+                    >OpenAPI specification</a
+                  >
+                  covering approximately 81 endpoints across products, versions,
+                  specifications, tests, sessions, evaluations, metrics, traces,
+                  and more. Internal-only endpoints (authentication flows,
+                  billing, user administration) are excluded automatically.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  You can import the spec into Postman, Cursor, Claude, or any
+                  OpenAPI-compatible tool to explore and call the API directly.
+                  Every endpoint description now includes a link back to the
+                  relevant
+                  <a
+                    href="https://docs.galtea.ai/introduction"
+                    style="color: #5286ff"
+                    >documentation page</a
+                  >, making it easier to navigate between the spec and the
+                  guides.
+                </p>
+
+                <h3 style="color: #171717">Platform Improvements</h3>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <strong>Improved code and JSON display:</strong> Code and
+                    JSON data across evaluation details, trace details, session
+                    details, and endpoint connection test results now render with
+                    proper formatting and syntax highlighting instead of plain
+                    preformatted text.
+                  </li>
+                  <li>
+                    <strong>Flexible behavior test case editing:</strong> The
+                    input field is no longer required when editing
+                    <a
+                      href="https://docs.galtea.ai/concepts/product/test/case"
+                      style="color: #5286ff"
+                      >behavior test cases</a
+                    >, since behavior-type tests do not always need explicit
+                    input values.
+                  </li>
+                  <li>
+                    <strong>Specification type tooltips:</strong> Hovering over
+                    the specification type pill (Capability, Inability, Policy)
+                    in the dashboard now shows a short description of what each
+                    type means, linking to the
+                    <a
+                      href="https://docs.galtea.ai/concepts/product/specification"
+                      style="color: #5286ff"
+                      >Specifications documentation</a
+                    >
+                    for more detail.
+                  </li>
+                </ul>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">
+                  Enjoy the improvements!
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  <strong>We'd love to hear your thoughts</strong> on these new
+                  features. Just reply to this email or ping us in the Slack or
+                  Discord channels.
+                </p>
+
+                <hr
+                  style="
+                    margin-top: 40px;
+                    width: 20%;
+                    border: 1px solid #e4e4e7;
+                  "
+                />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We are already working on the next set of features:
+                </p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <strong
+                      >JSON Inputs Across Endpoint Connections and
+                      SDKs:</strong
+                    >
+                    Full support for structured JSON payloads in endpoint
+                    connections and SDK methods, completing the transition from
+                    plain text to rich, multi-field inputs throughout the
+                    platform.
+                  </li>
+                  <li>
+                    <strong>Automated Actionable Insights:</strong> AI-generated
+                    insights from your evaluation results, surfacing patterns and
+                    recommendations so you can act on findings faster.
+                  </li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">
+                  Stay tuned!
+                </p>
+                <p style="margin-left: 35px">
+                  <strong> - Galtea Team</strong>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

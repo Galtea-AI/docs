@@ -1,0 +1,52 @@
+---
+title: 'observe'
+description: "Drop-in replacement for Langfuse's @observe decorator with Galtea trace linking."
+---
+
+## Example
+
+```python
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="my-agent", as_type="agent")
+def run_agent(user_input: str) -> str:
+    context = retrieve(user_input)
+    return generate(user_input, context)
+
+
+# Without Galtea correlation (traces go to Langfuse only):
+result = run_agent("What is gestational diabetes?")
+
+# With Galtea correlation (traces go to both Langfuse and Galtea):
+result = run_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
+```
+
+## Decorator Parameters
+
+These parameters are passed to `@observe(...)` and forwarded directly to Langfuse's `@observe`:
+
+<ResponseField name="name" type="str" optional>
+  Custom span name. Defaults to the decorated function's name.
+</ResponseField>
+<ResponseField name="as_type" type="str" optional>
+  Langfuse observation type: `span` (default), `generation`, `agent`, `tool`, `retriever`, `chain`, `evaluator`, `embedding`, `guardrail`. Mapped to Galtea's `TraceType` automatically. See [observation types](/sdk/integrations/langfuse/overview#observation-types).
+</ResponseField>
+
+All other Langfuse `@observe` keyword arguments are forwarded as-is.
+
+## Runtime Kwargs
+
+These kwargs are passed when **calling** the decorated function (not when defining the decorator):
+
+<ResponseField name="inference_result_id" type="str" optional>
+  Galtea inference result ID to link traces to. When provided on the **outermost** `@observe` call, the wrapper manages the trace context automatically. Consumed by the wrapper — does not reach the decorated function's parameters.
+</ResponseField>
+
+<Note>
+  If `inference_result_id` is passed to a nested `@observe` call where an outer context is already active, it is ignored — the outermost context takes precedence.
+</Note>
+
+## Returns
+
+Returns the decorated function with Langfuse tracing and optional Galtea trace linking enabled. The return type and signature of the decorated function are preserved.

@@ -1,0 +1,26 @@
+---
+title: 'Langfuse Integration'
+sidebarTitle: "Service"
+description: "Langfuse integration API reference for the Galtea SDK"
+---
+
+The Langfuse integration module provides drop-in replacements for Langfuse's tracing APIs that send traces to both Langfuse and Galtea.
+
+```python
+from galtea.integrations.langfuse import observe
+from galtea.integrations.langfuse import start_as_current_observation
+```
+
+<Info>
+  For setup instructions and usage patterns, see the [Langfuse Integration overview](/sdk/integrations/langfuse/overview).
+</Info>
+
+## APIs
+
+### Decorator API
+
+- [observe](/sdk/api/langfuse/observe) — Drop-in replacement for `langfuse.observe`. Wraps a function with Langfuse's `@observe` and adds optional `inference_result_id` linking.
+
+### Context Manager API
+
+- [start_as_current_observation](/sdk/api/langfuse/start-as-current-observation) — Drop-in replacement for `langfuse.Langfuse.start_as_current_observation`. Creates a root observation with optional `inference_result_id` linking.
