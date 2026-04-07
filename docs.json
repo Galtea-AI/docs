@@ -128,7 +128,7 @@
                       "sdk/api/langfuse/start-as-current-observation"
                     ]
                   },
-                  "sdk/integrations/langfuse/migration-guide"
+                  "sdk/integrations/langfuse/integration-guide"
                 ]
               },
               "sdk/integrations/github-actions"
@@ -731,6 +731,10 @@
     {
       "source": "/sdk/tutorials/specifications",
       "destination": "/sdk/tutorials/specification-driven-evaluations"
+    },
+    {
+      "source": "/sdk/integrations/langfuse/migration-guide",
+      "destination": "/sdk/integrations/langfuse/integration-guide"
     }
   ]
 }
