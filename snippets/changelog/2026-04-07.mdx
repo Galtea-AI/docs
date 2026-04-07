@@ -1,0 +1,28 @@
+<Update label="2026-04-07" description="Langfuse Integration, Public REST API Reference, and Platform Improvements">
+
+## Langfuse Integration
+
+If you already use [Langfuse](https://langfuse.com) to observe your LLM application, you can now send the same traces to Galtea for evaluation by swapping a single import. Replace `from langfuse import observe` with `from galtea.integrations.langfuse import observe`, and every span will flow to both Langfuse and Galtea simultaneously.
+
+The integration is fully transparent to Langfuse: your Langfuse dashboard, trace IDs, and alerts remain completely unaffected. Galtea only exports traces when you explicitly link an `inference_result_id`, so there is no overhead for unrelated function calls.
+
+Two wrappers are available:
+
+- [`observe`](/sdk/api/langfuse/observe) decorator for the standard `@observe` pattern
+- [`start_as_current_observation`](/sdk/api/langfuse/start-as-current-observation) context manager for manual span control
+
+Get started with the [Langfuse Integration overview](/sdk/integrations/langfuse/overview), or check the [Migration Guide](/sdk/integrations/langfuse/migration-guide) if you are moving an existing Langfuse-instrumented codebase to Galtea.
+
+## Public REST API Reference
+
+The platform now exposes a public [OpenAPI specification](https://api.galtea.ai/openapi.json) covering approximately 81 endpoints across products, versions, specifications, tests, sessions, evaluations, metrics, traces, and more. Internal-only endpoints (authentication flows, billing, user administration) are excluded automatically.
+
+You can import the spec into Postman, Cursor, Claude, or any OpenAPI-compatible tool to explore and call the API directly. Every endpoint description now includes a link back to the relevant [documentation page](/introduction), making it easier to navigate between the spec and the guides.
+
+## Platform Improvements
+
+- **Improved code and JSON display:** Code and JSON data across evaluation details, trace details, session details, and endpoint connection test results now render with proper formatting and syntax highlighting instead of plain preformatted text.
+- **Flexible behavior test case editing:** The input field is no longer required when editing [behavior test cases](/concepts/product/test/case), since behavior-type tests do not always need explicit input values.
+- **Specification type tooltips:** Hovering over the specification type pill (Capability, Inability, Policy) in the dashboard now shows a short description of what each type means, linking to the [Specifications documentation](/concepts/product/specification) for more detail.
+
+</Update>
