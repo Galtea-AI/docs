@@ -105,7 +105,7 @@ session = galtea.sessions.create(version_id=version.id, is_production=True)
 
 # @start automatic_collection_single_turn_with
 inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, user_input="What's the price?"
+    agent=my_agent, session=session, input="What's the price?"
 )
 # Traces are collected, associated with inference_result.id, and flushed automatically
 # @end automatic_collection_single_turn_with

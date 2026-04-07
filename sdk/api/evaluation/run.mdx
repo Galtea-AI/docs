@@ -71,7 +71,7 @@ print(f"Created {len(result['evaluations'])} evaluations")
 <ResponseField name="agent" type="AgentType" optional>
   The agent to execute locally. Accepts:
   - An `Agent` class instance with a `call()` method
-  - An agent function (sync or async) with one of three signatures: `(str) -> str`, `(list[dict]) -> str`, or `(AgentInput) -> AgentResponse`
+  - An agent function (sync or async) with one of three signatures: `(str) -> str`, `(list[dict]) -> str`, or `(AgentInput) -> AgentResponse`. For the full list of fields available on `AgentInput`, see [AgentInput Fields](/sdk/api/simulator/simulate#agentinput-fields).
 
   When omitted, the server-side endpoint connection pipeline is used.
 </ResponseField>

@@ -280,7 +280,7 @@ if accuracy_session is None or security_session is None or behavior_session is N
 accuracy_inference_result = galtea.inference_results.generate(
     session=accuracy_session,
     agent=my_agent,
-    user_input=accuracy_test_case.input,
+    input=accuracy_test_case.input,
 )
 # galtea.simulator.simulate(
 #     session_id=security_session.id,
@@ -290,7 +290,7 @@ accuracy_inference_result = galtea.inference_results.generate(
 security_inference_result = galtea.inference_results.generate(
     session=security_session,
     agent=my_agent,
-    user_input=security_test_case.input,
+    input=security_test_case.input,
 )
 conversational_simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
@@ -330,7 +330,7 @@ for test_case in test_cases:
     inference_result = galtea.inference_results.generate(
         session=session,
         agent=my_agent,
-        user_input=test_case.input,
+        input=test_case.input,
     )
 
     # Evaluate the full conversation (session)

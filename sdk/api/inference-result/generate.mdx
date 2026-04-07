@@ -30,8 +30,8 @@ The `generate()` method is the recommended way to execute your agent when you wa
   The agent function to execute. Supported signatures:
   - **Simple:** `(user_message: str) -> str` — receives last user message
   - **Chat History:** `(messages: list[dict]) -> str` — receives full chat history (OpenAI format)
-  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output
-  
+  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output. For the full list of fields available on `AgentInput`, see [AgentInput Fields](/sdk/api/simulator/simulate#agentinput-fields).
+
   Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`.
 </ParamField>
 
@@ -39,13 +39,17 @@ The `generate()` method is the recommended way to execute your agent when you wa
   The session object to associate the inference result with. Obtain via `galtea.sessions.create()` or `galtea.sessions.get()`.
 </ParamField>
 
-<ParamField path="user_input" type="string" optional>
-  The user's input message to send to the agent. If not provided and the session is test-based, the test case input will be used automatically. Required for production/monitoring sessions.
+<ParamField path="input" type="str | dict" optional>
+  The input to send to the agent. Accepts a plain string or a dict with structured fields (e.g. `{"user_message": "hello", "chat_type": "support"}`). Stored directly in the inference result. If not provided and the session is test-based, the test case input is used automatically. Required for production/monitoring sessions.
 </ParamField>
 
 <ParamField path="throw_if_empty_agent_response" type="bool" optional>
   If `True`, raises a `ValueError` when the agent returns an empty response. Defaults to `False`.
 </ParamField>
+
+<Info>
+  `context_data` is automatically fetched from the session's test case and passed to the agent via `AgentInput.context_data`. No need to provide it explicitly.
+</Info>
 
 ## Returns
 
@@ -60,7 +64,7 @@ def my_agent(user_message: str) -> str:
 
 
 inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, user_input="Generate something"
+    agent=my_agent, session=session, input="Generate something"
 )
 ```
 
@@ -70,7 +74,7 @@ The `generate()` method automatically captures and saves:
 
 | Data | Source | Description |
 |------|--------|-------------|
-| **Input** | `user_input` parameter | The user's message |
+| **Input** | `input` parameter | The user's input (string or structured dict) |
 | **Output** | `AgentResponse.content` | The agent's response |
 | **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG) |
 | **Latency** | Measured | End-to-end execution time in ms |
@@ -129,7 +133,7 @@ def failing_agent(input_data: AgentInput) -> AgentResponse:
 
 try:
     result = galtea_client.inference_results.generate(
-        agent=failing_agent, session=session_error, user_input="test"
+        agent=failing_agent, session=session_error, input="test"
     )
 except Exception as e:
     # Trace context is automatically cleaned up

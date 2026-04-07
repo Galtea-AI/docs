@@ -89,7 +89,7 @@ When using `generate()`, the trace context is automatically set for the entire d
 
 ```python
 inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, user_input="What's the price?"
+    agent=my_agent, session=session, input="What's the price?"
 )
 # Traces are collected, associated with inference_result.id, and flushed automatically
 ```

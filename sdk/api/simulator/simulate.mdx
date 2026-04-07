@@ -13,6 +13,40 @@ It returns a result object from the [Conversation Simulator](/concepts/product/t
 
 <AgentCallables />
 
+## AgentInput Fields
+
+When using the **Structured** signature (`(input_data: AgentInput) -> AgentResponse`), your function receives an `AgentInput` object with the following fields:
+
+<ResponseField name="messages" type="List[ConversationMessage]">
+  The full conversation history up to this turn. Each message has `role` (`"user"` or `"assistant"`), `content`, and optional `retrieval_context` and `metadata`. When the test case has structured JSON input, non-message fields (e.g. `chat_type`, `reasoning_level`) are placed in the first user message's `metadata`.
+</ResponseField>
+
+<ResponseField name="session_id" type="str">
+  The current session identifier. Use this to maintain state in stateful agents.
+</ResponseField>
+
+<ResponseField name="context_data" type="Optional[dict[str, Any]]">
+  Structured context data from the test case or session. Use this to access context fields (e.g. `context_data["customer_tier"]`).
+</ResponseField>
+
+<ResponseField name="inference_result_id" type="Optional[str]">
+  The inference result ID for this execution. Forward this to remote agents so they can attach traces to the correct session. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
+</ResponseField>
+
+<ResponseField name="metadata" type="Optional[dict[str, Any]]">
+  Additional metadata for the current execution.
+</ResponseField>
+
+### Helper Methods
+
+<ResponseField name="last_user_message_str()" type="Optional[str]">
+  Returns the content of the last user message. Returns `None` if no user message is found in `messages`.
+</ResponseField>
+
+<ResponseField name="last_user_message()" type="Optional[ConversationMessage]">
+  Returns the last `ConversationMessage` with `role == "user"`, or `None` if not found.
+</ResponseField>
+
 ## Example
 
 ```python
