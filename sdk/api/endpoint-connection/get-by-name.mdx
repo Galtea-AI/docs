@@ -1,0 +1,24 @@
+---
+title: 'Get Endpoint Connection By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific endpoint connection by its name within a product."
+---
+
+## Returns
+Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given product and name.
+
+## Example
+```python
+endpoint_connection = galtea.endpoint_connections.get_by_name(
+    name="production-chat-api-" + run_identifier,
+    product_id=product_id,
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the endpoint connection to retrieve.
+</ResponseField>
+<ResponseField name="product_id" type="string" required>
+  ID of the product the connection belongs to.
+</ResponseField>

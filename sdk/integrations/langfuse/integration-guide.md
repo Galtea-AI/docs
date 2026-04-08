@@ -1,4 +1,4 @@
-# Langfuse Migration Guide
+# Langfuse Integration Guide
 
 In order to evaluate your AI agent, Galtea can take advantage of the rich information that comes from traces. If you already have Langfuse setup, Galtea has a very simple way of gathering those traces, in a non-intrusive way with minor changes to your application. Here we explain, how to send your Langfuse traces to Galtea.
 
@@ -54,7 +54,7 @@ Your request body is untouched — nothing is added to it. If the header is abse
 pip install galtea
 ```
 
-The `[langfuse]` extra (`pip install 'galtea[langfuse]'`) is only needed if you don't already have `langfuse` installed — it simply adds `langfuse` as a dependency. Since you're migrating from an existing Langfuse setup, `pip install galtea` is enough.
+The `[langfuse]` extra (`pip install 'galtea[langfuse]'`) is only needed if you don't already have `langfuse` installed — it simply adds `langfuse` as a dependency. Since you already have Langfuse installed, `pip install galtea` is enough.
 
 ```python
 import galtea

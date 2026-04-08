@@ -1,0 +1,87 @@
+---
+title: 'Test Connection'
+sidebarTitle: "Test Connection"
+description: "Test an endpoint connection by making a sample request."
+---
+
+## Returns
+Returns a `TestConnectionResult` object containing:
+- `success` (bool): Whether the test request succeeded.
+- `status_code` (int): The HTTP status code returned by the endpoint.
+- `latency` (float): Round-trip latency in milliseconds.
+- `response` (any): The raw response body from the endpoint.
+- `error` (string | None): Error message if the request failed.
+- `extracted_output` (dict | None): Values extracted via `output_mapping`, if provided.
+- `extraction_error` (string | None): Error message if extraction failed.
+
+## Modes
+
+This method can be called in two ways:
+
+**With an existing connection ID** — the stored connection is used as a base and any provided fields act as overrides:
+```python
+    test_result = galtea.endpoint_connections.test(
+        id=endpoint_connection_id,
+    )
+```
+
+**Without an ID** — all connection fields are provided directly (useful during creation flow):
+```python
+    test_result = galtea.endpoint_connections.test(
+        url="https://api.example.com/v1/chat",
+        http_method="POST",
+        auth_type="BEARER",
+        auth_token="YOUR_AUTH_TOKEN",
+        input_template='{"message": "{{ input }}"}',
+        output_mapping={"output": "$.response"},
+        type=EndpointConnectionType.CONVERSATION,
+        timeout=30,
+    )
+```
+
+## Parameters
+<ResponseField name="id" type="string" optional>
+  ID of an existing endpoint connection to test. When provided, stored connection data is used as the base and remaining fields act as overrides.
+</ResponseField>
+<ResponseField name="url" type="string" optional>
+  The endpoint URL to test. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
+</ResponseField>
+<ResponseField name="http_method" type="string" optional>
+  HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+</ResponseField>
+<ResponseField name="input_template" type="string" optional>
+  Input template with Jinja2 placeholders. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
+</ResponseField>
+<ResponseField name="auth_type" type="string" optional>
+  Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`.
+</ResponseField>
+<ResponseField name="auth_token" type="string" optional>
+  Authentication token.
+</ResponseField>
+<ResponseField name="username" type="string" optional>
+  Username for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="password" type="string" optional>
+  Password for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="headers" type="dict[string, string]" optional>
+  Custom headers. Supports credential placeholders (e.g., `{{ bearer_token }}`, `{{ api_key }}`). See [Custom Headers](/concepts/product/endpoint-connection-configuration#custom-headers).
+</ResponseField>
+<ResponseField name="output_mapping" type="dict[string, string]" optional>
+  Output mapping using JSONPath expressions. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  Endpoint connection type. Valid values: `INITIALIZATION`, `CONVERSATION`, `FINALIZATION`.
+  `CONVERSATION` is required for all products. `INITIALIZATION` and `FINALIZATION` are only needed
+  for [complex session management](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced).
+</ResponseField>
+<ResponseField name="timeout" type="int" optional>
+  Request timeout in seconds.
+</ResponseField>
+
+<Note>
+  All fields except `id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to exclude it from the test request.
+  Pass `None` to explicitly send null — useful to override a stored value when testing with an existing connection ID.
+  Pass a value to include it.
+</Note>

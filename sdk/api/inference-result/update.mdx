@@ -125,11 +125,13 @@ galtea.inference_results.update(
 
 ## Notes
 
-<Warning>
-  Only include fields you want to update. Fields not specified will remain unchanged.
-</Warning>
+<Note>
+  All fields except `inference_result_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>
 
-- Pass `None` explicitly to clear a field's value
 - The `creditsUsed` field cannot be modified through this method
 
 ## Related Methods

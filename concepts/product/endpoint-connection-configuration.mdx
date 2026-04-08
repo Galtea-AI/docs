@@ -1,7 +1,7 @@
 ---
 title: "Templates & Mapping"
 sidebarTitle: "Templates & Mapping"
-description: "Configure how Galtea formats requests to your endpoint and extracts values from responses."
+description: "Configure how Galtea formats requests to your endpoint, extracts values from responses, sets custom headers, and handles retries."
 icon: "code"
 ---
 
@@ -152,6 +152,40 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 }
 ```
 </CodeGroup>
+
+## Custom Headers
+
+Custom headers are sent with every request to your endpoint. Header values support placeholder substitution for injecting authentication credentials, so you can place tokens in any header — not just the standard `Authorization` or `X-API-Key` headers.
+
+### Available Placeholders
+
+| Placeholder | Resolves to | Available when auth type is |
+|-------------|------------|---------------------------|
+| `{{ auth_token }}` | The authentication token | `BEARER` or `API_KEY` |
+| `{{ api_key }}` | The authentication token | `BEARER` or `API_KEY` (alias for `{{ auth_token }}`) |
+| `{{ bearer_token }}` | The authentication token | `BEARER` or `API_KEY` (alias for `{{ auth_token }}`) |
+| `{{ username }}` | The Basic auth username | `BASIC` |
+| `{{ password }}` | The Basic auth password | `BASIC` |
+
+Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and `{ placeholder }` syntax.
+
+### Example
+
+```json
+{
+  "Authorization": "Bearer {{ bearer_token }}",
+  "X-Custom-Api-Key": "{{ api_key }}",
+  "X-Tenant-Id": "my-tenant"
+}
+```
+
+<Tip>
+  If you define an `Authorization` or `X-API-Key` header in custom headers, Galtea will **not** add the default authentication header — your custom header takes precedence.
+</Tip>
+
+### W3C Trace Context Propagation
+
+When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's traces without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
 
 ## Retry Configuration
 

@@ -1,6 +1,6 @@
 ---
-title: 'Langfuse Migration Guide'
-sidebarTitle: "Migration Guide"
+title: 'Langfuse Integration Guide'
+sidebarTitle: "Integration Guide"
 description: "What changes when you add Galtea evaluation to your Langfuse-instrumented app"
 icon: "arrow-right-arrow-left"
 ---
@@ -63,7 +63,7 @@ Your request body is untouched — nothing is added to it. If the header is abse
 pip install galtea
 ```
 
-The `[langfuse]` extra (`pip install 'galtea[langfuse]'`) is only needed if you don't already have `langfuse` installed — it simply adds `langfuse` as a dependency. Since you're migrating from an existing Langfuse setup, `pip install galtea` is enough.
+The `[langfuse]` extra (`pip install 'galtea[langfuse]'`) is only needed if you don't already have `langfuse` installed — it simply adds `langfuse` as a dependency. Since you already have Langfuse installed, `pip install galtea` is enough.
 
 ```python
 import galtea

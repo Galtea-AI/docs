@@ -128,7 +128,7 @@
                       "sdk/api/langfuse/start-as-current-observation"
                     ]
                   },
-                  "sdk/integrations/langfuse/migration-guide"
+                  "sdk/integrations/langfuse/integration-guide"
                 ]
               },
               "sdk/integrations/github-actions"
@@ -212,7 +212,21 @@
                 "icon": "plug",
                 "pages": [
                   "concepts/product/endpoint-connection",
-                  "concepts/product/endpoint-connection-configuration"
+                  "concepts/product/endpoint-connection-configuration",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/endpoint-connection/service",
+                      "sdk/api/endpoint-connection/create",
+                      "sdk/api/endpoint-connection/list",
+                      "sdk/api/endpoint-connection/get",
+                      "sdk/api/endpoint-connection/get-by-name",
+                      "sdk/api/endpoint-connection/update",
+                      "sdk/api/endpoint-connection/delete",
+                      "sdk/api/endpoint-connection/test-connection"
+                    ]
+                  }
                 ]
               },
 
@@ -493,6 +507,10 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "REST API",
+        "openapi": "https://dev.api.galtea.ai/openapi.json"
       }
     ]
   },
@@ -731,7 +749,10 @@
     {
       "source": "/sdk/tutorials/specifications",
       "destination": "/sdk/tutorials/specification-driven-evaluations"
+    },
+    {
+      "source": "/sdk/integrations/langfuse/migration-guide",
+      "destination": "/sdk/integrations/langfuse/integration-guide"
     }
   ]
 }
-

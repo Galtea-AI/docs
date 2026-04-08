@@ -68,7 +68,7 @@ def risky_agent(input_data: AgentInput) -> AgentResponse:
 inference_result_risky = galtea.inference_results.generate(
     agent=risky_agent,
     session=session_decorator,
-    input_data="test",
+    input="test",
 )
 ```
 
@@ -97,7 +97,7 @@ if session_serialization is None:
 inference_result_data = galtea.inference_results.generate(
     agent=data_agent,
     session=session_serialization,
-    input_data="process",
+    input="process",
 )
 ```
 
