@@ -510,7 +510,7 @@
       },
       {
         "tab": "REST API",
-        "openapi": "https://dev.api.galtea.ai/openapi.json"
+        "openapi": "https://api.galtea.ai/openapi.json"
       }
     ]
   },
