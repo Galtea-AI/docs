@@ -212,7 +212,21 @@
                 "icon": "plug",
                 "pages": [
                   "concepts/product/endpoint-connection",
-                  "concepts/product/endpoint-connection-configuration"
+                  "concepts/product/endpoint-connection-configuration",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/endpoint-connection/service",
+                      "sdk/api/endpoint-connection/create",
+                      "sdk/api/endpoint-connection/list",
+                      "sdk/api/endpoint-connection/get",
+                      "sdk/api/endpoint-connection/get-by-name",
+                      "sdk/api/endpoint-connection/update",
+                      "sdk/api/endpoint-connection/delete",
+                      "sdk/api/endpoint-connection/test-connection"
+                    ]
+                  }
                 ]
               },
 
@@ -493,6 +507,10 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "REST API",
+        "openapi": "https://api.galtea.ai/openapi.json"
       }
     ]
   },
@@ -738,4 +756,3 @@
     }
   ]
 }
-

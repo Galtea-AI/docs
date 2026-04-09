@@ -66,7 +66,7 @@ async def my_async_agent(user_message: str) -> str:
 result = galtea_client.inference_results.generate(
     agent=my_agent,
     session=session,
-    user_input="Hello!",
+    input="Hello!",
 )
 # @end agent_options
 
@@ -97,7 +97,7 @@ def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
 result = galtea_client.inference_results.generate(
     agent=my_agent_with_usage,
     session=session,
-    user_input="test input",
+    input="test input",
 )
 if result is None:
     raise ValueError("result is None")
@@ -115,7 +115,7 @@ def failing_agent(input_data: AgentInput) -> AgentResponse:
 
 try:
     result = galtea_client.inference_results.generate(
-        agent=failing_agent, session=session_error, user_input="test"
+        agent=failing_agent, session=session_error, input="test"
     )
 except Exception as e:
     # Trace context is automatically cleaned up

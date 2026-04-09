@@ -331,7 +331,7 @@ def my_agent(user_message: str) -> str:
 
 
 inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, user_input="Generate something"
+    agent=my_agent, session=session, input="Generate something"
 )
 # @end inference_result_generate
 if inference_result is None:
@@ -353,7 +353,7 @@ def my_maths_agent(input_data: AgentInput) -> AgentResponse:
 inference_result = galtea.inference_results.generate(
     agent=my_maths_agent,
     session=session,
-    user_input="5,3",
+    input="5,3",
 )
 # @end trace_decorator
 

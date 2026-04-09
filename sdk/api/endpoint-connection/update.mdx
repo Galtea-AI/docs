@@ -1,0 +1,83 @@
+---
+title: 'Update Endpoint Connection'
+sidebarTitle: "Update"
+description: "Update an existing endpoint connection."
+---
+
+## Returns
+Returns the updated [Endpoint Connection](/concepts/product/endpoint-connection) object.
+
+## Example
+```python
+endpoint_connection = galtea.endpoint_connections.update(
+    endpoint_connection_id=endpoint_connection_id,
+    timeout=60,
+    rate_limit=100,
+)
+```
+
+## Parameters
+<ResponseField name="endpoint_connection_id" type="string" required>
+  ID of the endpoint connection to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the endpoint connection.
+</ResponseField>
+<ResponseField name="url" type="string" optional>
+  New endpoint URL. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
+</ResponseField>
+<ResponseField name="http_method" type="string" optional>
+  New HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+</ResponseField>
+<ResponseField name="auth_type" type="string" optional>
+  New authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`.
+</ResponseField>
+<ResponseField name="auth_token" type="string" optional>
+  New authentication token.
+</ResponseField>
+<ResponseField name="username" type="string" optional>
+  New username for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="password" type="string" optional>
+  New password for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="headers" type="dict[string, string]" optional>
+  New custom headers. Supports credential placeholders (e.g., `{{ bearer_token }}`, `{{ api_key }}`). See [Custom Headers](/concepts/product/endpoint-connection-configuration#custom-headers).
+</ResponseField>
+<ResponseField name="input_template" type="string" optional>
+  New input template with Jinja2 placeholders. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
+</ResponseField>
+<ResponseField name="output_mapping" type="dict[string, string]" optional>
+  New output mapping using JSONPath expressions. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
+</ResponseField>
+<ResponseField name="timeout" type="int" optional>
+  New request timeout in seconds.
+</ResponseField>
+<ResponseField name="rate_limit" type="int" optional>
+  New maximum requests per minute.
+</ResponseField>
+<ResponseField name="retry_enabled" type="bool" optional>
+  Whether automatic retry is enabled. See [Retry Configuration](/concepts/product/endpoint-connection-configuration#retry-configuration).
+</ResponseField>
+<ResponseField name="retry_max_attempts" type="int" optional>
+  New maximum retry attempts.
+</ResponseField>
+<ResponseField name="retry_initial_delay_ms" type="int" optional>
+  New initial delay in milliseconds before first retry.
+</ResponseField>
+<ResponseField name="retry_backoff_strategy" type="string" optional>
+  New backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`.
+</ResponseField>
+<ResponseField name="retry_max_delay_ms" type="int" optional>
+  New maximum delay cap in milliseconds.
+</ResponseField>
+<ResponseField name="retryable_status_codes" type="list[int]" optional>
+  New HTTP status codes that trigger retry.
+</ResponseField>
+
+<Note>
+  All fields except `endpoint_connection_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>

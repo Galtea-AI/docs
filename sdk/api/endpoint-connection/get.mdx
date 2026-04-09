@@ -1,0 +1,20 @@
+---
+title: 'Get Endpoint Connection'
+sidebarTitle: "Get"
+description: "Retrieve a specific endpoint connection by its ID."
+---
+
+## Returns
+Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given ID.
+
+## Example
+```python
+endpoint_connection = galtea.endpoint_connections.get(
+    endpoint_connection_id=endpoint_connection_id
+)
+```
+
+## Parameters
+<ResponseField name="endpoint_connection_id" type="string" required>
+  The ID of the endpoint connection to retrieve.
+</ResponseField>

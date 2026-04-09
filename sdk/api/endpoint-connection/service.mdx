@@ -1,0 +1,66 @@
+---
+title: 'Endpoint Connection Service'
+sidebarTitle: "Service"
+description: "Endpoint Connection Service API methods in the Galtea SDK"
+---
+
+import EndpointConnectionCard from '/snippets/cards/endpoint-connection-card.mdx';
+
+The Endpoint Connection Service in the Galtea SDK allows you to manage [endpoint connections](/concepts/product/endpoint-connection) for your products.
+This Service is exposed by the `galtea.endpoint_connections` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create an endpoint connection:
+```python
+endpoint_connection = galtea.endpoint_connections.create(
+    name="production-chat-api-" + run_identifier,
+    product_id=product_id,
+    url="https://api.example.com/v1/chat",
+    type=EndpointConnectionType.CONVERSATION,
+    http_method="POST",
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    input_template='{"message": "{{ input }}"}',
+    output_mapping={"output": "$.response"},
+    timeout=30,
+)
+```
+
+List endpoint connections for a product:
+```python
+endpoint_connections = galtea.endpoint_connections.list(
+    product_ids=[product_id],
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+Get an endpoint connection by ID:
+```python
+endpoint_connection = galtea.endpoint_connections.get(
+    endpoint_connection_id=endpoint_connection_id
+)
+```
+
+## Service Methods
+- [Create Endpoint Connection](/sdk/api/endpoint-connection/create)
+- [List Endpoint Connections](/sdk/api/endpoint-connection/list)
+- [Get Endpoint Connection](/sdk/api/endpoint-connection/get)
+- [Get Endpoint Connection By Name](/sdk/api/endpoint-connection/get-by-name)
+- [Update Endpoint Connection](/sdk/api/endpoint-connection/update)
+- [Delete Endpoint Connection](/sdk/api/endpoint-connection/delete)
+- [Test Connection](/sdk/api/endpoint-connection/test-connection)
+
+## Related
+
+<EndpointConnectionCard />

@@ -67,7 +67,7 @@ def my_overview_agent(input_data: AgentInput) -> AgentResponse:
 inference_result = galtea.inference_results.generate(
     agent=my_overview_agent,
     session=session,
-    user_input="Show me user data",
+    input="Show me user data",
 )
 # @end trace_overview
 
@@ -198,7 +198,7 @@ def risky_agent(input_data: AgentInput) -> AgentResponse:
 inference_result_risky = galtea.inference_results.generate(
     agent=risky_agent,
     session=session_decorator,
-    user_input="test",
+    input="test",
 )
 # @end trace_decorator_exception
 
@@ -225,7 +225,7 @@ if session_serialization is None:
 inference_result_data = galtea.inference_results.generate(
     agent=data_agent,
     session=session_serialization,
-    user_input="process",
+    input="process",
 )
 # @end trace_decorator_serialization
 

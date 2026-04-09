@@ -22,7 +22,7 @@ def my_maths_agent(input_data: AgentInput) -> AgentResponse:
 inference_result = galtea.inference_results.generate(
     agent=my_maths_agent,
     session=session,
-    user_input="5,3",
+    input="5,3",
 )
 ```
 
@@ -68,7 +68,7 @@ def risky_agent(input_data: AgentInput) -> AgentResponse:
 inference_result_risky = galtea.inference_results.generate(
     agent=risky_agent,
     session=session_decorator,
-    user_input="test",
+    input="test",
 )
 ```
 
@@ -97,7 +97,7 @@ if session_serialization is None:
 inference_result_data = galtea.inference_results.generate(
     agent=data_agent,
     session=session_serialization,
-    user_input="process",
+    input="process",
 )
 ```
 
