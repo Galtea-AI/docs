@@ -104,16 +104,14 @@ def my_agent(messages: list[dict]) -> str:
     return f"Your model output"
 
 # @start wait_for_run_lifecycle
-# Full async evaluation lifecycle: run, then wait for results
+# Full lifecycle: run with agent, then wait for evaluations to finish processing
 result = galtea.evaluations.run(
     version_id=version_id,
     agent=my_agent,
 )
 
-# Collect evaluation IDs from the run result
+# run() with agent returns evaluations in PENDING status — wait for them to complete
 evaluation_ids = [e.id for e in result["evaluations"]]
-
-# Wait for all evaluations to complete
 completed = galtea.evaluations.wait_for(evaluation_ids=evaluation_ids)
 
 for evaluation in completed:
