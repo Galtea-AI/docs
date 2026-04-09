@@ -7,7 +7,7 @@ icon: "eye"
 
 ## Overview
 
-If you already instrument your LLM app with [Langfuse](https://langfuse.com) using `@observe` decorators, you can send the same traces to Galtea for evaluation by swapping a single import. Under the hood, one span per function call flows to both Langfuse and Galtea simultaneously.
+If you already instrument your LLM app with [Langfuse](https://langfuse.com) — whether using `@observe` decorators or the LangChain `CallbackHandler` — you can send the same traces to Galtea for evaluation by swapping a single import. Under the hood, one span per function call flows to both Langfuse and Galtea simultaneously.
 
 <CardGroup cols={2}>
   <Card title="Real-Time Dual Export" icon="bolt">
@@ -39,6 +39,12 @@ pip install 'galtea[langfuse]'
 <Note>
   Requires **Langfuse v3.0.0+** — v2.x is not supported.
 </Note>
+
+If you use **Langfuse's LangChain `CallbackHandler`**, install with LangChain support:
+
+```bash
+pip install 'galtea[langfuse-langchain]'
+```
 
 ### 2. Initialize the Galtea client
 
@@ -174,6 +180,39 @@ Both APIs can be mixed freely — an `@observe`-decorated function can be called
 <Note>
   Only the **root** `start_as_current_observation` call needs the Galtea wrapper. Child calls on yielded spans (e.g., `root.start_as_current_observation(...)`) are native Langfuse — no change needed.
 </Note>
+
+### LangChain CallbackHandler
+
+If you use Langfuse's `CallbackHandler` for LangChain tracing, Galtea provides an equivalent wrapper:
+
+```python
+# Before:
+# from langfuse.langchain import CallbackHandler
+
+# After:
+from galtea.integrations.langfuse import CallbackHandler
+```
+
+Your handler initialization stays the same — create it once at app startup and pass it to any LangChain `.invoke()`, `.batch()`, or `.stream()` call. To link traces to Galtea, call `set_inference_result_id` before each invocation:
+
+```python
+from galtea.integrations.langfuse import CallbackHandler
+
+handler = CallbackHandler()  # at app init — no inference_result_id yet
+
+# Per request:
+handler.set_inference_result_id("inferenceResult_abc123")
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+# Context is automatically cleared when the chain finishes.
+```
+
+The handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles — no context managers or manual cleanup needed. You can also pass `inference_result_id` directly in the constructor if you prefer to create a handler per request.
+
+<Note>
+  The `CallbackHandler` requires `langchain` to be installed. Install it with: `pip install langchain`
+</Note>
+
+All three APIs can be mixed freely — for example, an `@observe`-decorated function can pass a `CallbackHandler` to a LangChain chain inside it, and the parent-child trace hierarchy is preserved.
 
 ## Linking Traces to an Inference Result
 

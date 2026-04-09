@@ -125,7 +125,8 @@
                     "pages": [
                       "sdk/api/langfuse/service",
                       "sdk/api/langfuse/observe",
-                      "sdk/api/langfuse/start-as-current-observation"
+                      "sdk/api/langfuse/start-as-current-observation",
+                      "sdk/api/langfuse/callback-handler"
                     ]
                   },
                   "sdk/integrations/langfuse/integration-guide"

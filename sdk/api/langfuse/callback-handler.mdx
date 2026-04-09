@@ -1,0 +1,84 @@
+---
+title: 'CallbackHandler'
+sidebarTitle: "CallbackHandler"
+description: "Drop-in replacement for Langfuse's langchain.CallbackHandler with Galtea trace linking."
+---
+
+## Example
+
+```python
+from galtea.integrations.langfuse import CallbackHandler
+
+handler = CallbackHandler()  # at app init — no inference_result_id yet
+
+# Per request:
+handler.set_inference_result_id("inferenceResult_abc123")
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+# Context is automatically cleared when the chain finishes.
+```
+
+You can also pass `inference_result_id` directly in the constructor:
+
+```python
+from galtea.integrations.langfuse import CallbackHandler
+
+# Without Galtea correlation (traces go to Langfuse only):
+handler = CallbackHandler()
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+
+# With Galtea correlation (traces go to both Langfuse and Galtea):
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+```
+
+## Constructor Parameters
+
+<ResponseField name="inference_result_id" type="str" optional>
+  Galtea inference result ID to link traces to. When provided, the handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles. All spans created during the invocation are stamped with this ID. Can also be set or changed later via `set_inference_result_id()`.
+</ResponseField>
+
+All other keyword arguments are forwarded to Langfuse's `langchain.CallbackHandler`.
+
+## Methods
+
+<ResponseField name="set_inference_result_id(inference_result_id)" type="method">
+  Set or update the inference result ID for subsequent invocations. Use this when reusing a single handler across multiple requests (singleton pattern). Pass `None` to disable Galtea correlation.
+</ResponseField>
+
+```python
+# Singleton pattern — one handler, per-request ID:
+handler = CallbackHandler()  # at app init
+
+# Per request:
+handler.set_inference_result_id("inferenceResult_abc123")
+chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+# Context is automatically cleared when the chain finishes.
+```
+
+## Behavior
+
+The handler automatically manages Galtea trace context using depth tracking across LangChain callbacks:
+
+- On the first `on_*_start` callback (root depth), `set_context(inference_result_id)` is called
+- On the last `on_*_end` or `on_*_error` callback (back to root depth), `clear_context()` is called
+- Nested callbacks (tool calls, LLM calls inside a chain) increment/decrement the depth counter without affecting context
+
+This means you can use the handler exactly like the Langfuse original — no context managers or manual cleanup needed.
+
+<Note>
+  If a Galtea context is already active (e.g., from a parent `@observe` decorator or `set_context` call), the handler does not override it. The outermost context always takes precedence.
+</Note>
+
+## Reuse
+
+A single `CallbackHandler` instance can be reused across multiple `chain.invoke()` calls. Context is managed per-invocation — set on the first callback start and cleared on the last callback end.
+
+## Mixed Usage
+
+`CallbackHandler` can be combined with `@observe` and `start_as_current_observation`. For example, you can use `@observe` on a parent function and pass a `CallbackHandler` to LangChain inside it — the parent-child hierarchy is preserved automatically.
+
+## Thread Safety
+
+<Warning>
+  Langfuse's underlying `CallbackHandler` is **not thread-safe** — it stores per-run state in shared mutable dicts without locks. If your web server handles concurrent requests on multiple threads, create a new `CallbackHandler` per request instead of reusing a singleton.
+</Warning>

@@ -112,6 +112,7 @@ def agent(user_input: str) -> str:
 # -- API reference sections ------------------------------------------------
 
 # @start service_imports
+from galtea.integrations.langfuse import CallbackHandler
 from galtea.integrations.langfuse import observe
 from galtea.integrations.langfuse import start_as_current_observation
 # @end service_imports
@@ -190,3 +191,64 @@ with start_as_current_observation(
 
     root_span.update(output=response)
 # @end context_manager_api
+
+
+# -- CallbackHandler sections ------------------------------------------------
+
+# @start callback_handler_import
+# Before:
+# from langfuse.langchain import CallbackHandler
+
+# After:
+from galtea.integrations.langfuse import CallbackHandler
+# @end callback_handler_import
+
+# @start callback_handler_usage
+from galtea.integrations.langfuse import CallbackHandler
+
+# Without Galtea correlation (pure Langfuse passthrough):
+handler = CallbackHandler()
+
+# With Galtea correlation (traces go to both Langfuse and Galtea):
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
+# @end callback_handler_usage
+
+# @start callback_handler_full_example
+from langfuse import get_client
+
+from galtea import Galtea
+from galtea.integrations.langfuse import CallbackHandler
+
+# Initialize both — order doesn't matter
+galtea_client = Galtea(api_key="YOUR_API_KEY")
+langfuse = get_client()
+
+# Create handler with Galtea correlation
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
+
+# Use with any LangChain chain, agent, or LLM
+# chain.invoke({"input": "What is gestational diabetes?"}, config={"callbacks": [handler]})
+# @end callback_handler_full_example
+
+# @start callback_handler_singleton
+from galtea.integrations.langfuse import CallbackHandler
+
+handler = CallbackHandler()  # at app init — no inference_result_id yet
+
+# Per request:
+handler.set_inference_result_id("inferenceResult_abc123")
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+# Context is automatically cleared when the chain finishes.
+# @end callback_handler_singleton
+
+# @start api_callback_handler_example
+from galtea.integrations.langfuse import CallbackHandler
+
+# Without Galtea correlation (traces go to Langfuse only):
+handler = CallbackHandler()
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+
+# With Galtea correlation (traces go to both Langfuse and Galtea):
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
+# chain.invoke({"input": "query"}, config={"callbacks": [handler]})
+# @end api_callback_handler_example
