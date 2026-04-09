@@ -82,15 +82,15 @@ for evaluation in completed:
 
 **Endpoint-connection mode — wait by job ID:**
 ```python
-# Endpoint-connection mode: run() returns a jobId instead of evaluations
-result = galtea.evaluations.run(version_id=version_id)
-job_id = result["jobId"]
+    # Endpoint-connection mode: run() returns a jobId instead of evaluations
+    result = galtea.evaluations.run(version_id=version_id)
+    job_id = result["jobId"]
 
-# Wait for the job to complete and all evaluations to finish
-completed = galtea.evaluations.wait_for(job_id=job_id, timeout=600)
+    # Wait for the job to complete and all evaluations to finish
+    completed = galtea.evaluations.wait_for(job_id=job_id, timeout=600)
 
-for evaluation in completed:
-    print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
+    for evaluation in completed:
+        print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
 ```
 
 ## Parameters
