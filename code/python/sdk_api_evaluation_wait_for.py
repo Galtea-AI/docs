@@ -112,8 +112,20 @@ result = galtea.evaluations.run(
 evaluation_ids = [e.id for e in result["evaluations"]]
 
 # Wait for all evaluations to complete
-completed = galtea.evaluations.wait_for(evaluation_ids)
+completed = galtea.evaluations.wait_for(evaluation_ids=evaluation_ids)
 
 for evaluation in completed:
     print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
 # @end wait_for_run_lifecycle
+
+# @start wait_for_job_id
+# Endpoint-connection mode: run() returns a jobId instead of evaluations
+result = galtea.evaluations.run(version_id=version_id)
+job_id = result["jobId"]
+
+# Wait for the job to complete and all evaluations to finish
+completed = galtea.evaluations.wait_for(job_id=job_id, timeout=600)
+
+for evaluation in completed:
+    print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
+# @end wait_for_job_id

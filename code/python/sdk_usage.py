@@ -145,7 +145,7 @@ def fetch_all_test_cases(test_id: str, limit: int = 100) -> list:
 first_page_products = galtea.products.list(offset=0, limit=10)
 second_page_products = galtea.products.list(offset=10, limit=10)
 # @end working_with_pagination_understanding
-default_products = galtea.products.list()  # up to default limit (e.g., 1000)
+default_products = galtea.products.list()  # up to default limit (e.g., 10000)
 # @start working_with_pagination_pagination
 
 # Generic pagination examples

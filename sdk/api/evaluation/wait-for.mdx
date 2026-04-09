@@ -14,9 +14,24 @@ An evaluation is considered **complete** when its status is anything other than 
 - `SKIPPED` — evaluation was skipped
 - `PENDING_HUMAN` — evaluation is waiting for human review (no further automated processing)
 
+## Two Modes
+
+<Tabs>
+  <Tab title="By Evaluation IDs">
+    Pass `evaluation_ids` to wait for specific evaluations to leave `PENDING` status. Use this when you already have evaluation IDs from [`create()`](/sdk/api/evaluation/create) or from a `run()` with an agent.
+
+    Returns evaluations in the same order as the input `evaluation_ids`.
+  </Tab>
+  <Tab title="By Job ID">
+    Pass `job_id` to wait for an endpoint-connection job (returned by [`run()`](/sdk/api/evaluation/run) without an agent) to complete, then automatically discover and wait for all evaluations created by that job.
+
+    This is the recommended approach when using `run()` in endpoint-connection mode, since no evaluation IDs are available until the job finishes.
+  </Tab>
+</Tabs>
+
 ## Returns
 
-Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects in the same order as the input `evaluation_ids`, once all have left `PENDING` status.
+Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects once all have left `PENDING` status. When using `evaluation_ids`, results are in the same order as the input. When using `job_id`, no specific result ordering is guaranteed.
 
 ## Examples
 
@@ -47,7 +62,7 @@ completed = galtea.evaluations.wait_for(
 )
 ```
 
-**Full lifecycle with `run()` and `wait_for()`:**
+**Full lifecycle with `run()` and `wait_for()` (agent mode):**
 ```python
 # Full async evaluation lifecycle: run, then wait for results
 result = galtea.evaluations.run(
@@ -59,7 +74,20 @@ result = galtea.evaluations.run(
 evaluation_ids = [e.id for e in result["evaluations"]]
 
 # Wait for all evaluations to complete
-completed = galtea.evaluations.wait_for(evaluation_ids)
+completed = galtea.evaluations.wait_for(evaluation_ids=evaluation_ids)
+
+for evaluation in completed:
+    print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
+```
+
+**Endpoint-connection mode — wait by job ID:**
+```python
+# Endpoint-connection mode: run() returns a jobId instead of evaluations
+result = galtea.evaluations.run(version_id=version_id)
+job_id = result["jobId"]
+
+# Wait for the job to complete and all evaluations to finish
+completed = galtea.evaluations.wait_for(job_id=job_id, timeout=600)
 
 for evaluation in completed:
     print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
@@ -67,11 +95,14 @@ for evaluation in completed:
 
 ## Parameters
 
-<ResponseField name="evaluation_ids" type="list[str]" required>
-  A list of evaluation IDs to wait for. All must be valid evaluation IDs.
+<ResponseField name="evaluation_ids" type="list[str]">
+  A list of evaluation IDs to wait for. All must be valid evaluation IDs. Mutually exclusive with `job_id`.
+</ResponseField>
+<ResponseField name="job_id" type="str">
+  The job ID returned by `run()` in endpoint-connection mode. The method polls the job until it completes, discovers the evaluations created by that job, and waits for them to leave `PENDING` status. Mutually exclusive with `evaluation_ids`.
 </ResponseField>
 <ResponseField name="timeout" type="int" default="300">
-  Maximum number of seconds to wait before raising a `TimeoutError`. Defaults to 300 (5 minutes).
+  Maximum number of seconds to wait before raising a `TimeoutError`. Defaults to 300 (5 minutes). When using `job_id`, this timeout covers both the job polling and the evaluation polling phases.
 </ResponseField>
 <ResponseField name="poll_interval" type="int" default="5">
   Number of seconds to sleep between polling cycles. Defaults to 5.
@@ -81,5 +112,6 @@ for evaluation in completed:
 
 | Error | Cause |
 |-------|-------|
-| `ValueError` | `evaluation_ids` is empty or contains an invalid ID |
-| `TimeoutError` | The timeout was exceeded before all evaluations left `PENDING` status. The error message includes the IDs that are still pending. |
+| `ValueError` | Neither `evaluation_ids` nor `job_id` provided, or both provided, or IDs are invalid |
+| `RuntimeError` | The job failed (only when using `job_id`) |
+| `TimeoutError` | The timeout was exceeded before the job completed or all evaluations left `PENDING` status |
