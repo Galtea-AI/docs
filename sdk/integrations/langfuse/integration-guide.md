@@ -17,7 +17,7 @@ The Galtea integration is **transparent to Langfuse**. It does not inject trace 
 | **Attributes & metadata** | No Galtea-specific attributes are added to Langfuse traces. |
 | **Session IDs & tags** | `propagate_attributes(session_id=..., tags=...)` works exactly as before. |
 | **Performance** | Negligible overhead — one attribute stamp per span at creation time. |
-| **Existing code** | Functions decorated with `@observe` continue to work identically in Langfuse. |
+| **Existing code** | Functions decorated with `@observe` or using `CallbackHandler` continue to work identically in Langfuse. |
 
 ## When Does Galtea Export Data?
 
@@ -27,6 +27,8 @@ Galtea **only** exports trace data when an `inference_result_id` is explicitly l
 |---|---|
 | Normal `@observe` call (no `inference_result_id`) | **No** |
 | `@observe` called with `inference_result_id` kwarg | **Yes** |
+| `CallbackHandler` with `inference_result_id` | **Yes** |
+| `CallbackHandler` without `inference_result_id` | **No** |
 | SDK `generate()` / `simulate()` | **Yes** (SDK manages context internally) |
 | Manual `set_context(inference_result_id=...)` | **Yes** (while context is active) |
 
@@ -54,7 +56,7 @@ Your request body is untouched — nothing is added to it. If the header is abse
 pip install galtea
 ```
 
-The `[langfuse]` extra (`pip install 'galtea[langfuse]'`) is only needed if you don't already have `langfuse` installed — it simply adds `langfuse` as a dependency. Since you already have Langfuse installed, `pip install galtea` is enough.
+The `[langfuse]` extra (`pip install 'galtea[langfuse]'`) is only needed if you don't already have `langfuse` installed — it simply adds `langfuse` as a dependency. Since you already have Langfuse installed, `pip install galtea` is enough. If you use the LangChain `CallbackHandler`, install with `pip install 'galtea[langfuse-langchain]'` to include `langchain` as well.
 
 ```python
 import galtea
@@ -123,6 +125,39 @@ with start_as_current_observation(
 ```
 
 The `langfuse.` client prefix is no longer needed for the root call — the wrapper calls `get_client()` internally. But keeping the client does not introduce any issues, since it is singleton and refers to the same object.
+
+**CallbackHandler (LangChain)**
+
+Swap the import and call `set_inference_result_id` before each invocation. Your existing handler initialization stays the same:
+
+```python
+# Before:
+from langfuse.langchain import CallbackHandler
+
+handler = CallbackHandler()  # at app init
+
+# Per request:
+result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
+
+# After:
+from galtea.integrations.langfuse import CallbackHandler  # swap import
+
+handler = CallbackHandler()  # at app init (unchanged)
+
+# Per request:
+inference_result_id = request.headers.get("X-Galtea-Inference-Id")  # read header
+handler.set_inference_result_id(inference_result_id)  # set ID for this request
+result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
+# Context is automatically cleared when the chain finishes.
+```
+
+Alternatively, you can create a handler per request with the ID in the constructor:
+
+```python
+inference_result_id = request.headers.get("X-Galtea-Inference-Id")
+handler = CallbackHandler(inference_result_id=inference_result_id)
+result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
+```
 
 > **Note:** When using Galtea's SDK methods (`generate()`, `simulate()`), this step is not needed — the SDK manages `inference_result_id` internally.
 

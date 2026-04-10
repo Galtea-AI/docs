@@ -7,6 +7,7 @@ description: "Langfuse integration API reference for the Galtea SDK"
 The Langfuse integration module provides drop-in replacements for Langfuse's tracing APIs that send traces to both Langfuse and Galtea.
 
 ```python
+from galtea.integrations.langfuse import CallbackHandler
 from galtea.integrations.langfuse import observe
 from galtea.integrations.langfuse import start_as_current_observation
 ```
@@ -24,3 +25,7 @@ from galtea.integrations.langfuse import start_as_current_observation
 ### Context Manager API
 
 - [start_as_current_observation](/sdk/api/langfuse/start-as-current-observation) — Drop-in replacement for `langfuse.Langfuse.start_as_current_observation`. Creates a root observation with optional `inference_result_id` linking.
+
+### LangChain Callback API
+
+- [CallbackHandler](/sdk/api/langfuse/callback-handler) — Drop-in replacement for `langfuse.langchain.CallbackHandler`. Automatically manages `inference_result_id` context around LangChain callback lifecycles.
