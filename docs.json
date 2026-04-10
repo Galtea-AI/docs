@@ -42,7 +42,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://platform.galtea.ai"
+      "href": "https://dev.platform.galtea.ai"
     }
   },
   "contextual": {
@@ -78,7 +78,11 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["introduction", "registration", "quickstart"]
+            "pages": [
+              "introduction",
+              "registration",
+              "quickstart"
+            ]
           },
           {
             "group": "Core Workflows",
@@ -142,7 +146,11 @@
         "groups": [
           {
             "group": "SDK",
-            "pages": ["sdk/installation", "sdk/usage", "sdk/api/galtea"]
+            "pages": [
+              "sdk/installation",
+              "sdk/usage",
+              "sdk/api/galtea"
+            ]
           },
           {
             "group": "Concepts",
@@ -165,7 +173,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Specification",
                 "icon": "bullseye",
@@ -187,7 +194,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Version",
                 "icon": "code-branch",
@@ -207,7 +213,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Endpoint Connection",
                 "icon": "plug",
@@ -230,7 +235,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Test",
                 "icon": "vial-circle-check",
@@ -240,7 +244,9 @@
                   {
                     "group": "Accuracy",
                     "icon": "certificate",
-                    "pages": ["concepts/product/test/accuracy-tests"]
+                    "pages": [
+                      "concepts/product/test/accuracy-tests"
+                    ]
                   },
                   {
                     "group": "Security & Safety",
@@ -254,7 +260,9 @@
                   {
                     "group": "Behavior",
                     "icon": "person-walking",
-                    "pages": ["concepts/product/test/behavior-tests"]
+                    "pages": [
+                      "concepts/product/test/behavior-tests"
+                    ]
                   },
                   {
                     "group": "SDK",
@@ -271,7 +279,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Test Case",
                 "icon": "list",
@@ -290,7 +297,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Conversation Simulator",
                 "icon": "comments",
@@ -306,7 +312,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Session",
                 "icon": "clock-rotate-left",
@@ -328,7 +333,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Inference Result",
                 "icon": "arrow-right-from-bracket",
@@ -351,7 +355,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Trace",
                 "icon": "sitemap",
@@ -375,7 +378,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Metrics",
                 "icon": "gauge",
@@ -451,7 +453,6 @@
                   }
                 ]
               },
-
               {
                 "group": "Evaluation",
                 "icon": "clipboard-check",
@@ -474,7 +475,6 @@
                   }
                 ]
               },
-
               {
                 "group": "User Group",
                 "icon": "users",
@@ -499,11 +499,12 @@
                   }
                 ]
               },
-
               {
                 "group": "Model",
                 "icon": "microchip",
-                "pages": ["concepts/model"]
+                "pages": [
+                  "concepts/model"
+                ]
               }
             ]
           }
@@ -511,11 +512,10 @@
       },
       {
         "tab": "REST API",
-        "openapi": "https://api.galtea.ai/openapi.json"
+        "openapi": "https://dev.api.galtea.ai/openapi.json"
       }
     ]
   },
-
   "footer": {
     "socials": {
       "linkedin": "https://linkedin.com/company/galtea-ai",
