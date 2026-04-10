@@ -9,6 +9,11 @@ WORKDIR /docs-src
 
 COPY . .
 
+ARG GALTEA_API_URL=""
+ARG FRONTEND_URL=""
+ENV GALTEA_API_URL=$GALTEA_API_URL
+ENV FRONTEND_URL=$FRONTEND_URL
+
 RUN python scripts/run.py --embed-only
 
 # ─── Stage 2: Serve with Mintlify dev server ──────────────────────────────────
