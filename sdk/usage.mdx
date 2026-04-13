@@ -152,7 +152,7 @@ for session in sessions:
 
 ### Working with Pagination
 
-When listing resources that may contain many items (products, tests, sessions, evaluations, etc.), the Galtea SDK uses pagination with a **default limit of 1,000 items** per request.
+When listing resources that may contain many items (products, tests, sessions, evaluations, etc.), the Galtea SDK uses pagination with a **default limit of 10,000 items** per request.
 
 #### Basic Pagination Example
 
@@ -178,7 +178,7 @@ def fetch_all_test_cases(test_id: str, limit: int = 100) -> list:
 All list methods in the Galtea SDK accept two pagination parameters:
 
 - **`offset`**: Number of items to skip before starting to collect results (default: `0`)
-- **`limit`**: Maximum number of items to return in a single request (default: `1000`)
+- **`limit`**: Maximum number of items to return in a single request (default: `10000`)
 
 ```python
 
@@ -191,10 +191,10 @@ second_page_products = galtea.products.list(offset=10, limit=10)
 
 1. **For large datasets**: Use smaller `limit` values (e.g., 100) to reduce memory usage and improve response times
 2. **For complete data retrieval**: Implement pagination loops as shown in the example above
-3. **For small datasets**: If you know there are fewer than 1000 items, you can omit pagination parameters
+3. **For small datasets**: If you know there are fewer than 10,000 items, you can omit pagination parameters
 
 <Warning>
-  If you don't specify a `limit` and have more than 1,000 items, only the first 1,000 will be returned. Always implement pagination for complete data retrieval when working with large datasets.
+  If you don't specify a `limit` and have more than 10,000 items, only the first 10,000 will be returned. Always implement pagination for complete data retrieval when working with large datasets.
 </Warning>
 
 #### Pagination Across Different Resources

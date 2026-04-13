@@ -1,5 +1,7 @@
 
 from datetime import datetime
+
+import requests
 from _test_helpers import create_test_product
 from galtea import Galtea, SpecificationType, TestType
 
@@ -102,18 +104,35 @@ def my_agent(messages: list[dict]) -> str:
     return f"Your model output"
 
 # @start wait_for_run_lifecycle
-# Full async evaluation lifecycle: run, then wait for results
+# Full lifecycle: run with agent, then wait for evaluations to finish processing
 result = galtea.evaluations.run(
     version_id=version_id,
     agent=my_agent,
 )
 
-# Collect evaluation IDs from the run result
+# run() with agent returns evaluations in PENDING status — wait for them to complete
 evaluation_ids = [e.id for e in result["evaluations"]]
-
-# Wait for all evaluations to complete
-completed = galtea.evaluations.wait_for(evaluation_ids)
+completed = galtea.evaluations.wait_for(evaluation_ids=evaluation_ids)
 
 for evaluation in completed:
     print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
 # @end wait_for_run_lifecycle
+
+# Endpoint-connection mode requires a deployed endpoint; skip when not configured
+try:
+    # @start wait_for_job_id
+    # Endpoint-connection mode: run() returns a jobId instead of evaluations
+    result = galtea.evaluations.run(version_id=version_id)
+    job_id = result["jobId"]
+
+    # Wait for the job to complete and all evaluations to finish
+    completed = galtea.evaluations.wait_for(job_id=job_id, timeout=600)
+
+    for evaluation in completed:
+        print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
+    # @end wait_for_job_id
+except requests.exceptions.HTTPError as e:
+    if e.response.status_code == 400 and "version does not have a conversation endpoint connection" in e.response.text.lower():
+        print("Skipped (expected: endpoint-connection mode requires a deployed endpoint)")
+    else:
+        raise

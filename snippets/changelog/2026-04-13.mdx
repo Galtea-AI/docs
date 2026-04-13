@@ -1,0 +1,31 @@
+<Update label="2026-04-13" description="Human Annotation for All Evaluations, Structured JSON Inputs, SDK Endpoint Connections, and More">
+
+## Human Annotation for All Evaluations
+
+Human annotation is no longer limited to [human evaluation metrics](/concepts/metric/evaluation-types). You can now annotate any completed evaluation with a human score and reasoning, regardless of its metric source. This means AI-evaluated results from full-prompt, partial-prompt, deterministic, or self-hosted metrics can all receive a parallel human assessment. Unlike human evaluation metrics (which contribute to the evaluation score and analytics), human annotations are stored as supplementary feedback alongside the original result.
+
+## SDK: Endpoint Connection Management
+
+The SDK now provides a full CRUD service for [endpoint connections](/concepts/product/endpoint-connection), so you can manage your agent connections entirely from code. Available operations include [`create`](/sdk/api/endpoint-connection/create), [`get`](/sdk/api/endpoint-connection/get), [`get_by_name`](/sdk/api/endpoint-connection/get-by-name), [`list`](/sdk/api/endpoint-connection/list), [`update`](/sdk/api/endpoint-connection/update), [`delete`](/sdk/api/endpoint-connection/delete), and [`test`](/sdk/api/endpoint-connection/test-connection).
+
+The service supports all authentication types (Bearer, API Key, Basic), retry configuration with customizable backoff strategies, and partial updates where you can modify individual fields without resending the entire configuration.
+
+## SDK: Job-Based `wait_for`
+
+The [`evaluations.wait_for()`](/sdk/api/evaluation/wait-for) method now accepts a `job_id` parameter in addition to `evaluation_ids`. When you run an evaluation against an [endpoint connection](/concepts/product/endpoint-connection) without a local agent, [`run()`](/sdk/api/evaluation/run) returns a `jobId`. You can now pass that ID directly to `wait_for(job_id=...)` and let the SDK handle the entire lifecycle: polling the job status, discovering the evaluations it produced, and waiting for them to complete.
+
+## SDK: Langfuse `CallbackHandler`
+
+Building on the [Langfuse integration](/sdk/integrations/langfuse/overview) from the previous release, the SDK now includes a [`CallbackHandler`](/sdk/api/langfuse/callback-handler) for LangChain users. Instead of decorating individual functions with `@observe`, you can pass the handler directly to `chain.invoke(config={"callbacks": [handler]})` and every LLM call, tool invocation, and retriever query in the chain will be traced automatically.
+
+The handler manages Galtea context through depth tracking, so nested callbacks are handled correctly without manual cleanup. It works as a singleton (set the inference result ID per request) or as a per-request instance. See the [CallbackHandler integration guide](/sdk/integrations/langfuse/integration-guide) for setup instructions.
+
+## Structured JSON Inputs
+
+This release extends JSON-structured inputs across the platform.
+
+**SDK: `input_data` and `context_data` on AgentInput.** When using the structured agent signature, your agent function now receives [`context_data`](/sdk/api/simulator/simulate) alongside the conversation messages. If your [test cases](/concepts/product/test/case) include structured context fields (e.g., `customer_tier`, `language`, or any custom key-value pairs), they flow automatically into `AgentInput.context_data` during evaluation and simulation. The [`generate()`](/sdk/api/inference-result/generate) method also accepts structured `input` as a dictionary with multiple fields.
+
+**CSV import with JSON values.** When importing test cases from CSV, the platform now detects and preserves JSON objects in the input and context columns. You no longer need to flatten structured data before uploading. For the time being, structured JSON inputs are only available for uploaded or manually created tests.
+
+</Update>

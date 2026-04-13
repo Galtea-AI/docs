@@ -79,8 +79,20 @@ Once an evaluation completes, the following fields are available:
   The ID of the human evaluator assigned to this evaluation, if applicable.
 </ResponseField>
 
+<ResponseField name="Human Score" type="Number" optional>
+  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score.
+</ResponseField>
+
+<ResponseField name="Human Reason" type="Text" optional>
+  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason.
+</ResponseField>
+
 <ResponseField name="Human Evaluator Started At" type="Text" optional>
   The timestamp when the human evaluator started reviewing this evaluation, if applicable.
+</ResponseField>
+
+<ResponseField name="Human Evaluator Finished At" type="Text" optional>
+  The timestamp when the human evaluator submitted their evaluation or annotation.
 </ResponseField>
 
 ## Related
