@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galtea Update - 2026-04-13</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      ul li {
+        margin-bottom: 8px;
+      }
+      ul li:last-child {
+        margin-bottom: 0;
+      }
+      h3 {
+        margin-top: 30px;
+        margin-bottom: 0px;
+      }
+      p {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-family: Geist, Poppins, Arial, sans-serif;
+      background-color: #f6f6f5;
+    "
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            style="
+              background-color: #f9f8f4;
+              text-align: left;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #e4e4e7;
+              border-radius: 10px;
+              max-width: 600px;
+            "
+          >
+            <tr>
+              <td>
+                <div style="text-align: center">
+                  <a href="https://galtea.ai" target="_blank">
+                    <img
+                      src="https://galtea.ai/img/galtea_mod.png"
+                      style="width: 250px; height: auto"
+                    />
+                  </a>
+                </div>
+                <h1 style="color: #171717; font-size: 26px; margin-bottom: 0px">
+                  Human Annotation for All Evaluations, Structured JSON Inputs,
+                  SDK Endpoint Connections, and More
+                </h1>
+                <a
+                  style="color: #5286ff; font-size: 12px; text-decoration: none"
+                  href="https://docs.galtea.ai/changelog#2026-04-13"
+                  >2026-04-13</a
+                >
+
+                <h3 style="color: #171717">Human Annotation for All Evaluations</h3>
+                <p style="color: #171717; font-size: 16px">
+                  Human annotation is no longer limited to
+                  <a
+                    href="https://docs.galtea.ai/concepts/metric/evaluation-types"
+                    style="color: #5286ff"
+                    >human evaluation metrics</a
+                  >. You can now annotate any completed evaluation with a human
+                  score and reasoning, regardless of its metric source. This
+                  means AI-evaluated results from full-prompt, partial-prompt,
+                  deterministic, or self-hosted metrics can all receive a
+                  parallel human assessment. Unlike human evaluation metrics
+                  (which contribute to the evaluation score and analytics),
+                  human annotations are stored as supplementary feedback
+                  alongside the original result.
+                </p>
+
+                <h3 style="color: #171717">SDK: Endpoint Connection Management</h3>
+                <p style="color: #171717; font-size: 16px">
+                  The SDK now provides a full CRUD service for
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/endpoint-connection"
+                    style="color: #5286ff"
+                    >endpoint connections</a
+                  >, so you can manage your agent connections entirely from code.
+                  Available operations include
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/create"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >create</code
+                    ></a
+                  >,
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/get"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >get</code
+                    ></a
+                  >,
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/get-by-name"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >get_by_name</code
+                    ></a
+                  >,
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/list"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >list</code
+                    ></a
+                  >,
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/update"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >update</code
+                    ></a
+                  >,
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/delete"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >delete</code
+                    ></a
+                  >, and
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/endpoint-connection/test-connection"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >test</code
+                    ></a
+                  >.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  The service supports all authentication types (Bearer, API
+                  Key, Basic), retry configuration with customizable backoff
+                  strategies, and partial updates where you can modify individual
+                  fields without resending the entire configuration.
+                </p>
+
+                <h3 style="color: #171717">SDK: Job-Based <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >wait_for</code></h3>
+                <p style="color: #171717; font-size: 16px">
+                  The
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/evaluation/wait-for"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >evaluations.wait_for()</code
+                    ></a
+                  >
+                  method now accepts a
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >job_id</code
+                  >
+                  parameter in addition to
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >evaluation_ids</code
+                  >. When you run an evaluation against an
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/endpoint-connection"
+                    style="color: #5286ff"
+                    >endpoint connection</a
+                  >
+                  without a local agent,
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/evaluation/run"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >run()</code
+                    ></a
+                  >
+                  returns a
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >jobId</code
+                  >. You can now pass that ID directly to
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >wait_for(job_id=...)</code
+                  >
+                  and let the SDK handle the entire lifecycle: polling the job
+                  status, discovering the evaluations it produced, and waiting
+                  for them to complete.
+                </p>
+
+                <h3 style="color: #171717">SDK: Langfuse <code style="background-color: #ececec; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 14px; color: #444;">CallbackHandler</code></h3>
+                <p style="color: #171717; font-size: 16px">
+                  Building on the
+                  <a
+                    href="https://docs.galtea.ai/sdk/integrations/langfuse/overview"
+                    style="color: #5286ff"
+                    >Langfuse integration</a
+                  >
+                  from the previous release, the SDK now includes a
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/langfuse/callback-handler"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >CallbackHandler</code
+                    ></a
+                  >
+                  for LangChain users. Instead of decorating individual
+                  functions with
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >@observe</code
+                  >, you can pass the handler directly to
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >chain.invoke(config={"callbacks": [handler]})</code
+                  >
+                  and every LLM call, tool invocation, and retriever query in
+                  the chain will be traced automatically.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  The handler manages Galtea context through depth tracking, so
+                  nested callbacks are handled correctly without manual cleanup.
+                  See the
+                  <a
+                    href="https://docs.galtea.ai/sdk/integrations/langfuse/integration-guide"
+                    style="color: #5286ff"
+                    >CallbackHandler integration guide</a
+                  >
+                  for setup instructions.
+                </p>
+
+                <h3 style="color: #171717">Structured JSON Inputs</h3>
+                <p style="color: #171717; font-size: 16px">
+                  This release extends JSON-structured inputs across the
+                  platform.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  <strong>SDK:
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >input_data</code
+                  >
+                  and
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >context_data</code
+                  >
+                  on AgentInput.</strong>
+                  When using the structured agent signature, your agent function
+                  now receives
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/simulator/simulate"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >context_data</code
+                    ></a
+                  >
+                  alongside the conversation messages. If your
+                  <a
+                    href="https://docs.galtea.ai/concepts/product/test/case"
+                    style="color: #5286ff"
+                    >test cases</a
+                  >
+                  include structured context fields (e.g.,
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >customer_tier</code
+                  >,
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >language</code
+                  >, or any custom key-value pairs), they flow automatically into
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >AgentInput.context_data</code
+                  >
+                  during evaluation and simulation. The
+                  <a
+                    href="https://docs.galtea.ai/sdk/api/inference-result/generate"
+                    style="color: #5286ff"
+                    ><code
+                      style="
+                        background-color: #ececec;
+                        padding: 2px 4px;
+                        border-radius: 3px;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #444;
+                      "
+                      >generate()</code
+                    ></a
+                  >
+                  method also accepts structured
+                  <code
+                    style="
+                      background-color: #ececec;
+                      padding: 2px 4px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                      font-size: 14px;
+                      color: #444;
+                    "
+                    >input</code
+                  >
+                  as a dictionary with multiple fields.
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  <strong>CSV import with JSON values.</strong> When importing
+                  test cases from CSV, the platform now detects and preserves
+                  JSON objects in the input and context columns. You no longer
+                  need to flatten structured data before uploading. For the time
+                  being, structured JSON inputs are only available for uploaded
+                  or manually created tests.
+                </p>
+
+                <br />
+                <p style="color: #171717; font-size: 16px">
+                  Enjoy the improvements!
+                </p>
+                <p style="color: #171717; font-size: 16px">
+                  <strong>We'd love to hear your thoughts</strong> on these new
+                  features. Just reply to this email or ping us in the Slack or
+                  Discord channels.
+                </p>
+
+                <hr
+                  style="
+                    margin-top: 40px;
+                    width: 20%;
+                    border: 1px solid #e4e4e7;
+                  "
+                />
+
+                <h3 style="color: #171717; margin-top: 40px">Coming Next</h3>
+                <p style="color: #171717; font-size: 16px">
+                  We are already working on the next set of features:
+                </p>
+                <ul style="color: #171717; font-size: 16px">
+                  <li>
+                    <strong>Automated Actionable Insights:</strong> AI-generated
+                    insights from your evaluation results, surfacing patterns and
+                    recommendations so you can act on findings faster.
+                  </li>
+                  <li>
+                    <strong>JSON Inputs in AI Generators:</strong> Extending
+                    structured JSON input support to all AI-powered generators
+                    (golden datasets, red teaming, scenarios), so generated test
+                    cases match your endpoint's input schema automatically.
+                  </li>
+                  <li>
+                    <strong>Automated Metrics Optimization:</strong> Your
+                    annotations help improve the judge metrics.
+                  </li>
+                </ul>
+                <p style="margin-top: 35px; color: #171717; font-size: 16px">
+                  Stay tuned!
+                </p>
+                <p style="margin-left: 35px">
+                  <strong> - Galtea Team</strong>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
