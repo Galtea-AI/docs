@@ -13,7 +13,7 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
 ```
 
 ## Parameters
-<ResponseField name="test_id" type="string | list[string]" required>
+<ResponseField name="test_id" type="string | list[string]" optional>
   The ID or IDs of the test you want to get the test cases from.
 </ResponseField>
 <ResponseField name="languages" type="list[string]" optional>
@@ -56,3 +56,9 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
   
   **Default:** `10000`
 </ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the test case(s) to retrieve.
+</ResponseField>
+<Note>
+  At least one of the 2 filter parameters (`test_id`, `id`) described above must be passed to the method
+</Note>

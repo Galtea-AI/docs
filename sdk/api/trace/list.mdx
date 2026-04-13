@@ -41,7 +41,10 @@ traces = galtea.traces.list(inference_result_id=inference_result_id)
 <ResponseField name="limit" type="int" optional>
   Maximum number of traces to return. Default: `10000`.
 </ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the trace(s) to retrieve.
+</ResponseField>
 
 <Note>
-  At least one of `inference_result_id` or `session_id` must be provided.
+  At least one of `inference_result_id`, `session_id`, or `id` must be provided.
 </Note>

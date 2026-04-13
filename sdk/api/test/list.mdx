@@ -13,7 +13,7 @@ tests = galtea.tests.list(product_id=product_id, limit=10)
 ```
 
 ## Parameters
-<ResponseField name="product_id" type="string | list[string]" required>
+<ResponseField name="product_id" type="string | list[string]" optional>
   The ID or IDs of the product(s) for which you want to list tests.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
@@ -36,3 +36,12 @@ tests = galtea.tests.list(product_id=product_id, limit=10)
   
   **Default:** `10000`
 </ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the test(s) to retrieve.
+</ResponseField>
+<ResponseField name="types" type="list[string | TestType]" optional>
+  Filter tests by type. Accepts the new user-facing names (`ACCURACY`, `SECURITY`, `BEHAVIOR`) and the legacy API names (`QUALITY`, `RED_TEAMING`, `SCENARIOS`).
+</ResponseField>
+<Note>
+  At least one of the 2 filter parameters (`product_id`, `id`) described above must be passed to the method
+</Note>
