@@ -54,6 +54,10 @@ The Galtea SDK allows you to create, view, and manage test cases programmaticall
   The original source text used to create the test case. This can be helpful for tracing where test cases originated from, especially when generating test cases from documentation or other reference materials.
 </ResponseField>
 
+<ResponseField name="Source File" type="Text">
+  The name of the file from which the test case was extracted. This is populated when test cases are generated from uploaded documents (e.g., ZIP or PDF files containing ground truth data).
+</ResponseField>
+
 <ResponseField name="Human Reviewed" type="Boolean">
   Indicates if a test case has been manually reviewed and approved by a user. This is useful for tracking which test cases are considered reliable and validated. The system stores the ID of the user who reviewed the test case, upon creation or update, the one who created or updated the test case is set as the reviewer.
 </ResponseField>
