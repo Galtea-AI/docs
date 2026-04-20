@@ -30,13 +30,13 @@ manual_trace = galtea.traces.create(
   TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
 </ResponseField>
 <ResponseField name="description" type="string" optional>
-  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 32KB.
+  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1MB.
 </ResponseField>
 <ResponseField name="input_data" type="any" optional>
-  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 128KB.
+  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB.
 </ResponseField>
 <ResponseField name="output_data" type="any" optional>
-  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 128KB.
+  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB.
 </ResponseField>
 <ResponseField name="error" type="string" optional>
   Error message if the tool call failed.
@@ -45,7 +45,7 @@ manual_trace = galtea.traces.create(
   The time in milliseconds the tool call took.
 </ResponseField>
 <ResponseField name="metadata" type="any" optional>
-  Additional metadata about the trace. Accepts any JSON-serializable value. Maximum size: 128KB.
+  Additional metadata about the trace. Accepts any JSON-serializable value. Maximum size: 10MB.
 </ResponseField>
 <ResponseField name="start_time" type="string" optional>
   ISO 8601 timestamp when the trace started.

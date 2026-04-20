@@ -352,11 +352,11 @@ When using the OTel Collector path, you can set Galtea-specific attributes on yo
 | Attribute Key | Type | Maps To | Description |
 |---|---|---|---|
 | `galtea.trace.type` | `string` | `type` | Trace type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. |
-| `galtea.trace.description` | `string` | `description` | Human-readable description of the operation. Max 32KB. |
-| `galtea.trace.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 128KB. |
-| `galtea.trace.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 128KB. |
+| `galtea.trace.description` | `string` | `description` | Human-readable description of the operation. Max 1MB. |
+| `galtea.trace.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10MB. |
+| `galtea.trace.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10MB. |
 | `galtea.trace.error` | `string` | `error` | Error message. Takes precedence over OTel span status error. |
-| `galtea.trace.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 128KB. |
+| `galtea.trace.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 10MB. |
 | `galtea.inference_result.id` | `string` | `inferenceResultId` | Explicitly links the span to an inference result. Only needed if the automatic `traceId` correlation does not apply (e.g., spans not originating from a Galtea direct inference call). |
 
 **Automatically mapped OTel fields** (no custom attributes needed):

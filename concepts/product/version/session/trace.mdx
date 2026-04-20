@@ -115,7 +115,7 @@ Traces are classified by type to help you understand the nature of each operatio
 </ResponseField>
 
 <ResponseField name="Description" type="string" optional>
-  A human-readable description of the operation. Can be set manually via `start_trace(description=...)` or automatically from function docstrings using `@trace(include_docstring=True)`. Maximum size: 32KB.
+  A human-readable description of the operation. Can be set manually via `start_trace(description=...)` or automatically from function docstrings using `@trace(include_docstring=True)`. Maximum size: 1MB.
 </ResponseField>
 
 <ResponseField name="Parent Trace ID" type="string" optional>
@@ -123,11 +123,11 @@ Traces are classified by type to help you understand the nature of each operatio
 </ResponseField>
 
 <ResponseField name="Input Data" type="any" optional>
-  The input parameters passed to the operation. Maximum size: 128KB.
+  The input parameters passed to the operation. Maximum size: 10MB.
 </ResponseField>
 
 <ResponseField name="Output Data" type="any" optional>
-  The result returned by the operation. Maximum size: 128KB.
+  The result returned by the operation. Maximum size: 10MB.
 </ResponseField>
 
 <ResponseField name="Error" type="string" optional>
@@ -147,7 +147,7 @@ Traces are classified by type to help you understand the nature of each operatio
 </ResponseField>
 
 <ResponseField name="Metadata" type="any" optional>
-  Additional custom metadata about the trace. Maximum size: 128KB.
+  Additional custom metadata about the trace. Maximum size: 10MB.
 </ResponseField>
 
 ## Related
