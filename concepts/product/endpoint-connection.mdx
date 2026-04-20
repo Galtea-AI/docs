@@ -35,13 +35,13 @@ To create an Endpoint Connection:
 
 Most integrations only need **one Conversation endpoint**. At its simplest, you just need to configure:
 
-- **Input Template** — How to format the request body (using `{{ input }}` for the simulated user message)
+- **Input Template** — How to format the request body (using `{{ input.user_message }}` for the simulated user message)
 - **Output Mapping** — How to extract your product's AI response (using a JSONPath expression for the `output` key)
 
 <CodeGroup>
 ```json Input Template
 {
-  "message": "{{ input }}"
+  "message": "{{ input.user_message }}"
 }
 ```
 

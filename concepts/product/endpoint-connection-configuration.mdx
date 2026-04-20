@@ -15,8 +15,8 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 
 | Placeholder | Description |
 |-------------|-------------|
-| `{{ input }}` | The test case input (required) |
-| `{{ context }}` | The test case context |
+| `{{ input.<field> }}` | The test case input (required) |
+| `{{ context.<field> }}` | The test case context |
 | `{{ session_id }}` | The external session ID (if available) |
 | `{{ test_case_id }}` | The test case ID |
 | `{{ test_id }}` | The test ID |
@@ -42,7 +42,7 @@ Use `{% for turn in past_turns %}...{% endfor %}` to loop through previous conve
     {"role": "user", "content": "{{ turn.input }}"},
     {"role": "assistant", "content": "{{ turn.output }}"},
     {% endfor %}
-    {"role": "user", "content": "{{ input }}"}
+    {"role": "user", "content": "{{ input.user_message }}"}
   ]
 }
 ```
@@ -56,7 +56,7 @@ Use `{% for turn in past_turns %}...{% endfor %}` to loop through previous conve
     "{{ turn.input }}"{% if not loop.last %},{% endif %}
     {% endfor %}
   ],
-  "current_query": "{{ input }}"
+  "current_query": "{{ input.user_message }}"
 }
 ```
 
@@ -67,7 +67,7 @@ Use `{% for turn in past_turns %}...{% endfor %}` to loop through previous conve
     "names": ["query", "contexto"],
     "ndarray": [
       [
-        "{{ input }}",
+        "{{ input.user_message }}",
         [
           {% for turn in past_turns %}
           "{{ turn.input }}",
@@ -146,7 +146,7 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 ```json Input Template
 {
   "role": "user",
-  "content": "{{ input }}",
+  "content": "{{ input.user_message }}",
   "session_id": "{{ session_id }}",
   "tenant": "{{ tenant_id }}"
 }

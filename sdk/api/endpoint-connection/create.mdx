@@ -17,7 +17,7 @@ endpoint_connection = galtea.endpoint_connections.create(
     http_method="POST",
     auth_type="BEARER",
     auth_token="YOUR_AUTH_TOKEN",
-    input_template='{"message": "{{ input }}"}',
+    input_template='{"message": "{{ input.user_message }}"}',
     output_mapping={"output": "$.response"},
     timeout=30,
 )
@@ -59,7 +59,7 @@ endpoint_connection = galtea.endpoint_connections.create(
   Custom headers as key-value pairs. Supports credential placeholders (e.g., `{{ bearer_token }}`, `{{ api_key }}`). See [Custom Headers](/concepts/product/endpoint-connection-configuration#custom-headers).
 </ResponseField>
 <ResponseField name="input_template" type="string" optional>
-  Input template with Jinja2 placeholders. Required for `CONVERSATION` type. Must contain `{{ input }}`. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template).
+  Input template with Jinja2 placeholders. Required for `CONVERSATION` type. Must contain `{{ input.user_message }}`. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template).
 </ResponseField>
 <ResponseField name="output_mapping" type="dict[string, string]" optional>
   Output mapping configuration using JSONPath expressions. Required for `INITIALIZATION` (needs `session_id`) and `CONVERSATION` (needs `output`) types. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).

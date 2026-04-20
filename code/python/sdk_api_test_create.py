@@ -35,7 +35,7 @@ security_test = galtea.tests.create(
     type="SECURITY",
     product_id=product_id,
     variants=["toxicity"],
-    strategies=["original", "roleplay", "base64"],
+    strategies=["original", "role_play", "base64"],
     max_test_cases=50,
 )
 # @end security_test
