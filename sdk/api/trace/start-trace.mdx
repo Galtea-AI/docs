@@ -23,13 +23,13 @@ with start_trace("manual_span", type="SPAN") as span:
   TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
 </ResponseField>
 <ResponseField name="description" type="string" optional>
-  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 32KB.
+  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1MB.
 </ResponseField>
 <ResponseField name="input" type="any" optional>
-  Input data for the trace. Accepts any value (non-serializable objects are converted to string). Maximum size: 128KB.
+  Input data for the trace. Accepts any value (non-serializable objects are converted to string). Maximum size: 10MB.
 </ResponseField>
 <ResponseField name="metadata" type="any" optional>
-  Metadata for the trace. Accepts any value (non-serializable objects are converted to string). Maximum size: 128KB.
+  Metadata for the trace. Accepts any value (non-serializable objects are converted to string). Maximum size: 10MB.
 </ResponseField>
 <ResponseField name="attributes" type="dict" optional>
   Custom OpenTelemetry attributes to add to the span.
