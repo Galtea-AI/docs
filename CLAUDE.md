@@ -1,4 +1,3 @@
-
 # Mintlify Documentation Guidelines
 
 > **SCOPE:** These rules apply when working on files under `docs/`.

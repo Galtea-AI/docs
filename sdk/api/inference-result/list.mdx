@@ -13,7 +13,7 @@ inference_result = galtea.inference_results.list(session_id=session_id)
 ```
 
 ## Parameters
-<ResponseField name="session_id" type="string | list[string]" required>
+<ResponseField name="session_id" type="string | list[string]" optional>
   The ID or IDs of the session(s) to get inference results for.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
@@ -36,3 +36,9 @@ inference_result = galtea.inference_results.list(session_id=session_id)
   
   **Default:** `10000`
 </ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the inference result(s) to retrieve.
+</ResponseField>
+<Note>
+  At least one of the 2 filter parameters (`session_id`, `id`) described above must be passed to the method
+</Note>

@@ -28,7 +28,7 @@ endpoint_connection = galtea.endpoint_connections.create(
     http_method="POST",
     auth_type="BEARER",
     auth_token="YOUR_AUTH_TOKEN",
-    input_template='{"message": "{{ input }}"}',
+    input_template='{"message": "{{ input.user_message }}"}',
     output_mapping={"output": "$.response"},
     timeout=30,
 )
@@ -84,7 +84,7 @@ try:
         http_method="POST",
         auth_type="BEARER",
         auth_token="YOUR_AUTH_TOKEN",
-        input_template='{"message": "{{ input }}"}',
+        input_template='{"message": "{{ input.user_message }}"}',
         output_mapping={"output": "$.response"},
         type=EndpointConnectionType.CONVERSATION,
         timeout=30,

@@ -1,0 +1,27 @@
+<Update label="2026-04-20" description="CSV Export for Evaluations, Inference Result Error Tracking, and More">
+
+## Export Evaluation Results as CSV
+
+You can now export [evaluation](/concepts/product/version/session/evaluation) results directly from the dashboard as a CSV file. The export action appears in the row selection toolbar on the evaluation list page. With no rows selected, all evaluations matching the current filters are exported. When specific rows are selected, only those are included.
+
+The CSV includes columns for Score, Metric, Input, Output, Expected Output, Retrieval Context, Version, and Test, along with export-only identifier columns (Evaluation ID, Session ID, Test Case ID) that do not appear in the table UI but provide full traceability for downstream analysis.
+
+## Inference Result Error Tracking
+
+When an agent crashes or returns an empty response during [simulation](/sdk/api/simulator/simulate), the corresponding [inference result](/concepts/product/version/session/inference-result) is now properly marked as `FAILED` with the error details attached, instead of remaining stuck in a `PENDING` state. Each inference result carries its own error information, so you can see exactly what went wrong at the individual turn level.
+
+The evaluation pipeline also respects these statuses: evaluations are automatically skipped for non-ready inference results, with a clear reason recorded explaining which turns were not ready and why. In the dashboard, failed turns display a red error badge with the error message visible inline.
+
+## One-Click Metric Duplication
+
+You can now duplicate an existing [metric](/concepts/metric) as a starting point for a new one. The "Use as Template" action in the metric dropdown navigates to the creation form pre-filled with the source metric's name, description, tags, evaluation type, judge prompt, evaluation parameters, evaluator model, and user groups. The duplicated metric is independent from the original, so you can adjust any field before saving.
+
+## Platform Improvements
+
+- **Test case source file tracking:** [Test cases](/concepts/product/test/case) generated from uploaded documents now display the name of the original source file, improving traceability for file-based test generation.
+- **Annotate action on evaluation details:** The Annotate (or Evaluate, for pending human review) action is now accessible directly from the [evaluation](/concepts/product/version/session/evaluation) detail page header dropdown, in addition to the list view context menu.
+- **Clearer error messages for test generation:** When [QUALITY test](/concepts/product/test/case) generation fails, the error message now includes the specific reason returned by the generator, replacing generic HTTP error responses with actionable guidance.
+- **Analytics radar chart fix:** The radar chart in the Analytics tab now works correctly when a specification section has fewer than 3 scored items. The view automatically switches to radial value cards with a tooltip explaining the minimum requirement.
+- **Smoother table text filters:** Text filter inputs across all dashboard tables no longer flash or revert while typing. Filter changes are debounced before syncing to the URL, reducing unnecessary API calls and eliminating the visible blink caused by intermediate re-renders.
+
+</Update>

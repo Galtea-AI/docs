@@ -34,3 +34,6 @@ user_groups = galtea.user_groups.list(
 <ResponseField name="limit" type="int" default="10000" optional>
   Maximum number of groups to return in a single request.
 </ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the user group(s) to retrieve.
+</ResponseField>
