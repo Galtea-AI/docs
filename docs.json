@@ -273,6 +273,7 @@
                       "sdk/api/test/list",
                       "sdk/api/test/get",
                       "sdk/api/test/get-by-name",
+                      "sdk/api/test/update",
                       "sdk/api/test/delete",
                       "sdk/api/test/download"
                     ]

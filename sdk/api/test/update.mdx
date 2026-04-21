@@ -1,0 +1,84 @@
+---
+title: 'Update Test'
+sidebarTitle: "Update"
+description: "Update the name or metadata of an existing test"
+---
+
+## Overview
+
+The `update()` method allows you to modify an existing test after it has been created.
+
+<Warning>
+  Only `name` and `metadata` are mutable post-creation. All other fields
+  (`type`, `variants`, `strategies`, `uri`, `ground_truth_uri`,
+  `data_catalog_uri`, `source_test_id`, `max_test_cases`, etc.) are fixed
+  for the lifetime of the test because they drive generation, credit
+  accounting, and the stored test-case shape. Sending any of them in an
+  update returns a `400`.
+</Warning>
+
+## Parameters
+
+<ResponseField name="test_id" type="string" required>
+  The ID of the test to update.
+</ResponseField>
+
+<ResponseField name="name" type="string" optional>
+  New test name. Must be a non-empty string; leading and trailing whitespace are trimmed server-side.
+</ResponseField>
+
+<ResponseField name="metadata" type="Any" optional>
+  Arbitrary JSON-serializable metadata for tracking purposes. Replaces the existing metadata wholesale. Pass `None` to clear.
+</ResponseField>
+
+## Returns
+
+Returns the updated `Test` object.
+
+## Example
+
+```python
+renamed = galtea.tests.update(
+    test_id=test.id,
+    name=f"renamed-test-{run_identifier}",
+)
+```
+
+## Use Cases
+
+### Replacing Metadata
+
+Overwrite the metadata object on an existing test:
+
+```python
+with_new_metadata = galtea.tests.update(
+    test_id=test.id,
+    metadata={"owner": "platform-team", "ticket": "QA-200", "priority": "high"},
+)
+```
+
+### Updating Name and Metadata Together
+
+```python
+updated = galtea.tests.update(
+    test_id=test.id,
+    name=f"final-test-{run_identifier}",
+    metadata={"owner": "platform-team", "archived": True},
+)
+```
+
+## Notes
+
+<Note>
+  All fields except `test_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>
+
+## Related Methods
+
+- [Create Test](/sdk/api/test/create) - Create a new test
+- [Get Test](/sdk/api/test/get) - Retrieve a test by ID
+- [List Tests](/sdk/api/test/list) - List tests for a product
+- [Delete Test](/sdk/api/test/delete) - Soft-delete a test
