@@ -118,6 +118,7 @@
           {
             "group": "Integrations",
             "pages": [
+              "sdk/integrations/agent-skill",
               {
                 "group": "Langfuse",
                 "icon": "eye",
