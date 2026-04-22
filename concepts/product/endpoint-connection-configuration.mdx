@@ -15,8 +15,8 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 
 | Placeholder | Description |
 |-------------|-------------|
-| `{{ input.<field> }}` | The test case input (required) |
-| `{{ context.<field> }}` | The test case context |
+| `{{ input.<field> }}` | Access a field from the test case input, e.g. `{{ input.user_message }}` (required) |
+| `{{ context.<field> }}` | Access a field from the test case context, e.g. `{{ context.topic }}` |
 | `{{ session_id }}` | The external session ID (if available) |
 | `{{ test_case_id }}` | The test case ID |
 | `{{ test_id }}` | The test ID |
