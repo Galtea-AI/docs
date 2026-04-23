@@ -1,7 +1,7 @@
 ---
 title: "Structured Input Template Syntax"
 sidebarTitle: "Template Syntax"
-description: "Reference for the {{ input.field_name }} and {{ context.field_name }} template syntax used in endpoint connection input templates."
+description: "Reference for the {{ input.field_name }}, {{ context.field_name }}, {{ language_code }}, and {{ language_name }} template syntax used in endpoint connection input templates."
 icon: "brackets-curly"
 ---
 
@@ -42,6 +42,8 @@ For example, `{{ context.topic }}`, `{{ context.system_prompt }}`, or `{{ contex
 | `{{ test_case_id }}` | The current test case ID |
 | `{{ test_id }}` | The current test ID |
 | `{{ inference_result_id }}` | The inference result ID for this turn (also sent as the `X-Galtea-Inference-Id` header for [trace collection](/sdk/tutorials/tracing-agent-operations)) |
+| `{{ language_code }}` | ISO 639-1 language code from the test case (e.g. `"es"`). Empty string when the test case has no language set. |
+| `{{ language_name }}` | Full English name of the test case language (e.g. `"Spanish"`). Empty string when the test case has no language set. |
 | `past_turns` | Conversation history loop collection. Use with `{% for turn in past_turns %}`. See [Conversation History](#conversation-history). |
 | Any metadata key | Fields extracted via [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) and stored in session metadata (e.g., `{{ tenant_id }}`) |
 
@@ -91,19 +93,34 @@ Context fields provide test case-specific information alongside the input. A com
 }
 ```
 
-### Input with Language Information
+### Built-in Language Variables
 
-If your test cases include a language field in their input schema, you can use it directly in the template:
+Every test case stores its language. Use the built-in `{{ language_code }}` and `{{ language_name }}` variables to pass language information to your endpoint without defining language in the input schema:
+
+```jinja2
+{
+  "message": "{{ input.user_message }}",
+  "language": "{{ language_code }}"
+}
+```
+
+Or use the full language name:
 
 ```jinja2
 {
   "model": "gpt-4",
   "messages": [
-    {"role": "system", "content": "Always respond in {{ input.language }}."},
+    {"role": "system", "content": "Always respond in {{ language_name }}."},
     {"role": "user", "content": "{{ input.user_message }}"}
   ]
 }
 ```
+
+Both resolve to empty strings for language-agnostic test cases (those with no language set).
+
+<Tip>
+  If your input schema already has a `language` field, it still works via `{{ input.language }}`. The built-in `{{ language_code }}` and `{{ language_name }}` variables are an additional convenience that avoids defining language in the schema.
+</Tip>
 
 ### Conversation History
 
@@ -176,6 +193,7 @@ When editing an input template in the Galtea dashboard, a **placeholder toolbar*
 | **Session** | `{{ session_id }}`, `{{ galtea_session_id }}` |
 | **Inference** | `{{ inference_result_id }}` |
 | **Test** | `{{ test_case_id }}`, `{{ test_id }}` |
+| **Language** | `{{ language_code }}`, `{{ language_name }}` |
 
 Clicking a pill inserts the corresponding syntax at the cursor position in the editor.
 
