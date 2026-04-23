@@ -220,6 +220,7 @@
                 "pages": [
                   "concepts/product/endpoint-connection",
                   "concepts/product/endpoint-connection-configuration",
+                  "concepts/product/endpoint-connection-template-syntax",
                   {
                     "group": "SDK",
                     "icon": "code",

@@ -11,6 +11,10 @@ This page covers the detailed configuration for [Endpoint Connection](/concepts/
 
 The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template string that defines how Galtea formats the request body before sending it to your endpoint.
 
+<Tip>
+  For a detailed guide on structured input syntax (`{{ input.field_name }}`), context fields, JSON escaping, the placeholder toolbar, and missing field behavior, see the [Structured Input Template Syntax](/concepts/product/endpoint-connection-template-syntax) reference.
+</Tip>
+
 ### Available Placeholders
 
 | Placeholder | Description |
@@ -223,6 +227,9 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea wil
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Structured Input Template Syntax" icon="brackets-curly" href="/concepts/product/endpoint-connection-template-syntax">
+    Deep dive into `{{ input.field_name }}` and `{{ context.field_name }}` placeholder syntax, JSON escaping, and missing field behavior.
+  </Card>
   <Card title="Endpoint Connection Overview" icon="plug" href="/concepts/product/endpoint-connection">
     What endpoint connections are and how to create one.
   </Card>

@@ -1,0 +1,229 @@
+---
+title: "Structured Input Template Syntax"
+sidebarTitle: "Template Syntax"
+description: "Reference for the {{ input.field_name }} and {{ context.field_name }} template syntax used in endpoint connection input templates."
+icon: "brackets-curly"
+---
+
+Endpoint connection [input templates](/concepts/product/endpoint-connection-configuration#input-template) use a template syntax based on [Nunjucks](https://mozilla.github.io/nunjucks/) (compatible with Jinja2) to inject test case data into request bodies. This page covers the structured input placeholder syntax, JSON escaping behavior, the placeholder toolbar in the dashboard, and how missing fields are handled.
+
+## Structured Input Placeholders
+
+For CONVERSATION-type endpoint connections, the input template must reference at least one field from the test case's structured input using **property access syntax**:
+
+```
+{{ input.field_name }}
+```
+
+For example, if your test case input has fields `user_message` and `customer_id`, you reference them as `{{ input.user_message }}` and `{{ input.customer_id }}`.
+
+<Warning>
+  Bare `{{ input }}` and `{{ context }}` are **not valid** and will be rejected by validation. Always use property access syntax: `{{ input.field_name }}` or `{{ context.field_name }}`.
+</Warning>
+
+### Context Fields
+
+Test cases can include structured context alongside the input. Access context fields with the same property access syntax:
+
+```
+{{ context.field_name }}
+```
+
+For example, `{{ context.topic }}`, `{{ context.system_prompt }}`, or `{{ context.language }}`.
+
+## Complete Placeholder Reference
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{{ input.<field> }}` | Access a field from the test case input (required). Example: `{{ input.user_message }}` |
+| `{{ context.<field> }}` | Access a field from the test case context. Example: `{{ context.topic }}` |
+| `{{ session_id }}` | The external session ID (if available) |
+| `{{ galtea_session_id }}` | Galtea's internal session identifier |
+| `{{ test_case_id }}` | The current test case ID |
+| `{{ test_id }}` | The current test ID |
+| `{{ inference_result_id }}` | The inference result ID for this turn (also sent as the `X-Galtea-Inference-Id` header for [trace collection](/sdk/tutorials/tracing-agent-operations)) |
+| `past_turns` | Conversation history loop collection. Use with `{% for turn in past_turns %}`. See [Conversation History](#conversation-history). |
+| Any metadata key | Fields extracted via [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) and stored in session metadata (e.g., `{{ tenant_id }}`) |
+
+## Examples
+
+### Single Input Field
+
+The simplest template sends a single user message to an OpenAI-compatible endpoint:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+### Multiple Input Fields
+
+When your test cases have several input fields, reference each one by name:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a customer support agent."},
+    {"role": "user", "content": "Customer ID: {{ input.customer_id }}. Question: {{ input.question }}"}
+  ],
+  "metadata": {
+    "department": "{{ input.department }}"
+  }
+}
+```
+
+### Using Context Fields
+
+Context fields provide test case-specific information alongside the input. A common use case is passing a system prompt or topic:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "{{ context.system_prompt }}"},
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+### Input with Language Information
+
+If your test cases include a language field in their input schema, you can use it directly in the template:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "Always respond in {{ input.language }}."},
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+### Conversation History
+
+Use `{% for turn in past_turns %}` to include previous conversation turns:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "{{ context.system_prompt }}"},
+    {% for turn in past_turns %}
+    {"role": "user", "content": "{{ turn.input }}"},
+    {"role": "assistant", "content": "{{ turn.output }}"},
+    {% endfor %}
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+Each turn exposes two properties:
+- `{{ turn.input }}` - the previous user input
+- `{{ turn.output }}` - the previous assistant response
+
+<Note>
+  When a loop is the **last item** in a JSON array, use `{% if not loop.last %},{% endif %}` after each iteration to prevent a trailing comma. When there's content **after** the loop (like the final user message above), this pattern is not required.
+</Note>
+
+### Anthropic Claude Format
+
+```jinja2
+{
+  "model": "claude-3-opus-20240229",
+  "max_tokens": 1024,
+  "messages": [
+    {% for turn in past_turns %}
+    {"role": "user", "content": "{{ turn.input }}"},
+    {"role": "assistant", "content": "{{ turn.output }}"},
+    {% endfor %}
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+## JSON Escaping
+
+String values in the template context are **automatically JSON-escaped** before rendering. This means that test case inputs containing `"`, `\`, or newline characters produce valid JSON bodies without any extra work on your part. You still need to provide the surrounding double quotes in your template for string fields (e.g., `"{{ input.field_name }}"`), since the escaping only applies to the content, not the JSON structure.
+
+For example, if a test case input field contains:
+
+```
+She said "hello" and pressed Enter
+```
+
+The template engine escapes it to:
+
+```
+She said \"hello\" and pressed Enter
+```
+
+This ensures that the rendered request body is always valid JSON, even when inputs contain special characters.
+
+## Placeholder Toolbar
+
+When editing an input template in the Galtea dashboard, a **placeholder toolbar** appears above the editor. It shows clickable pills grouped by category:
+
+| Category | Placeholders |
+|----------|-------------|
+| **Basic** | `{{ input.user_message }}`, `{{ context.value }}` |
+| **History** | `past_turns` loop, `{{ turn.input }}`, `{{ turn.output }}` |
+| **Session** | `{{ session_id }}`, `{{ galtea_session_id }}` |
+| **Inference** | `{{ inference_result_id }}` |
+| **Test** | `{{ test_case_id }}`, `{{ test_id }}` |
+
+Clicking a pill inserts the corresponding syntax at the cursor position in the editor.
+
+<Tip>
+  The placeholder toolbar auto-generates pills from the available placeholders. If your test cases use custom input field names (e.g., `query` instead of `user_message`), you can type `{{ input.query }}` directly in the editor. The toolbar shows common defaults, but any field name from your test case input schema is valid.
+</Tip>
+
+## Missing Fields
+
+When a template references a field that does not exist in the test case, Nunjucks renders the undefined placeholder as an **empty string**. This can produce invalid JSON.
+
+For example, if `{{ input.customer_id }}` is referenced but the test case input does not have a `customer_id` field:
+
+```jinja2
+{
+  "customer_id": "{{ input.customer_id }}",
+  "message": "{{ input.user_message }}"
+}
+```
+
+Renders to:
+
+```json
+{
+  "customer_id": "",
+  "message": "What is the capital of France?"
+}
+```
+
+When a missing field produces structurally invalid JSON (e.g., a numeric field rendering as empty), the endpoint typically rejects the malformed request (e.g., returns a 400 error), causing the inference result status to be marked as **FAILED**.
+
+<Warning>
+  Ensure that all placeholders in your template correspond to fields that exist in your test case input and context schemas. Undefined fields silently render as empty strings.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Templates & Mapping" icon="code" href="/concepts/product/endpoint-connection-configuration">
+    Full reference for Input Templates, Output Mapping, custom headers, and retry configuration.
+  </Card>
+  <Card title="Endpoint Connection Overview" icon="plug" href="/concepts/product/endpoint-connection">
+    What endpoint connections are and how to create one.
+  </Card>
+  <Card title="Test Cases" icon="list" href="/concepts/product/test/case">
+    Understand the structure of test case inputs and context.
+  </Card>
+  <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
+    Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+</CardGroup>
