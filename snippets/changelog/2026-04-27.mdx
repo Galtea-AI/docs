@@ -1,0 +1,31 @@
+<Update label="2026-04-27" description="Metric Versioning with Evaluation Replay, Galtea Agent Skill, and More">
+
+## Metric Versioning with Evaluation Replay
+
+[Metrics](/concepts/metric) now support versioning. The new "New Revision" action on any metric opens the creation form pre-filled with the source metric's name, description, tags, evaluation type, judge prompt, [evaluation parameters](/concepts/metric/evaluation-parameters), evaluator model, and user groups. Revised metrics stay linked to their predecessor through a parent-child lineage, so you can trace the evolution of a metric over time. When a revision is created, only the direct parent is marked as legacy, allowing parallel branches from the same source.
+
+After saving a revision, you are prompted to replay historical [evaluations](/concepts/product/version/session/evaluation) from the metric family against the new version. The replay dialog lists your products, shows how many previous evaluations are eligible per product, and lets you select which ones to re-run. Evaluations that have already been replayed are automatically deduplicated.
+
+The metric creation flow now surfaces all three modes upfront: Blank, From Template, and Metric Revision, each with a description of what it does. "From Template" (previously called "Duplicate") creates an independent copy with no lineage link, while "Metric Revision" creates a linked successor.
+
+## Galtea Agent Skill
+
+The [Galtea Agent Skill](/sdk/integrations/agent-skill) is now available as an open-source [Agent Skill](https://github.com/anthropics/skills) for AI coding assistants. Once installed, tools like Claude Code, Cursor, and Windsurf can authenticate against Galtea, manage [products](/concepts/product), run [evaluations](/concepts/product/version/session/evaluation), inspect [sessions](/concepts/product/version/session) and [traces](/concepts/product/version/session/trace), and follow validated workflows without you having to explain Galtea first.
+
+Install it by pointing your coding agent to the [`Galtea-AI/skills`](https://github.com/Galtea-AI/skills) repository, or use the [skills CLI](https://github.com/anthropics/skills): `npx skills add Galtea-AI/skills --skill "galtea"`.
+
+## Run Evaluations from Specifications
+
+You can now run [evaluations](/concepts/product/version/session/evaluation) directly from a [specification](/concepts/product/specification) page. The action is available both on the specification detail page header and as a row action on the specification list. The dialog shows a version dropdown (filtered to versions with an [endpoint connection](/concepts/product/endpoint-connection), latest pre-selected) and displays the specification's linked tests and metrics as read-only badges, so you can verify the evaluation scope at a glance before launching.
+
+The action is gated on the specification having at least one linked metric and one linked test. When either is missing, the button is disabled with a tooltip explaining the requirement.
+
+## Language Variables in Input Templates
+
+Two new built-in template variables are available in [endpoint connection](/concepts/product/endpoint-connection) input templates: `{{ language_code }}` resolves to the test case's ISO 639-1 code (e.g. `es`), and `{{ language_name }}` resolves to the full language name (e.g. `Spanish`). Both resolve to an empty string when the test case has no language set, keeping templates compatible with language-agnostic tests. The placeholder toolbar in the dashboard includes both variables for easy insertion. For the full template syntax reference, see [Structured Input Template Syntax](/concepts/product/endpoint-connection-template-syntax).
+
+## Reliable Trace-Dependent Evaluations
+
+Evaluations that depend on [trace](/concepts/product/version/session/trace) data (`TRACES` or `TOOLS_USED` [parameters](/concepts/metric/evaluation-parameters)) now wait for traces to be ingested before running. Previously, these evaluations could execute against empty trace data when traces had not yet arrived. The platform now defers them with automatic retries, and if traces do not arrive within the retry window, the evaluations land as `SKIPPED` with an actionable reason explaining what was missing. Sessions already marked as completed are detected immediately, avoiding unnecessary waiting. No credits are consumed for skipped evaluations.
+
+</Update>

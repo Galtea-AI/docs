@@ -102,13 +102,17 @@ flowchart TD
     P[Product] --> Spec[Specifications]
     P --> V[Version]
     P --> T[Test]
+    P --> EC[Endpoint Connection]
+    V -.->|uses| Mdl[Model]
     Spec -.->|links to| M[Metrics]
     Spec -.->|auto-derives| T
     T --> TC[Test Cases]
     V --> S[Session]
     TC -.->|linked to| S
     S --> IR[Inference Results]
-    IR --> E[Evaluations]
+    IR --> Tr[Traces]
+    IR -->|per turn| E[Evaluations]
+    S -->|per conversation| E
     M -.->|scores| E
 ```
 

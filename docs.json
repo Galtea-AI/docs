@@ -118,6 +118,7 @@
           {
             "group": "Integrations",
             "pages": [
+              "sdk/integrations/agent-skill",
               {
                 "group": "Langfuse",
                 "icon": "eye",
@@ -219,6 +220,7 @@
                 "pages": [
                   "concepts/product/endpoint-connection",
                   "concepts/product/endpoint-connection-configuration",
+                  "concepts/product/endpoint-connection-template-syntax",
                   {
                     "group": "SDK",
                     "icon": "code",
@@ -273,6 +275,7 @@
                       "sdk/api/test/list",
                       "sdk/api/test/get",
                       "sdk/api/test/get-by-name",
+                      "sdk/api/test/update",
                       "sdk/api/test/delete",
                       "sdk/api/test/download"
                     ]
