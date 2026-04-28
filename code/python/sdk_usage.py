@@ -16,7 +16,7 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create a product for this demo
+# Register a product for this demo
 product_id = create_test_product(
     galtea,
     name="SDK Usage Demo " + run_identifier,

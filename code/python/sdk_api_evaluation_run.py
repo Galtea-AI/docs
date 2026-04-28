@@ -9,7 +9,7 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create product, version, test, and specification for the demo
+# Register product, then create version, test, and specification for the demo
 product_id = create_test_product(
     galtea,
     name=f"docs-eval-run-{run_identifier}",

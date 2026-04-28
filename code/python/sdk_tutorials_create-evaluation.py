@@ -8,7 +8,7 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# Create product via helper (SDK doesn't expose products.create)
+# Register product via helper (SDK doesn't expose products.create)
 product_id: str = create_test_product(
     galtea,
     name=f"docs-create-eval-product-{run_identifier}",
