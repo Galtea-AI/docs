@@ -15,7 +15,7 @@ run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
 galtea_client = Galtea(api_key="YOUR_API_KEY")
 
-# Create a product for this demo
+# Register a product for this demo
 product_id = create_test_product(galtea_client, name="Simulation Demo " + run_identifier)
 version = galtea_client.versions.create(
     name="v1.0-" + run_identifier,

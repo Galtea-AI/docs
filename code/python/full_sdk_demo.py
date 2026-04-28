@@ -23,7 +23,7 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 # @end galtea_client
 
 
-# Always create a fresh product to avoid cross-contamination with other scripts
+# Always register a fresh product to avoid cross-contamination with other scripts
 _demo_product_id = create_test_product(
     galtea,
     name="Financial Assistant " + run_identifier,

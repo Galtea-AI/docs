@@ -34,7 +34,7 @@ products = galtea.products.list(limit=100)
 print(f"Remaining products after cleanup: {len(products)}")
 # === End cleanup code ===
 
-# Create a product for this demo
+# Register a product for this demo
 _created_product_id = create_test_product(
     galtea,
     name="Financial Assistant " + run_identifier,

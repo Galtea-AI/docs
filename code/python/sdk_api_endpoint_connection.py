@@ -12,7 +12,7 @@ run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
-# Setup: create a product for this demo
+# Setup: register a product for this demo
 product_id = create_test_product(
     galtea,
     name="Endpoint Connection Demo " + run_identifier,

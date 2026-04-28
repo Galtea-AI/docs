@@ -52,7 +52,7 @@ def risky_call(self, data: str) -> str:
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 galtea = Galtea(api_key="YOUR_API_KEY")
 
-# Create a product for this demo
+# Register a product for this demo
 product_id = create_test_product(galtea, name="Trace Concepts Demo " + run_identifier)
 
 version = galtea.versions.create(
