@@ -172,7 +172,7 @@ Behavior tests have a specific structure designed to enable realistic conversati
 </ResponseField>
 
 <ResponseField name="input" type="Text" optional>
-  The first message the simulated user sends to start the conversation. If not provided, the system will generate an appropriate opening based on the goal and persona.
+  The first message the simulated user sends to start the conversation. If not provided, the system will generate an appropriate opening based on the goal and persona. Accepts a plain string or a JSON object for structured inputs (e.g. `{"user_message": "I need to book a flight", "channel": "web"}`). When using structured JSON, the `user_message` field becomes the message content and additional fields are accessible via `{{ input.field_name }}` in [endpoint templates](/concepts/product/endpoint-connection-configuration) and via `messages[0].metadata` in the [SDK](/sdk/api/agent/input).
   **Example**: "Hello, I need to book a flight."
 </ResponseField>
 

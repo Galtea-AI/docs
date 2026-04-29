@@ -211,6 +211,12 @@ def my_agent(messages: list[dict]) -> str:
 # @start define_agent_structured_function
 def my_agent(input_data: AgentInput) -> AgentResponse:
     user_message = input_data.last_user_message_str()
+
+    # Access structured input fields from the first user message's metadata
+    # (e.g. when test case input is {"user_message": "hello", "chat_type": "support"})
+    first_msg = input_data.messages[0] if input_data.messages else None
+    chat_type = first_msg.metadata.get("chat_type") if first_msg and first_msg.metadata else None
+
     # In a real scenario, call your model here
     model_output = f"Your model output to: {user_message}"
     # Return AgentResponse with optional usage/cost tracking

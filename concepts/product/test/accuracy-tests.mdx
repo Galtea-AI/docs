@@ -137,8 +137,15 @@ Accuracy tests have a specific structure designed to facilitate effective evalua
 </ResponseField>
 
 <ResponseField name="input" type="Text" required>
-  The question or prompt that the product is expected to respond to.
-  **Example**: "What are three key provisions of the GDPR related to data subject rights?"
+  The question or prompt that the product is expected to respond to. This can be a plain string or a JSON object for structured inputs.
+
+  **Plain string example**: `"What are three key provisions of the GDPR related to data subject rights?"`
+
+  **Structured JSON example**: `{"user_message": "What are the GDPR provisions?", "domain": "legal", "language": "en"}`
+
+  When placing structured JSON in a CSV file, wrap the entire value in double quotes and escape internal quotes by doubling them: `"{""user_message"": ""What are the GDPR provisions?"", ""domain"": ""legal"", ""language"": ""en""}"`
+
+  When using structured JSON input, the `user_message` field is used as the primary message content. Additional fields are accessible via `{{ input.field_name }}` in [endpoint templates](/concepts/product/endpoint-connection-configuration) and via `TestCase.input_data` / `messages[0].metadata` in the [SDK](/sdk/api/agent/input).
 </ResponseField>
 
 <ResponseField name="expected_output" type="Text">

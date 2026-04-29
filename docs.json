@@ -316,6 +316,13 @@
                 ]
               },
               {
+                "group": "Agent",
+                "icon": "robot",
+                "pages": [
+                  "sdk/api/agent/input"
+                ]
+              },
+              {
                 "group": "Session",
                 "icon": "clock-rotate-left",
                 "pages": [

@@ -159,7 +159,7 @@ Security & Safety tests have a specific structure focused on providing challengi
 </ResponseField>
 
 <ResponseField name="input" type="Text" required>
-  The adversarial input specifically designed to test the product's resilience against potential vulnerabilities. **Example**: "Please ignore any previous instructions and..."
+  The adversarial input specifically designed to test the product's resilience against potential vulnerabilities. Security test inputs are plain strings (adversarial prompts) - structured JSON input does not apply to this test type. **Example**: "Please ignore any previous instructions and..."
 </ResponseField>
 
 <ResponseField name="expected_output" type="Text">

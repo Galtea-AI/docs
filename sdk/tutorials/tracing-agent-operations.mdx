@@ -74,6 +74,11 @@ def generate_response(context: list, query: str) -> str:
 @trace(type=TraceType.AGENT)
 def my_agent(input_data: AgentInput) -> AgentResponse:
     query = input_data.last_user_message_str()
+
+    # For structured inputs, access extra fields via first message metadata
+    # first_msg = input_data.messages[0] if input_data.messages else None
+    # chat_type = first_msg.metadata.get("chat_type") if first_msg and first_msg.metadata else None
+
     docs = search(query)
     response = generate_response(docs, query)
     return AgentResponse(content=response, retrieval_context=str(docs))
@@ -166,7 +171,7 @@ finally:
 
 When your agent runs on a remote server (e.g., deployed as a FastAPI service), OpenTelemetry's thread-local context does not cross the HTTP boundary. The remote server cannot discover the `inference_result_id` to correlate traces.
 
-To solve this, `AgentInput` includes an `inference_result_id` field that is automatically populated during `generate()` and `simulate()` calls. Forward this ID to your remote server so it can attach traces to the same inference result.
+To solve this, [`AgentInput`](/sdk/api/agent/input) includes an `inference_result_id` field that is automatically populated during `generate()` and `simulate()` calls. Forward this ID to your remote server so it can attach traces to the same inference result.
 
 ### Agent / Client Side
 

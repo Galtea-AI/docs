@@ -94,6 +94,11 @@ def generate_response(context: list, query: str) -> str:
 @trace(type=TraceType.AGENT)
 def my_agent(input_data: AgentInput) -> AgentResponse:
     query = input_data.last_user_message_str()
+
+    # For structured inputs, access extra fields via first message metadata
+    # first_msg = input_data.messages[0] if input_data.messages else None
+    # chat_type = first_msg.metadata.get("chat_type") if first_msg and first_msg.metadata else None
+
     docs = search(query)
     response = generate_response(docs, query)
     return AgentResponse(content=response, retrieval_context=str(docs))
