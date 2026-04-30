@@ -1,0 +1,57 @@
+# Docs snippets executed against the mocked CI stack (e2e-mocked.yml).
+#
+# Each line is a filename under docs/code/python/ — one snippet per line.
+# Blank lines and lines starting with '#' are ignored.
+#
+# Add a snippet here only when it can run end-to-end against the mocked
+# stack (api + mocks-server + fake-llm + minio + mailhog) using the
+# docs-owner identity (OWNER role, isolated org). The check is blocking
+# on push to main, so only commit a snippet here once you have run it
+# locally end-to-end against this stack.
+#
+# Required test fixtures live under docs/path/to/ (accuracy_test.csv,
+# behavior_test.csv, security_test.csv, knowledge.md). Snippets that
+# upload "path/to/<file>" rely on these committed stubs — keep them in
+# sync with the schema (see api/src/application/services/testCaseService.ts
+# for the BEHAVIOR/SCENARIOS column requirements).
+#
+# Excluded (kept out intentionally):
+#   - sdk_integrations_langfuse.py — gated on a LANGFUSE env var so it
+#     would always SKIP in CI and add no signal.
+#   - full_sdk_demo.py — the storage-download flow returns a presigned
+#     MinIO URL templated with a literal `{Key+}` against the mocked
+#     stack, so the download step always 403s.
+#   - sdk_tutorials_quickstart.py — long-polls behavior-test case
+#     generation that the mocked generator does not produce.
+
+concepts_metric.py
+concepts_product_version_session_trace.py
+sdk_api_endpoint_connection.py
+sdk_api_evaluation_create.py
+sdk_api_evaluation_create_advanced_self_hosted.py
+sdk_api_evaluation_create_single_turn_advanced_self_hosted.py
+sdk_api_evaluation_run.py
+sdk_api_evaluation_wait_for.py
+sdk_api_inference-result_generate.py
+sdk_api_inference-result_update.py
+sdk_api_metric_create.py
+sdk_api_session_update.py
+sdk_api_specification.py
+sdk_api_test_create.py
+sdk_api_test_update.py
+sdk_api_trace_examples.py
+sdk_api_user_group.py
+sdk_installation.py
+sdk_integrations_github-actions.py
+sdk_tutorials_create-evaluation.py
+sdk_tutorials_create-evaluation-with-custom-scores.py
+sdk_tutorials_create-test.py
+sdk_tutorials_direct-inferences-and-evaluations-from-platform.py
+sdk_tutorials_evaluating-conversations.py
+sdk_tutorials_how-to-create-your-llm-as-a-judge-prompt.py
+sdk_tutorials_human-evaluation.py
+sdk_tutorials_monitor-production-responses-to-user-queries.py
+sdk_tutorials_simulating-conversations.py
+sdk_tutorials_specifications.py
+sdk_tutorials_tracing-agent-operations.py
+sdk_usage.py
