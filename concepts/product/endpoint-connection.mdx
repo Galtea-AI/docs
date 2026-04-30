@@ -4,6 +4,8 @@ sidebarTitle: "Overview"
 description: "A reusable connection to an external endpoint that defines how to connect to your AI system's API."
 ---
 
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+
 ## What is an Endpoint Connection?
 
 An Endpoint Connection tells Galtea how to call your AI system's API. You configure the URL, authentication, request format, and response mapping once, and Galtea uses it to run evaluations against your endpoint automatically.
@@ -176,6 +178,7 @@ In this setup:
 ## Related
 
 <CardGroup cols={2}>
+  <ConceptsOverviewCard />
   <Card title="Templates & Mapping" icon="code" href="/concepts/product/endpoint-connection-configuration">
     Full reference for Input Templates, Output Mapping, state management, and retry configuration.
   </Card>

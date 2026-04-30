@@ -19,6 +19,18 @@ if importlib.util.find_spec("langfuse") is None:
         " (optional dependency — install with: pip install 'galtea[langfuse]')"
     )
 
+# -- Module-level stubs (not embedded; only here so Pylance is happy in
+# sections that reference async retrieval/generation as if they exist) ------
+
+
+async def retrieve_async(query: str) -> list[str]:
+    return ["doc1", "doc2"]
+
+
+async def generate_async(query: str, context: list[str]) -> str:
+    return "response"
+
+
 # -- Below: sections extracted by @embed in the MDX page --------------------
 
 from galtea import Galtea
@@ -133,6 +145,27 @@ result = run_agent("What is gestational diabetes?")
 # With Galtea correlation (traces go to both Langfuse and Galtea):
 result = run_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
 # @end api_observe_example
+
+# @start observe_async_example
+import asyncio
+
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="my-async-agent", as_type="agent")
+async def run_async_agent(user_input: str) -> str:
+    # Awaitable retrieval and generation steps inside the agent.
+    context = await retrieve_async(user_input)
+    return await generate_async(user_input, context)
+
+
+# `@observe` detects the wrapped function is `async def` and returns an async
+# wrapper that awaits the coroutine before clearing context. Call it like any
+# other coroutine:
+result = asyncio.run(
+    run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
+)
+# @end observe_async_example
 
 # @start api_start_observation_example
 from galtea.integrations.langfuse import start_as_current_observation

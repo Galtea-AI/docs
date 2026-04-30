@@ -146,6 +146,12 @@
         "tab": "Concepts",
         "groups": [
           {
+            "group": "Introduction",
+            "pages": [
+              "concepts/overview"
+            ]
+          },
+          {
             "group": "SDK",
             "pages": [
               "sdk/installation",
@@ -533,6 +539,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/concepts/product/how-everything-connects",
+      "destination": "/concepts/overview"
+    },
     {
       "source": "/concepts/product/test/quality-tests",
       "destination": "/concepts/product/test/accuracy-tests"

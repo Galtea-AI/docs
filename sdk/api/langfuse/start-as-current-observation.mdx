@@ -24,6 +24,10 @@ with start_as_current_observation(
     span.update(output=result)
 ```
 
+<Note>
+  This is a synchronous context manager. Inside `async def` code, use plain `with` (not `async with`); `async with` raises `TypeError` because the underlying generator does not implement the async context manager protocol. For async agents, prefer the [`@observe`](/sdk/api/langfuse/observe) decorator.
+</Note>
+
 ## Parameters
 
 <ResponseField name="inference_result_id" type="str" optional>

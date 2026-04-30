@@ -4,6 +4,7 @@ description: "Evaluate, test, and monitor your AI products with Galtea."
 icon: "play"
 ---
 
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import ProductCard from '/snippets/cards/product-card.mdx';
 import SpecificationCard from '/snippets/cards/specification-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
@@ -63,17 +64,21 @@ You can interact with Galtea through multiple channels:
   <Card title="Python SDK" icon="python" href="/sdk/installation">
     Seamlessly integrate our services using the Python SDK.
   </Card>
+  <Card title="Agent Skill" icon="robot" href="/sdk/integrations/agent-skill">
+    Let Claude Code, Cursor, and other AI coding assistants drive Galtea on your behalf.
+  </Card>
+  <Card title="REST API" icon="code" href="/api-reference">Explore the full API reference — every endpoint, parameter, and response schema.</Card>
   <Card title="GitHub Actions" icon="github" href="/sdk/integrations/github-actions">
     Automate your workflows by integrating with GitHub Actions.
   </Card>
-  <Card title="REST API" icon="code" href="/api-reference/health/health-check">Explore the full API reference — every endpoint, parameter, and response schema.</Card>
 </CardGroup>
 
 ## Core Concepts
 
-Galtea is built around several key concepts that work together to provide comprehensive evaluation of AI products:
+Galtea is built around several key concepts that work together to provide comprehensive evaluation of AI products. For a diagram of how they all connect, start with the [Concepts overview](/concepts/overview).
 
 <CardGroup cols={3}>
+  <ConceptsOverviewCard />
   <ProductCard />
   <SpecificationCard />
   <VersionCard />
