@@ -540,7 +540,7 @@
   },
   "redirects": [
     {
-      "source": "/concepts/product/how-everything-connects",
+      "source": "/concepts/product#how-everything-connects",
       "destination": "/concepts/overview"
     },
     {
