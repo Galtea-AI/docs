@@ -1,0 +1,159 @@
+---
+title: "AgentInput"
+description: "Reference for the AgentInput object received by structured agent functions and Agent.call()"
+icon: "inbox"
+---
+
+## Overview
+
+`AgentInput` is the input object your agent receives when using the **Structured** signature (`(input_data: AgentInput) -> AgentResponse`). It provides the conversation history, session context, and helper methods for accessing user messages.
+
+When a test case has structured JSON input (e.g. `{"user_message": "hello", "chat_type": "support"}`), the SDK splits it: `user_message` becomes the message content, and the remaining fields (like `chat_type`) are placed in the first user message's `metadata`.
+
+## Fields
+
+<ResponseField name="messages" type="list[ConversationMessage]" required>
+  The full conversation history up to this turn. Each `ConversationMessage` has:
+  - `role` (`str`): `"user"` or `"assistant"`
+  - `content` (`str`): The message text
+  - `retrieval_context` (`Optional[str]`): Retrieved context (for RAG agents)
+  - `metadata` (`Optional[dict[str, Any]]`): Additional fields. When the test case uses structured JSON input, non-message fields (e.g. `chat_type`, `priority`) appear here on the first user message.
+</ResponseField>
+
+<ResponseField name="session_id" type="str" required>
+  The current session identifier. Use this to maintain state in stateful agents.
+</ResponseField>
+
+<ResponseField name="context_data" type="Optional[dict[str, Any]]">
+  Structured context data from the test case. This comes from the test case's `context` / `context_data` field, not from the input. Use it to pass supplemental information like customer tier, environment, or domain context.
+</ResponseField>
+
+<ResponseField name="metadata" type="Optional[dict[str, Any]]">
+  Additional metadata for the current execution.
+</ResponseField>
+
+<ResponseField name="inference_result_id" type="Optional[str]">
+  The inference result ID for this execution. Forward this to remote agents so they can attach traces to the correct session via `set_context(inference_result_id=...)`. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
+</ResponseField>
+
+## Helper Methods
+
+<ResponseField name="last_user_message_str()" type="Optional[str]">
+  Returns the `content` of the last user message, or `None` if no user message exists. This is the simplest way to get the user's message text.
+</ResponseField>
+
+<ResponseField name="last_user_message()" type="Optional[ConversationMessage]">
+  Returns the full `ConversationMessage` object for the last user message (with `role`, `content`, `retrieval_context`, and `metadata`), or `None` if not found. Use this when you need access to the message's `metadata`.
+</ResponseField>
+
+## Basic Usage
+
+```python
+def my_basic_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
+    # Get the last user message content
+    user_message = input_data.last_user_message_str()
+
+    # Access session and context
+    session_id = input_data.session_id
+    context = input_data.context_data  # e.g. {"customer_tier": "premium"}
+
+    return galtea.AgentResponse(content=f"Response to: {user_message}")
+```
+
+## Accessing Structured Input Fields
+
+When your test case input is a JSON object (e.g. uploaded via CSV with `{"user_message": "hello", "chat_type": "support"}` in the input column), the SDK places `user_message` as the message content and remaining fields in `messages[0].metadata`:
+
+```python
+def my_structured_agent(input_data: AgentInput) -> AgentResponse:
+    # Get the last user message as a ConversationMessage object
+    last_msg = input_data.last_user_message()
+    if last_msg is None:
+        return AgentResponse(content="No user message received.")
+
+    # The message content (the user_message field from structured input)
+    user_message = last_msg.content  # e.g. "hello"
+
+    # Structured fields from the test case are in the first user message's metadata
+    first_user_msg = input_data.messages[0] if input_data.messages else None
+    if first_user_msg and first_user_msg.metadata:
+        chat_type = first_user_msg.metadata.get("chat_type")  # e.g. "support"
+        priority = first_user_msg.metadata.get("priority")  # e.g. "high"
+    else:
+        chat_type = None
+        priority = None
+
+    # Use structured fields to customize behavior
+    if chat_type == "support":
+        response = f"Support response (priority={priority}): {user_message}"
+    else:
+        response = f"General response: {user_message}"
+
+    return AgentResponse(content=response)
+```
+
+## Accessing Context Data
+
+`context_data` is separate from the input. It comes from the test case's context field and is useful for passing supplemental information that is not part of the user message:
+
+```python
+def my_context_agent(input_data: AgentInput) -> AgentResponse:
+    user_message = input_data.last_user_message_str()
+
+    # context_data comes from the test case's context field
+    if input_data.context_data:
+        customer_tier = input_data.context_data.get("customer_tier", "standard")
+    else:
+        customer_tier = "standard"
+
+    return AgentResponse(content=f"[{customer_tier}] Response to: {user_message}")
+```
+
+## Structured Input on TestCase and InferenceResult
+
+Outside of `AgentInput`, the `TestCase` and `InferenceResult` models provide two fields for accessing input:
+
+- `.input` (`str`): The `user_message` value as a plain string
+- `.input_data` (`dict`): The full structured input object with all fields
+
+```python
+# After running generate() or in a test loop, access the full structured input:
+galtea_client = galtea.Galtea(api_key="your-api-key")
+test_case = galtea_client.test_cases.get(test_case_id="tc_123")
+
+# .input gives the user_message as a plain string
+print(test_case.input)  # "hello"
+
+# .input_data gives the full structured dict
+print(test_case.input_data)  # {"user_message": "hello", "chat_type": "support"}
+
+# Same pattern for inference results:
+inference_result = galtea_client.inference_results.get(inference_result_id="ir_456")
+print(inference_result.input)  # "hello"
+print(inference_result.input_data)  # {"user_message": "hello", "chat_type": "support"}
+```
+
+## How Structured Input Flows Through the System
+
+1. **Test case CSV**: You provide JSON in the `input` column: `{"user_message": "hello", "chat_type": "support"}`
+2. **TestCase model**: `.input` = `"hello"`, `.input_data` = `{"user_message": "hello", "chat_type": "support"}`
+3. **Endpoint templates**: Use `{{ input.user_message }}` or `{{ input.chat_type }}` to access individual fields, or `{{ input }}` for the full message
+4. **AgentInput (SDK)**: `messages[0].content` = `"hello"`, `messages[0].metadata` = `{"chat_type": "support"}`
+5. **InferenceResult**: `.input` = `"hello"`, `.input_data` = `{"user_message": "hello", "chat_type": "support"}`
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Simulating Conversations" icon="comments" href="/sdk/tutorials/simulating-conversations">
+    Multi-turn conversation simulation tutorial.
+  </Card>
+  <Card title="Generate Inference Result" icon="play" href="/sdk/api/inference-result/generate">
+    Single-turn agent execution with automatic trace collection.
+  </Card>
+  <Card title="Templates & Mapping" icon="code" href="/concepts/product/endpoint-connection-configuration">
+    Endpoint template syntax including `{{ input.field_name }}`.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Capture internal operations and forward inference_result_id to remote agents.
+  </Card>
+</CardGroup>

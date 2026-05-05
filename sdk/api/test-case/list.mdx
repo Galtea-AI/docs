@@ -59,6 +59,9 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
 <ResponseField name="id" type="string | list[string]" default="None">
   The ID or IDs of the test case(s) to retrieve.
 </ResponseField>
+<ResponseField name="input" type="string" optional>
+  Case-insensitive substring filter applied across the test case input JSON values. Only test cases whose input contains this substring (when cast to text) are returned.
+</ResponseField>
 <Note>
   At least one of the 2 filter parameters (`test_id`, `id`) described above must be passed to the method
 </Note>

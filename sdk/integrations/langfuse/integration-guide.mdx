@@ -105,6 +105,29 @@ Two changes: swap the Langfuse import for the Galtea wrapper and pass the ID; re
     ```
 
     The `inference_result_id` kwarg is consumed by the wrapper — it does not reach your function's parameters. The wrapper sets up the Galtea trace context before the function runs and flushes it when it returns.
+
+    `@observe` works on `async def` functions too. The wrapper detects the coroutine and awaits it before clearing context, so traces are correctly stamped with `inference_result_id`.
+
+    ```python
+    import asyncio
+
+    from galtea.integrations.langfuse import observe
+
+
+    @observe(name="my-async-agent", as_type="agent")
+    async def run_async_agent(user_input: str) -> str:
+        # Awaitable retrieval and generation steps inside the agent.
+        context = await retrieve_async(user_input)
+        return await generate_async(user_input, context)
+
+
+    # `@observe` detects the wrapped function is `async def` and returns an async
+    # wrapper that awaits the coroutine before clearing context. Call it like any
+    # other coroutine:
+    result = asyncio.run(
+        run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
+    )
+    ```
   </Tab>
   <Tab title="start_as_current_observation (context manager)">
     Only the **root** call needs the Galtea wrapper. Child observations on yielded spans stay native Langfuse — no change needed there.
@@ -133,6 +156,10 @@ Two changes: swap the Langfuse import for the Galtea wrapper and pass the ID; re
     ```
 
     The `langfuse.` client prefix is no longer needed for the root call — the wrapper calls `get_client()` internally. But keeping the client does not introduce any issues, since it is singleton and refers to the same object.
+
+    <Note>
+      `start_as_current_observation` is a synchronous context manager. Inside `async def` code, use plain `with` (not `async with`); `async with` raises `TypeError`. For async agents, prefer the `@observe` decorator.
+    </Note>
   </Tab>
   <Tab title="CallbackHandler (LangChain)">
     Swap the import and call `set_inference_result_id` before each invocation. Your existing handler initialization stays the same:

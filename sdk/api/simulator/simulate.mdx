@@ -15,7 +15,7 @@ It returns a result object from the [Conversation Simulator](/concepts/product/t
 
 ## AgentInput Fields
 
-When using the **Structured** signature (`(input_data: AgentInput) -> AgentResponse`), your function receives an `AgentInput` object with the following fields:
+When using the **Structured** signature (`(input_data: AgentInput) -> AgentResponse`), your function receives an [`AgentInput`](/sdk/api/agent/input) object with the following fields:
 
 <ResponseField name="messages" type="List[ConversationMessage]">
   The full conversation history up to this turn. Each message has `role` (`"user"` or `"assistant"`), `content`, and optional `retrieval_context` and `metadata`. When the test case has structured JSON input, non-message fields (e.g. `chat_type`, `reasoning_level`) are placed in the first user message's `metadata`.
@@ -26,7 +26,7 @@ When using the **Structured** signature (`(input_data: AgentInput) -> AgentRespo
 </ResponseField>
 
 <ResponseField name="context_data" type="Optional[dict[str, Any]]">
-  Structured context data from the test case or session. Use this to access context fields (e.g. `context_data["customer_tier"]`).
+  Structured context data from the test case associated with the current session. Use this to access context fields (e.g. `context_data["customer_tier"]`).
 </ResponseField>
 
 <ResponseField name="inference_result_id" type="Optional[str]">

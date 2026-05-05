@@ -1,0 +1,65 @@
+---
+title: 'Usage'
+description: "Authenticate the Galtea CLI and explore the command surface"
+icon: "terminal"
+---
+
+The `galtea` CLI is a terminal-native client for the Galtea AI testing & evaluation platform. Every [REST API](/api-reference) operation ships as a `galtea <noun> <verb>` command, auto-generated from the live OpenAPI spec.
+
+### What it can do
+
+Anything the [Galtea API](/api-reference) does — every endpoint is reachable as a CLI command, with auth, retries, and shell completion handled for you.
+
+### Why use it
+
+- **Let your coding agent manage Galtea for you.** Claude Code, Cursor, Windsurf, and other agents can use the CLI to create products, run evaluations, pull inference results, and more — without leaving your editor.
+- **Script your workflows.** Automate repetitive tasks like batch-creating tests, kicking off evaluations from CI/CD, or syncing specifications across environments.
+- **Faster than the dashboard for quick lookups.** List the last 10 evaluations, check a session's status, or pull inference results in seconds.
+
+### Authentication
+
+The CLI supports both an interactive flow for local use and a non-interactive flow for CI and Docker.
+
+<Tabs>
+  <Tab title="Interactive">
+    ```bash
+    galtea login
+    # Paste your gsk_* API key when prompted.
+    ```
+
+    The key is validated against the server, then stored in your user config directory, typically `~/.config/galtea/apis.json`, with mode `0600` (only your user can read it). You can grab a `gsk_*` key from the [settings page](https://platform.galtea.ai/settings).
+  </Tab>
+  <Tab title="Non-interactive / CI">
+    ```bash
+    export GALTEA_API_KEY=gsk_...
+    ```
+
+    <Tip>
+        If `GALTEA_API_KEY` is exported in the environment, running `galtea login` becomes **optional**.
+    </Tip>
+  </Tab>
+</Tabs>
+
+### Your first command
+
+Once you're authenticated, list your products to validate end-to-end auth and connectivity:
+
+```bash
+galtea products list
+```
+
+If this returns a list (even an empty one) instead of a `401 Unauthorized`, you're ready to go.
+
+### Discovering all commands
+
+These are the available OpenAPI commands that were downloaded to your machine.
+
+<Info>
+Run `galtea sync` after a new [Galtea API](/api-reference) release to refresh the command tree.
+</Info>
+
+```bash
+galtea help
+```
+
+For parameter, request body, and response shape details, see the [**REST API**](/api-reference) tab.

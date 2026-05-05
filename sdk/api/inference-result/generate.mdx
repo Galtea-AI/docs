@@ -30,7 +30,7 @@ The `generate()` method is the recommended way to execute your agent when you wa
   The agent function to execute. Supported signatures:
   - **Simple:** `(user_message: str) -> str` — receives last user message
   - **Chat History:** `(messages: list[dict]) -> str` — receives full chat history (OpenAI format)
-  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output. For the full list of fields available on `AgentInput`, see [AgentInput Fields](/sdk/api/simulator/simulate#agentinput-fields).
+  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output. See the [AgentInput reference](/sdk/api/agent/input) for all available fields including structured input access via message metadata.
 
   Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`.
 </ParamField>

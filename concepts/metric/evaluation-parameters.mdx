@@ -114,6 +114,65 @@ When creating or configuring a metric, you select which parameters are relevant 
   </tbody>
 </table>
 
+## Troubleshooting skipped evaluations
+
+When an evaluation runs against a session that does not have all the data the metric needs, Galtea marks the evaluation as **SKIPPED** instead of producing a misleading score. The evaluation's error field describes which parameters are missing, grouped by where you provide them.
+
+The categorized error message looks like this:
+
+```
+Metric "Contextual Relevancy" requires data that is not available.
+
+Missing from product settings:
+  • product_description - Fill in the "Description" field in your product settings.
+
+Missing from test case:
+  • expected_output - Provide an "Expected Output" value on your test cases.
+
+Missing from endpoint connection's output mapping:
+  • retrieval_context - Add a "retrieval_context" key to your endpoint connection's output mapping so this field is extracted from your API response.
+
+Missing trace data:
+  • traces - This metric needs tracing data. Configure your product to send traces — see the tracing setup docs.
+
+Learn more: https://docs.galtea.ai/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations
+```
+
+Each section points to a different place to look:
+
+<table>
+  <thead className='text-left'>
+    <tr>
+      <th>Section</th>
+      <th>Where to fix it</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**Missing from product settings**</td>
+      <td>Open the product and fill in the missing field (Description, Capabilities, Inabilities, or Security Boundaries).</td>
+    </tr>
+    <tr>
+      <td>**Missing from test case**</td>
+      <td>Edit the test case and provide the missing value. Some fields (Goal, User Persona, Scenario, Stopping Criteria) are only populated on SCENARIOS-type test cases. If your test cases use a different type, use a metric that does not require these parameters.</td>
+    </tr>
+    <tr>
+      <td>**Missing from endpoint connection's output mapping**</td>
+      <td>Edit the endpoint connection and add the missing key to the output mapping. `actual_output` is extracted from the `output` key; `retrieval_context` from a `retrieval_context` key. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration) for the JSONPath syntax used in mapping values.</td>
+    </tr>
+    <tr>
+      <td>**Missing trace data**</td>
+      <td>The metric needs `traces` or `tools_used`. Configure your product to send traces — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Trace concept page](/concepts/product/version/session/trace) for what gets captured. `tools_used` is automatically extracted from your trace data (specifically from trace entries of type `TOOL`); you do not provide it directly.</td>
+    </tr>
+    <tr>
+      <td>**Missing inference data**</td>
+      <td>The session has no inference results yet. Run the metric against a session that contains at least one conversation turn.</td>
+    </tr>
+  </tbody>
+</table>
+
+Once you have provided the missing data, re-run the evaluation against the same session.
+
 ## Related
 
 <CardGroup cols={2}>

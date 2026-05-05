@@ -4,6 +4,7 @@ sidebarTitle: "Overview"
 description: "A functionality or service evaluated by Galtea"
 ---
 
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
 import TestCard from '/snippets/cards/test-card.mdx';
 import SpecificationCard from '/snippets/cards/specification-card.mdx';
@@ -96,31 +97,14 @@ The SDK allows you to list existing products, retrieve specific products by thei
 
 ## How Everything Connects
 
-```mermaid
-%%{init: {"theme": "neutral"}}%%
-flowchart TD
-    P[Product] --> Spec[Specifications]
-    P --> V[Version]
-    P --> T[Test]
-    P --> EC[Endpoint Connection]
-    V -.->|uses| Mdl[Model]
-    Spec -.->|links to| M[Metrics]
-    Spec -.->|auto-derives| T
-    T --> TC[Test Cases]
-    V --> S[Session]
-    TC -.->|linked to| S
-    S --> IR[Inference Results]
-    IR --> Tr[Traces]
-    IR -->|per turn| E[Evaluations]
-    S -->|per conversation| E
-    M -.->|scores| E
-```
+The cross-entity diagram now lives on the [Concepts overview](/concepts/overview) — see it there along with reading guidance and per-entity links.
 
 ## Related
 
 A product in Galtea is associated with:
 
 <CardGroup cols={2}>
+  <ConceptsOverviewCard />
   <VersionCard />
   <TestCard />
   <SpecificationCard />

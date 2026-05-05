@@ -50,3 +50,28 @@ These kwargs are passed when **calling** the decorated function (not when defini
 ## Returns
 
 Returns the decorated function with Langfuse tracing and optional Galtea trace linking enabled. The return type and signature of the decorated function are preserved.
+
+## Async support
+
+`@observe` works on both `def` and `async def` functions. When the wrapped function is a coroutine, the decorator returns an async wrapper that awaits the coroutine before clearing the Galtea context — so spans inside the awaited body are correctly stamped with `inference_result_id`.
+
+```python
+import asyncio
+
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="my-async-agent", as_type="agent")
+async def run_async_agent(user_input: str) -> str:
+    # Awaitable retrieval and generation steps inside the agent.
+    context = await retrieve_async(user_input)
+    return await generate_async(user_input, context)
+
+
+# `@observe` detects the wrapped function is `async def` and returns an async
+# wrapper that awaits the coroutine before clearing context. Call it like any
+# other coroutine:
+result = asyncio.run(
+    run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
+)
+```

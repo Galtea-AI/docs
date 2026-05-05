@@ -123,6 +123,11 @@ def my_structured_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
     # Access the latest user message
     user_message = input_data.last_user_message_str()
 
+    # Access structured input fields from the first user message's metadata
+    first_msg = input_data.messages[0] if input_data.messages else None
+    if first_msg and first_msg.metadata:
+        chat_type = first_msg.metadata.get("chat_type")  # e.g. "support"
+
     # Generate a response using your own logic/model
     response = call_my_llm(user_message)
 

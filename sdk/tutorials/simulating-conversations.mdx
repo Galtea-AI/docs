@@ -105,6 +105,10 @@ for test_case in test_cases:
         print(f"Evaluation created: {evaluation.id}")
 ```
 
+<Info>
+  When using structured JSON inputs in test cases (e.g. `{"user_message": "hello", "chat_type": "support"}`), the extra fields are available in `messages[0].metadata` on the `AgentInput`. See [AgentInput reference](/sdk/api/agent/input#accessing-structured-input-fields) for details.
+</Info>
+
 ## Advanced Usage: RAG Agents with Retrieval Context
 
 For Retrieval-Augmented Generation (RAG) agents, you can return the context that was retrieved and used to generate the response. This context will be logged with the inference result, enabling evaluations with metrics like `Faithfulness` and `Contextual Relevancy`.

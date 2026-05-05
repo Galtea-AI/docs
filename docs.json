@@ -146,11 +146,24 @@
         "tab": "Concepts",
         "groups": [
           {
+            "group": "Introduction",
+            "pages": [
+              "concepts/overview"
+            ]
+          },
+          {
             "group": "SDK",
             "pages": [
               "sdk/installation",
               "sdk/usage",
               "sdk/api/galtea"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/installation",
+              "cli/usage"
             ]
           },
           {
@@ -313,6 +326,13 @@
                       "sdk/api/simulator/simulate"
                     ]
                   }
+                ]
+              },
+              {
+                "group": "Agent",
+                "icon": "robot",
+                "pages": [
+                  "sdk/api/agent/input"
                 ]
               },
               {
@@ -526,6 +546,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/concepts/product#how-everything-connects",
+      "destination": "/concepts/overview"
+    },
     {
       "source": "/concepts/product/test/quality-tests",
       "destination": "/concepts/product/test/accuracy-tests"
