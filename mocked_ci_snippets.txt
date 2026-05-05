@@ -26,6 +26,7 @@
 
 concepts_metric.py
 concepts_product_version_session_trace.py
+sdk_api_agent_input.py
 sdk_api_endpoint_connection.py
 sdk_api_evaluation_create.py
 sdk_api_evaluation_create_advanced_self_hosted.py

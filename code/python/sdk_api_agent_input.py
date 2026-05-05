@@ -3,8 +3,68 @@ AgentInput reference page code examples.
 Demonstrates accessing structured input fields via AgentInput.
 """
 
+from datetime import datetime
+
 import galtea
-from galtea import AgentInput, AgentResponse
+from galtea import AgentInput, AgentResponse, Galtea
+
+from _test_helpers import create_test_product
+
+run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
+
+galtea_client = Galtea(api_key="YOUR_API_KEY")
+
+# Setup: create a product, version, test, test case (with structured input),
+# session, and inference result so the snippets below can call get() against
+# real IDs.
+product_id: str = create_test_product(
+    galtea_client,
+    name=f"docs-agent-input-{run_identifier}",
+    description="Product for AgentInput documentation example",
+)
+
+version = galtea_client.versions.create(
+    name=f"agent-input-version-{run_identifier}",
+    product_id=product_id,
+    description="Version for AgentInput documentation example",
+)
+if version is None:
+    raise ValueError("version is None")
+
+test = galtea_client.tests.create(
+    name=f"agent-input-test-{run_identifier}",
+    type="ACCURACY",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=1,
+)
+if test is None:
+    raise ValueError("test is None")
+
+test_case = galtea_client.test_cases.create(
+    test_id=test.id,
+    input={"user_message": "hello", "chat_type": "support"},
+    expected_output="Hi there!",
+)
+if test_case is None:
+    raise ValueError("test_case is None")
+test_case_id: str = test_case.id
+
+session = galtea_client.sessions.create(
+    version_id=version.id, test_case_id=test_case_id, is_production=False
+)
+if session is None:
+    raise ValueError("session is None")
+
+inference_result = galtea_client.inference_results.create(
+    session_id=session.id,
+    input={"user_message": "hello", "chat_type": "support"},
+    output="Hi there!",
+)
+if inference_result is None:
+    raise ValueError("inference_result is None")
+inference_result_id: str = inference_result.id
 
 
 # @start basic_usage
@@ -71,8 +131,8 @@ def my_context_agent(input_data: AgentInput) -> AgentResponse:
 
 # @start test_case_input_data
 # After running generate() or in a test loop, access the full structured input:
-galtea_client = galtea.Galtea(api_key="your-api-key")
-test_case = galtea_client.test_cases.get(test_case_id="tc_123")
+galtea_client = Galtea(api_key="YOUR_API_KEY")
+test_case = galtea_client.test_cases.get(test_case_id=test_case_id)
 
 # .input gives the user_message as a plain string
 print(test_case.input)  # "hello"
@@ -81,7 +141,12 @@ print(test_case.input)  # "hello"
 print(test_case.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
 # Same pattern for inference results:
-inference_result = galtea_client.inference_results.get(inference_result_id="ir_456")
+inference_result = galtea_client.inference_results.get(
+    inference_result_id=inference_result_id
+)
 print(inference_result.input)  # "hello"
 print(inference_result.input_data)  # {"user_message": "hello", "chat_type": "support"}
 # @end test_case_input_data
+
+# Cleanup
+galtea_client.products.delete(product_id=product_id)
