@@ -160,6 +160,13 @@
             ]
           },
           {
+            "group": "CLI",
+            "pages": [
+              "cli/installation",
+              "cli/usage"
+            ]
+          },
+          {
             "group": "Concepts",
             "pages": [
               {

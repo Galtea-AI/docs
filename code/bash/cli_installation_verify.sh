@@ -1,0 +1,1 @@
+galtea --version

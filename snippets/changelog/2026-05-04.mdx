@@ -1,0 +1,42 @@
+<Update label="2026-05-04" description="Galtea CLI Launch, Product Tags, and Smarter Pre-Evaluation Guidance">
+
+## Galtea CLI
+
+The Galtea CLI is now generally available. Install it via `apt`, `dnf`, or `pip`, then authenticate with `galtea login` or a `GALTEA_API_KEY` environment variable. The CLI auto-generates a `galtea <resource> <verb>` command for every public API endpoint, so new endpoints appear as new commands without a CLI release. See the new [Installation](/cli/installation) and [Usage](/cli/usage) pages to get started.
+
+The [Galtea Agent Skill](/sdk/integrations/agent-skill) now drives Galtea through the CLI, which improves how reliably coding assistants like Claude Code and Cursor can manage Galtea on your behalf.
+
+## Product Tags
+
+[Products](/concepts/product) now support tags. You can add and edit tags from the create and update forms, filter the product list by one or more tags, and see tags as chips on product cards and the details page.
+
+## Smarter Pre-Evaluation Guidance
+
+Before launching an [evaluation](/concepts/product/version/session/evaluation), the run dialog now checks whether each selected [metric](/concepts/metric) can be satisfied by the current product and endpoint connection configuration, and flags any that cannot with a tooltip describing what is missing.
+
+When an evaluation is still [SKIPPED](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations) at runtime, the error message now explains what is missing and where to fix it, grouped by source, with actionable guidance included.
+
+## Structured Inputs for AI-Generated Tests
+
+Structured JSON inputs were previously limited to uploaded or manually created [test cases](/concepts/product/test/case). AI-generated test cases — scenarios, red-teaming, and gold-standard — now also receive a structured `input` populated from the endpoint connection's JSON Schema.
+
+AI-assisted product and specification generation also now respects the language of the source material.
+
+## Documentation and Examples
+
+- New [CLI Installation](/cli/installation) and [CLI Usage](/cli/usage) pages.
+- New [`AgentInput` reference page](/sdk/api/agent/input) with all fields, the `ConversationMessage` structure, and updated SDK code examples.
+
+## Platform Improvements
+
+- **Endpoint connection picker in test creation:** [Test creation](/concepts/product/test/case) and the AI candidate review screen now offer an explicit endpoint connection picker under Advanced Options.
+- **Filter test cases by input substring:** The [Test Cases](/concepts/product/test/case) list has a new debounced text filter, including matches inside structured JSON inputs.
+- **Metric lineage on the details page:** Revised [metrics](/concepts/metric) display an "Evolved from" link to the parent metric, and the revision flow now shows a warning before marking the source metric as legacy.
+- **Inference Results in the session dropdown:** The session row dropdown now includes an "Inference Results" option alongside "Evaluations" and "Traces".
+- **Sidebar cleanup:** The Models entry has been removed from the sidebar. Models remain reachable from the organization dropdown and the version forms.
+- **Optional secret fields on endpoint connection updates:** Credential fields are now optional when editing an existing [endpoint connection](/concepts/product/endpoint-connection) — leave them empty to keep the stored value.
+- **SDK `@observe` fix for async agents:** The `observe` decorator now correctly preserves Galtea context across async coroutines.
+- **Clearer max-iterations stopping reason:** Conversations that hit the iteration cap now record a "Max iterations reached" stopping reason instead of a generic error.
+- **Updated wording:** Product creation now reads "Register product" throughout the platform.
+
+</Update>
