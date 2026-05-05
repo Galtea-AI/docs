@@ -40,7 +40,7 @@ The `generate()` method is the recommended way to execute your agent when you wa
 </ParamField>
 
 <ParamField path="input" type="str | dict" optional>
-  The input to send to the agent. Accepts a plain string or a dict with structured fields (e.g. `{"user_message": "hello", "chat_type": "support"}`). Stored directly in the inference result. If not provided and the session is test-based, the test case input is used automatically. Required for production/monitoring sessions.
+  The input to send to the agent. Accepts a plain string or a dict with structured fields (e.g. `{"user_message": "hello", "chat_type": "support"}`). Stored directly in the inference result. If not provided and the session is test-based, the test case input is used automatically. Required for production/monitoring sessions. See [Input Schema](/concepts/product/endpoint-connection-input-schema) for how to define the expected field structure on your endpoint connection.
 </ParamField>
 
 <ParamField path="throw_if_empty_agent_response" type="bool" optional>

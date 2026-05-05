@@ -139,6 +139,10 @@ In this setup:
   Optional custom headers to include with each request.
 </ResponseField>
 
+<ResponseField name="Input Schema" type="JSON Schema">
+  Optional JSON Schema defining the structure of test case inputs (field types, constraints, enums). When set, Galtea generates structured multi-field test data matching this schema. See [Input Schema](/concepts/product/endpoint-connection-input-schema) for details and examples.
+</ResponseField>
+
 <ResponseField name="Input Template" type="String (Jinja2)" required>
   A Jinja2 template defining the request body. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template) for the full placeholder reference and examples.
 </ResponseField>
@@ -179,6 +183,9 @@ In this setup:
 
 <CardGroup cols={2}>
   <ConceptsOverviewCard />
+  <Card title="Input Schema" icon="brackets-curly" href="/concepts/product/endpoint-connection-input-schema">
+    Define structured, multi-field inputs for test case generation.
+  </Card>
   <Card title="Templates & Mapping" icon="code" href="/concepts/product/endpoint-connection-configuration">
     Full reference for Input Templates, Output Mapping, state management, and retry configuration.
   </Card>
