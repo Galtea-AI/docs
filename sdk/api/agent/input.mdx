@@ -118,8 +118,8 @@ Outside of `AgentInput`, the `TestCase` and `InferenceResult` models provide two
 
 ```python
 # After running generate() or in a test loop, access the full structured input:
-galtea_client = galtea.Galtea(api_key="your-api-key")
-test_case = galtea_client.test_cases.get(test_case_id="tc_123")
+galtea_client = Galtea(api_key="YOUR_API_KEY")
+test_case = galtea_client.test_cases.get(test_case_id=test_case_id)
 
 # .input gives the user_message as a plain string
 print(test_case.input)  # "hello"
@@ -128,7 +128,9 @@ print(test_case.input)  # "hello"
 print(test_case.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
 # Same pattern for inference results:
-inference_result = galtea_client.inference_results.get(inference_result_id="ir_456")
+inference_result = galtea_client.inference_results.get(
+    inference_result_id=inference_result_id
+)
 print(inference_result.input)  # "hello"
 print(inference_result.input_data)  # {"user_message": "hello", "chat_type": "support"}
 ```
