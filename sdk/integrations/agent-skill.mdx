@@ -76,20 +76,6 @@ Install the [Galtea Agent Skill](https://github.com/Galtea-AI/skills) to let you
   </Tab>
 </Tabs>
 
-## Prerequisites
-
-You need a Galtea account and an API key:
-
-```bash
-export GALTEA_API_KEY=gsk_...
-```
-
-<Info>
-  API keys live in the Galtea dashboard under **Settings → API Keys**. Each account has a single key; regenerating permanently replaces it.
-</Info>
-
-If `GALTEA_API_KEY` is unset, the skill prompts the agent to walk you through a one-time paste flow and caches the key at `~/.galtea/api-key` with mode `600`.
-
 ## Usage examples
 
 Once installed, the agent automatically picks up the skill when the task involves Galtea. Try prompts like:
@@ -97,7 +83,7 @@ Once installed, the agent automatically picks up the skill when the task involve
 - *"Set up a new product version and connect my endpoint."*
 - *"Run an evaluation for version `<id>` and show me the failures."*
 - *"List the metrics linked to this product's specifications."*
-- *"Why did session `<id>` end up in `PENDING_HUMAN`?"*
+- *"Analyze the poor performant evaluations from this version:  `<id>`."*
 - *"Create a test for the spec I just drafted and kick off evaluations."*
 
 The skill handles authentication, calls the right endpoints, polls async evaluations until they settle, and surfaces the results.
@@ -108,9 +94,12 @@ Something not working as expected, or want the skill to cover a new workflow? Op
 
 ## Related
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Quickstart" icon="rocket" href="/quickstart">
     Zero-to-first-evaluation walkthrough.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/cli/usage">
+    The `galtea` binary that the skill drives under the hood — useful to know if you ever want to run commands by hand.
   </Card>
   <Card title="Python SDK" icon="code" href="/sdk/installation">
     Prefer Python? Install the official SDK.
