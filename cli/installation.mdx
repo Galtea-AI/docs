@@ -7,6 +7,15 @@ icon: "box"
 The Galtea CLI ships as a single `galtea` binary, repackaged for the channels you already use. Pick the tab that matches your platform.
 
 <Tabs>
+<Tab title="macOS & Linux (Homebrew)">
+If you have [Homebrew](https://brew.sh) (macOS) or [Linuxbrew](https://docs.brew.sh/Homebrew-on-Linux), the tap auto-installs on first use:
+
+```bash
+brew install galtea-ai/tap/galtea
+```
+
+Apple Silicon, Intel macOS, and Linux on `x86_64` / `arm64` are all supported.
+</Tab>
 <Tab title="Linux (Debian/Ubuntu)">
 Add the Galtea APT repository (one-time GPG key + `sources.list` bootstrap), then install the CLI:
 
@@ -23,8 +32,6 @@ echo "deb [signed-by=/etc/apt/keyrings/galtea.asc] \
 sudo apt update
 sudo apt install galtea
 ```
-
-For other channels and the latest instructions, see [pkgs.galtea.ai](https://pkgs.galtea.ai).
 </Tab>
 <Tab title="Linux (Fedora/RHEL)">
 Add the Galtea YUM repository (one-time GPG key import + repo file), then install the CLI:
@@ -44,7 +51,7 @@ EOF
 sudo dnf install galtea
 ```
 
-Rocky Linux and AlmaLinux are supported via the same repository. For other channels and the latest instructions, see [pkgs.galtea.ai](https://pkgs.galtea.ai).
+Rocky Linux and AlmaLinux are supported via the same repository.
 </Tab>
 <Tab title="Python (any OS)">
 If you already have Python 3.9+ on your machine, you can install the CLI from PyPI:
@@ -66,6 +73,22 @@ Once installed, confirm the binary is on your `PATH` and prints a version:
 ```bash
 galtea --version
 ```
+
+### Update
+
+Use the package-manager gesture native to the channel you installed from:
+
+- **Homebrew (macOS & Linux):** `brew update && brew upgrade galtea`
+- **APT (Debian/Ubuntu):** `sudo apt update && sudo apt upgrade galtea`
+- **YUM/DNF (Fedora/RHEL):** `sudo dnf upgrade galtea`
+- **PyPI (any OS):** `pip install --upgrade galtea-cli`
+
+### Uninstall
+
+- **Homebrew:** `brew uninstall galtea` (optionally `brew untap galtea-ai/tap` to drop the tap entirely)
+- **APT (Debian/Ubuntu):** `sudo apt remove galtea`
+- **YUM/DNF (Fedora/RHEL):** `sudo dnf remove galtea`
+- **PyPI:** `pip uninstall galtea-cli`
 
 ### Troubleshooting
 
