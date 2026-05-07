@@ -27,6 +27,21 @@ Install the [Galtea Agent Skill](https://github.com/Galtea-AI/skills) to let you
 
     The agent reads the repo, picks the installation path for its own runtime (Claude Code, Cursor, Windsurf, etc.), and wires the skill up.
   </Tab>
+  <Tab title="Claude Code plugin">
+    Register the Galtea marketplace in Claude Code:
+
+    ```
+    /plugin marketplace add Galtea-AI/skills
+    ```
+
+    Then install the Galtea plugin:
+
+    ```
+    /plugin install galtea@galtea
+    ```
+
+    Once installed, the skill is active automatically for any Galtea-related task.
+  </Tab>
   <Tab title="Cursor plugin">
     A Galtea [Cursor Plugin](https://cursor.com/docs/plugins) that bundles this skill is on the way. Once it's published to the [Cursor marketplace](https://cursor.com/marketplace), it will install the skill in a single click.
 
