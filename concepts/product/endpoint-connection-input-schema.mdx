@@ -1,0 +1,274 @@
+---
+title: "Input Schema"
+sidebarTitle: "Input Schema"
+description: "Define the structure of test case inputs so Galtea can generate structured, multi-field test data for your endpoint."
+icon: "brackets-curly"
+---
+
+## What is an Input Schema?
+
+An Input Schema is a [JSON Schema](https://json-schema.org/) definition attached to an [Endpoint Connection](/concepts/product/endpoint-connection) that describes the shape of inputs your AI system expects. Instead of sending a single plain-text message, you can define multiple typed fields with constraints, and Galtea will generate test cases that match your schema exactly.
+
+**Without an Input Schema**, every test case input is a single string (the user message). **With an Input Schema**, test case inputs become structured JSON objects with multiple fields, types, and constraints.
+
+<CodeGroup>
+```json Without Input Schema (default)
+"What is the refund policy for premium accounts?"
+```
+
+```json With Input Schema
+{
+  "user_message": "What is the refund policy for premium accounts?",
+  "department": "billing",
+  "customer_tier": "premium",
+  "priority": 3
+}
+```
+</CodeGroup>
+
+## When to Use It
+
+Use an Input Schema when your AI system's API expects more than just a message string:
+
+- **Chatbots with metadata** -- your endpoint needs a user message plus department, language, or customer tier
+- **Classification systems** -- inputs have a text field and a category or priority level
+- **Multi-modal agents** -- your endpoint expects structured fields like document type, query, and output format
+- **Context-dependent systems** -- some fields stay constant across a conversation (e.g., customer ID) while others change per turn
+
+## Defining a Schema
+
+An Input Schema follows the JSON Schema standard with a few Galtea-specific extensions. The root level must be a JSON object (`"type": "object"`) with at least one property defined in `properties`. Define it in the Endpoint Connection form in the dashboard or via the SDK.
+
+### Supported Features
+
+| JSON Schema Feature | Example | Description |
+|---|---|---|
+| `type` | `"type": "string"` | Field type: `string`, `integer`, `number`, `boolean`, `array`, `object` |
+| `description` | `"description": "Customer department"` | Human-readable description (used by AI generators to understand the field) |
+| `enum` | `"enum": ["billing", "support", "sales"]` | Restrict to a fixed set of allowed values |
+| `required` | `"required": ["user_message"]` | Fields that must always be present |
+| `minimum` / `maximum` | `"minimum": 1, "maximum": 5` | Numeric range constraints |
+| `minLength` / `maxLength` | `"minLength": 10, "maxLength": 500` | String length constraints |
+| `pattern` | `"pattern": "^[A-Z]{2}-\\d{4}$"` | Regex pattern for string validation |
+| `default` | `"default": "general"` | Default value when not provided |
+| Nested objects | `"type": "object", "properties": {...}` | Nested structured objects |
+| Arrays | `"type": "array", "items": {...}` | Typed arrays |
+
+### The `x-galtea-is-session-wide` Extension
+
+Mark fields that stay constant across all turns of a conversation with `"x-galtea-is-session-wide": true`. Galtea's test generators will set these once per session rather than varying them per turn.
+
+Typical session-wide fields: customer ID, language, department, subscription tier. Typical per-turn fields: user message, query, follow-up question.
+
+<Note>
+  In generated test cases, session-wide fields are stored separately from per-turn fields. Access them in your Input Template using `{{ context.field_name }}` (not `{{ input.field_name }}`). Per-turn fields use `{{ input.field_name }}` as usual. See [Template Syntax](/concepts/product/endpoint-connection-template-syntax) for the full placeholder reference.
+</Note>
+
+## Examples
+
+### Example 1: Customer Support Chatbot
+
+A support chatbot that routes queries by department and customer tier.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "user_message": {
+      "type": "string",
+      "description": "The customer's question or request"
+    },
+    "department": {
+      "type": "string",
+      "enum": ["billing", "technical", "sales", "general"],
+      "description": "Department to route the query to",
+      "x-galtea-is-session-wide": true
+    },
+    "customer_tier": {
+      "type": "string",
+      "enum": ["free", "pro", "enterprise"],
+      "description": "Customer subscription tier",
+      "x-galtea-is-session-wide": true
+    }
+  },
+  "required": ["user_message", "department"]
+}
+```
+
+This generates test cases like:
+
+```json
+{
+  "user_message": "I was charged twice for my last invoice",
+  "department": "billing",
+  "customer_tier": "pro"
+}
+```
+
+Use the fields in your Input Template with `{{ input.field_name }}`:
+
+```jinja2
+{
+  "messages": [
+    {"role": "system", "content": "You are a {{ input.department }} support agent."},
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ],
+  "metadata": {
+    "tier": "{{ input.customer_tier }}"
+  }
+}
+```
+
+### Example 2: Document Analysis API
+
+An API that classifies and summarizes documents with configurable output length.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "document_text": {
+      "type": "string",
+      "description": "The document content to analyze",
+      "minLength": 50,
+      "maxLength": 5000
+    },
+    "analysis_type": {
+      "type": "string",
+      "enum": ["summary", "classification", "extraction", "sentiment"],
+      "description": "Type of analysis to perform"
+    },
+    "max_output_tokens": {
+      "type": "integer",
+      "description": "Maximum number of tokens in the response",
+      "minimum": 50,
+      "maximum": 2000,
+      "default": 500
+    },
+    "output_format": {
+      "type": "string",
+      "enum": ["text", "json", "markdown"],
+      "default": "text"
+    }
+  },
+  "required": ["document_text", "analysis_type"]
+}
+```
+
+### Example 3: Multi-Turn Booking Agent
+
+An agent that handles hotel reservations with session-wide guest details and per-turn conversation.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "user_message": {
+      "type": "string",
+      "description": "The guest's message in the conversation"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Name of the guest making the reservation",
+      "x-galtea-is-session-wide": true
+    },
+    "check_in_date": {
+      "type": "string",
+      "description": "Desired check-in date (YYYY-MM-DD format)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "x-galtea-is-session-wide": true
+    },
+    "room_type": {
+      "type": "string",
+      "enum": ["standard", "deluxe", "suite"],
+      "description": "Preferred room type",
+      "x-galtea-is-session-wide": true
+    },
+    "num_guests": {
+      "type": "integer",
+      "description": "Number of guests",
+      "minimum": 1,
+      "maximum": 10,
+      "x-galtea-is-session-wide": true
+    }
+  },
+  "required": ["user_message", "guest_name"]
+}
+```
+
+In a multi-turn conversation, Galtea generates the session-wide fields once and varies only the `user_message` across turns:
+
+| Turn | `user_message` | `guest_name` | `room_type` |
+|------|---------------|-------------|-------------|
+| 1 | "I'd like to book a room for next Friday" | "Maria Lopez" | "deluxe" |
+| 2 | "Do you have a room with an ocean view?" | "Maria Lopez" | "deluxe" |
+| 3 | "Can I add breakfast to my stay?" | "Maria Lopez" | "deluxe" |
+
+## How It Works with Test Generation
+
+When you generate tests (accuracy, behavior, or security) for a product that has an Input Schema:
+
+1. **Galtea reads the schema** from the endpoint connection attached to the version being tested
+2. **The generator produces structured inputs** that conform to the schema -- respecting types, enums, constraints, and descriptions
+3. **Session-wide fields** (marked with `x-galtea-is-session-wide`) are set once per test session and reused across all turns
+4. **Per-turn fields** vary naturally across the conversation
+5. **Your Input Template** accesses per-turn fields with `{{ input.field_name }}` and session-wide fields with `{{ context.field_name }}`
+
+<Note>
+  If no Input Schema is defined, Galtea wraps the plain-string test case input into a default schema with a single `user_message` field. This preserves backward compatibility -- existing endpoint connections and templates using `{{ input.user_message }}` continue to work unchanged.
+</Note>
+
+## Using Structured Inputs in Templates
+
+Once you have an Input Schema, reference individual fields in your [Input Template](/concepts/product/endpoint-connection-template-syntax) using `{{ input.field_name }}` (per-turn fields) or `{{ context.field_name }}` (session-wide fields):
+
+```jinja2
+{
+  "query": "{{ input.user_message }}",
+  "department": "{{ input.department }}",
+  "priority": {{ input.priority | default(0) }}
+}
+```
+
+For conversation history, access previous turns using `{{ turn.input }}` and `{{ turn.output }}`:
+
+```jinja2
+{
+  "messages": [
+    {% for turn in past_turns %}
+    {"role": "user", "content": "{{ turn.input }}"},
+    {"role": "assistant", "content": "{{ turn.output }}"},
+    {% endfor %}
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ],
+  "context": {
+    "department": "{{ input.department }}",
+    "tier": "{{ input.customer_tier }}"
+  }
+}
+```
+
+<Note>
+  `past_turns.input` is always a serialized string -- the full input collapsed to text. Only the current turn supports structured field access (`{{ input.field_name }}`). Use `{{ turn.input }}` for past turn content, not `{{ turn.input.field_name }}`.
+</Note>
+
+<Tip>
+  The `description` field in your schema is important -- Galtea's AI generators use it to understand what kind of values to produce for each field. Write clear, specific descriptions for the best generated test data.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Template Syntax" icon="code" href="/concepts/product/endpoint-connection-template-syntax">
+    Full placeholder reference: {{ input.field_name }}, {{ context.field_name }}, past_turns, and more.
+  </Card>
+  <Card title="Endpoint Connection" icon="plug" href="/concepts/product/endpoint-connection">
+    Overview of endpoint connections and how to create one.
+  </Card>
+  <Card title="Test Case Inputs" icon="list" href="/concepts/product/test/case">
+    How test case inputs work, including structured JSON inputs.
+  </Card>
+  <Card title="Behavior Tests" icon="user-group" href="/concepts/product/test/behavior-tests">
+    Multi-turn behavior tests with scenarios and personas.
+  </Card>
+</CardGroup>

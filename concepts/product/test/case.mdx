@@ -37,6 +37,8 @@ The Galtea SDK allows you to create, view, and manage test cases programmaticall
 
 <ResponseField name="Input" type="Text" required>
   The input data used for inference on the LLM product's version. This is the question or prompt that will be sent to your AI model. **Example**: "What is the operating system of the Samsung Galaxy A8?"
+
+  When an [Input Schema](/concepts/product/endpoint-connection-input-schema) is defined on the endpoint connection, inputs become structured JSON objects with multiple typed fields instead of a single string.
 </ResponseField>
 
 <ResponseField name="Expected Output" type="Text">
@@ -115,6 +117,9 @@ The following properties apply specifically to test cases of type `BEHAVIOR` use
 
 <CardGroup cols={2}>
   <ConceptsOverviewCard />
+  <Card title="Input Schema" icon="brackets-curly" href="/concepts/product/endpoint-connection-input-schema">
+    Define structured, multi-field inputs for test case generation.
+  </Card>
   <Card title="Conversation Simulator" icon="comments" href="/concepts/product/test/case/conversation-simulator">
     Run multi-turn conversations against scenario-based test cases.
   </Card>

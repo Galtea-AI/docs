@@ -66,7 +66,7 @@ for test_case in test_cases:
     galtea_client.simulator.simulate(
         session_id=session.id,
         agent=my_agent,
-        max_turns=test_case.max_iterations or 20,
+        max_turns=test_case.max_iterations or 10,
     )
 
     # Evaluate the full conversation

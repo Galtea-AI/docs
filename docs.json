@@ -232,6 +232,7 @@
                 "icon": "plug",
                 "pages": [
                   "concepts/product/endpoint-connection",
+                  "concepts/product/endpoint-connection-input-schema",
                   "concepts/product/endpoint-connection-configuration",
                   "concepts/product/endpoint-connection-template-syntax",
                   {

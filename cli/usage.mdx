@@ -35,7 +35,7 @@ The CLI supports both an interactive flow for local use and a non-interactive fl
     ```
 
     <Tip>
-        If `GALTEA_API_KEY` is exported in the environment, running `galtea login` becomes **optional**.
+        If `GALTEA_API_KEY` is exported in the environment, running `galtea login` becomes **optional** — running it anyway stores the key to disk for future shells.
     </Tip>
   </Tab>
 </Tabs>
@@ -63,3 +63,7 @@ galtea help
 ```
 
 For parameter, request body, and response shape details, see the [**REST API**](/api-reference) tab.
+
+### Hand it to your coding agent
+
+The CLI is a great fit for AI coding assistants. Install the [Galtea Agent Skill](/sdk/integrations/agent-skill) and Claude Code, Cursor, Windsurf, or any other Agent-Skills-compatible client will reach for `galtea` on your behalf — picking the right command, handling authentication, and following the workflows our team has already validated, so you don't have to brief your agent on Galtea first.
