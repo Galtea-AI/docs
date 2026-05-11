@@ -1,0 +1,28 @@
+<Update label="2026-05-08" description="Specifications View Redesign, Two-Factor Authentication, Faster Evaluations, and More">
+
+## Specifications View Redesign
+
+The [specifications](/concepts/product/specification) list is now split into two tables: **Policies** and **Capabilities & Inabilities**. Each row shows separate **Metrics** and **Tests** columns — a green check with a count when the resource exists, or a "Missing" pill that routes you to the [test](/concepts/product/test) creation form when it does not.
+
+## Two-Factor Authentication
+
+Email two-factor authentication is now available under **Settings → Security**, and organization admins can enforce MFA for all members from the organization settings page. See [Registration and Sign-In](/registration) for details.
+
+## Faster Evaluations
+
+[Evaluation](/concepts/metric/evaluation-types) runs are now roughly **10x faster** under load. Large evaluation batches and [metric optimization](/concepts/metric) runs that previously stretched into minutes now finish in seconds, with no action required on your side.
+
+## Documentation and Examples
+
+- **Galtea Agent Skill:** The [Galtea Agent Skill](/sdk/integrations/agent-skill) page has been refreshed with updated install instructions and the Claude Code plugin install path.
+
+## Platform Improvements
+
+- **Metric optimization threshold lowered:** [Metric](/concepts/metric) optimization now unlocks at 10 human-annotated evaluations (previously 20), with a calibration note when the metric is not single-turn binary.
+- **Fraction input for annotation scores:** The [human evaluation](/concepts/metric/evaluation-types) score field now accepts fractions (e.g., 7 out of 10) alongside percentages.
+- **Max iterations for behavior test generation:** [Behavior test](/concepts/product/test/behavior-tests) AI generation now exposes a `max_iterations` setting, with the default lowered from 20 to 10.
+- **Language field promoted in test creation:** The Language dropdown is now visible directly in the test creation form, not only under Advanced Options.
+- **CLI via Homebrew:** The Galtea CLI is now installable via Homebrew. See the [CLI installation page](/cli/installation) for all options.
+- **Same-name metric revisions:** Creating a [metric](/concepts/metric) revision that reuses the parent's name no longer fails.
+
+</Update>
