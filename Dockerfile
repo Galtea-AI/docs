@@ -16,14 +16,15 @@ ENV FRONTEND_URL=$FRONTEND_URL
 
 RUN python scripts/run.py --embed-only
 
-# ─── Stage 2: Serve with Mintlify dev server ──────────────────────────────────
+# ─── Stage 2: Serve with Mint dev server ──────────────────────────────────────
 FROM node:24.14.0-alpine AS runtime
 
 WORKDIR /app
 
-# Install Mintlify CLI and pre-fetch its dependencies during the build so that
-# container startup is fast and does not require internet access at runtime.
-RUN npm install mintlify@4.2.397
+# Install Mint CLI (the renamed Mintlify CLI) and pre-fetch its dependencies
+# during the build so that container startup is fast and does not require
+# internet access at runtime.
+RUN npm install mint@4.2.558
 
 # Copy the embedded docs output from the builder stage
 COPY --from=builder /docs-src/.build .
@@ -33,4 +34,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
   CMD wget -q --spider http://localhost:3000/ || exit 1
 
-CMD ["sh", "-c", "node_modules/.bin/mintlify dev --port 3000 < /dev/null"]
+CMD ["sh", "-c", "node_modules/.bin/mint dev --port 3000 < /dev/null"]
