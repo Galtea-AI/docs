@@ -1,0 +1,26 @@
+<Update label="2026-05-18" description="Metric Optimization, Galtea Assistant, and More">
+
+## Metric Optimization
+
+When you create a custom [AI Evaluation metric](/concepts/metric/evaluation-types#ai-evaluation), the judge prompt rarely scores responses exactly the way your team would on day one. The new Optimize action closes that gap: it takes a metric's current judge prompt, learns from the [human annotations](/concepts/metric/evaluation-types#human-evaluation) your team has already submitted, and rewrites the prompt so the AI score lines up more closely with the human score. The result is saved as a sibling metric named `<original name> (Optimized)`, so you can compare both versions side by side before adopting the new one.
+
+The Optimize button appears on the details page of any AI Evaluation [metric](/concepts/metric) created by your organization. It becomes available once enough annotations have been collected, with a particular focus on cases where the annotator disagreed with the AI score: those disagreements are the signal the optimizer learns from.
+
+## Galtea Assistant (Beta)
+
+A new in-product AI assistant is now available. The floating launcher in the bottom-right corner of the dashboard opens a chat panel that can answer questions about the platform, point you to the right page, and walk you through common workflows. The same assistant is also embedded in the docs site.
+
+## Form Improvements
+
+Submitting a new [product](/concepts/product) now uses AI to validate that the description matches what Galtea can test. Submissions that look voice, image, or multimodal, or that read more like a system prompt or build instructions than a product description, open a confirmation dialog before saving. The check is advisory and never blocks creation, so you can review the warning and proceed or go back and edit.
+
+Navigating away from any creation or edit form with unsaved changes now opens a confirmation dialog with "Discard" and "Keep editing" choices, so accidental clicks no longer lose your work. Forms protected include [metric](/concepts/metric) and [product](/concepts/product) creation and edit, [test](/concepts/product/test) edit, [endpoint connection](/concepts/product/endpoint-connection) edit, and dialog-level flows such as Add [Specification](/concepts/product/specification).
+
+## Platform Improvements
+
+- **Full customization when creating tests from Behavior specs:** Creating a [test](/concepts/product/test/behavior-tests) from a [Behavior specification](/concepts/product/specification) now gives you the complete test creation form, with every customization option available, including data-catalog file uploads.
+- **Faster AI-assisted product setup:** Generating a product description and specifications during product creation is now noticeably faster. Specification file uploads are also accepted in both quick and detailed generation modes.
+- **Clearer status for empty-parameter evaluations:** [Evaluations](/concepts/product/version/session/evaluation) whose required fields (such as `retrieval_context`) are empty or whitespace-only strings now resolve as `SKIPPED` upfront with a clear "missing required parameters" reason, instead of dispatching and landing as `FAILED`.
+- **CLI: background spec refresh and safer plaintext login:** The [Galtea CLI](/cli/installation) now refreshes its OpenAPI spec cache in a detached background process, so commands no longer pay the refresh latency. Logging in to a non-localhost HTTP host now requires `--insecure` to prevent accidental credential exposure over plaintext; the consent is sticky on that host so re-logins do not re-prompt.
+
+</Update>
