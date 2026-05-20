@@ -5,6 +5,7 @@ description: "A representation of a LLM Model with cost information to calculate
 ---
 
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+import SdkModelServiceCard from '/snippets/cards/sdk-model-service-card.mdx';
 
 ## What is a Model?
 
@@ -14,7 +15,7 @@ A model in Galtea represents a Large Language Model (LLM) configuration with ass
   Models are organization-wide and can be referenced across multiple products to ensure consistent cost tracking.
 </Info>
 
-You can **create**, view and manage your models on the [Galtea dashboard](https://platform.galtea.ai/).
+You can **create**, view and manage your models on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically via the [SDK](/sdk/api/model/service).
 
 ## Use Cases for Models
 
@@ -101,6 +102,7 @@ When creating a model in Galtea, you'll need to provide the following informatio
 
 <CardGroup cols={2}>
   <ConceptsOverviewCard />
+  <SdkModelServiceCard />
   <Card title="Version" icon="code-branch" href="/concepts/product/version">
     Link a model to a version for cost tracking.
   </Card>

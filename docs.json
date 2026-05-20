@@ -527,7 +527,20 @@
                 "group": "Model",
                 "icon": "microchip",
                 "pages": [
-                  "concepts/model"
+                  "concepts/model",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/model/service",
+                      "sdk/api/model/create",
+                      "sdk/api/model/list",
+                      "sdk/api/model/get",
+                      "sdk/api/model/get-by-name",
+                      "sdk/api/model/update",
+                      "sdk/api/model/delete"
+                    ]
+                  }
                 ]
               }
             ]

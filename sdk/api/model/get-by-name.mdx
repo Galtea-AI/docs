@@ -1,0 +1,18 @@
+---
+title: 'Get Model By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific model by its name within the authenticated user's organization."
+---
+
+## Returns
+Returns a [Model](/concepts/model) object for the given name.
+
+## Example
+```python
+model = galtea.models.get_by_name(name=model_name)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the model to retrieve.
+</ResponseField>
