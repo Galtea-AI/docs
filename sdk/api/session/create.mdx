@@ -19,7 +19,7 @@ session = galtea.sessions.create(
   The ID of the version to associate with this session.
 </ResponseField>
 <ResponseField name="test_case_id" type="string" optional>
-  The ID of a test case. Required for non-production sessions (`is_production=False`).
+  The ID of a test case. Forbidden when `is_production=True`. Sessions backed by a test case derive their `context` from the test case rather than the request.
 </ResponseField>
 <ResponseField name="custom_id" type="string" optional>
   A client-provided custom ID for the session.
@@ -28,8 +28,8 @@ session = galtea.sessions.create(
   </Note>
 </ResponseField>
 <ResponseField name="context" type="string" optional>
-  The context provided to the AI product during the session.
+  The context provided to the AI product during the session. Forbidden when `test_case_id` is set (it would be derived from the test case).
 </ResponseField>
 <ResponseField name="is_production" type="boolean" optional>
-  A flag to indicate if the session is from a production environment. When `True`, a `test_case_id` is not required. Defaults to `False`.
+  A flag to indicate if the session represents real production traffic. When omitted, the API derives it from `test_case_id` presence: no test case means production. A non-production session no longer requires a `test_case_id` — externally ingested sessions (e.g. imported traces) may be classified as development data without being linked to a test case.
 </ResponseField>
