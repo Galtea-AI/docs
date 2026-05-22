@@ -1,9 +1,0 @@
-<Update label="2026-05-25" description="FULL_PROMPT Metric Creation Deprecated">
-
-`POST /metrics` no longer accepts new metrics with `source=FULL_PROMPT`. Requests that explicitly set `source=FULL_PROMPT`, or that supply a `judgePrompt` without `evaluationParams` (which previously inferred `FULL_PROMPT`), are rejected with a 400 response. The same guard applies to the batch endpoint and to the SDK's `galtea.metrics.create(...)`.
-
-Use `PARTIAL_PROMPT` for new [AI Evaluation metrics](/concepts/metric/evaluation-types#ai-evaluation) — it offers the same capabilities with explicit, user-configurable [evaluation parameters](/concepts/metric/evaluation-parameters), giving you full control over which fields are prepended to your judge prompt.
-
-Existing FULL_PROMPT metrics are unaffected: they continue to appear in lists and filters, can still be retrieved by ID, and continue to be evaluated by the platform end to end.
-
-</Update>
