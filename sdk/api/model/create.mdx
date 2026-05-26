@@ -1,0 +1,50 @@
+---
+title: 'Create Model'
+sidebarTitle: "Create"
+description: "Create a new model for cost tracking."
+---
+
+## Returns
+Returns a [Model](/concepts/model) object for the given parameters, or `None` if an error occurs.
+
+## Example
+```python
+model = galtea.models.create(
+    name="gpt-5.5-pro " + run_identifier,
+    input_cost_per_token=0.00001,
+    output_cost_per_token=0.00003,
+    cache_read_input_token_cost=0.000005,
+    cache_creation_input_token_cost=0.0000125,
+    tokenizer_provider="OpenAI",
+    source="https://openai.com/api/pricing/",
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the model. Must be unique within your organization.
+</ResponseField>
+<ResponseField name="input_cost_per_token" type="float" optional>
+  Cost in dollars per input token.
+</ResponseField>
+<ResponseField name="output_cost_per_token" type="float" optional>
+  Cost in dollars per output token.
+</ResponseField>
+<ResponseField name="cache_read_input_token_cost" type="float" optional>
+  Cost in dollars per cached input token. Some providers offer reduced rates for cached requests.
+</ResponseField>
+<ResponseField name="cache_creation_input_token_cost" type="float" optional>
+  Cost in dollars per input token when creating a cache entry.
+</ResponseField>
+<ResponseField name="input_cost_per_token_above_128k_tokens" type="float" optional>
+  Cost in dollars per input token for contexts larger than 128k tokens, if applicable.
+</ResponseField>
+<ResponseField name="output_cost_per_token_above_128k_tokens" type="float" optional>
+  Cost in dollars per output token for contexts larger than 128k tokens, if applicable.
+</ResponseField>
+<ResponseField name="tokenizer_provider" type="string" optional>
+  Provider of the tokenizer used by the model. Examples: `"OpenAI"` (uses [tiktoken](https://github.com/openai/tiktoken)), `"Anthropic"` (uses [anthropic-tokenizer](https://lunary.ai/anthropic-tokenizer)).
+</ResponseField>
+<ResponseField name="source" type="string" optional>
+  The provider or source of the pricing model. This can be a URL to the model's pricing page or documentation (e.g., `https://openai.com/api/pricing/`).
+</ResponseField>

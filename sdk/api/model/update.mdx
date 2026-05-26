@@ -1,0 +1,56 @@
+---
+title: 'Update Model'
+sidebarTitle: "Update"
+description: "Update an existing model."
+---
+
+## Returns
+Returns the updated [Model](/concepts/model) object.
+
+## Example
+```python
+model = galtea.models.update(
+    model_id=model_id,
+    input_cost_per_token=0.000015,
+    output_cost_per_token=0.000035,
+)
+```
+
+## Parameters
+<ResponseField name="model_id" type="string" required>
+  ID of the model to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the model.
+</ResponseField>
+<ResponseField name="input_cost_per_token" type="float" optional>
+  New cost in dollars per input token.
+</ResponseField>
+<ResponseField name="output_cost_per_token" type="float" optional>
+  New cost in dollars per output token.
+</ResponseField>
+<ResponseField name="cache_read_input_token_cost" type="float" optional>
+  New cost in dollars per cached input token.
+</ResponseField>
+<ResponseField name="cache_creation_input_token_cost" type="float" optional>
+  New cost in dollars per input token when creating a cache entry.
+</ResponseField>
+<ResponseField name="input_cost_per_token_above_128k_tokens" type="float" optional>
+  New cost in dollars per input token for contexts larger than 128k tokens.
+</ResponseField>
+<ResponseField name="output_cost_per_token_above_128k_tokens" type="float" optional>
+  New cost in dollars per output token for contexts larger than 128k tokens.
+</ResponseField>
+<ResponseField name="tokenizer_provider" type="string" optional>
+  New tokenizer provider (e.g., `"OpenAI"`, `"Anthropic"`).
+</ResponseField>
+<ResponseField name="source" type="string" optional>
+  New pricing source. This can be a URL to the model's pricing page or documentation.
+</ResponseField>
+
+<Note>
+  All fields except `model_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>

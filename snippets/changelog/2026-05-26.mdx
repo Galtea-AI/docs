@@ -1,0 +1,25 @@
+<Update label="2026-05-26" description="Langfuse Trace Import, SDK Models, and More">
+
+## Import Langfuse Traces
+
+If you already export traces from [Langfuse](https://langfuse.com), you can now bring them into Galtea without any code changes. Open **New Session → Import traces (Beta)**, upload your Langfuse export file — JSON, JSONL, or CSV are all accepted, and both the Traces and Observations export tabs from Langfuse work — select the [version](/concepts/product/version) you want to link them to, and click **Import**. Each trace becomes a [session](/concepts/product/version/session) with its observations mapped to [inference results](/concepts/product/version/session/inference-result), ready to evaluate immediately.
+
+The import runs as a background job, so you can navigate away while large files are processed. The dialog stays open and shows progress; once complete, the sessions table refreshes automatically.
+
+This is the recommended path for teams already using [Langfuse's LangChain or LangGraph integration](/sdk/integrations/langfuse/integration-guide) and wanting to run Galtea evaluations on their existing trace history without modifying their agent code.
+
+## SDK: Model Management
+
+The SDK now includes a `ModelService`, accessible as `galtea.models`. It supports the full lifecycle — `list`, `get`, `get_by_name`, `create`, `update`, and `delete` — bringing programmatic parity with the dashboard's [model management](/concepts/model) for cost tracking and estimation. `list()` accepts both a partial-match `name` filter and an exact-match `names` list, alongside the standard `ids`, pagination, and date-range parameters.
+
+See the [Model Service reference](/sdk/api/model/service) for the full API.
+
+## Platform Improvements
+
+- **`FULL_PROMPT` metric creation is now blocked:** `POST /metrics` and `galtea.metrics.create(...)` reject requests that set `source=FULL_PROMPT` or that supply a `judgePrompt` without `evaluationParams`. Use `PARTIAL_PROMPT` for new [AI Evaluation metrics](/concepts/metric/evaluation-types#ai-evaluation) — it covers the same use cases with explicit, user-configurable [evaluation parameters](/concepts/metric/evaluation-parameters). Existing `FULL_PROMPT` metrics are unaffected and continue to be evaluated end to end.
+- **SDK `generate()` reflects live agent status:** `inference_results.generate()` now creates the record as `PENDING` while your agent runs and only transitions to `GENERATED` on a successful return. Previously the record was immediately marked `GENERATED` with a null output, which broke the contract that `GENERATED` means the agent completed successfully.
+- **Onboarding video on the welcome screen and Quickstart:** The product welcome screen and the [Quickstart](/quickstart) page now include an embedded walkthrough video so new users can see the end-to-end setup flow before writing any code.
+- **More accurate AI evaluation scores:** Judge prompts now produce `reason` before `score`. This chain-of-thought ordering consistently improves score quality by forcing the model to articulate its reasoning before committing to a number.
+- **Table header overflow fixed:** Long column headers — such as version hashes in the analytics comparison table — are now clipped at the cell boundary instead of visually bleeding into adjacent columns.
+
+</Update>

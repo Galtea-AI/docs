@@ -27,11 +27,11 @@ session = galtea.sessions.get_or_create(
   The ID of the version to associate with this session if it needs to be created.
 </ResponseField>
 <ResponseField name="test_case_id" type="string" optional>
-  The test case ID. Required for non-production sessions.
+  The test case ID. Forbidden when `is_production=True`. A non-production session may be created without a test case (e.g. externally ingested traces) — the context will then come from the request rather than the test case.
 </ResponseField>
 <ResponseField name="context" type="str" optional>
-  Additional context for the session.
+  Additional context for the session. Forbidden when `test_case_id` is set (the context is derived from the test case).
 </ResponseField>
 <ResponseField name="is_production" type="boolean" optional>
-  A flag to indicate if the session is from a production environment. Defaults to `False`.
+  A flag to indicate if the session represents real production traffic. When omitted on a newly created session, the API derives it from `test_case_id` presence: no test case means production.
 </ResponseField>

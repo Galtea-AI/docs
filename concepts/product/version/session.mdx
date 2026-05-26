@@ -35,8 +35,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 </ResponseField>
 
 <ResponseField name="Is Production" type="Boolean" optional>
-  A creation-time parameter that indicates whether the session is a production session. When set to `True`, no `test_case_id` is required and the provided `context` is used directly. When `False` (the default), a `test_case_id` must be provided and the context is derived from the test case.
-  <Note>This is not a stored field on the session. Whether a session is a production session can be inferred at read time by checking whether `test_case_id` is `null`.</Note>
+  Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. Externally-ingested sessions (e.g. imported traces) may be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
 </ResponseField>
 
 <ResponseField name="Context" type="Text" optional>
