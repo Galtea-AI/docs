@@ -219,7 +219,7 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea wil
 </ResponseField>
 
 <ResponseField name="Max Delay" type="Number">
-  Maximum delay cap in milliseconds. Default: `30000` (30 seconds)
+  Maximum delay between retry attempts, in milliseconds. Default: `3000` (3 seconds). Capped at `60000` (60 seconds); values above this are rejected at the API.
 </ResponseField>
 
 <ResponseField name="Retryable Status Codes" type="Array of Numbers">

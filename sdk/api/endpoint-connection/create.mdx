@@ -83,7 +83,7 @@ endpoint_connection = galtea.endpoint_connections.create(
   Backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`.
 </ResponseField>
 <ResponseField name="retry_max_delay_ms" type="int" optional>
-  Maximum delay cap in milliseconds. Defaults to `30000`.
+  Maximum delay between retry attempts, in milliseconds. Defaults to `3000`. Capped at `60000`; values above this are rejected.
 </ResponseField>
 <ResponseField name="retryable_status_codes" type="list[int]" optional>
   HTTP status codes that trigger retry. Defaults to `[429, 500, 502, 503, 504]`.
