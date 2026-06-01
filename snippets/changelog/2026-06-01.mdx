@@ -1,0 +1,17 @@
+<Update label="2026-06-01" description="Metric Optimization Lifecycle and Platform Improvements">
+
+## Metric Optimization Lifecycle
+
+When you optimize an [AI Evaluation metric](/concepts/metric/evaluation-types#ai-evaluation), the result now behaves like any other revision of that metric. The optimized version joins the same revision lineage as a manual "Create new revision" — so you can trace the full optimization history in the metric's revision panel and see how the judge prompt has evolved across generations.
+
+The **Optimize** button now shows the correct annotation threshold. It counts only the [human annotations](/concepts/metric/evaluation-types#human-evaluation) where your score and the AI's score fall on opposite sides of the PASS/FAIL boundary — evaluations where your annotation genuinely overrides the AI's verdict. Previously, any numeric difference between scores counted, even when both scores agreed on the outcome.
+
+## Platform Improvements
+
+- **Incompatible evaluations now show `SKIPPED` instead of `FAILED`:** [Evaluations](/concepts/product/version/session/evaluation) that cannot run — such as sessions where the agent produced no output, or [deterministic metrics](/concepts/metric/evaluation-types) applied to multi-turn sessions — are now caught at pre-flight and marked `SKIPPED` immediately, before being dispatched to the evaluator. Previously these were dispatched and returned `FAILED` with no clear explanation. The evaluation result now includes the specific reason the evaluation was skipped.
+
+## Documentation and Examples
+
+- **Direct Inference OTel collector: authentication guide updated:** The [Direct Inference OTel exporter tutorial](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) now covers the required `Authorization: Bearer <Galtea-API-key>` header with four supply patterns — SDK environment variables over HTTP, SDK environment variables over gRPC, programmatic Python, and OTel Collector YAML relay. The section also documents shell-expansion pitfalls with `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, a `curl` smoke-test command for self-validation, and a note on the current gRPC TLS handshake issue with HTTP/4318 as the validated path.
+
+</Update>

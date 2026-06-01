@@ -49,6 +49,7 @@ behavior_test = galtea.tests.create(
     custom_user_focus="A medical professional specialized in dementia with more than 15 years in the field",
     language="english",
     max_test_cases=25,
+    max_iterations=10,
     strategies=["written"],
 )
 # @end behavior_test
