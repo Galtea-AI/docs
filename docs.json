@@ -500,6 +500,21 @@
                 ]
               },
               {
+                "group": "Job",
+                "icon": "circle-stop",
+                "pages": [
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/job/service",
+                      "sdk/api/job/get-status",
+                      "sdk/api/job/cancel"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "User Group",
                 "icon": "users",
                 "pages": [

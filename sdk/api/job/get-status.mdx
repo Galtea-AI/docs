@@ -1,0 +1,54 @@
+---
+title: 'Get Job Status'
+sidebarTitle: "Get Status"
+description: "Retrieve the current status and progress of an async Galtea job."
+---
+
+Retrieve the status of an async job. Use this after calling [`evaluations.run()`](/sdk/api/evaluation/run) in endpoint-connection mode to check whether the inference batch is still running, has completed, or has been cancelled.
+
+## Usage
+
+```python
+try:
+    status = galtea.jobs.get_status(job_id=job_id)
+    print(f"State:    {status.state}")
+    print(f"Progress: {status.progress}")
+    if status.error:
+        print(f"Error:    {status.error}")
+    if status.result:
+        print(f"Result:   {status.result}")
+except EntityNotFoundException:
+    print("Job not found.")
+```
+
+## Parameters
+
+<ResponseField name="job_id" type="string" required>
+  The ID of the job to inspect. Returned as `jobId` in the response from [`evaluations.run()`](/sdk/api/evaluation/run).
+</ResponseField>
+
+## Returns
+
+A `JobStatus` object with the following fields:
+
+<ResponseField name="id" type="string">
+  The job ID.
+</ResponseField>
+<ResponseField name="state" type="JobState">
+  Current state of the job. One of: `waiting`, `delayed`, `prioritized`, `waiting-children`, `active`, `completed`, `failed`, `cancelled`.
+</ResponseField>
+<ResponseField name="progress" type="float | int | dict">
+  Progress indicator published by the worker. Typically a percentage (0–100) or a custom object. Defaults to `0`.
+</ResponseField>
+<ResponseField name="result" type="any">
+  The job's return value once it reaches `completed` state. `None` while in progress.
+</ResponseField>
+<ResponseField name="error" type="string">
+  Error message if the job has reached `failed` state. `None` otherwise.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `EntityNotFoundException` | The job does not exist, or belongs to a different organization (the API returns 404 in both cases to avoid leaking cross-tenant existence). |

@@ -1,0 +1,72 @@
+---
+title: 'Cancel Job'
+sidebarTitle: "Cancel"
+description: "Cancel a queued or in-flight async Galtea job."
+---
+
+Cancel an async job that is still queued or currently being processed. This is useful when an inference batch was started with the wrong configuration, when a version's endpoint is misconfigured, or when you simply need to stop a long-running job early to free up capacity.
+
+## Cancellation semantics
+
+- A **queued or delayed** job is removed from the queue and will never run.
+- An **in-flight** job receives a cooperative cancellation signal. The worker stops dispatching further work at its next checkpoint. Work already dispatched when the signal is observed is **not** rolled back.
+- Repeated cancels are **idempotent**: calling `cancel()` on an already-cancelled job still returns `state='cancelled'` rather than raising an error.
+
+## Usage
+
+```python
+try:
+    response = galtea.jobs.cancel(job_id=job_id)
+    print(f"Job {response.id} is now {response.state}")
+except JobAlreadyTerminalException:
+    print("Job has already completed or failed — nothing to cancel.")
+except EntityNotFoundException:
+    print("Job not found.")
+```
+
+**Check status before cancelling:**
+
+```python
+# Check whether the job is still running before deciding to cancel
+status = galtea.jobs.get_status(job_id=job_id)
+print(f"Job state: {status.state}  progress: {status.progress}")
+
+terminal_states = {"completed", "failed", "cancelled"}
+if status.state not in terminal_states:
+    try:
+        response = galtea.jobs.cancel(job_id=job_id)
+        print(f"Cancelled job {response.id}")
+    except JobAlreadyTerminalException:
+        # The job reached a terminal state between the get_status call and cancel — safe to ignore
+        print("Job completed before the cancel request arrived.")
+else:
+    print(f"Job already in terminal state: {status.state}")
+```
+
+## Parameters
+
+<ResponseField name="job_id" type="string" required>
+  The ID of the job to cancel. Returned as `jobId` in the response from [`evaluations.run()`](/sdk/api/evaluation/run).
+</ResponseField>
+
+## Returns
+
+A `JobCancelResponse` object:
+
+<ResponseField name="id" type="string">
+  The job ID.
+</ResponseField>
+<ResponseField name="state" type="string">
+  Always `"cancelled"` on a successful response, whether this was the first or a repeated cancel request.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `EntityNotFoundException` | The job does not exist, or belongs to a different organization (404). |
+| `JobAlreadyTerminalException` | The job has already reached `completed` or `failed` state and cannot be cancelled (409). |
+
+<Note>
+  `JobAlreadyTerminalException` is only raised for jobs that finished (`completed` or `failed`). Jobs that were already cancelled return `state='cancelled'` with a 200 response — repeated cancels are safe to call without checking status first.
+</Note>

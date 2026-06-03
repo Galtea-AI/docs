@@ -1,0 +1,55 @@
+---
+title: 'Jobs Service'
+sidebarTitle: "Service"
+description: "Jobs Service API methods in the Galtea SDK"
+---
+
+The Jobs Service in the Galtea SDK lets you inspect and cancel asynchronous Galtea jobs — for example, the inference-generation pipeline started by [`evaluations.run()`](/sdk/api/evaluation/run) in endpoint-connection mode.
+This Service is exposed by the `galtea.jobs` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## What is a Job?
+
+When you call [`evaluations.run()`](/sdk/api/evaluation/run) without an agent, Galtea queues an inference batch and returns a `jobId`. The platform then calls your endpoint for every test case and evaluates the results asynchronously. The Jobs Service gives you visibility into that background process and lets you cancel it if needed.
+
+A job moves through the following states:
+
+| State | Meaning |
+|-------|---------|
+| `waiting` | Queued and waiting for a worker |
+| `delayed` | Scheduled to run in the future |
+| `prioritized` | Promoted ahead of normal queue items |
+| `waiting-children` | Waiting for sub-jobs to complete |
+| `active` | Currently being processed by a worker |
+| `completed` | Finished successfully |
+| `failed` | Finished with an error |
+| `cancelled` | Cancelled by a user call to `cancel()` |
+
+## Quick Example
+
+Check job status and cancel if it is still running:
+
+```python
+# Check whether the job is still running before deciding to cancel
+status = galtea.jobs.get_status(job_id=job_id)
+print(f"Job state: {status.state}  progress: {status.progress}")
+
+terminal_states = {"completed", "failed", "cancelled"}
+if status.state not in terminal_states:
+    try:
+        response = galtea.jobs.cancel(job_id=job_id)
+        print(f"Cancelled job {response.id}")
+    except JobAlreadyTerminalException:
+        # The job reached a terminal state between the get_status call and cancel — safe to ignore
+        print("Job completed before the cancel request arrived.")
+else:
+    print(f"Job already in terminal state: {status.state}")
+```
+
+## Service Methods
+
+- [Get Job Status](/sdk/api/job/get-status)
+- [Cancel Job](/sdk/api/job/cancel)
