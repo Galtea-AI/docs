@@ -203,7 +203,10 @@
                       "sdk/api/specification/delete",
                       "sdk/api/specification/link-metrics",
                       "sdk/api/specification/unlink-metrics",
-                      "sdk/api/specification/get-metrics"
+                      "sdk/api/specification/get-metrics",
+                      "sdk/api/specification/link-tests",
+                      "sdk/api/specification/unlink-tests",
+                      "sdk/api/specification/get-tests"
                     ]
                   }
                 ]

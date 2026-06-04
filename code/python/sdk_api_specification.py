@@ -1,6 +1,6 @@
 """
 SDK API: Specification
-Demonstrates how to create, list, get, delete, and manage metrics for specifications.
+Demonstrates how to create, list, get, delete, and manage metrics and tests for specifications.
 """
 
 from datetime import datetime
@@ -31,6 +31,19 @@ metric = galtea.metrics.create(
 if metric is None:
     raise ValueError("metric is None")
 metric_id: str = metric.id
+
+# Create a test for link/unlink demos
+test = galtea.tests.create(
+    name=f"spec-demo-test-{run_identifier}",
+    type="ACCURACY",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=10,
+)
+if test is None:
+    raise ValueError("test is None")
+test_id: str = test.id
 
 # @start create
 # POLICY specification — test_type and test_variant are required for ACCURACY and SECURITY
@@ -84,6 +97,26 @@ galtea.specifications.unlink_metrics(
 )
 # @end unlink_metrics
 
+# @start link_tests
+galtea.specifications.link_tests(
+    specification_id=specification.id,
+    test_ids=[test_id],
+)
+# @end link_tests
+
+# @start get_tests
+tests = galtea.specifications.get_tests(
+    specification_id=specification.id,
+)
+# @end get_tests
+
+# @start unlink_tests
+galtea.specifications.unlink_tests(
+    specification_id=specification.id,
+    test_ids=[test_id],
+)
+# @end unlink_tests
+
 # @start delete
 galtea.specifications.delete(specification_id=specification.id)
 # @end delete
@@ -92,4 +125,5 @@ galtea.specifications.delete(specification_id=specification.id)
 if capability_spec is not None:
     galtea.specifications.delete(specification_id=capability_spec.id)
 galtea.metrics.delete(metric_id=metric_id)
+galtea.tests.delete(test_id=test_id)
 galtea.products.delete(product_id=product_id)
