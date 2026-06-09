@@ -82,6 +82,10 @@ An evaluation is considered **complete** when its status is anything other than 
         for evaluation in completed:
             print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
     ```
+
+    <Tip>
+      If you need to stop the job before it finishes, use [`galtea.jobs.cancel(job_id)`](/sdk/api/job/cancel) instead of waiting.
+    </Tip>
   </Tab>
 </Tabs>
 

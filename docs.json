@@ -203,7 +203,10 @@
                       "sdk/api/specification/delete",
                       "sdk/api/specification/link-metrics",
                       "sdk/api/specification/unlink-metrics",
-                      "sdk/api/specification/get-metrics"
+                      "sdk/api/specification/get-metrics",
+                      "sdk/api/specification/link-tests",
+                      "sdk/api/specification/unlink-tests",
+                      "sdk/api/specification/get-tests"
                     ]
                   }
                 ]
@@ -495,6 +498,21 @@
                       "sdk/api/evaluation/get",
                       "sdk/api/evaluation/retry",
                       "sdk/api/evaluation/delete"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Job",
+                "icon": "circle-stop",
+                "pages": [
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/job/service",
+                      "sdk/api/job/get-status",
+                      "sdk/api/job/cancel"
                     ]
                   }
                 ]

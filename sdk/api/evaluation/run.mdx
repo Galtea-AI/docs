@@ -17,6 +17,10 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     - `testCaseCount` — total number of test cases queued
     - `message` — a human-readable status message
     - `specifications` — summary of each specification evaluated
+
+    <Tip>
+      Use [`galtea.jobs.cancel(job_id)`](/sdk/api/job/cancel) to stop the batch before it finishes — for example, if you discover a misconfiguration after the job has already been queued.
+    </Tip>
   </Tab>
   <Tab title="Agent (SDK-side)">
     When an `agent` is provided, the SDK runs the agent locally for each test case. For every specification, the method resolves linked tests and test cases, creates sessions, executes the agent, and triggers server-side evaluation.

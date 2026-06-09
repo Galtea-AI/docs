@@ -1,0 +1,35 @@
+<Update label="2026-06-08" description="Galtea Assistant Redesign, Onboarding Experience, Job Cancellation, and More">
+
+## Galtea Assistant Redesign
+
+The Galtea AI assistant is now a **non-modal docked side panel** that sits alongside the dashboard instead of covering it. When open, the page content reflows into a true split view — the panel holds a fixed width on the right while the rest of the dashboard fills the remaining space. You can resize the split by dragging the divider. Open and close the panel from anywhere in the dashboard with **⌘K** (Mac) or **Ctrl+K** (Windows/Linux).
+
+The assistant now shows its work while it processes your message. A live step trace displays each phase of the agent's reasoning — searching the docs, calling API tools, writing the answer — with the active step pulsing in real time. When the response arrives, the trace collapses to a compact summary (for example, "Worked for 2.3s · 4 steps") that you can expand at any time to review the full trajectory.
+
+For write operations, the assistant proposes an action and you approve it before anything changes. Each proposal shows a preview of what will happen, and destructive actions display how many items would be affected before you confirm. When you approve, the dashboard navigates you directly to the affected [product](/concepts/product), [version](/concepts/product/version), or [evaluation](/concepts/product/version/session/evaluation). The assistant can now reach any allow-listed resource in the platform — reads are driven by the live API catalog, and writes cover 28 curated operations — so it adapts as new endpoints are added without requiring new tool code.
+
+## Redesigned Onboarding Experience
+
+New users now flow through a focused, full-page onboarding shell that adapts to how you want to run evaluation — **import traces**, **connect your endpoint**, or **use the SDK** — and pre-selects the [specifications](/concepts/product/specification) matching the goal you gave at signup, so first [evaluation](/concepts/product/version/session/evaluation) results arrive faster.
+
+## Word Document Upload for Product Setup
+
+When setting up your product with AI assistance, you can now upload **Word documents** (`.docx`) alongside PDFs and other formats. The platform extracts the content and uses it to generate [specifications](/concepts/product/specification), so teams that maintain documentation in Word can feed it directly into Galtea without converting files first.
+
+## Job Cancellation
+
+You can now cancel in-progress async jobs from both the API and the SDK. When you start an inference batch — for example, via [`evaluations.run()`](/sdk/api/evaluation/run) in endpoint-connection mode — and need to stop it early, call [`galtea.jobs.cancel(job_id)`](/sdk/api/job/cancel). Queued jobs are removed from the queue; jobs already running receive a cooperative cancellation signal and stop at their next checkpoint. Work already dispatched when the signal is observed is not rolled back. Cancellation is idempotent — calling `cancel()` on an already-cancelled job returns `state='cancelled'` rather than raising an error. Use [`galtea.jobs.get_status(job_id)`](/sdk/api/job/get-status) to check the current state before deciding whether to cancel. See the [Jobs Service reference](/sdk/api/job/service) for the full API.
+
+## Platform Improvements
+
+- **PASS/FAIL verdict shown in the annotation dialog:** When annotating [evaluations](/concepts/product/version/session/evaluation), the score pill now displays the binary PASS/FAIL outcome alongside the numeric score so you can see the verdict at a glance.
+- **"See details" button on every table row:** All entity tables — [sessions](/concepts/product/version/session), [evaluations](/concepts/product/version/session/evaluation), [tests](/concepts/product/test), and more — now show a direct-navigation icon button to the right of the row actions menu. Click to open the detail page; hold Cmd/Ctrl to open it in a new tab.
+- **Unified test creation form:** Creating a [test](/concepts/product/test) from a single [specification](/concepts/product/specification) now uses the same creation form as batch creation. The previous dedicated single-spec flow has been retired.
+- **Accuracy-requirement [specifications](/concepts/product/specification) correctly classified:** Specifications of the accuracy-requirement type are now saved as `POLICY + QUALITY`. Previously, creating one via the API produced an incorrect type.
+- **Coverage radar chart renders correctly in edge cases:** The coverage radar chart now renders when two [specifications](/concepts/product/specification) share the same name or when a [version](/concepts/product/version) has no scores for one of the axes. Previously, either condition caused the chart to be skipped.
+- **Clearer SDK error messages for agent integrations:** When an [agent skill](/sdk/integrations/agent-skill) invocation fails due to an argument shape mismatch, the SDK now surfaces a clear description of the issue instead of a cryptic internal error.
+- **LLM configuration errors surface immediately:** Misconfigured API keys, unsupported model names, and other non-retryable LLM errors now cause [evaluations](/concepts/product/version/session/evaluation) to fail on the first attempt rather than consuming the full retry budget before reporting the problem.
+- **Red-teaming generation handles content filters:** When a content filter blocks a generation step, the red-teaming generator now retries. If the seed prompt itself keeps triggering the filter after retries, that seed is skipped and generation continues with the remaining prompts.
+- **[Specification](/concepts/product/specification) linking documented in CLI and SDK:** The `galtea spec link-tests` and `galtea spec unlink-tests` commands and their SDK equivalents — [`galtea.specifications.link_tests()`](/sdk/api/specification/link-tests) and [`galtea.specifications.unlink_tests()`](/sdk/api/specification/unlink-tests) — are now documented in the CLI `--help` output and SDK docstrings, making them easier to discover.
+
+</Update>
