@@ -1,35 +1,107 @@
-from galtea import Galtea
-from galtea.domain.exceptions.entity_not_found_exception import EntityNotFoundException
+import time
+from datetime import datetime
+
+from _test_helpers import create_test_product
+from galtea import EndpointConnectionType, Galtea
 from galtea.domain.exceptions.job_already_terminal_exception import JobAlreadyTerminalException
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
-# job_id is the value returned as result["jobId"] from evaluations.run()
-job_id = "YOUR_JOB_ID"
+run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# @start cancel_basic
+# Register a product for the demo
+product_id = create_test_product(
+    galtea,
+    name=f"docs-job-cancel-{run_identifier}",
+    description="A financial assistant that provides general guidance on investments, savings, and budgeting.",
+    capabilities="Explain basic investment concepts, provide budgeting tips",
+)
+
 try:
+    # A conversation endpoint connection makes evaluations.run() use the server-side
+    # pipeline, which returns a real jobId we can cancel / poll. The endpoint URL is only
+    # called after the job is queued, so a placeholder endpoint is fine for this example.
+    endpoint_connection = galtea.endpoint_connections.create(
+        name=f"job-cancel-endpoint-{run_identifier}",
+        product_id=product_id,
+        url="https://api.example.com/v1/chat",
+        type=EndpointConnectionType.CONVERSATION,
+        http_method="POST",
+        auth_type="BEARER",
+        auth_token="YOUR_AUTH_TOKEN",
+        input_template='{"message": "{{ input.user_message }}"}',
+        output_mapping={"output": "$.response"},
+        timeout=30,
+    )
+
+    # Link the endpoint connection to the version so evaluations.run() returns a jobId
+    version = galtea.versions.create(
+        product_id=product_id,
+        name=f"v-job-cancel-{run_identifier}",
+        conversation_endpoint_connection_id=endpoint_connection.id,
+    )
+    version_id = version.id
+
+    # Create a specification with a linked metric so evaluations.run() has something to evaluate
+    _metric = galtea.metrics.get_by_name(name="Role Adherence")
+    _spec = galtea.specifications.create(
+        product_id=product_id,
+        description="The assistant provides helpful financial information.",
+        type="POLICY",
+        test_type="BEHAVIOR",
+    )
+    galtea.specifications.link_metrics(
+        specification_id=_spec.id,
+        metric_ids=[_metric.id],
+    )
+
+    # Create a behavior test linked to the specification, then wait for test cases
+    _test = galtea.tests.create(
+        product_id=product_id,
+        name=f"job-cancel-test-{run_identifier}",
+        type="BEHAVIOR",
+        language="english",
+        max_test_cases=5,
+        strategies=["written"],
+        specification_id=_spec.id,
+    )
+    for _ in range(120):
+        _t = galtea.tests.get(test_id=_test.id)
+        if _t.uri:
+            break
+        print("Waiting for test file to be ready...")
+        time.sleep(1)
+    for _ in range(120):
+        _test_cases = galtea.test_cases.list(test_id=_test.id)
+        if len(_test_cases) > 0:
+            break
+        print("Waiting for test cases to be generated...")
+        time.sleep(1)
+
+    # job_id is the value returned as result["jobId"] from evaluations.run()
+    job_id = galtea.evaluations.run(version_id=version_id)["jobId"]
+
+    # @start cancel_basic
     response = galtea.jobs.cancel(job_id=job_id)
     print(f"Job {response.id} is now {response.state}")
-except JobAlreadyTerminalException:
-    print("Job has already completed or failed — nothing to cancel.")
-except EntityNotFoundException:
-    print("Job not found.")
-# @end cancel_basic
+    # @end cancel_basic
 
-# @start cancel_if_running
-# Check whether the job is still running before deciding to cancel
-status = galtea.jobs.get_status(job_id=job_id)
-print(f"Job state: {status.state}  progress: {status.progress}")
+    # @start cancel_if_running
+    # Check whether the job is still running before deciding to cancel
+    status = galtea.jobs.get_status(job_id=job_id)
+    print(f"Job state: {status.state}  progress: {status.progress}")
 
-terminal_states = {"completed", "failed", "cancelled"}
-if status.state not in terminal_states:
-    try:
-        response = galtea.jobs.cancel(job_id=job_id)
-        print(f"Cancelled job {response.id}")
-    except JobAlreadyTerminalException:
-        # The job reached a terminal state between the get_status call and cancel — safe to ignore
-        print("Job completed before the cancel request arrived.")
-else:
-    print(f"Job already in terminal state: {status.state}")
-# @end cancel_if_running
+    terminal_states = {"completed", "failed", "cancelled"}
+    if status.state not in terminal_states:
+        try:
+            response = galtea.jobs.cancel(job_id=job_id)
+            print(f"Cancelled job {response.id}")
+        except JobAlreadyTerminalException:
+            # The job reached a terminal state between the get_status call and cancel — safe to ignore
+            print("Job completed before the cancel request arrived.")
+    else:
+        print(f"Job already in terminal state: {status.state}")
+    # @end cancel_if_running
+finally:
+    # Cleanup
+    galtea.products.delete(product_id=product_id)

@@ -9,7 +9,6 @@ Retrieve the status of an async job. Use this after calling [`evaluations.run()`
 ## Usage
 
 ```python
-try:
     status = galtea.jobs.get_status(job_id=job_id)
     print(f"State:    {status.state}")
     print(f"Progress: {status.progress}")
@@ -17,8 +16,6 @@ try:
         print(f"Error:    {status.error}")
     if status.result:
         print(f"Result:   {status.result}")
-except EntityNotFoundException:
-    print("Job not found.")
 ```
 
 ## Parameters
