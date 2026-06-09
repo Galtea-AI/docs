@@ -15,32 +15,27 @@ Cancel an async job that is still queued or currently being processed. This is u
 ## Usage
 
 ```python
-try:
     response = galtea.jobs.cancel(job_id=job_id)
     print(f"Job {response.id} is now {response.state}")
-except JobAlreadyTerminalException:
-    print("Job has already completed or failed — nothing to cancel.")
-except EntityNotFoundException:
-    print("Job not found.")
 ```
 
 **Check status before cancelling:**
 
 ```python
-# Check whether the job is still running before deciding to cancel
-status = galtea.jobs.get_status(job_id=job_id)
-print(f"Job state: {status.state}  progress: {status.progress}")
+    # Check whether the job is still running before deciding to cancel
+    status = galtea.jobs.get_status(job_id=job_id)
+    print(f"Job state: {status.state}  progress: {status.progress}")
 
-terminal_states = {"completed", "failed", "cancelled"}
-if status.state not in terminal_states:
-    try:
-        response = galtea.jobs.cancel(job_id=job_id)
-        print(f"Cancelled job {response.id}")
-    except JobAlreadyTerminalException:
-        # The job reached a terminal state between the get_status call and cancel — safe to ignore
-        print("Job completed before the cancel request arrived.")
-else:
-    print(f"Job already in terminal state: {status.state}")
+    terminal_states = {"completed", "failed", "cancelled"}
+    if status.state not in terminal_states:
+        try:
+            response = galtea.jobs.cancel(job_id=job_id)
+            print(f"Cancelled job {response.id}")
+        except JobAlreadyTerminalException:
+            # The job reached a terminal state between the get_status call and cancel — safe to ignore
+            print("Job completed before the cancel request arrived.")
+    else:
+        print(f"Job already in terminal state: {status.state}")
 ```
 
 ## Parameters
