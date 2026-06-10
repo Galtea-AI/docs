@@ -1,0 +1,58 @@
+<Update label="2026-06-10" description="Analytics Insights, AI-Assisted Metric Creation, Specification-led Evaluation Runs, and More">
+
+## Analytics Insights
+
+The **Analytics Overview** tab now includes an Insights card that automatically scans your evaluation data and surfaces what needs your attention. The card applies deterministic rules across three categories:
+
+- **Score health** — flags [metrics](/concepts/metric) that fall below the warning (85) or critical (60) thresholds, and links each flag directly to the relevant evaluations with the judge's reasoning so you can dig in immediately.
+- **Specification coverage** — identifies [specifications](/concepts/product/specification) that have no linked tests yet, so coverage gaps don't stay invisible.
+- **Version regressions** — detects metric scores that dropped 10 or more points from one [version](/concepts/product/version) to another, distinguishing warnings from critical degradations.
+
+Flags are sorted by severity. Each carries a named action — clicking it navigates you to the right place in the platform rather than leaving you to find it yourself. When nothing is flagged, the card shows an explicit **all-good state** so you know the check ran. A plain-language narrative at the top summarizes the findings.
+
+Val (the platform assistant) now answers evaluation-quality questions using the same backend rules as this card, so the assistant and the dashboard always agree on what counts as a red flag.
+
+## Smarter Run Evaluation Flow
+
+Running an [evaluation](/concepts/product/version/session/evaluation) from a version or product now opens a **Specifications** tab by default. It pre-selects the [specifications](/concepts/product/specification) that have runnable [tests](/concepts/product/test) and submits via the existing batch endpoint — the platform resolves linked tests and metrics server-side, so you don't have to select them manually. If a product has no specifications, the dialog falls back to the familiar manual test and metric selector.
+
+In the manual selector, the metric picker now ranks and pre-selects metrics based on relevance:
+
+- **Linked** — metrics directly linked to the specification of your selected test are pre-selected and appear first.
+- **Recommended** — metrics linked to any specification sharing the same test type appear next with a badge.
+
+Incompatible metrics are still listed at the bottom so you can override, but the common case no longer requires manual searching.
+
+## Complete Metric with AI
+
+Two places in the dashboard now offer a **Complete With AI** button on [metrics](/concepts/metric): the manual create-metric form and the candidate edit dialog inside the AI metric generation review step.
+
+Fill in the metric name, description, and evaluation type — and let the AI generate the judge prompt and [evaluation parameters](/concepts/metric/evaluation-parameters) for you. Your name, description, and tags are never overwritten. If you already have a judge prompt, the platform prompts for confirmation before replacing it. AI-generated fields display a badge so you always see what was filled by the model.
+
+This works for [AI Evaluation](/concepts/metric/evaluation-types#ai-evaluation) and [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metrics. Self-Hosted metrics are excluded (they have no judge prompt).
+
+## AI-Assisted Specification Creation
+
+Two improvements to the specification creation flow:
+
+**Fill with AI** (the dialog on the create and update pages) now rewrites your rough note into a properly written specification description *and* classifies the type in one step, returning `description`, `type`, `testType`, and `testVariant` together. Previously it only filled the category selectors and never touched the description.
+
+**Complete with AI** (the inline button) sends the description you already wrote, applies only `type`, `testType`, and `testVariant`, and never touches your text. The button was previously labeled "Categorize with AI" — the new name reflects that it completes the fields you left empty without altering the ones you filled.
+
+In **Detailed** generation mode, the AI now also considers a built-in catalog of safety and quality [specifications](/concepts/product/specification) that apply to most AI products: jailbreak resistance, illegal-activity refusal, system-prompt non-disclosure, cross-user data leakage, AI-identity disclosure, and others. Specifications that don't fit (for example, safety specs for backend-only products with no human users) are excluded automatically. You review and edit everything before any of it is saved.
+
+## Import Endpoint Connection from cURL
+
+Creating an [endpoint connection](/concepts/product/endpoint-connection) now offers an **Import from cURL** option. Paste a cURL command — from your API docs, a Postman collection, or a terminal history — and the platform extracts the URL, headers, and request body, then maps the body to a Jinja2 input template with `{{ input.user_message }}` pre-wired. For conversation-type connections, a lightweight AI pass enriches the template further. The **New Endpoint Connection** button is now a **From cURL / Blank** dropdown.
+
+In the onboarding flow, the cURL paste step is the default view; the traditional form is available via **Skip — fill in manually**. Fields that couldn't be recovered from the cURL command are flagged inline, and a mandatory probe test confirms the connection works before saving.
+
+## Platform Improvements
+
+- **Row click navigates to entity details:** Every table row in the dashboard now navigates to the entity's detail page on click. The primary cell renders a real link, so Ctrl/Cmd/middle-click opens it in a new tab. Clicking on a text cell opens a full-text dialog with a copy button instead of navigating. Drag-to-select on table text still works.
+- **Assistant renamed to Val:** The Galtea platform assistant is now named **Val** across the dashboard panel and the public docs site. The panel header, launcher pill ("Ask Val"), and the agent's own persona are all updated.
+- **Breadcrumb navigation restores your position:** Clicking a breadcrumb link now returns you to the exact tab and pagination page you were on when you drilled into the current entity. For a fresh deep link, it falls back to the tab that lists the entity you were viewing.
+- **Analytics score charts use a fixed 0–100 axis:** Score charts in the Analytics section are anchored to a 0–100 scale so visual proportions are consistent across products and time windows. Previously the axis auto-scaled to the data range, making small absolute differences appear large.
+- **List endpoints default to your organization:** Every `GET` list endpoint now scopes to the caller's organization automatically, so you no longer need to pass an organization filter to list your own data. Admins can opt into a cross-organization view with the `allOrganizations` flag.
+
+</Update>
