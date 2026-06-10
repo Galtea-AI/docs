@@ -1,0 +1,24 @@
+# Docs snippets intentionally NOT run in the mocked CI snippet gate
+# (docs-snippets-mocked.yml). Every other snippet under docs/code/python/
+# runs by default; this is the small, explicit, reviewed set of exceptions.
+#
+# Each line is a filename under docs/code/python/. Blank lines and lines
+# starting with '#' are ignored. A stale entry (snippet renamed/deleted)
+# fails the run, so this list cannot silently hide a missing snippet.
+#
+# The two below cannot run against the mocked stack until the mocks-server is
+# extended (tracked by #2603). They ARE still validated at deploy time, when
+# the same runner executes every snippet against the real API.
+#
+#   - full_sdk_demo.py: the storage-download flow returns a presigned MinIO
+#     URL templated with a literal `{Key+}`, so the download step always 403s
+#     against the mocked stack.
+#   - sdk_tutorials_quickstart.py: long-polls behavior-test-case generation
+#     that the mocked generator does not produce, so it hangs until timeout.
+#
+# Not listed (handled without an entry):
+#   - sdk_integrations_langfuse.py: self-skips on the missing LANGFUSE env var,
+#     so the run-all gate reports it as SKIPPED rather than failed.
+
+full_sdk_demo.py
+sdk_tutorials_quickstart.py

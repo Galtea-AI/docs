@@ -76,18 +76,6 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
   The system prompt used for this version. **Example**: "You are an expert legal document summarizer. Provide concise summaries that capture all key legal points."
 </ResponseField>
 
-<ResponseField name="Dataset URI" type="Text">
-  The URI of the dataset used to train or fine-tune this version. **Example**: "s3://company-datasets/legal-documents-v2/"
-</ResponseField>
-
-<ResponseField name="Dataset Description" type="Text">
-  A description of the dataset used in the version. **Example**: "Collection of 10,000 legal contracts and agreements with expert-created summaries"
-</ResponseField>
-
-<ResponseField name="Guardrails" type="Text">
-  The guardrails applied to the version, separated by commas. **Example**: "content filtering, citation checking, legal compliance"
-</ResponseField>
-
 <ResponseField name="Conversation Endpoint Connection" type="EndpointConnection">
   The primary [Endpoint Connection](/concepts/product/endpoint-connection) used for the main conversational interactions with your AI product. This is the only required endpoint connection.
 

@@ -7,7 +7,7 @@
  * `docs/scripts/run.py` deletes this file from `.build/` so the widget is
  * never served (see `gate_platform_assistant`).
  *
- * Renders a floating "Ask Galtea" command launcher — the brand mark in a
+ * Renders a floating "Ask Val" command launcher — the brand mark in a
  * gradient chip, not a support bubble — matching the dashboard widget
  * (`AssistantWidget`). On click, mounts a sandboxed iframe
  * pointing at the dashboard's `/embed/assistant?embed=true` route — the same
@@ -64,9 +64,9 @@
 
     const launcher = document.createElement("button");
     launcher.className = "ga-launcher";
-    launcher.setAttribute("aria-label", "Open Galtea Assistant");
+    launcher.setAttribute("aria-label", "Open Val");
     launcher.innerHTML =
-      '<span class="ga-chip">' + MARK_SVG + '</span><span class="ga-label">Ask Galtea</span>';
+      '<span class="ga-chip">' + MARK_SVG + '</span><span class="ga-label">Ask Val</span>';
 
     const wrap = document.createElement("div");
     wrap.className = "ga-iframe-wrap";
@@ -76,7 +76,7 @@
       if (iframe) return;
       iframe = document.createElement("iframe");
       iframe.src = iframeSrc();
-      iframe.title = "Galtea Assistant";
+      iframe.title = "Val";
       iframe.allow = "clipboard-write";
       // `allow-same-origin` so the React panel can use its own URL/storage.
       // `allow-forms` for the chat input's <form>. `allow-popups` +
