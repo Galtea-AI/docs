@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 
+import requests
 from _test_helpers import create_test_product
 from galtea import EndpointConnectionType, Galtea
 
@@ -18,8 +19,10 @@ product_id = create_test_product(
 
 try:
     # A conversation endpoint connection makes evaluations.run() use the server-side
-    # pipeline, which returns a real jobId we can poll. The endpoint URL is only called
-    # after the job is queued, so a placeholder endpoint is fine for this example.
+    # pipeline, which returns a real jobId we can poll. Since #2608, run() pre-flight
+    # health-checks the endpoint before queuing, so the placeholder URL below is rejected
+    # in the validation environment and the run+status demo self-skips (see handler below);
+    # a real deployment points this at a reachable agent and runs the demo end to end.
     endpoint_connection = galtea.endpoint_connections.create(
         name=f"job-status-endpoint-{run_identifier}",
         product_id=product_id,
@@ -89,6 +92,16 @@ try:
     if status.result:
         print(f"Result:   {status.result}")
     # @end get_status
+except requests.exceptions.HTTPError as e:
+    # The pre-flight health check (#2608) rejects the unreachable placeholder endpoint
+    # before any job is queued; skip the demo here. A reachable endpoint returns a jobId.
+    if e.response.status_code == 400 and (
+        "unresponsive or unhealthy endpoint connection" in e.response.text.lower()
+        or "does not have a conversation endpoint connection" in e.response.text.lower()
+    ):
+        print("Skipped (expected: polling a queued job requires a reachable endpoint connection)")
+    else:
+        raise
 finally:
     # Cleanup
     galtea.products.delete(product_id=product_id)
