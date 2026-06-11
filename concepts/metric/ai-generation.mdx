@@ -52,9 +52,29 @@ There are two ways to trigger AI metric generation from the dashboard:
 
 In both cases, the AI analyzes your product name, description, and the selected specifications to generate tailored metrics.
 
+## Complete a Metric with AI
+
+When you already know **what** you want to measure but don't want to write the judge prompt by hand, use **Complete with AI**. You provide the metric's name, description, and evaluation type as the source of truth, and the AI fills in the rest: the judge prompt and the evaluation parameters (plus a recommended evaluator model for AI Evaluation).
+
+This is available in two places:
+
+- **The manual metric form** — when creating a metric from scratch (**Metrics** tab → **New Metric** → blank), fill in the name, description, and evaluation type, then click **Complete with AI**.
+- **The AI generation review step** — when editing a generated candidate, click **Complete with AI** to regenerate its judge prompt and evaluation parameters from the candidate's current name, description, and tags.
+
+<Info>
+  Your name, description, and tags are never modified — they are the inputs the AI completes from. If you have already written a judge prompt, the dashboard asks for confirmation before replacing it.
+</Info>
+
+Complete with AI is available for **AI Evaluation** and **Human Evaluation** metrics:
+
+- For **AI Evaluation**, it produces a binary LLM-judge prompt and recommends an evaluator model.
+- For **Human Evaluation**, it produces annotator guidelines on a 0–100 scoring scale (no evaluator model, since a human assigns the score).
+
+**Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/concepts/metric/evaluation-types) for the differences between these scoring methods.
+
 ## Evaluation Parameter Selection
 
-The AI automatically selects the evaluation parameters each metric needs based on what the specification describes. For example:
+In both spec-driven generation and completion mode, the AI automatically selects the evaluation parameters each metric needs. In spec mode these are inferred from the specification description; in completion mode they are inferred from the metric description you provided. For example:
 
 - A specification about **citation accuracy** or **knowledge-grounded answers** will include `retrieval_context` so the judge can verify answers against retrieved source material.
 - A specification about **internal processes, workflows, or tool orchestration** will include `traces` (and often `tools_used`) so the judge can inspect the execution path — not just the final output.
@@ -73,13 +93,15 @@ Each AI-generated metric candidate includes:
 | **Name** | A descriptive name for the metric |
 | **Description** | What the metric evaluates |
 | **Judge Prompt** | The evaluation prompt with placeholders for dynamic data |
-| **Evaluation Parameters** | The data parameters the judge needs for evaluation (automatically selected based on the specification) |
+| **Evaluation Parameters** | The data parameters the judge needs for evaluation (automatically selected based on the specification in spec mode, or from the metric description in completion mode) |
 | **Tags** | Categorization tags |
-| **Evaluator Model** | The LLM model used for evaluation |
-| **Test Type** | Inherited from the source specification |
+| **Evaluator Model** | The LLM model used for evaluation (null for Human Evaluation metrics) |
+| **Test Type** | Inherited from the source specification (null in completion mode when no specification is provided) |
 
 ## Specification Linking
 
-When you save a generated metric, it is automatically linked to the specification it was generated from. This creates a traceable connection between your requirements and your evaluation criteria.
+When you save a metric generated from a specification, it is automatically linked to that specification. This creates a traceable connection between your requirements and your evaluation criteria.
+
+Metrics created via **Complete with AI** are not automatically linked to a specification — you can link them manually from the [Specification Hub](/concepts/product/specification) if needed.
 
 You can view linked specifications directly from a metric's detail page, and manage metric-specification links from the [Specification Hub](/concepts/product/specification).

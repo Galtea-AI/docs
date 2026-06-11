@@ -73,11 +73,17 @@ Custom AI Evaluation metrics are ideal when standard built-in metrics don't cove
 
 You can also generate metrics directly from your [Specifications](/concepts/product/specification). Select one or more specifications, and the AI produces ready-to-use metric candidates — complete with judge prompt, evaluation parameters, tags, and evaluator model. See [AI Metric Generation](/concepts/metric/ai-generation) for the full workflow.
 
+Alternatively, if you already know what you want to measure, write the name and description yourself and let the AI fill in the judge prompt and evaluation parameters with **Complete with AI**. See [Complete a Metric with AI](/concepts/metric/ai-generation#complete-a-metric-with-ai).
+
 ## Human Evaluation
 
 Human annotators score responses using the evaluation criteria you define. The metric's `judge_prompt` serves as the evaluation rubric for annotators, and `evaluation_params` determines which data fields are displayed to the evaluator.
 
 When an evaluation is created for a human-evaluated metric, it enters a `PENDING_HUMAN` status and waits for a qualified human evaluator to provide a score.
+
+<Tip>
+  Don't want to write the annotator rubric by hand? Provide the metric's name and description, then use [Complete with AI](/concepts/metric/ai-generation#complete-a-metric-with-ai) to generate guidelines on the 0–100 scale.
+</Tip>
 
 ### Key Features
 
