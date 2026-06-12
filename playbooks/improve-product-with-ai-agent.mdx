@@ -1,0 +1,194 @@
+---
+title: "Improve Your Product with Evaluations and an AI Agent"
+sidebarTitle: "Improve Product with an AI Agent"
+description: "Use the Galtea Agent Skill and CLI to find what your LLM product is getting wrong, fix it, and prove the fix — without leaving your editor."
+icon: "wand-sparkles"
+---
+
+Did you know you can hand an AI coding agent your Galtea evaluations and let it run the whole improvement loop for you? You point it at a version, it pulls the failing evaluations, finds the patterns, proposes a change to your product, and then re-runs the evaluations on the new version to confirm the change actually helped. It is the fastest way to get from a rough first version to something you trust — it will take you from 10% to 70% before you invest in more structured, fully automated evaluation pipelines.
+
+We will walk through the full loop with a concrete example: a RAG-based support chatbot that answers questions over a product knowledge base. We will use Claude with the Galtea Agent Skill as the AI agent, and the Galtea CLI under the hood.
+
+{/* Plain <iframe> rather than the docs site's self-hosted `<video autoPlay muted loop playsInline>`
+    convention because the walkthrough is currently a YouTube upload owned by marketing.
+    Migrate to a self-hosted `<video>` when the MP4 is published under /videos/. */}
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/P2BadxH8TJ8?rel=0"
+  title="Improve your product with Galtea evaluations and an AI agent"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+## Prerequisites
+
+**A product set up in Galtea.** You need a product with at least one version, and some way to produce sessions and inference results against it — either by running your app and logging to Galtea, or by connecting your endpoint directly. If you have not set this up yet, start with the [Quickstart](/quickstart).
+
+**Some metrics to evaluate against.** The loop is only as good as what you measure. The recommended path is specification-driven evaluation: you describe what your product should do, cannot do, and must follow, and Galtea generates LLM-as-a-judge metrics from those specifications. You can also link metrics manually. See [specification-driven evaluations](/sdk/tutorials/specification-driven-evaluations).
+
+**An AI agent with the Galtea Agent Skill installed.** You can use any Agent-Skills-compatible assistant; we will use Claude. Install the skill by pointing your agent at the repository:
+
+```text
+Install the Galtea Agent Skill from github.com/Galtea-AI/skills.
+```
+
+Or, in Claude Code:
+
+```bash
+/plugin marketplace add Galtea-AI/skills
+/plugin install galtea@galtea
+```
+
+The skill teaches your agent how Galtea works: it authenticates, discovers the right endpoints, runs evaluations, polls async jobs until they settle, and inspects sessions and results — all by driving the `galtea` CLI underneath. See the [Agent Skill docs](/sdk/integrations/agent-skill) for all installation options.
+
+**The Galtea CLI authenticated (optional but useful).** The skill installs and drives the CLI for you, but it helps to know it is there if you ever want to run a command by hand. Grab a `gsk_*` key from the [settings page](https://platform.galtea.ai/settings) and run:
+
+```bash
+galtea login
+# Paste your gsk_* API key when prompted.
+galtea products list   # validate auth — should return a list, not a 401
+```
+
+## The Concept
+
+The workflow is a loop with four moves:
+
+1. **Evaluate** your current version against your metrics.
+2. **Diagnose** — let the agent pull the failing evaluations and find the patterns.
+3. **Improve** — change the prompt, the retrieval, the tools, whatever the diagnosis points to, and cut a new version.
+4. **Compare** — re-run the evaluations on the new version and check it improved without regressing.
+
+Then you repeat until the obvious issues are gone. The agent does the heavy lifting at every step; you stay in the loop to make the judgment calls.
+
+## The Example Application
+
+Our example is a support chatbot that answers user questions over a product knowledge base. It retrieves relevant docs, feeds them to an LLM with a system prompt, and returns an answer. Each interaction is logged to Galtea as a session, with the user message and the assistant answer as an inference result, and the retrieved chunks attached as retrieval context.
+
+We have a handful of sessions on version `v1` already — some clean answers, some that hallucinated, some that refused things they should have handled. That is enough to start the loop.
+
+## Step 1 — Run a Baseline Evaluation
+
+First, get a score on where the current version stands. Ask the agent:
+
+```text
+Run an evaluation for version v1 of my support-chatbot product against its
+linked metrics, and show me the results when they settle.
+```
+
+With the skill loaded, the agent picks the right commands, kicks off the evaluations, and polls the async jobs until they finish — you do not have to babysit it. Under the hood this is the CLI doing things like:
+
+```bash
+galtea evaluations list --version-id <v1-id>
+galtea evaluations get <evaluation-id>
+```
+
+If you do not have sessions yet, you can have the agent generate a baseline set first — for example by simulating conversations against your endpoint, or by connecting the endpoint so Galtea runs your test cases directly. The point of this step is to have a real, scored starting line you can compare against later.
+
+## Step 2 — Diagnose: What Is Failing, and Why
+
+This is where the agent earns its keep. Instead of clicking through evaluations one by one, ask it to summarize the failures and look for patterns:
+
+```text
+Pull the poor-performing evaluations from version v1. Group them by failure
+mode, and for each group, give me the metric that failed, a representative
+example (user input, the answer, the retrieved context), and the judge's
+reason for the low score.
+```
+
+The agent fetches the low-scoring evaluations, reads the judge's reasoning attached to each, and comes back with a structured breakdown. In our run, three buckets emerged:
+
+- **Unsupported answers** — the bot answered confidently when the retrieved context did not actually contain the answer (a grounding/faithfulness failure).
+- **Off-scope responses** — the bot tried to help with requests it should have deflected, or made claims it could not verify.
+- **Weak retrieval** — the right document existed but was not retrieved, so the answer was built on the wrong chunks.
+
+This cross-evaluation pattern-finding is exactly the kind of analysis that takes a long time by hand and that the agent can do in one pass. The judge's per-evaluation reasoning is the signal that makes it possible — the score tells you that something failed, the reason tells you why.
+
+## Step 3 — Map Failures Back to Your Product
+
+Now turn the diagnosis into a concrete change. Ask the agent to connect each failure bucket to a likely cause in your system:
+
+```text
+For each failure group, what in my product is most likely causing it — the
+system prompt, the retrieval step, or something else? Propose specific,
+minimal changes. Group related issues into single changes where you can.
+```
+
+In our example the agent mapped the buckets to:
+
+- **Unsupported answers** → no instruction in the system prompt to ground answers strictly in the retrieved context and to say "I don't know" when it is missing.
+- **Off-scope responses** → no scope guardrail describing what the bot should and should not handle.
+- **Weak retrieval** → a retrieval problem, not a prompt problem: too few chunks retrieved, or a chunking/embedding issue worth a separate look.
+
+You do not have to accept every suggestion. Push back, ask for alternatives, or narrow the scope — this is a conversation, and you are the one who knows the product. The first two are quick prompt edits; the third is a deeper retrieval fix you might tackle in its own iteration.
+
+## Step 4 — Make the Change and Cut a New Version
+
+Apply the changes you agreed on (here: tighten the system prompt with a grounding rule and a scope guardrail), then register a new version in Galtea so the next evaluation is tracked against it. Ask the agent:
+
+```text
+Create a new version v2 for this product describing the prompt changes we
+just made, so we can evaluate it.
+```
+
+Under the hood:
+
+```bash
+galtea versions create --product-id <product-id> --name "v2"
+```
+
+Keeping each change behind its own version is what makes the comparison in the next step meaningful — every evaluation is attributed to the exact state of the product that produced it.
+
+## Step 5 — Re-evaluate and Compare
+
+Run the same evaluations against `v2` and compare them to your `v1` baseline:
+
+```text
+Run the same evaluations on v2, then compare v2 against v1: which metrics
+improved, which regressed, and did any of the previously failing cases get
+fixed?
+```
+
+The agent runs the new evaluations, waits for them to settle, and lays the two versions side by side — pass rates per metric, score distributions, and whether the specific cases from your three failure buckets now pass. This is the step that closes the loop: it tells you whether the change was real and whether it broke anything that used to work.
+
+```bash
+galtea evaluations list --version-id <v2-id>
+```
+
+In our run, the grounding rule cleared most of the "unsupported answers" bucket and the guardrail fixed the off-scope cases, with no regressions on the answers that were already good. The weak-retrieval bucket was untouched — as expected, since we only changed the prompt — which makes it the obvious target for the next iteration.
+
+## Step 6 — Keep Iterating
+
+Repeat the loop until you stop seeing obvious failures. Each pass is the same four moves: evaluate, diagnose, improve, compare. In practice a few iterations get you to consistently good results on your current set of cases, at which point it is worth investing in something more structured and automated.
+
+## Variations
+
+We drove this loop from a small set of existing sessions, but the same approach works with other sources of signal:
+
+- **Production sessions.** If you log real traffic to Galtea, point the loop at production sessions instead of a hand-made set. Be selective — not every production failure is one you want to optimize for.
+- **Specification-driven tests.** Drive the whole loop from specifications: describe the behavior you expect, let Galtea generate the metrics and tests, and evaluate against them. This keeps "what good looks like" explicit and reusable across versions.
+- **Human annotations feeding the metrics optimizer.** Annotate a subset of evaluations yourself to define what a correct judgment looks like, then use the agent to apply that standard across a larger corpus — the input the metrics optimizer needs to make your LLM-as-a-judge metrics more reliable.
+
+## What's Next
+
+Once the obvious issues are gone, the next steps make the loop durable so changes do not silently regress later:
+
+- **Harden your metrics.** If the agent's diagnosis ever felt off, the metric — not the product — may be the problem. Tightening your judge prompts and feeding human annotations into the metrics optimizer is its own improvement loop, and a natural follow-on playbook.
+- **Wire evaluations into CI/CD.** The same CLI commands the skill runs by hand can run on every version in your pipeline, so a regression fails the build instead of reaching users. Because the CLI is non-interactive (`export GALTEA_API_KEY=gsk_...`), it drops straight into CI.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Agent Skill" icon="robot" href="/sdk/integrations/agent-skill">
+    Install the skill that drives the whole loop on your behalf.
+  </Card>
+  <Card title="CLI Usage" icon="terminal" href="/cli/usage">
+    The `galtea` binary the skill runs under the hood.
+  </Card>
+  <Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specification-driven-evaluations">
+    Generate metrics and tests from what your product should do.
+  </Card>
+  <Card title="Skill Source" icon="github" href="https://github.com/Galtea-AI/skills">
+    The open-source Galtea Agent Skill repository.
+  </Card>
+</CardGroup>
