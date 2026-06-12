@@ -116,6 +116,11 @@ Outside of `AgentInput`, the `TestCase` and `InferenceResult` models provide two
 - `.input` (`str`): The `user_message` value as a plain string
 - `.input_data` (`dict`): The full structured input object with all fields
 
+`InferenceResult` also provides a symmetric pair for the agent output:
+
+- `.actual_output` (`str | None`): The scored output as a plain string. For voice turns this is the `assistant_message` transcript unwrapped from the content-parts envelope.
+- `.actual_output_data` (`dict | None`): The full output envelope when present (e.g. `{"assistant_message": "...", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}`), otherwise `None` for plain-text output.
+
 ```python
 # After running generate() or in a test loop, access the full structured input:
 galtea_client = Galtea(api_key="YOUR_API_KEY")
@@ -127,12 +132,16 @@ print(test_case.input)  # "hello"
 # .input_data gives the full structured dict
 print(test_case.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
-# Same pattern for inference results:
+# Same pattern for inference results (input side):
 inference_result = galtea_client.inference_results.get(
     inference_result_id=inference_result_id
 )
 print(inference_result.input)  # "hello"
 print(inference_result.input_data)  # {"user_message": "hello", "chat_type": "support"}
+
+# Output side — symmetric pair:
+print(inference_result.actual_output)  # "the answer is 42" (plain string for text; transcript for voice)
+print(inference_result.actual_output_data)  # None for plain text; {"assistant_message": "...", "content": [...]} for voice
 ```
 
 ## How Structured Input Flows Through the System
