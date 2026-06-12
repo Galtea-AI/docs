@@ -1,0 +1,40 @@
+---
+title: 'Update Phone Connection'
+sidebarTitle: "Update"
+description: "Update an existing phone connection."
+---
+
+## Returns
+Returns the updated [Phone Connection](/concepts/product/phone-connection) object.
+
+## Example
+```python
+phone_connection = galtea.phone_connections.update(
+    phone_connection_id=phone_connection_id,
+    language_code="es",
+)
+```
+
+## Parameters
+<ResponseField name="phone_connection_id" type="string" required>
+  ID of the phone connection to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the phone connection.
+</ResponseField>
+<ResponseField name="phone_number" type="string" optional>
+  New phone number in [E.164 format](https://en.wikipedia.org/wiki/E.164) (e.g., `+14155552671`).
+</ResponseField>
+<ResponseField name="voice" type="string" optional>
+  New voice identifier for the simulated caller.
+</ResponseField>
+<ResponseField name="language_code" type="string" optional>
+  New language code for the call (e.g., `en`, `es`).
+</ResponseField>
+
+<Note>
+  All fields except `phone_connection_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>

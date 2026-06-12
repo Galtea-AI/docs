@@ -1,0 +1,24 @@
+---
+title: 'Get Phone Connection By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific phone connection by its name within a product."
+---
+
+## Returns
+Returns a [Phone Connection](/concepts/product/phone-connection) object for the given product and name.
+
+## Example
+```python
+phone_connection = galtea.phone_connections.get_by_name(
+    name="production-voice-agent-" + run_identifier,
+    product_id=product_id,
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the phone connection to retrieve.
+</ResponseField>
+<ResponseField name="product_id" type="string" required>
+  ID of the product the connection belongs to.
+</ResponseField>

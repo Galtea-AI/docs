@@ -1,0 +1,21 @@
+<Update label="2026-06-15" description="Smoother Onboarding, Endpoint Pre-flight Checks, and Faster Evaluation Runs">
+
+## Smoother Onboarding
+
+Getting your first [product](/concepts/product) evaluated now takes less waiting and less typing.
+
+**Generation runs in the background.** When the onboarding tutorial creates the [tests](/concepts/product/test) and [metrics](/concepts/metric) for your selected [specifications](/concepts/product/specification), it no longer holds you on the review step until everything finishes. Generation continues while you keep moving through setup — only the final **Launch Evaluation** button waits for it to be ready, and if anything fails to generate you get a clear retry instead of a stuck screen.
+
+**Your first product is named for you.** The onboarding form no longer asks you to name your product. The platform derives a concise name from the description you provide as part of the same step, so there's one less field between you and your first [evaluation](/concepts/product/version/session/evaluation).
+
+## Platform Improvements
+
+- **Endpoint connections are checked before any work is queued:** When you start an evaluation, the platform now runs a quick pre-flight probe against the version's [endpoint connection](/concepts/product/endpoint-connection) first. If the endpoint is unreachable or returns an error, the request is rejected immediately with a clear message — instead of queuing inferences that were always going to fail.
+- **Faster large evaluation runs:** Evaluation runs now process their [sessions](/concepts/product/version/session) in parallel rather than one after another, so large runs finish sooner and a single big run no longer blocks others behind it. Each run also respects a per-endpoint rate limit, so your endpoint is never flooded with requests.
+
+## Documentation and Examples
+
+- A new [Improve Your Product with Evaluations and an AI Agent](/playbooks/improve-product-with-ai-agent) playbook walks through the full evaluate → diagnose → improve → compare loop: hand your failing evaluations to an AI coding agent using the [Galtea Agent Skill](/sdk/integrations/agent-skill) and CLI, let it propose a fix, then re-run the evaluations to prove it helped — illustrated end to end on a RAG support chatbot.
+- The [Direct Inferences & Evaluations from Platform](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) tutorial now documents the full **round-trip** for stateful multi-turn conversations: how to extract a value from one response into session metadata, and then send it back on the next turn.
+
+</Update>

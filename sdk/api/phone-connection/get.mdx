@@ -1,0 +1,20 @@
+---
+title: 'Get Phone Connection'
+sidebarTitle: "Get"
+description: "Retrieve a specific phone connection by its ID."
+---
+
+## Returns
+Returns a [Phone Connection](/concepts/product/phone-connection) object for the given ID.
+
+## Example
+```python
+phone_connection = galtea.phone_connections.get(
+    phone_connection_id=phone_connection_id
+)
+```
+
+## Parameters
+<ResponseField name="phone_connection_id" type="string" required>
+  The ID of the phone connection to retrieve.
+</ResponseField>

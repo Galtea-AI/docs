@@ -1,0 +1,85 @@
+---
+title: "Phone Connection"
+sidebarTitle: "Overview"
+description: "A reusable telephony connection that lets Galtea dial your AI agent's phone number for voice evaluation."
+---
+
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+
+## What is a Phone Connection?
+
+A Phone Connection tells Galtea how to reach your AI agent over the phone. Instead of calling an HTTP API, Galtea **dials your agent's phone number** and runs the conversation as a real voice call — this is **Direct Inference over the phone**. You configure the phone number once (and, optionally, the voice and language), and Galtea uses it to drive voice evaluations against your telephony agent automatically.
+
+## Use Cases
+
+- **Evaluate voice agents** — Galtea calls your agent's phone number directly for each test case, exercising the full telephony stack
+- **Standardize call configuration** — Define a reusable phone number, voice, and language for repeatable voice evaluations
+- **Manage multiple agents** — Create separate phone connections for different agents or environments
+
+## Creating a Phone Connection
+
+To create a Phone Connection:
+
+1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
+2. Go to the "Phone Connections" section
+3. Click "New Phone Connection"
+4. Configure the connection properties as described below
+
+## Phone Connection Properties
+
+<ResponseField name="Name" type="Text" required>
+  A unique name for the phone connection within the product. **Example**: "Production Voice Agent" or "Staging IVR".
+</ResponseField>
+
+<ResponseField name="Phone Number" type="Text" required>
+  The phone number Galtea dials to reach your AI agent, in [E.164 format](https://en.wikipedia.org/wiki/E.164) (a leading `+` followed by the country code and number). **Example**: `+14155552671`.
+</ResponseField>
+
+<ResponseField name="Voice" type="Text">
+  Optional identifier of the voice Galtea uses for the simulated caller during the call.
+</ResponseField>
+
+<ResponseField name="Language Code" type="Text">
+  Optional language code for the call (e.g., `en`, `es`). Controls the language Galtea speaks during the conversation.
+</ResponseField>
+
+## Relation to Versions
+
+A Phone Connection becomes the **conversation target** of a [Version](/concepts/product/version): when a version references a phone connection, Galtea dials that number to run each evaluation.
+
+A version's conversation target is **mutually exclusive** — a version connects to your AI product either through an [Endpoint Connection](/concepts/product/endpoint-connection) **or** through a Phone Connection, never both. Choose an endpoint connection when Galtea should call your HTTP API, or a phone connection when Galtea should place a voice call.
+
+## Relation to Voice Evaluation
+
+Phone Connections power **voice evaluation**: because Galtea drives a real phone call, the conversation, transcription, and resulting inferences reflect how your agent behaves over the telephony channel. This makes phone connections the entry point for evaluating voice agents end-to-end.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use descriptive names">
+    Choose names that clearly identify the agent's purpose and environment, such as "Production Voice Agent" or "Staging IVR".
+  </Accordion>
+
+  <Accordion title="Always use E.164 format">
+    Provide the phone number with a leading `+` and country code (e.g., `+14155552671`). Numbers in other formats are rejected.
+  </Accordion>
+
+  <Accordion title="Set the language explicitly">
+    When your agent operates in a specific language, set the language code so the simulated caller speaks the expected language.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Endpoint Connection" icon="plug" href="/concepts/product/endpoint-connection">
+    Connect to your AI product over an HTTP API instead of the phone.
+  </Card>
+  <Card title="Phone Connection Service SDK" icon="phone" href="/sdk/api/phone-connection/service">
+    Manage phone connections programmatically using the Python SDK.
+  </Card>
+  <Card title="Version" icon="code-branch" href="/concepts/product/version">
+    Attach a phone connection to a version for voice evaluation.
+  </Card>
+</CardGroup>
