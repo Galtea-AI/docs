@@ -71,7 +71,7 @@ try:
         print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
     # @end run_endpoint_connection
 except requests.exceptions.HTTPError as e:
-    if e.response.status_code == 400 and "version does not have a conversation endpoint connection" in e.response.text.lower():
+    if e.response.status_code == 400 and "version does not have a conversation target" in e.response.text.lower():
         print("Skipped (expected: the endpoint connection mode requires a deployed endpoint)")
     else:
         raise
@@ -85,7 +85,7 @@ try:
     )
     # @end run_with_specification_ids
 except requests.exceptions.HTTPError as e:
-    if e.response.status_code == 400 and "version does not have a conversation endpoint connection" in e.response.text.lower():
+    if e.response.status_code == 400 and "version does not have a conversation target" in e.response.text.lower():
         print("Skipped (expected: the endpoint connection mode requires a deployed endpoint)")
     else:
         raise

@@ -132,7 +132,7 @@ try:
         print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
     # @end wait_for_job_id
 except requests.exceptions.HTTPError as e:
-    if e.response.status_code == 400 and "version does not have a conversation endpoint connection" in e.response.text.lower():
+    if e.response.status_code == 400 and "version does not have a conversation target" in e.response.text.lower():
         print("Skipped (expected: endpoint-connection mode requires a deployed endpoint)")
     else:
         raise

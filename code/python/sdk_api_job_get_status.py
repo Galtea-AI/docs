@@ -97,7 +97,7 @@ except requests.exceptions.HTTPError as e:
     # before any job is queued; skip the demo here. A reachable endpoint returns a jobId.
     if e.response.status_code == 400 and (
         "unresponsive or unhealthy endpoint connection" in e.response.text.lower()
-        or "does not have a conversation endpoint connection" in e.response.text.lower()
+        or "does not have a conversation target" in e.response.text.lower()
     ):
         print("Skipped (expected: polling a queued job requires a reachable endpoint connection)")
     else:
