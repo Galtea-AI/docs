@@ -108,10 +108,53 @@ You can also extract additional values to store as session metadata:
 }
 ```
 
-Any extra keys beyond `output` and `retrieval_context` are saved to the session metadata and become available as `{{ key }}` placeholders in subsequent turns.
+Any extra key beyond the [special keys](/concepts/product/endpoint-connection-configuration#special-keys) (`output`, `retrieval_context`, `session_id`, `traces`) is saved to the session metadata and becomes available as a `{{ key }}` placeholder in subsequent turns.
+
+#### Sending an extracted value back (the round-trip)
+
+Extracting a value is only **half** of stateful multi-turn handling. If your agent returns an identifier on the first turn — a `thread_id`, `conversation_id`, or any token that groups subsequent messages — you must also **reference it in the Input Template** so Galtea sends it back on the next turn. Extraction alone stores the value but never resends it.
+
+The round-trip has two coordinated sides:
+
+<CodeGroup>
+```json Output Mapping (extract)
+{
+  "output": "$.content",
+  "thread_id": "$.thread_id"
+}
+```
+
+```jinja2 Input Template (re-send)
+{
+  "message": { "type": "human", "content": "{{ input.user_message }}" },
+  "thread_id": "{{ thread_id }}"
+}
+```
+</CodeGroup>
+
+Turn by turn:
+
+1. **Turn 1** — `thread_id` has no value yet, so `{{ thread_id }}` renders as an empty string. Your agent creates a new thread and returns its id in the response.
+2. **Extraction** — Output Mapping captures `$.thread_id` into session metadata.
+3. **Turn 2+** — `{{ thread_id }}` now renders the captured id, so every following message is routed to the same thread.
+
+<Warning>
+  Configuring the Output Mapping but leaving a **hardcoded** id (or omitting `{{ thread_id }}` entirely) in the Input Template is the most common mistake: the value is captured but never resent, so the agent either starts a fresh thread every turn or — worse, with a fixed id — collides every conversation onto one shared thread and leaks context across unrelated test cases.
+</Warning>
+
+<Tip>
+  On the first turn, undefined placeholders render as empty strings. If your agent **rejects** an empty `thread_id` (rather than treating it as "create a new thread"), omit the field entirely on the first turn with a conditional, minding the trailing comma so the body stays valid JSON:
+
+  ```jinja2
+  {
+    "message": { "type": "human", "content": "{{ input.user_message }}" }{% if thread_id %},
+    "thread_id": "{{ thread_id }}"{% endif %}
+  }
+  ```
+</Tip>
 
 <Info>
-  See [Version — Special keys in Output Mapping](/concepts/product/version#special-keys-in-output-mapping) for a complete reference of how extracted values are stored and reused.
+  See [Templates & Mapping — State Management](/concepts/product/endpoint-connection-configuration#state-management) for the full reference on how extracted values are stored and reused across turns.
 </Info>
 
 ## Step 2: Create a Version with the Endpoint Connection

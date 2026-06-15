@@ -116,6 +116,13 @@
             ]
           },
           {
+            "group": "Playbooks",
+            "icon": "book-open",
+            "pages": [
+              "playbooks/improve-product-with-ai-agent"
+            ]
+          },
+          {
             "group": "Integrations",
             "pages": [
               "sdk/integrations/agent-skill",
