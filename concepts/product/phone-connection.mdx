@@ -13,6 +13,7 @@ A Phone Connection tells Galtea how to reach your AI agent over the phone. Inste
 ## Use Cases
 
 - **Evaluate voice agents** — Galtea calls your agent's phone number directly for each test case, exercising the full telephony stack
+- **Multi-turn conversation evaluation** — For Behavior test cases, Galtea drives a full scripted conversation using the test case's persona, goal, and scenario, with the conversation simulator generating each user turn.
 - **Standardize call configuration** — Define a reusable phone number, voice, and language for repeatable voice evaluations
 - **Manage multiple agents** — Create separate phone connections for different agents or environments
 
@@ -40,7 +41,7 @@ To create a Phone Connection:
 </ResponseField>
 
 <ResponseField name="Language Code" type="Text">
-  Optional language code for the call (e.g., `en`, `es`). Controls the language Galtea speaks during the conversation.
+  Optional language code for the call (e.g., `en`, `es`). Stored on the connection for future use. Today the simulated caller's voice is **English-only** — the current text-to-speech provider does not yet honor a language selection, so a non-English code does not change the spoken language (the accent comes from the **Voice** instead). Multi-language voice is on the roadmap.
 </ResponseField>
 
 ## Relation to Versions
@@ -53,6 +54,8 @@ A version's conversation target is **mutually exclusive** — a version connects
 
 Phone Connections power **voice evaluation**: because Galtea drives a real phone call, the conversation, transcription, and resulting inferences reflect how your agent behaves over the telephony channel. This makes phone connections the entry point for evaluating voice agents end-to-end.
 
+Phone connections currently run **Behavior** test cases (multi-turn: the conversation simulator drives each user turn from the test case's persona, goal, and scenario) — no additional configuration is required beyond attaching the phone connection to the version. Single-turn Accuracy/Security phone runs (speaking a scripted input line into the call) are planned but not yet available; a version whose phone connection would run non-Behavior tests is rejected.
+
 ## Best Practices
 
 <AccordionGroup>
@@ -64,8 +67,8 @@ Phone Connections power **voice evaluation**: because Galtea drives a real phone
     Provide the phone number with a leading `+` and country code (e.g., `+14155552671`). Numbers in other formats are rejected.
   </Accordion>
 
-  <Accordion title="Set the language explicitly">
-    When your agent operates in a specific language, set the language code so the simulated caller speaks the expected language.
+  <Accordion title="Record the call's language">
+    Set the language code to document the language your agent operates in. Note that the simulated caller currently speaks **English only** — language-specific synthesis is not yet available, so for now choose the **Voice** to match the accent you want.
   </Accordion>
 </AccordionGroup>
 
