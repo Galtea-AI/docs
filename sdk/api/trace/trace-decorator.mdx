@@ -88,9 +88,7 @@ def data_agent(input_data: AgentInput) -> AgentResponse:
     return AgentResponse(content=str(result))
 
 
-session_serialization = galtea.sessions.create(
-    version_id=version_id, is_production=True
-)
+session_serialization = galtea.sessions.create(version_id=version_id, is_production=True)
 if session_serialization is None:
     raise ValueError("session_serialization is None")
 

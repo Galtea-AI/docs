@@ -97,7 +97,6 @@ print(f"Test '{test.name}' created with type auto-derived from specification")
 # @end create_test_from_spec
 
 
-
 # Cleanup
 galtea.products.delete(product_id=product_id)
 galtea.metrics.delete(metric_id=metric.id)

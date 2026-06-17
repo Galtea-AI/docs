@@ -43,9 +43,7 @@ phone_connections = galtea.phone_connections.list(
 # @end list
 
 # @start get
-phone_connection = galtea.phone_connections.get(
-    phone_connection_id=phone_connection_id
-)
+phone_connection = galtea.phone_connections.get(phone_connection_id=phone_connection_id)
 # @end get
 
 # @start get_by_name
@@ -63,9 +61,7 @@ phone_connection = galtea.phone_connections.update(
 # @end update
 
 # @start delete
-galtea.phone_connections.delete(
-    phone_connection_id=phone_connection_id
-)
+galtea.phone_connections.delete(phone_connection_id=phone_connection_id)
 # @end delete
 
 # === Cleanup ===

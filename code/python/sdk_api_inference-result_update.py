@@ -40,9 +40,7 @@ def my_model_generate(user_input: str) -> str:
 # @start deferred_output
 # Create inference result with just input
 user_input = "What is the weather today?"
-inference_result = galtea.inference_results.create(
-    session_id=session.id, input=user_input
-)
+inference_result = galtea.inference_results.create(session_id=session.id, input=user_input)
 if inference_result is None:
     raise ValueError("inference_result is None")
 
@@ -52,9 +50,7 @@ response = my_model_generate(user_input)
 latency_ms = (time.time() - start_time) * 1000
 
 # Update with output and metrics
-galtea.inference_results.update(
-    inference_result_id=inference_result.id, output=response, latency=latency_ms
-)
+galtea.inference_results.update(inference_result_id=inference_result.id, output=response, latency=latency_ms)
 # @end deferred_output
 
 

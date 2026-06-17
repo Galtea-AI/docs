@@ -27,9 +27,7 @@ def my_agent(user_message: str) -> str:
     return f"Response to: {user_message}"
 
 
-inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, input="Generate something"
-)
+inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="Generate something")
 ```
 
 Manually create an inference result:

@@ -114,9 +114,7 @@ def failing_agent(input_data: AgentInput) -> AgentResponse:
 
 
 try:
-    result = galtea_client.inference_results.generate(
-        agent=failing_agent, session=session_error, input="test"
-    )
+    result = galtea_client.inference_results.generate(agent=failing_agent, session=session_error, input="test")
 except Exception as e:
     # Trace context is automatically cleaned up
     print(f"Agent failed: {e}")

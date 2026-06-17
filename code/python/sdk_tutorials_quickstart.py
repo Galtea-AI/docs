@@ -260,22 +260,12 @@ MyAgentInstance = my_agent
 accuracy_test_case = galtea.test_cases.list(test_id=accuracy_test.id)[0]
 security_test_case = galtea.test_cases.list(test_id=security_test.id)[0]
 behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id)[0]
-if (
-    accuracy_test_case is None
-    or security_test_case is None
-    or behavior_test_case is None
-):
+if accuracy_test_case is None or security_test_case is None or behavior_test_case is None:
     raise ValueError("No test cases found for one or more tests")
 
-accuracy_session = galtea.sessions.create(
-    version_id=version_id, test_case_id=accuracy_test_case.id
-)
-security_session = galtea.sessions.create(
-    version_id=version_id, test_case_id=security_test_case.id
-)
-behavior_session = galtea.sessions.create(
-    version_id=version_id, test_case_id=behavior_test_case.id
-)
+accuracy_session = galtea.sessions.create(version_id=version_id, test_case_id=accuracy_test_case.id)
+security_session = galtea.sessions.create(version_id=version_id, test_case_id=security_test_case.id)
+behavior_session = galtea.sessions.create(version_id=version_id, test_case_id=behavior_test_case.id)
 if accuracy_session is None or security_session is None or behavior_session is None:
     raise ValueError("Failed to create one or more sessions")
 # galtea.simulator.simulate(
@@ -303,11 +293,7 @@ conversational_simulation_result = galtea.simulator.simulate(
     agent=my_agent,
     max_turns=behavior_test_case.max_iterations or 10,
 )
-if (
-    accuracy_inference_result is None
-    or security_inference_result is None
-    or conversational_simulation_result is None
-):
+if accuracy_inference_result is None or security_inference_result is None or conversational_simulation_result is None:
     raise ValueError("Failed to generate one or more inference results")
 galtea.evaluations.create(
     session_id=accuracy_session.id,

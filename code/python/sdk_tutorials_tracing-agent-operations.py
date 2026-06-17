@@ -68,9 +68,7 @@ def my_function(query: str) -> str:
 
 # @start 2_the_context_manager
 def get_user(user_id: str) -> str:
-    with start_trace(
-        "database_query", type=TraceType.TOOL, input={"user_id": user_id}
-    ) as span:
+    with start_trace("database_query", type=TraceType.TOOL, input={"user_id": user_id}) as span:
         query = f"SELECT * FROM users WHERE id = {user_id}"
         result = db.query(query)
         span.update(output=result, metadata={"query": query})
@@ -109,9 +107,7 @@ session = galtea.sessions.create(version_id=version.id, is_production=True)
 # @end automatic_collection_agent_setup
 
 # @start automatic_collection_single_turn_with
-inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, input="What's the price?"
-)
+inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="What's the price?")
 # Traces are collected, associated with inference_result.id, and flushed automatically
 # @end automatic_collection_single_turn_with
 
@@ -119,14 +115,10 @@ inference_result = galtea.inference_results.generate(
 # Create a session for multi-turn simulation (requires test case)
 test_cases = galtea.test_cases.list(test_id=behavior_test.id, limit=1)
 if test_cases:
-    simulation_session = galtea.sessions.create(
-        version_id=version.id, test_case_id=test_cases[0].id
-    )
+    simulation_session = galtea.sessions.create(version_id=version.id, test_case_id=test_cases[0].id)
 
     # @start automatic_collection_multi_turn_with
-    result = galtea.simulator.simulate(
-        session_id=simulation_session.id, agent=my_agent, max_turns=5
-    )
+    result = galtea.simulator.simulate(session_id=simulation_session.id, agent=my_agent, max_turns=5)
     # Traces are saved automatically for each turn
     # @end automatic_collection_multi_turn_with
 
@@ -168,9 +160,7 @@ try:
     response = run_agent(user_input)
 
     # 4. Update inference result with the output
-    galtea.inference_results.update(
-        inference_result_id=manual_inference_result.id, output=response
-    )
+    galtea.inference_results.update(inference_result_id=manual_inference_result.id, output=response)
 finally:
     # 5. Clear context and flush traces to Galtea
     clear_context(token)  # flush=True by default
@@ -196,6 +186,8 @@ def remote_agent(input_data: AgentInput) -> AgentResponse:
         },
     )
     return AgentResponse(content=response.json()["content"])
+
+
 # @end remote_agent_tracing
 
 
@@ -213,6 +205,8 @@ def handle_request(message: str, session_id: str, inference_result_id: str) -> s
         return response
     finally:
         clear_context(token)
+
+
 # @end remote_server_handler
 
 

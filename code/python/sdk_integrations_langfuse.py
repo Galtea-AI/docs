@@ -69,6 +69,8 @@ def generate(query: str, context: list[str]) -> str:
 def my_agent(user_input: str) -> str:
     context = retrieve(user_input)
     return generate(user_input, context)
+
+
 # @end agent_definition
 
 # @start option_a_kwarg
@@ -118,6 +120,8 @@ def agent(user_input: str) -> str:
     docs = search_docs(user_input)
     api_result = call_api("/check")
     return call_llm(f"Context: {docs}, API: {api_result}, Question: {user_input}")
+
+
 # @end observation_types
 
 
@@ -162,9 +166,7 @@ async def run_async_agent(user_input: str) -> str:
 # `@observe` detects the wrapped function is `async def` and returns an async
 # wrapper that awaits the coroutine before clearing context. Call it like any
 # other coroutine:
-result = asyncio.run(
-    run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
-)
+result = asyncio.run(run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123"))
 # @end observe_async_example
 
 # @start api_start_observation_example

@@ -72,13 +72,9 @@ def my_agent(user_message: str) -> str:
 
 # Run simulations with your agent function
 for test_case in test_cases:
-    session = galtea_client.sessions.create(
-        version_id=version.id, test_case_id=test_case.id
-    )
+    session = galtea_client.sessions.create(version_id=version.id, test_case_id=test_case.id)
 
-    result = galtea_client.simulator.simulate(
-        session_id=session.id, agent=my_agent, max_turns=10
-    )
+    result = galtea_client.simulator.simulate(session_id=session.id, agent=my_agent, max_turns=10)
 
     # Analyze results
     print(f"Scenario: {test_case.scenario}")

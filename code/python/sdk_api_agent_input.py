@@ -51,9 +51,7 @@ if test_case is None:
     raise ValueError("test_case is None")
 test_case_id: str = test_case.id
 
-session = galtea_client.sessions.create(
-    version_id=version.id, test_case_id=test_case_id, is_production=False
-)
+session = galtea_client.sessions.create(version_id=version.id, test_case_id=test_case_id, is_production=False)
 if session is None:
     raise ValueError("session is None")
 
@@ -141,15 +139,15 @@ print(test_case.input)  # "hello"
 print(test_case.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
 # Same pattern for inference results (input side):
-inference_result = galtea_client.inference_results.get(
-    inference_result_id=inference_result_id
-)
+inference_result = galtea_client.inference_results.get(inference_result_id=inference_result_id)
 print(inference_result.input)  # "hello"
 print(inference_result.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
 # Output side — symmetric pair:
 print(inference_result.actual_output)  # "the answer is 42" (plain string for text; transcript for voice)
-print(inference_result.actual_output_data)  # None for plain text; {"assistant_message": "...", "content": [...]} for voice
+print(
+    inference_result.actual_output_data
+)  # None for plain text; {"assistant_message": "...", "content": [...]} for voice
 # @end test_case_input_data
 
 # Cleanup

@@ -61,9 +61,7 @@ def handle_user_query(user_query: str, retrieval_context: str | None = None) -> 
 
 
 # Test the handler
-handle_user_query(
-    "What are your business hours?", "Business hours: 9am-5pm Monday-Friday"
-)
+handle_user_query("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
 # @end single_turn
 
 
@@ -103,9 +101,7 @@ user_questions = [
 for question in user_questions:
     model_response = get_model_response(question)
     # Log the turn to Galtea right after it happens
-    inference_result = galtea.inference_results.create(
-        session_id=session.id, input=question, output=model_response
-    )
+    inference_result = galtea.inference_results.create(session_id=session.id, input=question, output=model_response)
 # @end log_turns_individually
 
 
@@ -135,9 +131,7 @@ conversation_turns = [
     {"role": "assistant", "content": "You're welcome!"},
 ]
 
-galtea.inference_results.create_batch(
-    session_id=session_batch.id, conversation_turns=conversation_turns
-)
+galtea.inference_results.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
 # @end log_turns_batch
 
 

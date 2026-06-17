@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 import requests
@@ -52,7 +51,7 @@ for evaluation in completed:
 # Wait with a custom timeout and poll interval
 completed = galtea.evaluations.wait_for(
     evaluation_ids=[e.id for e in evaluations],
-    timeout=600,       # wait up to 10 minutes
+    timeout=600,  # wait up to 10 minutes
     poll_interval=10,  # check every 10 seconds
 )
 # @end wait_for_custom_timeout
@@ -100,8 +99,10 @@ galtea.specifications.link_tests(
     test_ids=[behavior_test.id],
 )
 
+
 def my_agent(messages: list[dict]) -> str:
     return f"Your model output"
+
 
 # @start wait_for_run_lifecycle
 # Full lifecycle: run with agent, then wait for evaluations to finish processing

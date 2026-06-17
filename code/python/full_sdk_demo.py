@@ -152,7 +152,6 @@ metric_name = "metric-docs-" + run_identifier
 # @start metric_create
 metric = galtea.metrics.create(
     name=metric_name,
-
     evaluator_model_name="GPT-4.1",
     source="partial_prompt",
     judge_prompt="Evaluate if the actual_output is polite.",
@@ -186,9 +185,7 @@ if metric is None:
 
 
 # @start session_create
-session = galtea.sessions.create(
-    version_id=version_id, test_case_id=test_case_id, is_production=False
-)
+session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id, is_production=False)
 # @end session_create
 if session is None:
     raise ValueError("session from create is None")
@@ -330,9 +327,7 @@ def my_agent(user_message: str) -> str:
     return f"Response to: {user_message}"
 
 
-inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, input="Generate something"
-)
+inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="Generate something")
 # @end inference_result_generate
 if inference_result is None:
     raise ValueError("inference_result from generate is None")
@@ -452,7 +447,6 @@ simulation_result = galtea.simulator.simulate(
     session_id=behavior_session.id,
     agent=my_agent,
     max_turns=3,
-
 )
 # @end simulator_simulate
 if simulation_result is None:
@@ -478,7 +472,6 @@ if self_hosted_metric is not None:
     galtea.metrics.delete(metric_id=self_hosted_metric.id)
 self_hosted_metric = galtea.metrics.create(
     name=self_hosted_metric_name,
-
     source="self_hosted",
     description="A self-hosted metric for demonstration",
 )
@@ -571,9 +564,7 @@ evaluations = galtea.evaluations.create(
 )
 # @end evaluation_create_from_inference_result
 if evaluations is None or len(evaluations) == 0:
-    raise ValueError(
-        "evaluations from create with inference_result_id is None or empty"
-    )
+    raise ValueError("evaluations from create with inference_result_id is None or empty")
 
 # @start evaluation_create_production
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)

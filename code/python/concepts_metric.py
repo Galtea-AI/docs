@@ -28,9 +28,7 @@ quality_reviewers_group = galtea.user_groups.create(
 )
 if quality_reviewers_group is None:
     raise ValueError("Failed to create quality reviewers user group")
-quality_reviewers_group_name = (
-    quality_reviewers_group.name if quality_reviewers_group else ""
-)
+quality_reviewers_group_name = quality_reviewers_group.name if quality_reviewers_group else ""
 
 # @start human_evaluation_example
 quality_reviewers_group = galtea.user_groups.get_by_name(quality_reviewers_group_name)

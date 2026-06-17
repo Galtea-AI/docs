@@ -31,9 +31,7 @@ For fine-grained control over specific code blocks, use `start_trace`.
 
 ```python
 def get_user(user_id: str) -> str:
-    with start_trace(
-        "database_query", type=TraceType.TOOL, input={"user_id": user_id}
-    ) as span:
+    with start_trace("database_query", type=TraceType.TOOL, input={"user_id": user_id}) as span:
         query = f"SELECT * FROM users WHERE id = {user_id}"
         result = db.query(query)
         span.update(output=result, metadata={"query": query})
@@ -93,9 +91,7 @@ session = galtea.sessions.create(version_id=version.id, is_production=True)
 When using `generate()`, the trace context is automatically set for the entire duration of the agent's execution. Just call `generate()` with your agent and session:
 
 ```python
-inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, input="What's the price?"
-)
+inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="What's the price?")
 # Traces are collected, associated with inference_result.id, and flushed automatically
 ```
 
@@ -104,9 +100,7 @@ inference_result = galtea.inference_results.generate(
 When using the [Conversation Simulator](/sdk/tutorials/simulating-conversations), tracing works out-of-the-box. Decorate your agent methods with `@trace` and run:
 
 ```python
-    result = galtea.simulator.simulate(
-        session_id=simulation_session.id, agent=my_agent, max_turns=5
-    )
+    result = galtea.simulator.simulate(session_id=simulation_session.id, agent=my_agent, max_turns=5)
     # Traces are saved automatically for each turn
 ```
 
@@ -155,9 +149,7 @@ try:
     response = run_agent(user_input)
 
     # 4. Update inference result with the output
-    galtea.inference_results.update(
-        inference_result_id=manual_inference_result.id, output=response
-    )
+    galtea.inference_results.update(inference_result_id=manual_inference_result.id, output=response)
 finally:
     # 5. Clear context and flush traces to Galtea
     clear_context(token)  # flush=True by default

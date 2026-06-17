@@ -105,9 +105,7 @@ conversation_turns = [
 ]
 
 # Log all turns at once
-galtea_client.inference_results.create_batch(
-    session_id=session.id, conversation_turns=conversation_turns
-)
+galtea_client.inference_results.create_batch(session_id=session.id, conversation_turns=conversation_turns)
 
 # Evaluate the full session
 galtea_client.evaluations.create(
@@ -134,9 +132,7 @@ def your_product(user_input: str) -> str:
 
 def handle_turn(user_input: str) -> str:
     model_output = your_product(user_input)
-    galtea_client.inference_results.create(
-        session_id=session.id, input=user_input, output=model_output
-    )
+    galtea_client.inference_results.create(session_id=session.id, input=user_input, output=model_output)
     return model_output
 
 
@@ -160,9 +156,7 @@ conversation_turns = [
     },
 ]
 
-galtea_client.inference_results.create_batch(
-    session_id=session_batch.id, conversation_turns=conversation_turns
-)
+galtea_client.inference_results.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
 # @end monitoring_batch
 
 
@@ -198,15 +192,11 @@ class ConversationConsistency(CustomScoreEvaluationMetric):
     def __init__(self):
         super().__init__(name=metric_name)
 
-    def measure(
-        self, *args, inference_results: list[InferenceResult] | None = None, **kwargs
-    ) -> float:
+    def measure(self, *args, inference_results: list[InferenceResult] | None = None, **kwargs) -> float:
         if not inference_results:
             return 0.0
         # Access the full conversation for cross-turn analysis
-        assistant_outputs = [
-            ir.actual_output for ir in inference_results if ir.actual_output
-        ]
+        assistant_outputs = [ir.actual_output for ir in inference_results if ir.actual_output]
         if len(assistant_outputs) < 2:
             return 1.0
         # Your custom logic here (e.g., check for contradictions across turns)

@@ -90,11 +90,13 @@ except requests.exceptions.HTTPError as e:
     else:
         raise
 
+
 # @start run_with_agent
 # Run evaluation with a local agent (SDK-side loop)
 def my_agent(user_message: str) -> str:
     # Replace with your actual agent logic
     return "Agent response"
+
 
 result = galtea.evaluations.run(
     version_id=version_id,
