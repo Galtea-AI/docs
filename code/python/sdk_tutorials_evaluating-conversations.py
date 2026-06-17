@@ -6,6 +6,7 @@ Demonstrates how to evaluate multi-turn conversations using Galtea's session-bas
 from datetime import datetime
 
 from galtea import Galtea
+from requests.exceptions import HTTPError
 
 from _test_helpers import create_test_product
 
@@ -43,50 +44,55 @@ if behavior_test is None:
     raise ValueError("behavior_test is None")
 
 
-# @start test_based_evaluation
-# Fetch your test cases (created from a CSV of behavior tests)
-test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
-if test_cases is None or len(test_cases) == 0:
-    raise ValueError("No test cases found")
+# Create a specification with linked metrics so the specification-based evaluation
+# examples below work. Reused by every `specification_ids=` snippet in this tutorial.
+role_adherence = galtea_client.metrics.get_by_name(name="Role Adherence")
+conversation_relevancy = galtea_client.metrics.get_by_name(name="Conversation Relevancy")
+knowledge_retention = galtea_client.metrics.get_by_name(name="Knowledge Retention")
+if role_adherence is None or conversation_relevancy is None or knowledge_retention is None:
+    raise ValueError("Could not find the conversational metrics to link")
+
+conversation_spec = galtea_client.specifications.create(
+    product_id=product_id,
+    description="The assistant stays in role and gives relevant, consistent answers across the conversation.",
+    type="CAPABILITY",
+    metric_ids=[role_adherence.id, conversation_relevancy.id, knowledge_retention.id],
+)
 
 
-# Define your agent function (connect your product/model)
+# Agent function used by the Conversation Simulator. In the docs this is shown via the
+# "Agent Integration Options" snippet, so it is defined here (to keep the script
+# runnable) but is not embedded into the page.
 def my_agent(user_message: str) -> str:
     return f"Response to: {user_message}"
 
 
-for test_case in test_cases:
-    # Create a session linked to the test case
-    session = galtea_client.sessions.create(
-        version_id=version_id,
-        test_case_id=test_case.id,
-    )
+# @start capture_test_based
+# Fetch your test cases (created from a CSV of behavior tests)
+test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
+if not test_cases:
+    raise ValueError("No test cases found")
 
-    # Run the simulator (synthetic user) with your agent function
-    galtea_client.simulator.simulate(
-        session_id=session.id,
-        agent=my_agent,
-        max_turns=test_case.max_iterations or 10,
-    )
+# Take one test case (loop over `test_cases` to evaluate them all)
+test_case = test_cases[0]
 
-    # Evaluate the full conversation
-    galtea_client.evaluations.create(
-        session_id=session.id,
-        metrics=[
-            {"name": "Conversation Relevancy"},
-            {"name": "Role Adherence"},
-            {"name": "Knowledge Retention"},
-        ],
-    )
-# @end test_based_evaluation
+# Create a session for the test case, then let the simulator drive the
+# conversation between a synthetic user and your agent function (`my_agent`)
+session = galtea_client.sessions.create(version_id=version_id, test_case_id=test_case.id)
+galtea_client.simulator.simulate(
+    session_id=session.id,
+    agent=my_agent,
+    max_turns=test_case.max_iterations or 10,
+)
+# @end capture_test_based
 
 
-# @start past_conversations
-# Optional: map to your own conversation ID and mark as production if these are real users
+# @start capture_past_conversations
+# The conversation already happened: create a session (no test_case_id) and log every turn
 session = galtea_client.sessions.create(
     version_id=version_id,
-    custom_id="EXTERNAL_CONVERSATION_ID",
-    is_production=True,
+    custom_id="EXTERNAL_CONVERSATION_ID",  # optional: map to your own conversation ID
+    is_production=True,  # set to True when these are real users
 )
 
 conversation_turns = [
@@ -106,24 +112,12 @@ conversation_turns = [
 
 # Log all turns at once
 galtea_client.inference_results.create_batch(session_id=session.id, conversation_turns=conversation_turns)
-
-# Evaluate the full session
-galtea_client.evaluations.create(
-    session_id=session.id,
-    metrics=[
-        {"name": "Role Adherence"},
-        {"name": "Knowledge Retention"},
-        {"name": "Conversation Relevancy"},
-    ],
-)
-# @end past_conversations
+# @end capture_past_conversations
 
 
-# @start monitoring_individual
-session = galtea_client.sessions.create(
-    version_id=version_id,
-    is_production=True,
-)
+# @start capture_monitoring_individual
+# Create a production session and log each turn as it happens in your live app
+session = galtea_client.sessions.create(version_id=version_id, is_production=True)
 
 
 def your_product(user_input: str) -> str:
@@ -139,14 +133,12 @@ def handle_turn(user_input: str) -> str:
 # Simulate production interactions
 handle_turn("Hello!")
 handle_turn("What services do you offer?")
-# @end monitoring_individual
+# @end capture_monitoring_individual
 
 
-# @start monitoring_batch
-session_batch = galtea_client.sessions.create(
-    version_id=version_id,
-    is_production=True,
-)
+# @start capture_monitoring_batch
+# Or, if you already have the full transcript, create the session and log all turns at once
+session = galtea_client.sessions.create(version_id=version_id, is_production=True)
 
 conversation_turns = [
     {"role": "user", "content": "What are some lower-risk investment strategies?"},
@@ -156,17 +148,31 @@ conversation_turns = [
     },
 ]
 
-galtea_client.inference_results.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
-# @end monitoring_batch
+galtea_client.inference_results.create_batch(session_id=session.id, conversation_turns=conversation_turns)
+# @end capture_monitoring_batch
 
 
-# @start monitoring_evaluate
-# Evaluate when the conversation is complete
+# @start evaluate_specifications
+# Evaluate the whole conversation; metrics are resolved from the specifications automatically
 galtea_client.evaluations.create(
     session_id=session.id,
-    metrics=[{"name": "Conversation Relevancy"}, {"name": "Knowledge Retention"}],
+    specification_ids=[conversation_spec.id],
 )
-# @end monitoring_evaluate
+# @end evaluate_specifications
+
+
+# @start evaluate_metrics
+# Evaluate the whole conversation by listing metrics explicitly
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Conversation Relevancy"},
+        {"name": "Role Adherence"},
+        {"name": "Knowledge Retention"},
+    ],
+)
+# @end evaluate_metrics
+
 
 metric_name = "conversation-consistency"
 metric_created = None
@@ -214,6 +220,11 @@ galtea_client.evaluations.create(
 
 
 # === Cleanup ===
-galtea_client.products.delete(product_id=product_id)
+try:
+    galtea_client.products.delete(product_id=product_id)
+except HTTPError as e:
+    # Known API issue: cascade soft-delete may hit unique constraint on specifications
+    if e.response.status_code != 500:
+        raise
 if metric_created:
     galtea_client.metrics.delete(metric_id=metric_created.id)

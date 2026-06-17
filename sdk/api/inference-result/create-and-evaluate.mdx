@@ -13,17 +13,11 @@ Returns a tuple containing:
 This method combines creating an inference result with its evaluation in a single convenient call. It's the recommended approach for single-turn evaluations, replacing the deprecated `galtea.evaluations.create_single_turn()` method.
 
 ### Basic Example
-```python
-# Create inference result and evaluate in a single call
-inference_result, evaluations = galtea.inference_results.create_and_evaluate(
-    session_id=session_id,
-    input="What is the capital of France?",
-    output="The capital of France is Paris.",
-    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
-)
-```
 
-### With Specification IDs
+Evaluate by passing [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or by listing metric names explicitly.
+
+<Tabs>
+  <Tab title="Using specification IDs">
 ```python
 # Evaluate using metrics linked to specifications (no need to list metrics manually)
 inference_result, evaluations = galtea.inference_results.create_and_evaluate(
@@ -33,6 +27,19 @@ inference_result, evaluations = galtea.inference_results.create_and_evaluate(
     specification_ids=[specification.id],
 )
 ```
+  </Tab>
+  <Tab title="Using metrics">
+```python
+# Create inference result and evaluate in a single call
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="The capital of France is Paris.",
+    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
+)
+```
+  </Tab>
+</Tabs>
 
 ### With Pre-computed Scores
 ```python

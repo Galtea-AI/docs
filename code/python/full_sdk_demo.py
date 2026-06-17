@@ -547,6 +547,16 @@ evaluations = galtea.evaluations.create(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
+# @start evaluation_create_with_specification_ids
+# Resolve metrics automatically from linked specifications instead of listing them
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    specification_ids=[specification.id],
+)
+# @end evaluation_create_with_specification_ids
+if evaluations is None or len(evaluations) == 0:
+    raise ValueError("evaluations from create with specification_ids is None or empty")
+
 # @start evaluation_create_self_hosted
 evaluations = galtea.evaluations.create(
     session_id=session_id,
@@ -566,6 +576,16 @@ evaluations = galtea.evaluations.create(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create with inference_result_id is None or empty")
 
+# @start evaluation_create_from_inference_result_with_specification_ids
+# Evaluate the inference result by resolving metrics from linked specifications
+evaluations = galtea.evaluations.create(
+    inference_result_id=inference_result_id,
+    specification_ids=[specification.id],
+)
+# @end evaluation_create_from_inference_result_with_specification_ids
+if evaluations is None or len(evaluations) == 0:
+    raise ValueError("evaluations from create with inference_result_id + specification_ids is None or empty")
+
 # @start evaluation_create_production
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
@@ -583,6 +603,25 @@ evaluations = galtea.evaluations.create(
 # @end evaluation_create_production
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
+
+# @start evaluation_create_production_with_specification_ids
+# Create a production session and an inference result, then evaluate it by
+# resolving metrics from linked specifications (no need to list metrics)
+production_session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+galtea.inference_results.create(
+    session_id=production_session.id,
+    input="Production user query",
+    output="Production response",
+)
+
+evaluations = galtea.evaluations.create(
+    session_id=production_session.id,
+    specification_ids=[specification.id],
+)
+# @end evaluation_create_production_with_specification_ids
+if evaluations is None or len(evaluations) == 0:
+    raise ValueError("evaluations from production create with specification_ids is None or empty")
 
 # @start evaluation_list
 evaluations = galtea.evaluations.list(session_id=session_id)

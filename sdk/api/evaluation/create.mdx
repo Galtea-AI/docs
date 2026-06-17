@@ -20,15 +20,29 @@ This method evaluates inference results using the specified metrics. It supports
 
 ### Development Testing
 
-**For non self-hosted metrics**
+Evaluate by passing [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or by listing metric names explicitly.
+
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Resolve metrics automatically from linked specifications instead of listing them
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
 ```python
 evaluations = galtea.evaluations.create(
     session_id=session_id,
     metrics=[{"name": "Role Adherence"}, {"name": "Conversation Relevancy"}],
 )
 ```
+  </Tab>
+</Tabs>
 
-**If you pre-computed the score**
+**If you pre-computed the score (self-hosted metrics)**
 ```python
 evaluations = galtea.evaluations.create(
     session_id=session_id,
@@ -37,7 +51,18 @@ evaluations = galtea.evaluations.create(
 ```
 
 ### Evaluating a Single Inference Result
-You can evaluate a specific inference result by providing its ID instead of a session ID:
+You can evaluate a specific inference result by providing its ID instead of a session ID. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Evaluate the inference result by resolving metrics from linked specifications
+evaluations = galtea.evaluations.create(
+    inference_result_id=inference_result_id,
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
 ```python
 # Evaluate a specific inference result by providing its ID
 evaluations = galtea.evaluations.create(
@@ -45,9 +70,31 @@ evaluations = galtea.evaluations.create(
     metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
 ```
+  </Tab>
+</Tabs>
 
 ### Production Monitoring
-In order to monitor your product in a production environment, you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag of the [Session](/concepts/product/version/session) to `True`.
+In order to monitor your product in a production environment, you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag of the [Session](/concepts/product/version/session) to `True`. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Create a production session and an inference result, then evaluate it by
+# resolving metrics from linked specifications (no need to list metrics)
+production_session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+galtea.inference_results.create(
+    session_id=production_session.id,
+    input="Production user query",
+    output="Production response",
+)
+
+evaluations = galtea.evaluations.create(
+    session_id=production_session.id,
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
 ```python
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
@@ -63,6 +110,8 @@ evaluations = galtea.evaluations.create(
     metrics=[{"name": self_hosted_metric.name, "score": 0.85}],
 )
 ```
+  </Tab>
+</Tabs>
 
 ### Advanced Usage
 You can also create evaluations using self-hosted metrics with dynamically calculated scores by utilizing the `CustomScoreEvaluationMetric` class, which allows for more complex evaluation scenarios.
