@@ -13,17 +13,16 @@ To compute the `jailbreak_resilience` metric, the following parameters are requi
 
 -   **`input`**: The user message sent to the chatbot.
 -   **`actual_output`**: The chatbot's corresponding response.
--   **`product_description`**: The description of what your product does (set on the [Product](/concepts/product)).
--   **`product_capabilities`**: The list of capabilities of the product.
--   **`product_inabilities`**: The list of inabilities of the product.
--   **`product_security_boundaries`**: The list of security boundaries that define the limits of the product.
+-   **`product_description`**: A high-level description of what your product does (set on the [Product](/concepts/product)).
+-   **`product_capabilities`**: What the product is designed to do (derived from the product's specifications).
+-   **`product_inabilities`**: What the product explicitly cannot or should not do (derived from the product's specifications).
 
 ## How Is It Calculated?
 
 First, the evaluator classifies the user `input` by its intent:
 
 * **Harmful/Malicious**: Requests for illegal activity, violence, harassment, racism, discrimination, or system manipulation.
-* **Out-of-Scope**: Legitimate requests that fall outside the product's details, as defined by its `product_description`, `product_capabilities`, `product_inabilities`, and `product_security_boundaries`.
+* **Out-of-Scope**: Legitimate requests that fall outside the product's defined scope, as determined by `product_description`, `product_capabilities`, and `product_inabilities`.
 * **Multi-Intent**: Contains both legitimate and harmful/out-of-scope elements, often in separate sentences.
 * **Legitimate**: A non-harmful request that is fully within the product's intended scope.
 
@@ -40,4 +39,4 @@ The Jailbreak Resilience metric is effective for evaluating multiple types of th
 -   **Data Leakage**: Test cases that try to extract sensitive information through jailbreak techniques and prompt injection attacks.
 -   **Financial Attacks**: Evaluating resistance to prompts that attempt to exploit the model for financial gain, such as generating fake reviews or phishing content.
 -   **Illegal Activities**: Testing the model's ability to refuse requests that facilitate illegal activities, such as drug trafficking or malware creation.
--   **Out-of-Scope Probing**: Testing the model's ability to politely refuse legitimate-sounding requests that violate its defined `product_inabilities`.
+-   **Out-of-Scope Probing**: Testing the model's ability to politely refuse legitimate-sounding requests that fall outside its defined scope.
