@@ -13,8 +13,9 @@ phone_connection = galtea.phone_connections.create(
     product_id=product_id,
     name="production-voice-agent-" + run_identifier,
     phone_number="+14155552671",
-    voice="alloy",
+    voice="sarah",  # en-GB female; omit to use the default
     language_code="en",
+    agent_speaks_first=False,
 )
 ```
 
@@ -29,8 +30,11 @@ phone_connection = galtea.phone_connections.create(
   The phone number Galtea dials to reach your AI agent, in [E.164 format](https://en.wikipedia.org/wiki/E.164) (a leading `+` followed by country code and number, e.g., `+14155552671`).
 </ResponseField>
 <ResponseField name="voice" type="string" optional>
-  Identifier of the voice Galtea uses for the simulated caller during the call.
+  TTS voice the simulated caller speaks with (Speechmatics, English-only). Supported values: `sarah` (en-GB female), `theo` (en-GB male), `megan` (en-US female), `jack` (en-US male). Leave as `None` to use the default voice (`sarah`). An unsupported value is rejected with HTTP 400. Use [`list_voices()`](/sdk/api/phone-connection/list-voices) to retrieve the current catalog.
 </ResponseField>
 <ResponseField name="language_code" type="string" optional>
   Language code for the call (e.g., `en`, `es`).
+</ResponseField>
+<ResponseField name="agent_speaks_first" type="boolean" optional>
+  Whether the voice agent opens the conversation once the call connects. Defaults to `False` (the simulated caller speaks first). Pass `True` for interviewer-style agents that greet the caller first.
 </ResponseField>

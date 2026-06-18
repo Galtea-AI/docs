@@ -24,8 +24,9 @@ phone_connection = galtea.phone_connections.create(
     product_id=product_id,
     name="production-voice-agent-" + run_identifier,
     phone_number="+14155552671",
-    voice="alloy",
+    voice="sarah",  # en-GB female; omit to use the default
     language_code="en",
+    agent_speaks_first=False,
 )
 # @end create
 
@@ -63,6 +64,13 @@ phone_connection = galtea.phone_connections.update(
 # @start delete
 galtea.phone_connections.delete(phone_connection_id=phone_connection_id)
 # @end delete
+
+# @start list_voices
+voices = galtea.phone_connections.list_voices()
+# voices is a list of TtsVoice objects: id, name, language_code, gender
+for voice in voices:
+    print(f"{voice.id}: {voice.name} ({voice.language_code}, {voice.gender})")
+# @end list_voices
 
 # === Cleanup ===
 galtea.products.delete(product_id=product_id)

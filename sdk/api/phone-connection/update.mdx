@@ -26,10 +26,13 @@ phone_connection = galtea.phone_connections.update(
   New phone number in [E.164 format](https://en.wikipedia.org/wiki/E.164) (e.g., `+14155552671`).
 </ResponseField>
 <ResponseField name="voice" type="string" optional>
-  New voice identifier for the simulated caller.
+  New TTS voice for the simulated caller (Speechmatics, English-only). Supported values: `sarah` (en-GB female), `theo` (en-GB male), `megan` (en-US female), `jack` (en-US male). Pass `None` to clear it back to the default voice (`sarah`). An unsupported value is rejected with HTTP 400. Use [`list_voices()`](/sdk/api/phone-connection/list-voices) to retrieve the current catalog.
 </ResponseField>
 <ResponseField name="language_code" type="string" optional>
   New language code for the call (e.g., `en`, `es`).
+</ResponseField>
+<ResponseField name="agent_speaks_first" type="boolean" optional>
+  Whether the voice agent opens the conversation once the call connects (`True`/`False`). Pass `PydanticUndefined` (the default) to leave the current value unchanged.
 </ResponseField>
 
 <Note>

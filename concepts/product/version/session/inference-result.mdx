@@ -23,12 +23,12 @@ You can create inference results from the [Galtea dashboard](https://platform.ga
   The session to which the inference result belongs.
 </ResponseField>
 
-<ResponseField name="Input" type="string" optional>
-  The input text or prompt for the inference result.
+<ResponseField name="Input" type="string | object" optional>
+  The input text or prompt for the inference result. For most runs this is a plain string. For phone (voice) runs, when the simulated user's audio was captured, this is a content-parts envelope `{"user_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `user_message` field is the canonical scored scalar. Access the envelope via the SDK's `.input_data` field and the spoken transcript via `.input`.
 </ResponseField>
 
-<ResponseField name="Output" type="string" optional>
-  The generated output or response for the inference result.
+<ResponseField name="Output" type="string | object" optional>
+  The generated output or response for the inference result. For most runs this is a plain string. For phone (voice) runs, when the agent's audio was captured, this is a content-parts envelope `{"assistant_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `assistant_message` field is the canonical scored scalar. Access the envelope via the SDK's `.actual_output_data` field and the scored transcript via `.actual_output`.
 </ResponseField>
 
 <ResponseField name="Retrieval Context" type="string" optional>

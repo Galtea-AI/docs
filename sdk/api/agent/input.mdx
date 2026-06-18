@@ -121,6 +121,10 @@ Outside of `AgentInput`, the `TestCase` and `InferenceResult` models provide two
 - `.actual_output` (`str | None`): The scored output as a plain string. For voice turns this is the `assistant_message` transcript unwrapped from the content-parts envelope.
 - `.actual_output_data` (`dict | None`): The full output envelope when present (e.g. `{"assistant_message": "...", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}`), otherwise `None` for plain-text output.
 
+<Info>
+  When submitting an `actualOutput` content-parts envelope, each audio part must include either a non-empty `transcript` or a non-empty `uri`. If you provide only a `uri`, the API transcribes the stored audio automatically and fills in the transcript. A client-supplied `transcript` or `assistant_message` always takes precedence over the API's speech-to-text result. The strict transcript requirement applies only to the user turn (`input`) — the agent output side accepts audio-only parts.
+</Info>
+
 ```python
 # After running generate() or in a test loop, access the full structured input:
 galtea_client = Galtea(api_key="YOUR_API_KEY")

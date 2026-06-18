@@ -1,0 +1,45 @@
+---
+title: 'List TTS Voices'
+sidebarTitle: "List Voices"
+description: "Retrieve the text-to-speech voices available for a phone connection's voice field."
+---
+
+## Returns
+Returns a list of `TtsVoice` objects describing the voices a phone connection's `voice` field may be set to.
+
+Each `TtsVoice` has the following fields:
+
+<ResponseField name="id" type="string">
+  The voice identifier to pass as the `voice` parameter on a phone connection (e.g., `sarah`).
+</ResponseField>
+<ResponseField name="name" type="string">
+  Human-readable label (e.g., `Sarah`).
+</ResponseField>
+<ResponseField name="language_code" type="string">
+  BCP-47 language tag the voice speaks (e.g., `en-GB`).
+</ResponseField>
+<ResponseField name="gender" type="string">
+  `female` or `male`.
+</ResponseField>
+
+The current catalog (Speechmatics, English-only):
+
+| `id` | Name | Language | Gender |
+|------|------|----------|--------|
+| `sarah` | Sarah | en-GB | Female |
+| `theo` | Theo | en-GB | Male |
+| `megan` | Megan | en-US | Female |
+| `jack` | Jack | en-US | Male |
+
+Leaving a phone connection's `voice` empty/null uses the default voice (`sarah`).
+
+## Example
+```python
+voices = galtea.phone_connections.list_voices()
+# voices is a list of TtsVoice objects: id, name, language_code, gender
+for voice in voices:
+    print(f"{voice.id}: {voice.name} ({voice.language_code}, {voice.gender})")
+```
+
+## Parameters
+This method takes no parameters.
