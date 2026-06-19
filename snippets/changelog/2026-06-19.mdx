@@ -1,0 +1,17 @@
+<Update label="2026-06-19" description="Usability improvements and bug fixes ahead of bigger features">
+
+This release focuses on usability, bug fixes, and small improvements while we work on bigger features coming in the next weeks.
+
+## Platform Improvements
+
+- **Create specifications during onboarding:** You can now create your custom [specifications](/concepts/product/specification) during the onboarding flow to cover gaps you would like to evaluate that our AI system did not detect or did not expect to be a primary focus.
+- **Filter sessions by status:** The [session](/concepts/product/version/session) list now has a status filter — select `PENDING`, `COMPLETED`, or `FAILED` (or any combination) to focus on the runs that matter. Available in the dashboard, the API (`statuses` query parameter on `GET /sessions`), and the SDK via [`sessions.list(status=…)`](/sdk/api/session/list).
+- **See direct inference progress right away:** When you start a direct inference run, every [session](/concepts/product/version/session) it will produce now appears in the list as `PENDING` immediately — instead of trickling in as each one is picked up — so you can track progress from the moment the run starts.
+- **Security metrics now evaluate correctly:** [Data Leakage](/concepts/metric/data-leakage), [Jailbreak Resilience](/concepts/metric/jailbreak-resilience), and [Misuse Resilience](/concepts/metric/misuse-resilience) evaluations were being silently marked `SKIPPED` because they depended on a field the product form no longer surfaces. These metrics now draw context from `product_capabilities` and `product_inabilities` (populated from your [specifications](/concepts/product/specification)) and run as expected.
+- **"New Metric from template" fixed:** Clicking *From template* in the New Metric screen was throwing a routing error and closing the dialog immediately. The dialog now opens and works correctly.
+
+## Documentation and Examples
+
+- [SDK evaluation examples](/sdk/tutorials/specification-driven-evaluations) now show the specification-first approach — passing `specification_ids=` instead of metric names — side by side with the metric-name approach, in tabbed code blocks, on every relevant tutorial page.
+
+</Update>
