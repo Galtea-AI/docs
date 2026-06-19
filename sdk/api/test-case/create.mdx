@@ -41,9 +41,7 @@ test_case = galtea.test_cases.create(
   The ID of the user who has reviewed and validated this test case.
 </ResponseField>
 <ResponseField name="language" type="string" optional>
-  Language for the test case.
-  Follow this list to know the supported ones:
-  - https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+  Language for the test case. Accepts a [BCP-47 language tag](https://en.wikipedia.org/wiki/IETF_language_tag): a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`, `"en-GB"`). The region subtag is applied **only** when synthesizing speech for voice evaluations (the accent the simulated caller speaks with); text generation uses the base language only. A regional accent applies to any test type run over a phone connection (single-turn or multi-turn).
 </ResponseField>
 <ResponseField name="user_score" type="int" optional>
   User vote for the test case (1 for good quality, -1 for bad quality, 0 for unreviewed).

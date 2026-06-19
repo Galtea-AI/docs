@@ -276,8 +276,7 @@
                       "sdk/api/phone-connection/get",
                       "sdk/api/phone-connection/get-by-name",
                       "sdk/api/phone-connection/update",
-                      "sdk/api/phone-connection/delete",
-                      "sdk/api/phone-connection/list-voices"
+                      "sdk/api/phone-connection/delete"
                     ]
                   }
                 ]

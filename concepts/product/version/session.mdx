@@ -57,6 +57,10 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
 </ResponseField>
 
+<ResponseField name="Recording URI" type="Text" optional>
+  The canonical storage URI of the full-call recording for telephony sessions. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
+</ResponseField>
+
 ## Related
 
 <CardGroup cols={3}>
