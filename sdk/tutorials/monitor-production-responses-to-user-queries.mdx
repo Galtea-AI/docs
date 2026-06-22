@@ -10,6 +10,34 @@ You can use Galtea to log and evaluate real user interactions from your producti
 
 For simple, single-turn interactions, create a production session and use `galtea.inference_results.create_and_evaluate()` to log and evaluate the interaction in a single call.
 
+You can pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+
+<Tabs>
+<Tab title="Using specification IDs">
+```python
+# In your application's request handler...
+def handle_user_query_with_specifications(user_query: str, retrieval_context: str | None = None) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query, retrieval_context)
+
+    # Log and evaluate the interaction, resolving metrics from your specifications
+    session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        input=user_query,
+        output=model_response,
+        retrieval_context=retrieval_context,
+        specification_ids=specification_ids,
+    )
+
+    return model_response
+
+
+# Test the handler
+handle_user_query_with_specifications("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
+```
+</Tab>
+<Tab title="Using metrics">
 ```python
 # In your application's request handler...
 def handle_user_query(user_query: str, retrieval_context: str | None = None) -> str:
@@ -34,10 +62,10 @@ def handle_user_query(user_query: str, retrieval_context: str | None = None) -> 
 
 
 # Test the handler
-handle_user_query(
-    "What are your business hours?", "Business hours: 9am-5pm Monday-Friday"
-)
+handle_user_query("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
 ```
+</Tab>
+</Tabs>
 
 ### Multi-Turn Production Monitoring (Conversations)
 
@@ -81,9 +109,7 @@ user_questions = [
 for question in user_questions:
     model_response = get_model_response(question)
     # Log the turn to Galtea right after it happens
-    inference_result = galtea.inference_results.create(
-        session_id=session.id, input=question, output=model_response
-    )
+    inference_result = galtea.inference_results.create(session_id=session.id, input=question, output=model_response)
 ```
 
 </Tab>
@@ -107,22 +133,28 @@ conversation_turns = [
     {"role": "assistant", "content": "You're welcome!"},
 ]
 
-galtea.inference_results.create_batch(
-    session_id=session_batch.id, conversation_turns=conversation_turns
-)
+galtea.inference_results.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
 ```
 </Tab>
 </Tabs>
 </Step>
 
 <Step title="3. Evaluate the Session">
-Finally, once the conversation is complete and all turns are logged, you can run an evaluation on the entire session.
+Finally, once the conversation is complete and all turns are logged, you can run an evaluation on the entire session. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
 
+<Tabs>
+<Tab title="Using specification IDs">
+```python
+# Or resolve metrics from your product's specifications instead of listing them
+galtea.evaluations.create(session_id=session.id, specification_ids=specification_ids)
+```
+</Tab>
+<Tab title="Using metrics">
 ```python
 galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
-
-print(f"Logged and evaluated production session {session.id}")
 ```
+</Tab>
+</Tabs>
 
 </Step>
 </Steps>

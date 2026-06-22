@@ -67,6 +67,9 @@ version = galtea.versions.create(
 <ResponseField name="finalization_endpoint_connection_id" type="string" optional>
   The ID of the [Endpoint Connection](/concepts/product/endpoint-connection) executed after the conversation ends. Used to clean up resources.
 </ResponseField>
+<ResponseField name="phone_connection_id" type="string" optional>
+  The ID of the [Phone Connection](/concepts/product/phone-connection) Galtea dials to reach your AI agent over the phone. A version's conversation target is mutually exclusive: provide either a phone connection **or** an endpoint connection (`conversation_endpoint_connection_id`), never both.
+</ResponseField>
 <ResponseField name="endpoint_connection_id" type="string" optional>
   <Warning>Deprecated. Use `conversation_endpoint_connection_id` instead.</Warning>
   Legacy parameter maintained for backwards compatibility. Maps to `conversation_endpoint_connection_id`.

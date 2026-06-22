@@ -63,9 +63,7 @@ def my_agent(user_message: str) -> str:
     return f"Response to: {user_message}"
 
 
-inference_result = galtea.inference_results.generate(
-    agent=my_agent, session=session, input="Generate something"
-)
+inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="Generate something")
 ```
 
 ## What Gets Captured
@@ -132,9 +130,7 @@ def failing_agent(input_data: AgentInput) -> AgentResponse:
 
 
 try:
-    result = galtea_client.inference_results.generate(
-        agent=failing_agent, session=session_error, input="test"
-    )
+    result = galtea_client.inference_results.generate(agent=failing_agent, session=session_error, input="test")
 except Exception as e:
     # Trace context is automatically cleaned up
     print(f"Agent failed: {e}")

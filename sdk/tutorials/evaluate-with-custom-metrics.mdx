@@ -136,7 +136,9 @@ class AllOutputsContainKeyword(CustomScoreEvaluationMetric):
         self.keyword = keyword.lower()
         super().__init__(name=f"all-outputs-contain-{self.keyword}")
 
-    def measure(self, *args, actual_output: str | None = None, inference_results: list[InferenceResult] | None = None, **kwargs) -> float:
+    def measure(
+        self, *args, actual_output: str | None = None, inference_results: list[InferenceResult] | None = None, **kwargs
+    ) -> float:
         """
         Uses inference_results to check every turn in the conversation.
         Falls back to actual_output when inference_results is not available.

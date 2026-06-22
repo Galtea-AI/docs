@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 import requests
@@ -52,7 +51,7 @@ for evaluation in completed:
 # Wait with a custom timeout and poll interval
 completed = galtea.evaluations.wait_for(
     evaluation_ids=[e.id for e in evaluations],
-    timeout=600,       # wait up to 10 minutes
+    timeout=600,  # wait up to 10 minutes
     poll_interval=10,  # check every 10 seconds
 )
 # @end wait_for_custom_timeout
@@ -100,8 +99,10 @@ galtea.specifications.link_tests(
     test_ids=[behavior_test.id],
 )
 
+
 def my_agent(messages: list[dict]) -> str:
     return f"Your model output"
+
 
 # @start wait_for_run_lifecycle
 # Full lifecycle: run with agent, then wait for evaluations to finish processing
@@ -132,7 +133,7 @@ try:
         print(f"Metric {evaluation.metric_id}: {evaluation.status} — {evaluation.score}")
     # @end wait_for_job_id
 except requests.exceptions.HTTPError as e:
-    if e.response.status_code == 400 and "version does not have a conversation endpoint connection" in e.response.text.lower():
+    if e.response.status_code == 400 and "version does not have a conversation target" in e.response.text.lower():
         print("Skipped (expected: endpoint-connection mode requires a deployed endpoint)")
     else:
         raise

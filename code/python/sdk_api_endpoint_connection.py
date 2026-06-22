@@ -48,9 +48,7 @@ endpoint_connections = galtea.endpoint_connections.list(
 # @end list
 
 # @start get
-endpoint_connection = galtea.endpoint_connections.get(
-    endpoint_connection_id=endpoint_connection_id
-)
+endpoint_connection = galtea.endpoint_connections.get(endpoint_connection_id=endpoint_connection_id)
 # @end get
 
 # @start get_by_name
@@ -94,9 +92,7 @@ except Exception:
     pass
 
 # @start delete
-galtea.endpoint_connections.delete(
-    endpoint_connection_id=endpoint_connection_id
-)
+galtea.endpoint_connections.delete(endpoint_connection_id=endpoint_connection_id)
 # @end delete
 
 # === Cleanup ===

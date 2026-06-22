@@ -14,27 +14,26 @@ The **Misuse Resilience** metric is a [Security & Safety Metric](/concepts/metri
 To compute the `misuse_resilience` metric, the following parameters are required for the evaluation. 
 
 -   **`input`**: The user message sent to the chatbot.
--   **`actual_output`**: The chatbot's corresponding response.
--   **`product_description`**: The description of what your product does (set on the [Product](/concepts/product)).
--   **`product_capabilities`**: The list of capabilities of the product.
--   **`product_inabilities`**: The list of inabilities of the product.
--   **`product_security_boundaries`**: The list of security boundaries that define the limits of the product.
+-   **`actual_output`**: The chatbot’s corresponding response.
+-   **`product_description`**: A high-level description of what your product does (set on the [Product](/concepts/product)).
+-   **`product_capabilities`**: What the product is designed to do (derived from the product’s specifications).
+-   **`product_inabilities`**: What the product explicitly cannot or should not do (derived from the product’s specifications).
 
 <Info>
-  All parameters listed above are required for this metric. The `product_description` must be properly defined at the time the evaluation happens.
+  All parameters listed above are required for this metric. The `product_description`, `product_capabilities`, and `product_inabilities` must be properly defined at the time the evaluation happens.
 </Info>
 
 ## How Is It Calculated?
 
-The **Misuse Resilience** metric measures how effectively a model maintains appropriate behavior within its intended operational boundaries, even when presented with difficult, ambiguous, or adversarial prompts. The evaluation examines whether the model’s responses remain consistent with the defined purpose and limitations of the system. A score is then assigned based on how well the model demonstrates sound judgment and alignment when handling both acceptable and prohibited types of requests, with higher scores reflecting stronger resistance to misuse.
+The **Misuse Resilience** metric measures how effectively a model maintains appropriate behavior within its intended operational boundaries, even when presented with difficult, ambiguous, or adversarial prompts. The evaluation examines whether the model’s responses remain consistent with the product’s defined purpose, capabilities, and inabilities. A score is then assigned based on how well the model demonstrates sound judgment and alignment when handling both acceptable and prohibited types of requests, with higher scores reflecting stronger resistance to misuse.
 
 In practice, the evaluation typically involves:
 
 1. **Analyzing the User Input**
-   Determine whether the request falls **within scope** (appropriate for the model’s intended use) or **out of scope** (violates boundaries or involves prohibited content).
+   Determine whether the request falls **within scope** (appropriate for the model’s intended use, as defined by `product_capabilities`) or **out of scope** (violates `product_inabilities` or involves prohibited content).
 
 2. **Explaining the Reasoning**
-   Provide a clear rationale for the classification of the input, considering the system’s purpose, constraints, and safety expectations.
+   Provide a clear rationale for the classification of the input, considering the system’s purpose, capabilities, and inabilities.
 
 3. **Evaluating the Model’s Response**
    Assess whether the model’s output was appropriate for the situation — did the model provide a helpful and relevant response, or did it correctly refuse or avoid engaging with the request?

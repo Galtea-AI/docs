@@ -44,9 +44,7 @@ while len(test_cases) == 0:
     if tries > 30:
         raise ValueError("No test cases found after multiple tries")
 test_case_id = test_cases[0].id
-session_id = galtea_client.sessions.create(
-    version_id=version_id, test_case_id=test_case_id
-).id
+session_id = galtea_client.sessions.create(version_id=version_id, test_case_id=test_case_id).id
 
 
 # @start agent_options_simulate
@@ -177,13 +175,9 @@ def my_agent(user_message: str) -> str:
 
 # Run simulations with your agent function
 for test_case in test_cases:
-    session = galtea_client.sessions.create(
-        version_id=version.id, test_case_id=test_case.id
-    )
+    session = galtea_client.sessions.create(version_id=version.id, test_case_id=test_case.id)
 
-    result = galtea_client.simulator.simulate(
-        session_id=session.id, agent=my_agent, max_turns=10
-    )
+    result = galtea_client.simulator.simulate(session_id=session.id, agent=my_agent, max_turns=10)
 
     # Analyze results
     print(f"Scenario: {test_case.scenario}")

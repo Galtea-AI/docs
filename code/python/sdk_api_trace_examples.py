@@ -138,9 +138,7 @@ def process_with_nested_traces(inference_result_id: str) -> dict:
     token = set_context(inference_result_id=inference_result_id)
 
     try:
-        with start_trace(
-            "parent_operation", type="CHAIN", input={"task": "process_all"}
-        ) as parent:
+        with start_trace("parent_operation", type="CHAIN", input={"task": "process_all"}) as parent:
             # First child
             with start_trace("child_step_1", type="TOOL") as span:
                 step1_result = {"processed": True, "items": 5}
@@ -216,9 +214,7 @@ def data_agent(input_data: AgentInput) -> AgentResponse:
     return AgentResponse(content=str(result))
 
 
-session_serialization = galtea.sessions.create(
-    version_id=version_id, is_production=True
-)
+session_serialization = galtea.sessions.create(version_id=version_id, is_production=True)
 if session_serialization is None:
     raise ValueError("session_serialization is None")
 

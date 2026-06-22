@@ -262,6 +262,27 @@
                 ]
               },
               {
+                "group": "Phone Connection",
+                "icon": "phone",
+                "pages": [
+                  "concepts/product/phone-connection",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/phone-connection/service",
+                      "sdk/api/phone-connection/create",
+                      "sdk/api/phone-connection/list",
+                      "sdk/api/phone-connection/get",
+                      "sdk/api/phone-connection/get-by-name",
+                      "sdk/api/phone-connection/update",
+                      "sdk/api/phone-connection/delete",
+                      "sdk/api/phone-connection/list-voices"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Test",
                 "icon": "vial-circle-check",
                 "pages": [

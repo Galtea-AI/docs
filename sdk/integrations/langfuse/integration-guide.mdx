@@ -124,9 +124,7 @@ Two changes: swap the Langfuse import for the Galtea wrapper and pass the ID; re
     # `@observe` detects the wrapped function is `async def` and returns an async
     # wrapper that awaits the coroutine before clearing context. Call it like any
     # other coroutine:
-    result = asyncio.run(
-        run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
-    )
+    result = asyncio.run(run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123"))
     ```
   </Tab>
   <Tab title="start_as_current_observation (context manager)">

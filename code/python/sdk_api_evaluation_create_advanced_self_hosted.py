@@ -51,9 +51,7 @@ class PolitenessCheck(CustomScoreEvaluationMetric):
         if actual_output is None:
             return 0.0
         polite_words = ["please", "thank you", "you're welcome"]
-        return (
-            1.0 if any(word in actual_output.lower() for word in polite_words) else 0.0
-        )
+        return 1.0 if any(word in actual_output.lower() for word in polite_words) else 0.0
 
 
 # Create the metric in the platform if it doesn't exist yet

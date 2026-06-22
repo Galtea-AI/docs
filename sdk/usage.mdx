@@ -117,9 +117,7 @@ test_cases = galtea.test_cases.list(test_id=test.id)
 for test_case in test_cases:
     # Replace the following with your retrieval and product inference functions
     retrieval_context = None  # your_retriever_function(test_case.input)
-    actual_output = (
-        "This is the expected output"  # your_product_function(test_case.input, ...)
-    )
+    actual_output = "This is the expected output"  # your_product_function(test_case.input, ...)
 
     session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
     galtea.inference_results.create_and_evaluate(

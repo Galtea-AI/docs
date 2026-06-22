@@ -15,10 +15,9 @@ To compute the `custom_judge` metric, the following parameters can be considered
 - **`context`**: Any additional internal context passed to the model (e.g. memory, conversation history).
 - **`retrieval_context`**: External content retrieved during inference, such as from a vector store or knowledge base.
 - **`traces`**: Execution traces from the agent, including tool calls, LLM invocations, and other internal operations.
-- **`product_description`**: A high-level overview of what the product is.
-- **`product_capabilities`**: What the product is designed to do.
-- **`product_inabilities`**: What the product cannot or should not do.
-- **`product_security_boundaries`**: Sensitive actions or behaviors that the model must not perform, even if technically capable.
+- **`product_description`**: A high-level overview of what the product is, including its purpose.
+- **`product_capabilities`**: What the product is designed to do (derived from the product's specifications).
+- **`product_inabilities`**: What the product explicitly cannot or should not do (derived from the product's specifications).
 - **`goal`**: The objective the simulated user is trying to achieve in the conversation.
 - **`user_persona`**: The personality traits, communication style, and motivations of the simulated user.
 - **`scenario`**: A description of the specific situation or environment in which the conversation takes place.

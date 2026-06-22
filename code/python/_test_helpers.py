@@ -54,7 +54,5 @@ def list_users(galtea: Galtea, organization_id: str, limit: int = 1) -> list[dic
     The SDK does not expose a ``users.list()`` method.
     """
     client = _get_client(galtea)
-    response = client.get(
-        "users", params={"organizationIds": organization_id, "limit": limit}
-    )
+    response = client.get("users", params={"organizationIds": organization_id, "limit": limit})
     return response.json()

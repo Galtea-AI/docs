@@ -82,9 +82,9 @@ When creating or configuring a metric, you select which parameters are relevant 
       <td>All metrics</td>
     </tr>
     <tr>
-      <td>**product_security_boundaries**</td>
-      <td>The security boundaries of the product.</td>
-      <td>All metrics</td>
+      <td>**product_security_boundaries** *(deprecated)*</td>
+      <td>The security boundaries of the product. Deprecated — no longer accepted for new metrics. Use `product_capabilities` and `product_inabilities` instead.</td>
+      <td>N/A (rejected by API for new metrics)</td>
     </tr>
     <tr>
       <td>**user_persona**</td>
@@ -150,7 +150,7 @@ Each section points to a different place to look:
   <tbody>
     <tr>
       <td>**Missing from product settings**</td>
-      <td>Open the product and fill in the missing field (Description, Capabilities, Inabilities, or Security Boundaries).</td>
+      <td>Open the product and fill in the missing field (Description, Capabilities, or Inabilities). Capabilities and Inabilities can also be derived from the product's Specifications.</td>
     </tr>
     <tr>
       <td>**Missing from test case**</td>

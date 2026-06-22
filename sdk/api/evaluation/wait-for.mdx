@@ -39,7 +39,7 @@ An evaluation is considered **complete** when its status is anything other than 
     # Wait with a custom timeout and poll interval
     completed = galtea.evaluations.wait_for(
         evaluation_ids=[e.id for e in evaluations],
-        timeout=600,       # wait up to 10 minutes
+        timeout=600,  # wait up to 10 minutes
         poll_interval=10,  # check every 10 seconds
     )
     ```

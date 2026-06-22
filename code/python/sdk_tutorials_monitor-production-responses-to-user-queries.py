@@ -7,6 +7,7 @@ from datetime import datetime
 
 from _test_helpers import create_test_product
 from galtea import Galtea
+from requests.exceptions import HTTPError
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
@@ -61,10 +62,49 @@ def handle_user_query(user_query: str, retrieval_context: str | None = None) -> 
 
 
 # Test the handler
-handle_user_query(
-    "What are your business hours?", "Business hours: 9am-5pm Monday-Friday"
-)
+handle_user_query("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
 # @end single_turn
+
+
+# Create a specification with linked metrics so specification-based evaluation works
+answer_relevancy = galtea.metrics.get_by_name(name="Answer Relevancy")
+role_adherence = galtea.metrics.get_by_name(name="Role Adherence")
+if answer_relevancy is None or role_adherence is None:
+    raise ValueError("Could not find the metrics to link to the specification")
+
+production_spec = galtea.specifications.create(
+    product_id=product_id,
+    description="The assistant gives relevant answers and stays within its defined role.",
+    type="CAPABILITY",
+    metric_ids=[answer_relevancy.id, role_adherence.id],
+)
+if production_spec is None:
+    raise ValueError("Failed to create specification")
+specification_ids = [production_spec.id]
+
+
+# @start single_turn_specification_ids
+# In your application's request handler...
+def handle_user_query_with_specifications(user_query: str, retrieval_context: str | None = None) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query, retrieval_context)
+
+    # Log and evaluate the interaction, resolving metrics from your specifications
+    session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        input=user_query,
+        output=model_response,
+        retrieval_context=retrieval_context,
+        specification_ids=specification_ids,
+    )
+
+    return model_response
+
+
+# Test the handler
+handle_user_query_with_specifications("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
+# @end single_turn_specification_ids
 
 
 METRICS_TO_EVALUATE = [
@@ -103,9 +143,7 @@ user_questions = [
 for question in user_questions:
     model_response = get_model_response(question)
     # Log the turn to Galtea right after it happens
-    inference_result = galtea.inference_results.create(
-        session_id=session.id, input=question, output=model_response
-    )
+    inference_result = galtea.inference_results.create(session_id=session.id, input=question, output=model_response)
 # @end log_turns_individually
 
 
@@ -135,18 +173,27 @@ conversation_turns = [
     {"role": "assistant", "content": "You're welcome!"},
 ]
 
-galtea.inference_results.create_batch(
-    session_id=session_batch.id, conversation_turns=conversation_turns
-)
+galtea.inference_results.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
 # @end log_turns_batch
 
 
-# @start evaluate_session
+# @start evaluate_session_metrics
 galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
+# @end evaluate_session_metrics
+
+# @start evaluate_session_specifications
+# Or resolve metrics from your product's specifications instead of listing them
+galtea.evaluations.create(session_id=session.id, specification_ids=specification_ids)
+# @end evaluate_session_specifications
 
 print(f"Logged and evaluated production session {session.id}")
-# @end evaluate_session
 
 
 # === Cleanup ===
-galtea.products.delete(product_id=product_id)
+# Deleting the product cascades to the sessions and specification created above.
+try:
+    galtea.products.delete(product_id=product_id)
+except HTTPError as e:
+    # Known API issue: cascade soft-delete may hit unique constraint on specifications
+    if e.response.status_code != 500:
+        raise
