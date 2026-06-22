@@ -36,7 +36,7 @@ docs/
 
 - Section names: descriptive `snake_case` (e.g., `usage_and_cost_info`)
 - File naming: `sdk_api_<service>_<method>.py`, `sdk_tutorials_<topic>.py`, `concepts_<topic>.py`
-- Before creating a new code file, check if an existing one covers the topic — add a section to it instead.
+- Before creating a new code file, check if an existing one covers the topic; add a section to it instead.
 
 ## Adding a New Page
 
@@ -57,8 +57,4 @@ Docs-specific ADRs live in `docs/adr/`. Consult them before making structural ch
 
 ## Local Development
 
-```bash
-cd docs && npm install && npm run dev  # http://localhost:3000
-```
-
-Validate: `python scripts/run.py` | Build: `python scripts/run.py --build`
+Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`npm run dev`, then `python scripts/run.py` to validate and `python scripts/run.py --build` to build).
