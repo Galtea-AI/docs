@@ -53,7 +53,7 @@ Docs-specific ADRs live in `docs/adr/`. Consult them before making structural ch
 
 | ADR | Topic |
 |-----|-------|
-| `0001-docs-file-renames-and-redirects.md` | How to rename pages: file rename + `docs.json` navigation update + redirect + internal link updates (excluding old changelogs) |
+| `0001-docs-file-renames-and-redirects.md` | Rename file, update `docs.json` nav, add a permanent redirect, update internal links (changelogs excluded); never delete redirects |
 
 ## Local Development
 
