@@ -1,0 +1,48 @@
+<Update label="2026-06-26" description="Run Voice Simulations, Update Specifications from a Document, and More">
+
+## Run Voice Simulations on Your Phone Agents
+
+You can now run voice simulations against AI agents that answer the phone. A new [phone connection](/concepts/product/phone-connection) tells Galtea how to reach your agent: you set the phone number once, and Galtea **dials your agent and runs the conversation as a real voice call**. This is Direct Inference over the phone.
+
+A few things that make it powerful:
+
+- **The caller sounds human, in your agent's language.** Set a [test case](/concepts/product/test/case)'s language and the synthetic caller speaks it with a natively-accented voice (a Spanish test case is answered in Spanish), so one phone connection covers many languages with no extra setup.
+- **Voice agents are scored like text agents.** Galtea transcribes each agent reply with speech-to-text automatically, so every [metric](/concepts/metric) you already use works over the phone, including [security tests](/concepts/product/test/security-tests) that speak adversarial prompts out loud.
+- **You can replay the call however you like.** The entire conversation is captured as a continuous [call recording](/concepts/product/version/session) that you can play back in the dashboard, either as a single clip or [turn by turn](/concepts/product/version/session/inference-result).
+
+## Update Specifications from a Document
+
+As your product evolves, its documentation (PRDs, design docs, spec sheets) often changes before its [specifications](/concepts/product/specification) do. A new **Update from document** action on the product detail page bridges that gap.
+
+Upload a document and the platform compares its content against your product's existing specifications. Each suggestion is classified as one of:
+
+- **New** — a behavioral expectation found in the document that has no matching specification yet.
+- **Updated** — an existing specification that the document refines or extends.
+- **Contradictory** — an existing specification that conflicts with something in the document.
+
+You review all suggestions and choose which to apply. Accepted **new** suggestions create a new specification. Accepted **updated** and **contradictory** suggestions replace the referenced one. Anything you leave unselected stays untouched. Nothing changes without your explicit confirmation.
+
+## Product Cards Show Version Scores
+
+[Product](/concepts/product) cards now tell you more at a glance. Each card shows two [version](/concepts/product/version) rows:
+
+- **Best** — the version with the highest average [evaluation](/concepts/product/version/session/evaluation) score, shown with a percentage (e.g., `v2 (55%)`).
+- **Newest** — the most recently created version.
+
+A version with no evaluations shows `(-)` instead of a percentage. The Evaluations counter and Total Cost row have been removed from cards to keep the view focused.
+
+## Cross-Product Ranking in Val
+
+Val (the Galtea AI assistant) can now compare your [products](/concepts/product) against each other on a shared [metric](/concepts/metric). Ask Val something like "how does the whole product family perform on Faithfulness?" and it returns a worst-first ranking with the evaluation count, mean, and min/max score for each product, plus an overall evaluation-weighted score across all of them.
+
+If you do not specify a metric, Val first lists the metrics shared across your selected products and waits for you to pick one before returning numbers.
+
+## Platform Improvements
+
+- **Try a demo product during onboarding:** New users can now clone a ready-made Galtea demo during the onboarding flow.
+- **Faster audio loading in inference results:** Audio files in [inference result](/concepts/product/version/session/inference-result) sessions now load lazily and in a single batched request as turns scroll into view, rather than fetching all URLs and preloading all audio on render. The audio player loads only the duration header for visible turns, so the seek bar shows the correct length without downloading the full file. Play latency is unchanged.
+- **Val assistant fixes:** Several usability issues in the Val widget are resolved. The ⌘K / Ctrl+K shortcut no longer fires while you are typing in another field. Pressing Enter mid-stream inserts a newline as expected. Citation chips no longer appear for links inside code blocks. The clipboard copy button falls back gracefully on plain HTTP. The route catalog no longer suggests admin-only pages that regular members cannot access.
+- **Tooltips close when the pointer moves onto their content:** Tooltips now close as soon as the pointer leaves the trigger, like any standard hover element. Previously, moving the pointer from the trigger onto the tooltip kept it open and could block clicks on elements beneath it.
+- **Long entity names stay inside their column:** Long names and identifiers in link cells (Test, Version, and similar columns in data tables) now wrap and clamp to two lines inside their column instead of overflowing into the next one.
+
+</Update>

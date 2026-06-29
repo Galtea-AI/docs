@@ -48,6 +48,22 @@ Specifications are at the center of Galtea's recommended evaluation flow:
   End-to-end guide: define specs, generate metrics, create tests, and run evaluations — all from specifications.
 </Card>
 
+## Keeping Specifications Up to Date
+
+As your product evolves, its documentation — PRDs, design docs, spec sheets — often changes before its specifications do. The `POST /products/{id}/regenerate-config` endpoint lets you cross-check an uploaded document against a product's existing specifications and receive classified suggestions without persisting anything.
+
+Each suggestion carries a `status`:
+
+- `new` — a candidate specification extracted from the document that has no match among the product's existing specifications.
+- `updated` — a candidate that refines or extends an existing specification (includes a reference to the existing spec).
+- `contradictory` — a candidate that conflicts with an existing specification (includes a reference to the existing spec).
+
+The endpoint **persists nothing**. Applying a suggestion — creating a new specification, updating an existing one, or removing a contradicted one — is a separate, explicit step using the standard specification endpoints in the [REST API](/api-reference). This means nothing changes without your confirmation and unaffected specifications remain untouched.
+
+<Info>
+  The dashboard flow for reviewing and applying suggestions is tracked in a follow-up. In the meantime the endpoint is available via the [REST API](/api-reference) and the CLI (`galtea products regenerate-config`).
+</Info>
+
 ## SDK Integration
 
 The SDK allows you to create, list, retrieve, and delete specifications, as well as link and unlink metrics. See the [Specification Service API documentation](/sdk/api/specification/service) for more details.

@@ -17,9 +17,8 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
   The ID or IDs of the test you want to get the test cases from.
 </ResponseField>
 <ResponseField name="languages" type="list[string]" optional>
-  Languages to filter test cases by.
-  Follow this list to know the supported ones:
-  - https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+  Languages to filter test cases by. Accepts [BCP-47 language tags](https://en.wikipedia.org/wiki/IETF_language_tag) — a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`).
+  - https://en.wikipedia.org/wiki/IETF_language_tag
 </ResponseField>
 <ResponseField name="variants" type="list[string]" optional>
   The list of variants to filter by.

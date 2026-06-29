@@ -5,7 +5,7 @@ argument-hint: [focus-area]
 model: sonnet
 ---
 
-_Classify every discrepancy using code evidence. Never guess Category A/B/C — if the source of truth is unclear, flag it as a question for the user rather than fixing the wrong layer._
+_Classify every discrepancy using code evidence. Never guess Category A/B/C: if the source of truth is unclear, flag it as a question for the user rather than fixing the wrong layer._
 
 # Documentation Audit & Fix
 
@@ -39,7 +39,7 @@ Store the choice as `FOCUS_AREA`.
 
 ## 2. Read Context Files
 
-Before starting, read these files for full context on the documentation system:
+Read these files for context on the documentation system:
 - `docs/CLAUDE.md` - Code embed system, page structure, MDX conventions
 - `docs/component_reference.md` - Component templates and formatting patterns
 - `docs/docs.json` - Navigation structure and all registered pages
@@ -50,10 +50,10 @@ If code snippets are in scope, also read:
 
 ## 3. Read Documentation and Source Code
 
-Thoroughly read both sides before making any judgment:
+Read both sides before making any judgment:
 
 1. **Read the documentation pages** in scope. For each page, note what it claims: method names, parameters, types, defaults, behavior descriptions, code examples.
-2. **Read the corresponding source code.** The source of truth is always the implementation:
+2. **Read the corresponding source code.** The implementation is always the source of truth:
    - SDK: `sdk/galtea/` - method signatures, parameter names and types, docstrings
    - API: `api/src/` - route definitions, request/response schemas, Prisma models
    - Dashboard: `dashboard/src/` - UI components, forms, feature availability
@@ -70,7 +70,7 @@ If code snippets are in scope, also read:
 
 ### 4a. Prose Documentation Checks (when AUDIT_MODE includes prose)
 
-For each documentation page in scope, systematically check:
+For each documentation page in scope, check:
 
 **Parameters and Signatures:**
 - Parameter names match between docs and SDK source
@@ -104,7 +104,7 @@ For each documentation page in scope, systematically check:
 - MDX components are used correctly (`<ResponseField>`, `<Note>`, etc.)
 - No inline Python code blocks in MDX files (must use embed system)
 - No `---` horizontal rules inside page content (only allowed in frontmatter)
-- No triple blank lines (`\n\n\n`) — use single blank lines between sections
+- No triple blank lines (`\n\n\n`): use single blank lines between sections
 - Related section heading must be `## Related` (not `## Related Topics`, `## Related Concepts`, `## Related Metrics`, or `## See Also`)
 
 **Terminology Standards:**
@@ -116,19 +116,19 @@ For each documentation page in scope, systematically check:
 
 **Canonical Concept Page Structure:**
 All concept pages (under `docs/concepts/`) must follow this section order:
-1. `## What is [X]?` — intro paragraph
+1. `## What is [X]?`: intro paragraph
 2. Domain-specific sections (use cases, how it works, creating, etc.)
-3. `## SDK Integration` — card links to SDK service/tutorial (omit if dashboard-only)
-4. `## [X] Properties` — `<ResponseField>` blocks
-5. `## Related` — `<CardGroup>` with cards (always last section)
+3. `## SDK Integration`: card links to SDK service/tutorial (omit if dashboard-only)
+4. `## [X] Properties`: `<ResponseField>` blocks
+5. `## Related`: `<CardGroup>` with cards (always last section)
 
 **Canonical Metric Page Structure:**
 All individual metric pages (under `docs/concepts/metric/`) must follow:
-1. Intro paragraph — what it is + category link (`[non-deterministic Metric](/concepts/metric)`)
-2. `## Evaluation Parameters` — bullet list of required parameters
-3. `## How Is It Calculated?` — calculation steps + scoring
+1. Intro paragraph: what it is + category link (`[non-deterministic Metric](/concepts/metric)`)
+2. `## Evaluation Parameters`: bullet list of required parameters
+3. `## How Is It Calculated?`: calculation steps + scoring
 4. Optional: `## Interpretation of Scores` (only for continuous-score deterministic metrics)
-5. `## Suggested Test Case Types` — when to use this metric
+5. `## Suggested Test Case Types`: when to use this metric
 6. No `## Related` section on individual metric pages (redundant with sidebar)
 
 **Concept Overview Pages Should Not Contain SDK Code:**
@@ -142,9 +142,9 @@ Concept overview pages explain *what* something is. SDK code (decorators, method
 
 **Video Placement:**
 Videos must be placed consistently based on their type:
-- **Overview/demo videos** — right after the intro paragraph(s) of "What is [X]?", before the first domain section (e.g., `trace.mdx`, `ai-generation.mdx`, `data-augmentation.mdx`)
-- **Contextual workflow videos** — inside the relevant creation/setup section they demonstrate (e.g., endpoint connection creation video inside "Creating an Endpoint Connection", test generation video inside "Test Origin" Tab)
-- **Tutorial videos** — right after the intro paragraph or Tip, before the step-by-step content
+- **Overview/demo videos**: right after the intro paragraph(s) of "What is [X]?", before the first domain section (e.g., `trace.mdx`, `ai-generation.mdx`, `data-augmentation.mdx`)
+- **Contextual workflow videos**: inside the relevant creation/setup section they demonstrate (e.g., endpoint connection creation video inside "Creating an Endpoint Connection", test generation video inside "Test Origin" Tab)
+- **Tutorial videos**: right after the intro paragraph or Tip, before the step-by-step content
 - Video placeholders for missing videos use `{/* <!-- VIDEO PLACEHOLDER: description ... --> */}` comment wrapping
 - Track all pending and existing videos in `docs/VIDEO_PLACEHOLDERS.md`
 
@@ -224,7 +224,7 @@ Issue identified
 ## 6. Fix Issues
 
 ### Evidence-Based Only
-- Every change must be linked to a specific source of evidence in the code.
+- Link every change to a specific source of evidence in the code.
 - If you cannot find clear evidence for a discrepancy, do NOT make the change. Note it in the report as a question.
 
 ### Prose Documentation Fixes
@@ -292,7 +292,7 @@ cd docs && python scripts/run.py
 
 ## 8. Final Review with Git
 
-Before finishing, check recent codebase changes are reflected:
+Before finishing, check that recent codebase changes are reflected:
 
 ```bash
 git log --oneline --since="2 weeks ago" -- sdk/ api/ dashboard/ evaluator/

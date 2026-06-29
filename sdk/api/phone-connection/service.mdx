@@ -26,8 +26,6 @@ phone_connection = galtea.phone_connections.create(
     product_id=product_id,
     name="production-voice-agent-" + run_identifier,
     phone_number="+14155552671",
-    voice="sarah",  # en-GB female; omit to use the default
-    language_code="en",
     agent_speaks_first=False,
 )
 ```
@@ -46,14 +44,6 @@ Get a phone connection by ID:
 phone_connection = galtea.phone_connections.get(phone_connection_id=phone_connection_id)
 ```
 
-List available TTS voices:
-```python
-voices = galtea.phone_connections.list_voices()
-# voices is a list of TtsVoice objects: id, name, language_code, gender
-for voice in voices:
-    print(f"{voice.id}: {voice.name} ({voice.language_code}, {voice.gender})")
-```
-
 ## Service Methods
 - [Create Phone Connection](/sdk/api/phone-connection/create)
 - [List Phone Connections](/sdk/api/phone-connection/list)
@@ -61,7 +51,6 @@ for voice in voices:
 - [Get Phone Connection By Name](/sdk/api/phone-connection/get-by-name)
 - [Update Phone Connection](/sdk/api/phone-connection/update)
 - [Delete Phone Connection](/sdk/api/phone-connection/delete)
-- [List TTS Voices](/sdk/api/phone-connection/list-voices)
 
 ## Related
 
