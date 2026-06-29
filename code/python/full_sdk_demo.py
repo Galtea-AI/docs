@@ -198,6 +198,7 @@ session = galtea.sessions.get_or_create(
     custom_id=custom_session_id,
     version_id=version_id,
     test_case_id=test_case_id,
+    metadata={"authenticated_user_id": "user-123"},
 )
 # @end session_get_or_create
 if session is None:
