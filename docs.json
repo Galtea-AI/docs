@@ -151,6 +151,7 @@
             "group": "Security & Administration",
             "icon": "shield-halved",
             "pages": [
+              "security/roles-and-permissions",
               {
                 "group": "SAML SSO",
                 "icon": "building-lock",
