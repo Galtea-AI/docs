@@ -65,26 +65,26 @@ endpoint_connection = galtea.endpoint_connections.create(
   Output mapping configuration using JSONPath expressions. Required for `INITIALIZATION` (needs `session_id`) and `CONVERSATION` (needs `output`) types. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
 </ResponseField>
 <ResponseField name="timeout" type="int" optional>
-  Request timeout in seconds.
+  Per-attempt request timeout in seconds. Defaults to `15`. Maximum `120` (values above this are rejected by the API).
 </ResponseField>
 <ResponseField name="rate_limit" type="int" optional>
-  Maximum requests per minute.
+  Maximum requests per minute. Leave empty for no limit (no throttling).
 </ResponseField>
 <ResponseField name="retry_enabled" type="bool" optional>
-  Whether automatic retry is enabled. Defaults to `false`. See [Retry Configuration](/concepts/product/endpoint-connection-configuration#retry-configuration).
+  Whether automatic retry is enabled. Defaults to `true`. See [Retry Configuration](/concepts/product/endpoint-connection-configuration#retry-configuration).
 </ResponseField>
 <ResponseField name="retry_max_attempts" type="int" optional>
-  Maximum retry attempts (0–10). Defaults to `3`.
+  Maximum retry attempts (0–10). Defaults to `1`. These are retries after the first call, so N attempts means up to N+1 calls to your endpoint, and each call uses credits. `0` is only valid when retry is disabled; with retry enabled the minimum is `1`.
 </ResponseField>
 <ResponseField name="retry_initial_delay_ms" type="int" optional>
   Initial delay in milliseconds before first retry. Defaults to `1000`.
 </ResponseField>
 <ResponseField name="retry_backoff_strategy" type="string" optional>
-  Backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`.
+  Backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`. Defaults to `EXPONENTIAL`.
 </ResponseField>
 <ResponseField name="retry_max_delay_ms" type="int" optional>
   Maximum delay between retry attempts, in milliseconds. Defaults to `3000`. Capped at `60000`; values above this are rejected.
 </ResponseField>
 <ResponseField name="retryable_status_codes" type="list[int]" optional>
-  HTTP status codes that trigger retry. Defaults to `[429, 500, 502, 503, 504]`.
+  HTTP status codes that trigger retry. Defaults to `[429, 500, 502, 503, 504]`. Each value must be a valid HTTP status code (100–599).
 </ResponseField>
