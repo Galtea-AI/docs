@@ -1,0 +1,117 @@
+---
+title: "Google Workspace"
+description: "Step-by-step guide to configure SAML SSO with Google Workspace"
+icon: "google"
+iconType: "brands"
+---
+
+## Overview
+
+This guide walks you through connecting Galtea to **Google Workspace** using SAML 2.0. When complete, your team can sign in to Galtea through their Google Workspace accounts.
+
+You will switch between the **Google Admin Console** and **Galtea's Organization Settings** several times. Keep both browser tabs open.
+
+## Prerequisites
+
+- Owner role in the Galtea organization, with an active Enterprise subscription.
+- Super Admin role in your Google Workspace account.
+
+---
+
+## Step 1 — Create a custom SAML application in Google
+
+1. Open the [Google Admin Console](https://admin.google.com).
+2. Navigate to **Apps → Web and mobile apps**.
+3. Click **Add app → Add custom SAML app**.
+4. Enter an app name (for example, `Galtea`). Optionally upload a logo.
+5. Click **Continue**.
+
+---
+
+## Step 2 — Copy IdP values from Google into Galtea
+
+Google shows an **IdP details** screen with its own SSO information. Copy these values into Galtea's **Organization Settings → Advanced Options** before continuing.
+
+| Google field | Galtea field |
+|---|---|
+| **SSO URL** | **Sign on URL** |
+
+For the certificate:
+1. Click **Download Certificate** on this screen.
+2. Open the downloaded file in a text editor. You will see `-----BEGIN CERTIFICATE-----` at the top.
+3. Copy the entire content and paste it into the **Public Certificate** field in Galtea.
+
+Click **Continue** in the Google Admin Console to move to the next step.
+
+<Warning>
+  Copy and save these values **now**. After clicking Continue you will move to a different screen and will need to go back to find them again.
+</Warning>
+
+---
+
+## Step 3 — Configure Galtea's SP values in Google
+
+On the **Service provider details** screen, fill in the following:
+
+| Google field | Value |
+|---|---|
+| **ACS URL** | `https://api.galtea.ai/auth/saml/callback` |
+| **Entity ID** | The **SP Entity ID** you entered in Galtea's Organization Settings |
+
+<Tip>
+  The SP Entity ID is a value **you define**. Use a unique identifier for your organization (for example `my-company` or `my-company-prod`). The exact same value must be entered in both Galtea and in the Google Entity ID field. In Galtea, enter this value in **both** the **SP Entity ID** and **Issuer** fields.
+</Tip>
+
+Enable the **Signed response** checkbox.
+
+For the **Name ID format**, select **EMAIL**.
+
+For the **Name ID**, select **Basic Information → Primary email**.
+
+Click **Continue**.
+
+---
+
+## Step 4 — Attribute mapping (optional)
+
+On the **Attribute mapping** screen, you can map additional Google profile fields to SAML attributes that Galtea reads.
+
+| Google field | SAML attribute name |
+|---|---|
+| Basic Information → First name | `given_name` |
+| Basic Information → Last name | `family_name` |
+
+Click **Add mapping** for each row, then click **Finish**.
+
+---
+
+## Step 5 — Grant user access in Google
+
+After finishing the setup, the app is turned off for all users by default.
+
+1. In the Admin Console, click **Web and mobile apps** and open the Galtea app.
+2. Click **User access**.
+3. Enable the app for the relevant organizational units or groups.
+4. Click **Save**.
+
+<Info>
+  Google can take up to a few minutes to propagate access changes. If a user gets an access-denied error immediately after you save, wait a moment and try again.
+</Info>
+
+---
+
+## Step 6 — Save and test in Galtea
+
+1. In Galtea, click **Save** to update the organization settings.
+2. Ask a user with access to the app to sign in using the organization's Team Slug.
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| "app_not_configured_for_user" from Google | User does not have access to the app | Grant user access in Google Admin → User access |
+| "Invalid ACS URL" from Google | ACS URL mismatch | Set the ACS URL in Google to exactly `https://api.galtea.ai/auth/saml/callback` |
+| Signature validation fails in Galtea | Wrong certificate | Re-download the certificate from the Google IdP details screen and paste it again |
+| Changes not visible yet | Google propagation delay | Wait 1–2 minutes and try again |

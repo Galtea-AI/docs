@@ -146,6 +146,22 @@
               },
               "sdk/integrations/github-actions"
             ]
+          },
+          {
+            "group": "Security & Administration",
+            "icon": "shield-halved",
+            "pages": [
+              {
+                "group": "SAML SSO",
+                "icon": "building-lock",
+                "pages": [
+                  "security/saml-sso",
+                  "security/saml-sso/azure",
+                  "security/saml-sso/okta",
+                  "security/saml-sso/google"
+                ]
+              }
+            ]
           }
         ]
       },
