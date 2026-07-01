@@ -84,6 +84,6 @@ print(f"Created {len(result['evaluations'])} evaluations")
   A list of [Specification](/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and tests are used.
 
   <Note>
-    Specifications without linked metrics or without linked tests are silently skipped.
+    Specifications without linked metrics or without linked tests are silently skipped. If no specification has linked metrics, or none of the linked tests is ready to run, the call returns an error instead of running.
   </Note>
 </ResponseField>
