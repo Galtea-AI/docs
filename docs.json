@@ -299,26 +299,6 @@
                 ]
               },
               {
-                "group": "WebRTC Connection",
-                "icon": "tower-broadcast",
-                "pages": [
-                  "concepts/product/webrtc-connection",
-                  {
-                    "group": "SDK",
-                    "icon": "code",
-                    "pages": [
-                      "sdk/api/webrtc-connection/service",
-                      "sdk/api/webrtc-connection/create",
-                      "sdk/api/webrtc-connection/list",
-                      "sdk/api/webrtc-connection/get",
-                      "sdk/api/webrtc-connection/get-by-name",
-                      "sdk/api/webrtc-connection/update",
-                      "sdk/api/webrtc-connection/delete"
-                    ]
-                  }
-                ]
-              },
-              {
                 "group": "Test",
                 "icon": "vial-circle-check",
                 "pages": [
