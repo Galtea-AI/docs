@@ -39,6 +39,9 @@ versions = galtea.versions.list(product_id=product_id, limit=5)
 <ResponseField name="id" type="string | list[string]" default="None">
   The ID or IDs of the version(s) to retrieve.
 </ResponseField>
+<ResponseField name="parent_version_id" type="string | list[string]" default="None">
+  Filter versions by their parent [version](/concepts/product/version#version-lineage). Pass one or more parent IDs to return only the revisions iterated from those parents. This is a refinement filter, so you must still pass `product_id` or `id`.
+</ResponseField>
 <Note>
   At least one of the 2 filter parameters (`product_id`, `id`) described above must be passed to the method
 </Note>

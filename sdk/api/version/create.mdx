@@ -77,3 +77,6 @@ version = galtea.versions.create(
 <ResponseField name="guardrails" type="string" optional>
   Configuration or description of safety guardrails applied.
 </ResponseField>
+<ResponseField name="parent_version_id" type="string" optional>
+  The ID of the parent [version](/concepts/product/version) this version is iterated from. Setting it makes the new version a revision of the parent and records the lineage. The parent must belong to the same product. Leave it empty to create a root version. See [Version Lineage](/concepts/product/version#version-lineage) for details.
+</ResponseField>
