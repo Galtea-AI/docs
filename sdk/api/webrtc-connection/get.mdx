@@ -1,0 +1,18 @@
+---
+title: 'Get WebRTC Connection'
+sidebarTitle: "Get"
+description: "Retrieve a specific WebRTC connection by its ID."
+---
+
+## Returns
+Returns a [WebRTC Connection](/concepts/product/webrtc-connection) object for the given ID. The object exposes a `has_api_key` boolean, not the stored API key.
+
+## Example
+```python
+web_rtc_connection = galtea.web_rtc_connections.get(web_rtc_connection_id=web_rtc_connection_id)
+```
+
+## Parameters
+<ResponseField name="web_rtc_connection_id" type="string" required>
+  The ID of the WebRTC connection to retrieve.
+</ResponseField>
