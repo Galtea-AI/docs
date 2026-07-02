@@ -23,10 +23,10 @@ web_rtc_connection = galtea.web_rtc_connections.update(
   New name for the WebRTC connection.
 </ResponseField>
 <ResponseField name="api_key" type="string" optional>
-  New Pipecat Cloud API key. This is a secret. The API never returns it, so you cannot read it back. Leave this field unset to keep the stored key. Pass a value to replace it.
+  New Pipecat Cloud **public API key** (`pk_...`, the runtime `/start` credential, not the `pcc_pat_` deploy token). This is a secret. The API never returns it, so you cannot read it back. Leave this field unset to keep the stored key. Pass a value to replace it.
 </ResponseField>
 <ResponseField name="agent_name" type="string" optional>
-  New Pipecat Cloud agent name.
+  New Pipecat Cloud agent name. It must match a deployed agent's name exactly.
 </ResponseField>
 <ResponseField name="agent_speaks_first" type="boolean" optional>
   Whether the voice agent opens the conversation once the session connects (`True`/`False`). Pass `PydanticUndefined` (the default) to leave the current value unchanged.

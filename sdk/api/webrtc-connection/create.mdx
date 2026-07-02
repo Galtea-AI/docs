@@ -26,10 +26,10 @@ web_rtc_connection = galtea.web_rtc_connections.create(
   Name of the WebRTC connection. Must be unique per product.
 </ResponseField>
 <ResponseField name="api_key" type="string" required>
-  The Pipecat Cloud API key Galtea uses to reach your agent. This is a secret. Galtea stores it encrypted and the API never returns it. A fetched connection exposes only a `has_api_key` boolean, never the key itself.
+  The Pipecat Cloud **public API key** (`pk_...`) Galtea uses to reach your agent, the credential its runtime `/start` call needs. This is **not** the `pcc_pat_` Personal Access Token used to deploy the agent. This is a secret. Galtea stores it encrypted and the API never returns it. A fetched connection exposes only a `has_api_key` boolean, never the key itself.
 </ResponseField>
 <ResponseField name="agent_name" type="string" required>
-  The name of the Pipecat Cloud agent Galtea should target (e.g., `my-pipecat-agent`).
+  The name of your deployed Pipecat Cloud agent (for example, the `agent_name` you deployed with). It must match that agent's name exactly. Galtea passes it to Pipecat Cloud's `/start` call to launch the session; if no deployed agent has this name, the call fails.
 </ResponseField>
 <ResponseField name="agent_speaks_first" type="boolean" optional>
   Whether the voice agent opens the conversation once the session connects. Defaults to `False` (the simulated caller speaks first). Pass `True` for interviewer-style agents that greet the caller first.

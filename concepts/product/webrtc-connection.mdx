@@ -10,7 +10,7 @@ import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 
 A WebRTC Connection tells Galtea how to reach your AI voice agent over WebRTC. WebRTC is a standard for real-time audio and video over the internet. Instead of calling an HTTP API, Galtea **opens a live WebRTC session with your agent** and runs the conversation as a real voice call. This is **Direct Inference over WebRTC**.
 
-Galtea reaches your agent through [Pipecat Cloud](https://pipecat.ai). You give Galtea two things once: a Pipecat Cloud **API key** and the **agent name** to target. Galtea then uses them to drive voice evaluations against your agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-caller-s-language-is-chosen)), so one connection serves test cases in different languages.
+Galtea reaches your agent through [Pipecat Cloud](https://pipecat.ai). You give Galtea two things once: a Pipecat Cloud **public API key** (`pk_...`) and the **agent name** to target. Galtea then uses them to drive voice evaluations against your agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-caller-s-language-is-chosen)), so one connection serves test cases in different languages.
 
 <Note>
   The API key is a secret. Galtea stores it encrypted and the API never returns it. A fetched connection tells you only whether a key is set, through a `has_api_key` boolean. It never shows the key itself.
@@ -44,11 +44,11 @@ To create a WebRTC Connection:
 </ResponseField>
 
 <ResponseField name="API Key" type="Text" required>
-  The Pipecat Cloud API key Galtea uses to reach your agent. This is a secret. Galtea stores it encrypted at rest. The API never returns it, so you cannot read it back. To replace it, set a new value. To check whether a key is stored, read the `has_api_key` boolean on a fetched connection.
+  The Pipecat Cloud **public API key** (`pk_...`) Galtea uses to reach your agent. This is the credential its runtime `/start` call needs, **not** the `pcc_pat_` Personal Access Token you use to deploy the agent. This is a secret. Galtea stores it encrypted at rest. The API never returns it, so you cannot read it back. To replace it, set a new value. To check whether a key is stored, read the `has_api_key` boolean on a fetched connection.
 </ResponseField>
 
 <ResponseField name="Agent Name" type="Text" required>
-  The name of the Pipecat Cloud agent Galtea should target. **Example**: `my-pipecat-agent`.
+  The name of your deployed Pipecat Cloud agent. It must match that agent's name exactly, and it is resolved within the organization that owns the public API key. Galtea passes it to Pipecat Cloud's `/start` call to launch the session; if no deployed agent has this name, the call fails. **Example**: `my-pipecat-agent`.
 </ResponseField>
 
 <ResponseField name="Agent Speaks First" type="Checkbox">
