@@ -57,6 +57,13 @@
       "vscode"
     ]
   },
+  "integrations": {
+    "posthog": {
+      "apiKey": "phc_5hcYhBTteqSv1mp9ObS5j28EKEA1HV6sog9EZHikgcF",
+      "apiHost": "https://t.galtea.ai",
+      "sessionRecording": false
+    }
+  },
   "navigation": {
     "global": {
       "anchors": [
