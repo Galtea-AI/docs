@@ -1,0 +1,46 @@
+---
+title: 'List WebRTC Connections'
+sidebarTitle: "List"
+description: "List WebRTC connections with optional filters."
+---
+
+## Returns
+Returns a list of [WebRTC Connection](/concepts/product/webrtc-connection) objects matching the given filters.
+
+## Example
+```python
+web_rtc_connections = galtea.web_rtc_connections.list(
+    product_ids=[product_id],
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+## Parameters
+<ResponseField name="product_ids" type="list[string]" optional>
+  Filter by product IDs.
+</ResponseField>
+<ResponseField name="names" type="list[string]" optional>
+  Filter by exact WebRTC connection names.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  Filter by partial name match.
+</ResponseField>
+<ResponseField name="agent_name" type="string" optional>
+  Filter by partial agent name match.
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" optional>
+  Filter connections created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" optional>
+  Filter connections created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort by creation date. Valid values: `asc`, `desc`.
+</ResponseField>
+<ResponseField name="offset" type="int" optional>
+  Number of results to skip before starting to collect. Use for pagination.
+</ResponseField>
+<ResponseField name="limit" type="int" optional>
+  Maximum number of results to return in a single request.
+</ResponseField>

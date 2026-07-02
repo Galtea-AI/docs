@@ -1,0 +1,40 @@
+---
+title: 'Create WebRTC Connection'
+sidebarTitle: "Create"
+description: "Create a new WebRTC connection for a product."
+---
+
+## Returns
+Returns a [WebRTC Connection](/concepts/product/webrtc-connection) object for the given parameters, or `None` if an error occurs.
+
+## Example
+```python
+web_rtc_connection = galtea.web_rtc_connections.create(
+    product_id=product_id,
+    name="production-voice-agent-" + run_identifier,
+    api_key="YOUR_PIPECAT_CLOUD_API_KEY",
+    agent_name="my-pipecat-agent",
+    agent_speaks_first=False,
+)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  ID of the product this connection belongs to.
+</ResponseField>
+<ResponseField name="name" type="string" required>
+  Name of the WebRTC connection. Must be unique per product.
+</ResponseField>
+<ResponseField name="api_key" type="string" required>
+  The Pipecat Cloud API key Galtea uses to reach your agent. This is a secret. Galtea stores it encrypted and the API never returns it. A fetched connection exposes only a `has_api_key` boolean, never the key itself.
+</ResponseField>
+<ResponseField name="agent_name" type="string" required>
+  The name of the Pipecat Cloud agent Galtea should target (e.g., `my-pipecat-agent`).
+</ResponseField>
+<ResponseField name="agent_speaks_first" type="boolean" optional>
+  Whether the voice agent opens the conversation once the session connects. Defaults to `False` (the simulated caller speaks first). Pass `True` for interviewer-style agents that greet the caller first.
+</ResponseField>
+
+<Note>
+  The simulated caller's spoken language is taken from each test case's language, not the WebRTC connection, so one connection can serve test cases in different languages. See [WebRTC Connection](/concepts/product/webrtc-connection#how-the-caller-s-language-is-chosen).
+</Note>

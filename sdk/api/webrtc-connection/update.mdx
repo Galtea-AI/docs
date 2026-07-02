@@ -1,0 +1,40 @@
+---
+title: 'Update WebRTC Connection'
+sidebarTitle: "Update"
+description: "Update an existing WebRTC connection."
+---
+
+## Returns
+Returns the updated [WebRTC Connection](/concepts/product/webrtc-connection) object.
+
+## Example
+```python
+web_rtc_connection = galtea.web_rtc_connections.update(
+    web_rtc_connection_id=web_rtc_connection_id,
+    agent_speaks_first=True,
+)
+```
+
+## Parameters
+<ResponseField name="web_rtc_connection_id" type="string" required>
+  ID of the WebRTC connection to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the WebRTC connection.
+</ResponseField>
+<ResponseField name="api_key" type="string" optional>
+  New Pipecat Cloud API key. This is a secret. The API never returns it, so you cannot read it back. Leave this field unset to keep the stored key. Pass a value to replace it.
+</ResponseField>
+<ResponseField name="agent_name" type="string" optional>
+  New Pipecat Cloud agent name.
+</ResponseField>
+<ResponseField name="agent_speaks_first" type="boolean" optional>
+  Whether the voice agent opens the conversation once the session connects (`True`/`False`). Pass `PydanticUndefined` (the default) to leave the current value unchanged.
+</ResponseField>
+
+<Note>
+  All fields except `web_rtc_connection_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>
