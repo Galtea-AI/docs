@@ -85,6 +85,10 @@ The Galtea SDK allows you to create, view, and manage test cases programmaticall
   A justification for the confidence level of the test case.
 </ResponseField>
 
+<ResponseField name="Gender" type="Text" optional>
+  The persona's gender, either `MALE` or `FEMALE`. In voice (phone) evaluations it selects the male or female synthesized caller voice; text evaluations ignore it, and when unset the voice uses the default for the language. For scenario test cases produced by the generator, it is inferred from the user persona.
+</ResponseField>
+
 <ResponseField name="Background Noise Profile" type="Enum" optional>
   Background noise mixed into the simulated caller's audio when this test case runs over a [phone connection](/concepts/product/phone-connection). Only applies to voice tests; has no effect otherwise.
   Possible values:

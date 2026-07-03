@@ -43,6 +43,9 @@ test_case = galtea.test_cases.create(
 <ResponseField name="language" type="string" optional>
   Language for the test case. Accepts a [BCP-47 language tag](https://en.wikipedia.org/wiki/IETF_language_tag): a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`, `"en-GB"`). The region subtag is applied **only** when synthesizing speech for voice evaluations (the accent the simulated caller speaks with); text generation uses the base language only. A regional accent applies to any test type run over a phone connection (single-turn or multi-turn).
 </ResponseField>
+<ResponseField name="gender" type="string" optional>
+  Persona gender, `"MALE"` or `"FEMALE"`, for voice evaluations: it selects the male or female synthesized voice for the simulated caller. Stored only for now — voice selection is not active yet. Text evaluations ignore it. When unset, the voice uses the default for the language.
+</ResponseField>
 <ResponseField name="background_noise_profile" type="string" optional>
   Background noise mixed into the simulated caller's audio for voice evaluations run over a [phone connection](/concepts/product/phone-connection). Ignored for test cases that don't run over a phone connection.
   - Clip-backed: `office`, `street`, `car`
