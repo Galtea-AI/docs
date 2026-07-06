@@ -1,0 +1,23 @@
+<Update label="2026-07-03" description="Test Case Revisions, Version Coverage in Analytics, and More">
+
+## Track Changes to Your Test Cases
+
+[Test cases](/concepts/product/test/case) now keep a revision history, like metric revisions. When you edit a test case's evaluation content, the platform creates a new revision instead of overwriting the old one. Annotation-only edits, such as reviewer or score, still edit in place. The list shows only the latest revision by default, with an opt-in filter for older ones, and each revision links back to the one it came from. Evaluations that ran against an old test case now show an **Outdated Test Case** badge, and the SDK warns you when this happens.
+
+## Compare Version Coverage in Analytics
+
+The analytics page now shows **shared test-case coverage** so you can compare version scores fairly. Two versions can have the same average score even if one was evaluated against many more test cases, and shared coverage makes that gap visible. Each version shows how many test cases it was evaluated against, out of all test cases used across the shown versions, as a count and a percentage, with a Total / Used / Ignored summary. The selected-version area of each analytics tab is now two cards: radial gauges for the selected version, and a scores radar across all shown versions. Both stay visible and follow one grouping toggle (Specifications / Metrics). All numbers respect the active filters.
+
+## Platform Improvements
+
+- **Iterate a version from an existing one:** You can now create a [version](/concepts/product/version) from an existing one to track how it evolved. Each version records its parent as an **Evolved from** link, available in the dashboard, API, and SDK.
+- **Persona gender on test cases:** Test cases can now store and show the persona's gender.
+- **Attach session metadata at creation:** The SDK can now add metadata to a [session](/concepts/product/version/session) when it is created.
+- **Cancelled evaluation status in the SDK:** The SDK `EvaluationStatus` enum now includes `CANCELLED`.
+- **Development routes hidden in production:** Dev and demo routes are no longer shown in the production dashboard.
+- **Clearer report export errors:** Exporting a report for a product with no data now returns a clear client error instead of a server error.
+- **Faster permission checks:** Permission checks now run in parallel, so permission-heavy requests are faster.
+- **Sturdier SDK networking:** The SDK now reuses one HTTP session with retries and a timeout, and only prints colored output to a terminal.
+- **Dashboard polish:** Reduced oversized text, fixed clickable empty space in truncated table cells, restored non-admin assistant routes to the catalog, and refreshed the sidebar create-product button.
+
+</Update>

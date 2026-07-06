@@ -1,0 +1,124 @@
+---
+title: "SAML SSO"
+description: "Allow your team to sign in to Galtea through your company's identity provider using SAML 2.0 single sign-on"
+icon: "building-lock"
+---
+
+## Overview
+
+SAML SSO (Security Assertion Markup Language Single Sign-On) lets your team sign in to Galtea using your company's existing identity provider (IdP) — such as Microsoft Entra ID (Azure AD), Okta, or Google Workspace — instead of a separate password.
+
+When SSO is active, users authenticate with the identity provider. The provider then sends a signed SAML assertion to Galtea, which creates or updates the user session. No Galtea password is needed.
+
+<Info>
+  SAML SSO is an **Enterprise feature**. Contact [support@galtea.ai](mailto:support@galtea.ai) to enable it for your organization.
+</Info>
+
+## Prerequisites
+
+- You must be an **Owner** of the Galtea organization.
+- You must have admin access to your identity provider.
+
+## How it works
+
+```
+User → Galtea login → redirected to your IdP → user authenticates → IdP sends SAML response → Galtea creates session
+```
+
+Galtea acts as the **Service Provider (SP)**. Your company's directory (Azure AD, Okta, Google Workspace, etc.) is the **Identity Provider (IdP)**.
+
+## Setup overview
+
+Follow these four steps to connect your identity provider:
+
+<Steps>
+  <Step title="Create a SAML application in your IdP">
+    Add Galtea as a new SAML application inside your identity provider's admin console.
+  </Step>
+  <Step title="Configure Galtea's SP values in the IdP">
+    Copy the **ACS URL** and **SP Entity ID** from Galtea's organization settings into your IdP.
+
+    | Galtea value | What to enter |
+    |---|---|
+    | ACS URL | `https://api.galtea.ai/auth/saml/callback` |
+    | SP Entity ID | The value you enter in the **SP Entity ID** field in Galtea's settings |
+  </Step>
+  <Step title="Copy IdP values into Galtea">
+    After saving in your IdP, copy these two values back into Galtea's **Organization Settings → Advanced Options**:
+
+    | IdP value | Galtea field |
+    |---|---|
+    | IdP SSO URL | **Sign on URL** |
+    | X.509 certificate | **Public Certificate** |
+  </Step>
+  <Step title="Save and test">
+    Save the organization settings. Ask a team member to sign in using the **Team Slug** shown in the **SAML Configuration** section of your Organization Settings.
+  </Step>
+</Steps>
+
+## Configuration fields
+
+Open **Organization Settings** and scroll to the **Advanced Options** section. The following fields control SAML SSO.
+
+<Note>
+  Only organization Owners can view and edit these fields.
+</Note>
+
+| Field | Description |
+|---|---|
+| **Sign on URL** | The IdP's SSO endpoint. Copy it from your identity provider. Example: `https://login.microsoftonline.com/{tenant}/saml2` |
+| **SP Entity ID** | A unique identifier for your organization within the identity provider. **You define this value.** It can be a short string (e.g. `my-company`), a URL, or a URN. The same value must be registered in both Galtea and your identity provider. Enter this same value in the **Issuer** field too. |
+| **Issuer** | The issuer Galtea sends in SAML requests, also used as the expected **audience** of the IdP's response. Set it to the **same value as the SP Entity ID**. Your IdP's Identifier / Entity ID / Audience must match this value. |
+| **Public Certificate** | The X.509 signing certificate from your IdP, in PEM format (starts with `-----BEGIN CERTIFICATE-----`). |
+| **Signed Response** | Require the IdP to sign the full SAML response. Enabled by default. Most enterprise IdPs support this. |
+| **Signed Assertions** | Require the IdP to sign the assertions inside the SAML response. **Enable both options** if you are not sure — most modern IdPs (Azure AD, Okta, Google Workspace, and other enterprise IdPs) support signing both. |
+
+## How users sign in
+
+After SAML is configured, users sign in using the **Team Slug** assigned to your organization.
+
+1. Open the Galtea login page.
+2. Click **Continue with SAML SSO**.
+3. Enter the **Team Slug** (shown in the **SAML Configuration** section of your Organization Settings).
+4. Click **Continue** — the browser redirects to your identity provider.
+5. Authenticate with the identity provider.
+6. The browser returns to Galtea with an active session.
+
+On first sign-in, Galtea creates a new user account linked to the SAML identity. On later sign-ins, the same account is reused.
+
+## Provider-specific guides
+
+Follow the guide for your identity provider:
+
+<CardGroup cols={3}>
+  <Card title="Microsoft Entra ID (Azure AD)" icon="microsoft" iconType="brands" href="/security/saml-sso/azure">
+    Configure SAML SSO with Microsoft Entra ID.
+  </Card>
+  <Card title="Okta" icon="lock" href="/security/saml-sso/okta">
+    Configure SAML SSO with Okta.
+  </Card>
+  <Card title="Google Workspace" icon="google" iconType="brands" href="/security/saml-sso/google">
+    Configure SAML SSO with Google Workspace.
+  </Card>
+</CardGroup>
+
+## Certificate format
+
+The public certificate must be in PEM format. PEM is a base64-encoded certificate wrapped in header and footer lines:
+
+```
+-----BEGIN CERTIFICATE-----
+MIIDpDCCAoygAwIBAgIGAX...
+-----END CERTIFICATE-----
+```
+
+Most identity providers offer a "Download Certificate (Base64)" or "PEM" option. If you download a `.cer` or `.crt` file, open it in a text editor — if it starts with `-----BEGIN CERTIFICATE-----`, it is already in PEM format.
+
+## Troubleshooting
+
+| Error | Likely cause | Fix |
+|---|---|---|
+| `unknown_team_slug` | The team slug entered does not match any organization | Check the Team Slug in Organization Settings |
+| `saml_auth_failed` | Invalid signature or misconfigured certificate | Re-download the IdP certificate and paste it again |
+| `saml_disabled` | SAML SSO is not enabled for your account | Contact [support@galtea.ai](mailto:support@galtea.ai) |
+| Assertion expired | Clock difference between IdP and Galtea servers | Ensure the IdP server clock is accurate (up to 90 seconds of skew is accepted) |

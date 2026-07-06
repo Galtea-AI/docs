@@ -123,6 +123,20 @@ csv_test = galtea.tests.create(
 <ResponseField name="language" type="string" optional>
   The language for generating synthetic test cases if `ground_truth_file_path` is provided. Defaults to the language detected in the ground truth file. Accepts a [BCP-47 language tag](https://en.wikipedia.org/wiki/IETF_language_tag): a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`, `"en-GB"`). The region subtag is applied **only** when synthesizing speech for voice evaluations (which accent the simulated caller speaks with); text generation uses the base language only. A regional accent applies to any test type run over a phone connection (single-turn or multi-turn).
 </ResponseField>
+<ResponseField name="background_noise_profile" type="string" optional>
+  Background noise mixed into the simulated caller's audio for voice evaluations run over a [phone connection](/concepts/product/phone-connection). Ignored for tests that don't run over a phone connection.
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  Every test case Galtea generates or ingests from a CSV file inherits this value at creation time. Test cases added afterward with [`test_cases.create()`](/sdk/api/test-case/create) do **not** inherit it automatically — pass the same values there to match.
+
+  <Note>
+    Must be set together with `background_noise_level` — passing only one of the two is rejected by the API. Leave both unset for a clean recording (the default).
+  </Note>
+</ResponseField>
+<ResponseField name="background_noise_level" type="string" optional>
+  How loud the background noise is relative to the caller's speech, as a fixed signal-to-noise ratio per level. One of `light`, `medium`, or `heavy`. Must be set together with `background_noise_profile`.
+</ResponseField>
 <ResponseField name="variants" type="list[string]" optional>
   A list of strings that specifies how to generate test cases. The meaning of this parameter depends on the test `type`:
   - **For Security tests (`SECURITY`)**: Specifies which [threat category](/concepts/product/test/security-threats) to generate test cases for. **Exactly one threat must be provided** (e.g., `["toxicity"]`). Available threats: `toxicity`, `data_leakage`, `misuse`, `custom`, `financial_attacks`, `illegal_activities`.

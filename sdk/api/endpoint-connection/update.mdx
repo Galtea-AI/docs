@@ -51,16 +51,16 @@ endpoint_connection = galtea.endpoint_connections.update(
   New output mapping using JSONPath expressions. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
 </ResponseField>
 <ResponseField name="timeout" type="int" optional>
-  New request timeout in seconds.
+  New per-attempt request timeout in seconds. Capped at `120`; values above this are rejected by the API.
 </ResponseField>
 <ResponseField name="rate_limit" type="int" optional>
-  New maximum requests per minute.
+  New maximum requests per minute. Pass `None` for no limit.
 </ResponseField>
 <ResponseField name="retry_enabled" type="bool" optional>
   Whether automatic retry is enabled. See [Retry Configuration](/concepts/product/endpoint-connection-configuration#retry-configuration).
 </ResponseField>
 <ResponseField name="retry_max_attempts" type="int" optional>
-  New maximum retry attempts.
+  New maximum retry attempts (0–10). `0` is only valid when retry is disabled; with retry enabled the minimum is `1`.
 </ResponseField>
 <ResponseField name="retry_initial_delay_ms" type="int" optional>
   New initial delay in milliseconds before first retry.
@@ -72,7 +72,7 @@ endpoint_connection = galtea.endpoint_connections.update(
   New maximum delay between retry attempts, in milliseconds. Capped at `60000`; values above this are rejected.
 </ResponseField>
 <ResponseField name="retryable_status_codes" type="list[int]" optional>
-  New HTTP status codes that trigger retry.
+  New HTTP status codes that trigger retry. Each value must be a valid HTTP status code (100–599).
 </ResponseField>
 
 <Note>

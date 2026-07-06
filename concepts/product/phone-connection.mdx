@@ -47,6 +47,21 @@ The simulated caller's spoken language is **not** set on the phone connection �
 
 With a multilingual text-to-speech provider, the test case's language drives the synthesis language and the voice is selected automatically (e.g. a Spanish test case → the caller speaks Spanish with a natively-accented voice). When a test case has no language set, the provider falls back to its configured default voice.
 
+## Adding background noise to a call
+
+Like language, background noise is **not** set on the phone connection — it comes from each [test](/concepts/product/test) or [test case](/concepts/product/test/case). Two optional fields control it:
+
+- **Background Noise Profile** — the kind of noise: clip-backed (`office`, `street`, `car`) or synthetic (`white`, `pink`). Leave unset for a clean recording.
+- **Background Noise Level** — how loud the noise is relative to the caller's speech: `light`, `medium`, or `heavy`.
+
+Both must be set together; setting only one is rejected. Galtea mixes the noise into the simulated caller's audio during the call, so it tests how your agent behaves under noisy conditions (e.g. a caller phoning from a busy street). The saved [call recording](/concepts/product/version/session) contains the noise, so what you hear on playback in the dashboard is what your agent heard.
+
+A test carries a default background noise setting, and each test case can override it. A test case created without its own setting inherits the test's setting at creation time; setting a test case's noise explicitly (including clearing it) overrides that default for that case alone.
+
+<Note>
+  Background noise only applies to voice tests run over a phone connection. It has no effect on tests run over an [Endpoint Connection](/concepts/product/endpoint-connection).
+</Note>
+
 ## Relation to Versions
 
 A Phone Connection becomes the **conversation target** of a [Version](/concepts/product/version): when a version references a phone connection, Galtea dials that number to run each evaluation.
@@ -88,6 +103,10 @@ This means the full phone conversation — both the synthetic user side and the 
 
   <Accordion title="Set the call's language on the test case">
     Set each test case's language to the language your agent operates in. With a multilingual text-to-speech provider the simulated caller then speaks that language with a natively-accented voice (e.g. Spanish), with no per-connection configuration needed.
+  </Accordion>
+
+  <Accordion title="Set a default background noise on the test">
+    Set the background noise profile and level on the test so every generated or CSV-uploaded test case inherits realistic ambient noise automatically. Override it on individual test cases only when you need a specific case to be quieter, louder, or silent.
   </Accordion>
 
   <Accordion title="Set who speaks first">

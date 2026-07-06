@@ -32,6 +32,31 @@ One of the key benefits of tracking versions in Galtea is the ability to compare
   Learn how to run evaluations for your versions
 </Card>
 
+## Version Lineage
+
+A version can have a **parent version**. The parent is the version you started from when you made a new iteration. The new version is called a **version revision**, and it keeps a link back to its parent.
+
+This link lets you trace where each version came from. When you improve a version (for example, you change its system prompt or its model), you create a revision from it instead of starting from scratch. Over time this builds a parent-child chain, so you can follow the full history of how a version evolved.
+
+A version with no parent is a **root version**. Its parent is empty.
+
+<Info>
+  Lineage is **provenance only**. The parent link records history. It does not change how the version behaves, how it is evaluated, or how it is compared. A revision is a normal, independent version.
+</Info>
+
+On the [Galtea dashboard](https://platform.galtea.ai/), use the **Iterate from version** action when creating a version to pick a parent. The new version's details page then shows an **Evolved from** link back to its parent. The parent must belong to the same [product](/concepts/product).
+
+With the [Galtea SDK](/sdk/api/version/service), pass `parent_version_id` to `versions.create` to set the parent.
+
+```python
+child_version = galtea.versions.create(
+    name="Version-docs-child-" + run_identifier,
+    product_id=product_id,
+    description="Iteration of the previous version",
+    parent_version_id=version_id,
+)
+```
+
 ## Endpoint Connections
 
 An Endpoint Connection tells Galtea how to call your AI system's API — the URL, authentication, request format, and how to extract the response.
@@ -66,6 +91,10 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
 
 <ResponseField name="Version Description" type="Text">
   A description of the version, typically highlighting what makes it different from other versions. **Example**: "Improved summarization algorithm with better fact retention"
+</ResponseField>
+
+<ResponseField name="Parent Version" type="Version">
+  The version this one was iterated from. See [Version Lineage](#version-lineage). Empty for a root version.
 </ResponseField>
 
 <ResponseField name="Model" type="Model" required>

@@ -193,20 +193,40 @@ Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and
 
 When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's traces without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
 
+## Timeout
+
+How long Galtea waits for a single HTTP call to your endpoint before giving up. It is applied **per attempt**, so each retry gets the full timeout again.
+
+<ResponseField name="Timeout" type="Number">
+  Per-attempt request timeout in seconds. Default: `15`. Maximum: `120` (values above this are rejected at the API).
+</ResponseField>
+
+A timeout counts as a retryable failure. If retry is enabled, a timed-out call is retried like any other transient error.
+
+## Rate Limit
+
+The maximum number of requests per minute your backend can handle. Galtea throttles itself to stay under this limit, using a token bucket shared across all of Galtea, so the limit holds even when many runs execute at once.
+
+<ResponseField name="Rate Limit" type="Number">
+  Maximum requests per minute. Default: empty, which means **no limit** (no throttling). Set a number only if your backend needs Galtea to slow down.
+</ResponseField>
+
+When the limit is reached, Galtea reschedules the call for later. This wait does not use up a retry attempt and does not block other runs.
+
 ## Retry Configuration
 
-Configure automatic retry behavior for failed requests. When enabled, Galtea will automatically retry requests that fail with specific HTTP status codes.
+Configure automatic retry behavior for failed requests. When enabled, Galtea retries requests that fail with a retryable HTTP status code, a timeout, or a network error. A retry wait does not block other runs: the job is rescheduled and the worker is freed while it waits.
 
 <ResponseField name="Retry Enabled" type="Boolean">
-  Whether automatic retry is enabled. Default: `false`
+  Whether automatic retry is enabled. Default: `true`
 </ResponseField>
 
 <ResponseField name="Max Retry Attempts" type="Number">
-  Maximum number of retry attempts. Default: `3`
+  Maximum number of retry attempts (`0`-`10`). Default: `1`. These are retries **after** the first call, so N attempts means up to N+1 calls to your endpoint, and **each call uses credits** (the default of 1 means up to 2 calls). `0` is only valid when retry is disabled; with retry enabled the minimum is `1`.
 </ResponseField>
 
 <ResponseField name="Initial Delay" type="Number">
-  Initial delay in milliseconds before the first retry. Default: `2000` (2 seconds)
+  Initial delay in milliseconds before the first retry. Default: `1000` (1 second)
 </ResponseField>
 
 <ResponseField name="Backoff Strategy" type="Enum">
@@ -216,6 +236,8 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea wil
   - `fixed` - Constant delay between attempts
 
   Default: `exponential`
+
+  The delay is always capped at **Max Delay**. With a small Max Delay, exponential and linear growth are clamped to that ceiling after the first retry, so the strategy has little effect. Raise Max Delay to let the delay grow.
 </ResponseField>
 
 <ResponseField name="Max Delay" type="Number">
@@ -223,7 +245,9 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea wil
 </ResponseField>
 
 <ResponseField name="Retryable Status Codes" type="Array of Numbers">
-  HTTP status codes that should trigger a retry. Default: `[429, 500, 502, 503, 504]`
+  HTTP status codes that should trigger a retry. Default: `[429, 500, 502, 503, 504]`. Each value must be a valid HTTP status code (`100`-`599`).
+
+  Codes are honored literally with no client-error short-circuit. Adding a deterministic `4xx` code (such as `401`, `403`, or `422`) makes Galtea retry a call that will always fail, which wastes the full retry budget and the credits for each attempt.
 </ResponseField>
 
 ## Related

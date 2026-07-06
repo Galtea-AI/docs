@@ -55,6 +55,11 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
   
   **Default:** `10000`
 </ResponseField>
+<ResponseField name="include_legacy" type="bool" default="True">
+  Whether to include superseded (legacy) test-case revisions in the results.
+
+  **Default:** `True` — a family's older revisions are returned alongside its current active revision, matching the API. Set to `False` to return only the active head of each revision family.
+</ResponseField>
 <ResponseField name="id" type="string | list[string]" default="None">
   The ID or IDs of the test case(s) to retrieve.
 </ResponseField>

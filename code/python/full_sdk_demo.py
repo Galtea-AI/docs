@@ -67,11 +67,28 @@ if version is None:
 
 version_id = version.id
 
+# @start version_create_from_parent
+child_version = galtea.versions.create(
+    name="Version-docs-child-" + run_identifier,
+    product_id=product_id,
+    description="Iteration of the previous version",
+    parent_version_id=version_id,
+)
+# @end version_create_from_parent
+if child_version is None:
+    raise ValueError("child_version from create is None")
+
 # @start version_list
 versions = galtea.versions.list(product_id=product_id, limit=5)
 # @end version_list
 if versions is None or len(versions) == 0:
     raise ValueError("versions from list is None or empty")
+
+# @start version_list_by_parent
+child_versions = galtea.versions.list(product_id=product_id, parent_version_id=version_id)
+# @end version_list_by_parent
+if child_versions is None:
+    raise ValueError("child_versions from list is None")
 
 # @start version_get
 version = galtea.versions.get(version_id=version_id)
@@ -198,6 +215,7 @@ session = galtea.sessions.get_or_create(
     custom_id=custom_session_id,
     version_id=version_id,
     test_case_id=test_case_id,
+    metadata={"authenticated_user_id": "user-123"},
 )
 # @end session_get_or_create
 if session is None:

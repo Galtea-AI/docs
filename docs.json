@@ -57,6 +57,13 @@
       "vscode"
     ]
   },
+  "integrations": {
+    "posthog": {
+      "apiKey": "phc_5hcYhBTteqSv1mp9ObS5j28EKEA1HV6sog9EZHikgcF",
+      "apiHost": "https://t.galtea.ai",
+      "sessionRecording": false
+    }
+  },
   "navigation": {
     "global": {
       "anchors": [
@@ -145,6 +152,23 @@
                 ]
               },
               "sdk/integrations/github-actions"
+            ]
+          },
+          {
+            "group": "Security & Administration",
+            "icon": "shield-halved",
+            "pages": [
+              "security/roles-and-permissions",
+              {
+                "group": "SAML SSO",
+                "icon": "building-lock",
+                "pages": [
+                  "security/saml-sso",
+                  "security/saml-sso/azure",
+                  "security/saml-sso/okta",
+                  "security/saml-sso/google"
+                ]
+              }
             ]
           }
         ]
@@ -277,6 +301,26 @@
                       "sdk/api/phone-connection/get-by-name",
                       "sdk/api/phone-connection/update",
                       "sdk/api/phone-connection/delete"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "WebRTC Connection",
+                "icon": "tower-broadcast",
+                "pages": [
+                  "concepts/product/webrtc-connection",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/webrtc-connection/service",
+                      "sdk/api/webrtc-connection/create",
+                      "sdk/api/webrtc-connection/list",
+                      "sdk/api/webrtc-connection/get",
+                      "sdk/api/webrtc-connection/get-by-name",
+                      "sdk/api/webrtc-connection/update",
+                      "sdk/api/webrtc-connection/delete"
                     ]
                   }
                 ]

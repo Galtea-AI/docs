@@ -31,3 +31,6 @@ session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_i
 <ResponseField name="is_production" type="boolean" optional>
   A flag to indicate if the session represents real production traffic. When omitted, the API derives it from `test_case_id` presence: no test case means production. A non-production session no longer requires a `test_case_id` — externally ingested sessions (e.g. imported traces) may be classified as development data without being linked to a test case.
 </ResponseField>
+<ResponseField name="metadata" type="object" optional>
+  Arbitrary key/value metadata to attach to the session at creation time. Omit it to send no `metadata`. This is the same metadata you can later set with [Update Session](/sdk/api/session/update).
+</ResponseField>

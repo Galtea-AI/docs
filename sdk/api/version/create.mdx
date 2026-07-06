@@ -68,7 +68,10 @@ version = galtea.versions.create(
   The ID of the [Endpoint Connection](/concepts/product/endpoint-connection) executed after the conversation ends. Used to clean up resources.
 </ResponseField>
 <ResponseField name="phone_connection_id" type="string" optional>
-  The ID of the [Phone Connection](/concepts/product/phone-connection) Galtea dials to reach your AI agent over the phone. A version's conversation target is mutually exclusive: provide either a phone connection **or** an endpoint connection (`conversation_endpoint_connection_id`), never both.
+  The ID of the [Phone Connection](/concepts/product/phone-connection) Galtea dials to reach your AI agent over the phone. A version's conversation target is mutually exclusive: provide one of a phone connection, a WebRTC connection (`web_rtc_connection_id`), or an endpoint connection (`conversation_endpoint_connection_id`), never more than one.
+</ResponseField>
+<ResponseField name="web_rtc_connection_id" type="string" optional>
+  The ID of the [WebRTC Connection](/concepts/product/webrtc-connection) Galtea uses to reach your AI agent over WebRTC. A version's conversation target is mutually exclusive: provide one of a WebRTC connection, a phone connection (`phone_connection_id`), or an endpoint connection (`conversation_endpoint_connection_id`), never more than one.
 </ResponseField>
 <ResponseField name="endpoint_connection_id" type="string" optional>
   <Warning>Deprecated. Use `conversation_endpoint_connection_id` instead.</Warning>
@@ -76,4 +79,7 @@ version = galtea.versions.create(
 </ResponseField>
 <ResponseField name="guardrails" type="string" optional>
   Configuration or description of safety guardrails applied.
+</ResponseField>
+<ResponseField name="parent_version_id" type="string" optional>
+  The ID of the parent [version](/concepts/product/version) this version is iterated from. Setting it makes the new version a revision of the parent and records the lineage. The parent must belong to the same product. Leave it empty to create a root version. See [Version Lineage](/concepts/product/version#version-lineage) for details.
 </ResponseField>

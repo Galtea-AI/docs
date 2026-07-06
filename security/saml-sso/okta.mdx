@@ -1,0 +1,127 @@
+---
+title: "Okta"
+description: "Step-by-step guide to configure SAML SSO with Okta"
+icon: "lock"
+---
+
+## Overview
+
+This guide walks you through connecting Galtea to **Okta** using SAML 2.0. When complete, your team can sign in to Galtea through their Okta accounts.
+
+You will switch between the **Okta Admin Console** and **Galtea's Organization Settings** several times. Keep both browser tabs open.
+
+## Prerequisites
+
+- Owner role in the Galtea organization, with an active Enterprise subscription.
+- Administrator role in your Okta organization.
+
+---
+
+## Step 1 — Create a SAML application in Okta
+
+1. Open the **Okta Admin Console**.
+2. In the top navigation, click **Applications → Applications**.
+3. Click **Create App Integration**.
+4. Select **SAML 2.0** as the sign-in method.
+5. Click **Create**.
+6. Enter an application name (for example, `Galtea`).
+7. Optionally upload a logo. Click **Next**.
+
+---
+
+## Step 2 — Configure Galtea's SP values in Okta
+
+On the **Configure SAML** step, fill in the following fields:
+
+| Okta field | Value |
+|---|---|
+| **Single sign-on URL** | `https://api.galtea.ai/auth/saml/callback` |
+| **Audience URI (SP Entity ID)** | The **SP Entity ID** you entered in Galtea's Organization Settings |
+
+<Tip>
+  The SP Entity ID is a value **you define**. Use a unique identifier for your organization (for example `my-company` or `my-company-prod`). The exact same value must be entered in both Galtea and in the Okta Audience URI field. In Galtea, enter this value in **both** the **SP Entity ID** and **Issuer** fields.
+</Tip>
+
+Leave the **Default RelayState** blank.
+
+For the **Name ID format**, select **EmailAddress**.
+
+---
+
+## Step 3 — Require signed responses and assertions
+
+1. Still on the **Configure SAML** step, click **Show Advanced Settings**.
+2. Set **Response** to **Signed**.
+3. Set **Assertion Signature** to **Signed**.
+4. Leave all other advanced settings at their defaults.
+
+Click **Next** to continue.
+
+---
+
+## Step 4 — Finish the Okta setup
+
+On the **Feedback** step, select **I'm an Okta customer adding an internal app** (or any option that fits your situation). Click **Finish**.
+
+Okta creates the application and opens its settings page.
+
+---
+
+## Step 5 — Copy IdP values from Okta into Galtea
+
+1. In the Okta application settings, click the **Sign On** tab.
+2. Click **More details** (or scroll down to the **SAML 2.0** section) to expand the IdP metadata.
+
+Copy the following values into Galtea's **Organization Settings → Advanced Options**:
+
+| Okta field | Galtea field |
+|---|---|
+| **Sign on URL** | **Sign on URL** |
+
+For the certificate:
+1. Click **Download certificate** in the Sign On tab (choose the **SHA-2** / active certificate).
+2. Open the downloaded `.cert` file in a text editor. You will see `-----BEGIN CERTIFICATE-----` at the top.
+3. Copy the entire content and paste it into the **Public Certificate** field in Galtea.
+
+---
+
+## Step 6 — Assign users
+
+Before testing, assign the application to the relevant users or groups in Okta:
+
+1. Click the **Assignments** tab in the application.
+2. Click **Assign → Assign to People** (or **Assign to Groups**).
+3. Find and assign the users who should have access to Galtea.
+4. Click **Done**.
+
+---
+
+## Step 7 — Save and test in Galtea
+
+1. In Galtea, click **Save** to update the organization settings.
+2. Ask an assigned user to sign in using the organization's Team Slug.
+
+---
+
+## Attribute mapping (optional)
+
+Okta sends the user's email as the SAML `NameID` by default and also maps standard profile attributes. Galtea reads email, first name, and last name automatically.
+
+If your Okta profile uses custom attribute names, open the **SAML Settings** in the application and add attribute statements:
+
+| Attribute name | Value |
+|---|---|
+| `email` | `user.email` |
+| `given_name` | `user.firstName` |
+| `family_name` | `user.lastName` |
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| "The ACS URL does not match" | ACS URL mismatch | Set the Single sign-on URL in Okta to exactly `https://api.galtea.ai/auth/saml/callback` |
+| "Invalid audience" error | SP Entity ID mismatch | Make sure Audience URI in Okta matches the SP Entity ID in Galtea |
+| Signature validation fails | Wrong certificate pasted | Re-download the certificate from Okta's Sign On tab and paste it again |
+| User is not assigned | User tries to sign in but Okta blocks the request | Assign the user to the app in the Assignments tab |

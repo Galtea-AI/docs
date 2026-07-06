@@ -136,6 +136,20 @@ The Galtea SDK allows you to create, view, and manage tests programmatically.
   **Example**: `{"environment": "staging", "team": "ml-ops"}` or `"my tracking note"`
 </ResponseField>
 
+<ResponseField name="Background Noise Profile" type="Enum">
+  Background noise mixed into the simulated caller's audio for voice tests run over a [phone connection](/concepts/product/phone-connection). Only applies to voice tests; has no effect otherwise.
+  Possible values:
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  Every test case Galtea generates or ingests from a CSV file inherits this value at creation time. Must be set together with **Background Noise Level**.
+</ResponseField>
+
+<ResponseField name="Background Noise Level" type="Enum">
+  How loud the background noise is relative to the caller's speech.
+  Possible values: `light`, `medium`, `heavy`. Must be set together with **Background Noise Profile**.
+</ResponseField>
+
 <Tabs>
   <Tab title="Generated">
     <ResponseField name="Few Shot Examples" type="Text">

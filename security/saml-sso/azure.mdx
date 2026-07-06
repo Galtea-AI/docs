@@ -1,0 +1,121 @@
+---
+title: "Microsoft Entra ID (Azure AD)"
+description: "Step-by-step guide to configure SAML SSO with Microsoft Entra ID (formerly Azure Active Directory)"
+icon: "microsoft"
+iconType: "brands"
+---
+
+## Overview
+
+This guide walks you through connecting Galtea to **Microsoft Entra ID** (formerly Azure Active Directory) using SAML 2.0. When complete, your team can sign in to Galtea through their Microsoft accounts.
+
+You will switch between the **Azure portal** and **Galtea's Organization Settings** several times. Keep both browser tabs open.
+
+## Prerequisites
+
+- Owner role in the Galtea organization, with an active Enterprise subscription.
+- Global Administrator or Application Administrator role in Microsoft Entra ID.
+
+---
+
+## Step 1 — Create an enterprise application in Azure
+
+1. Open the [Azure portal](https://portal.azure.com) and navigate to **Microsoft Entra ID**.
+2. In the left menu, click **Enterprise applications**.
+3. Click **New application** at the top of the list.
+4. Click **Create your own application**.
+5. Enter a name for the app (for example, `Galtea`).
+6. Select **Integrate any other application you don't find in the gallery (Non-gallery)**.
+7. Click **Create**.
+
+---
+
+## Step 2 — Enable SAML in the new application
+
+1. In the application overview, click **Single sign-on** in the left menu.
+2. Select **SAML** as the sign-on method.
+
+Azure shows a page titled **Set up Single Sign-On with SAML**. You will fill in two sections.
+
+---
+
+## Step 3 — Configure Galtea's SP values in Azure
+
+In the **Basic SAML Configuration** panel, click **Edit** and fill in these two fields:
+
+| Azure field | Value |
+|---|---|
+| **Identifier (Entity ID)** | The **SP Entity ID** you entered in Galtea's Organization Settings |
+| **Reply URL (Assertion Consumer Service URL)** | `https://api.galtea.ai/auth/saml/callback` |
+
+Click **Save**.
+
+<Tip>
+  The SP Entity ID is a value **you define**. Use a unique identifier for your organization (for example `my-company` or `my-company-prod`). The exact same value must be entered in both Galtea and in the Azure Identifier field. In Galtea, enter this value in **both** the **SP Entity ID** and **Issuer** fields.
+</Tip>
+
+---
+
+## Step 4 — Require a signed response and assertion
+
+1. In the **SAML Certificates** section, click **Edit**.
+2. Find the **Signing Option** dropdown.
+3. Select **Sign SAML response and assertion**.
+4. Click **Save**.
+
+This makes Azure sign both the outer SAML response and the inner assertion. Galtea requires at least a signed response by default.
+
+---
+
+## Step 5 — Copy IdP values from Azure into Galtea
+
+Stay on the **Set up Single Sign-On with SAML** page in Azure and locate the **Set up Galtea** section (the section name matches the application name you chose).
+
+| Azure field | Copy into Galtea field |
+|---|---|
+| **Login URL** | **Sign on URL** |
+
+For the certificate:
+1. In the **SAML Certificates** section, find the **Certificate (Base64)** row.
+2. Click **Download** to save the `.cer` file.
+3. Open the file in a text editor. You will see lines starting with `-----BEGIN CERTIFICATE-----`.
+4. Copy the entire content (including the header and footer lines).
+5. Paste it into the **Public Certificate** field in Galtea.
+
+---
+
+## Step 6 — Save and verify in Galtea
+
+1. In Galtea, click **Save** to update the organization settings.
+2. Ask a team member who has been assigned to the Azure application to sign in using the organization's Team Slug.
+
+<Info>
+  Before testing, assign the user (or a test user) to the Galtea enterprise application in Azure. Go to the application → **Users and groups** → **Add user/group**.
+</Info>
+
+---
+
+## Attribute mapping (optional)
+
+By default, Entra ID sends the user's email, first name, and last name in the SAML assertion using standard claim URIs. Galtea reads these automatically.
+
+If your directory uses non-standard attribute names, add attribute mappings in the **Attributes & Claims** section of the SAML configuration in Azure.
+
+Galtea reads the following attributes:
+
+| Standard claim | Azure AD URI |
+|---|---|
+| Email | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress` |
+| First name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname` |
+| Last name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname` |
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| "AADSTS50011: The reply URL does not match" | The ACS URL in Azure does not match | Set Reply URL to exactly `https://api.galtea.ai/auth/saml/callback` |
+| "AADSTS650056: Misconfigured application" | Entity ID is blank or mismatched | Make sure the Identifier in Azure matches the SP Entity ID in Galtea |
+| Signature validation error in Galtea | Wrong or expired certificate | Re-download the Base64 certificate from Azure and paste it again |
+| User lands on an access-denied page | User not assigned to the app | Assign the user in Azure → Users and groups |
