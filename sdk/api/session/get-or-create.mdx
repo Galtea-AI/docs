@@ -24,8 +24,15 @@ session = galtea.sessions.get_or_create(
     This is useful to associate sessions in the Galtea platform with those in your application.
   </Note>
 </ResponseField>
-<ResponseField name="version_id" type="string" required>
+<ResponseField name="version_id" type="string" optional>
   The ID of the version to associate with this session if it needs to be created.
+
+  <Note>When a new session is created, provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Not used when an existing session is found.</Note>
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The ID of the product to associate with this session if it needs to be created, as an alternative to `version_id`. The API resolves the product's latest version, or creates a default one if the product has none yet.
+
+  <Note>When a new session is created, provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Not used when an existing session is found.</Note>
 </ResponseField>
 <ResponseField name="test_case_id" type="string" optional>
   The test case ID. Forbidden when `is_production=True`. A non-production session may be created without a test case (e.g. externally ingested traces) — the context will then come from the request rather than the test case.

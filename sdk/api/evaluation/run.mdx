@@ -12,8 +12,11 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
   <Tab title="Endpoint Connection">
     When no `agent` is provided, the evaluation is delegated to the server. The API calls your deployed HTTP endpoint for each test case, generates inference results, and evaluates them. Requires the version to have a `conversation_endpoint_connection_id` configured.
 
+    Instead of `version_id`, you can pass `product_id`: the API clones the product's latest properly configured version.
+
     ### Returns
     - `jobId` — the inference batch job ID for tracking progress
+    - `versionId` — the version the job runs against: the `version_id` you passed, or the id of the clone created when only `product_id` was given
     - `testCaseCount` — total number of test cases queued
     - `message` — a human-readable status message
     - `specifications` — summary of each specification evaluated
@@ -70,15 +73,22 @@ print(f"Created {len(result['evaluations'])} evaluations")
 ```
 
 ## Parameters
-<ResponseField name="version_id" type="string" required>
+<ResponseField name="version_id" type="string" optional>
   The ID of the version to evaluate.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Required (not `product_id`) when `agent` is given, since the local agent loop needs a concrete version.</Note>
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The ID of the product to evaluate, as an alternative to `version_id`, for the endpoint-connection mode only. The API clones the product's latest properly configured version.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Not supported when `agent` is given.</Note>
 </ResponseField>
 <ResponseField name="agent" type="AgentType" optional>
   The agent to execute locally. Accepts:
   - An `Agent` class instance with a `call()` method
   - An agent function (sync or async) with one of three signatures: `(str) -> str`, `(list[dict]) -> str`, or `(AgentInput) -> AgentResponse`. See the [AgentInput reference](/sdk/api/agent/input) for all available fields.
 
-  When omitted, the server-side endpoint connection pipeline is used.
+  When omitted, the server-side endpoint connection pipeline is used. When provided, requires `version_id` (not `product_id`).
 </ResponseField>
 <ResponseField name="specification_ids" type="List[str]" optional>
   A list of [Specification](/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and tests are used.
