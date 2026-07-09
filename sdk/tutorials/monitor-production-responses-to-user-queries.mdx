@@ -6,6 +6,8 @@ icon: "users"
 
 You can use Galtea to log and evaluate real user interactions from your production environment. This helps you monitor your product's performance over time.
 
+<Tip>This tutorial evaluates production sessions on demand, one call at a time. To score production sessions automatically and continuously, create a [Monitor](/concepts/product/monitor) instead: an always-on rule that samples and scores a product's production sessions with a set of metric families, with no run to trigger by hand.</Tip>
+
 ### Single-Turn Production Monitoring
 
 For simple, single-turn interactions, create a production session and use `galtea.inference_results.create_and_evaluate()` to log and evaluate the interaction in a single call.

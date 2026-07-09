@@ -1,0 +1,49 @@
+---
+title: 'Updating Monitor'
+sidebarTitle: "Update"
+description: "Update an existing monitor, including pausing and resuming it."
+---
+
+## Returns
+Returns the updated [Monitor](/concepts/product/monitor) object.
+
+## Example
+```python
+# Pause a monitor (stops scoring until resumed). Users may only set ACTIVE or PAUSED.
+galtea.monitors.update(monitor.id, status="PAUSED")
+
+# Resume it, and raise the sampling rate at the same time.
+galtea.monitors.update(monitor.id, status="ACTIVE", sampling_percentage=25)
+```
+
+Pause and resume are just a `status` update. Users may set only `ACTIVE` (resume) or `PAUSED` (pause); `CAPPED`, `NO_CREDITS`, and `FAILING` are system-set and are rejected.
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the monitor.
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  New version to watch. Pass `None` to watch every version of the product.
+</ResponseField>
+<ResponseField name="metric_group_ids" type="list[string]" optional>
+  New metric family IDs (`metric.metric_group_id`) to score with.
+</ResponseField>
+<ResponseField name="sampling_percentage" type="number" optional>
+  New sampling percentage, from just above `0` up to `100`.
+</ResponseField>
+<ResponseField name="monthly_credit_cap" type="int" optional>
+  New monthly credit cap. Must be positive when set. Pass `None` for no cap.
+</ResponseField>
+<ResponseField name="inactivity_window_minutes" type="int" optional>
+  New inactivity window in minutes.
+</ResponseField>
+<ResponseField name="status" type="string | MonitorStatus" optional>
+  New status. Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause).
+</ResponseField>
+
+<Note>
+  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear a nullable field such as `version_id` or `monthly_credit_cap`.
+</Note>

@@ -17,6 +17,7 @@ import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
 import MetricCard from '/snippets/cards/metric-card.mdx';
 import ModelCard from '/snippets/cards/model-card.mdx';
 import EndpointConnectionCard from '/snippets/cards/endpoint-connection-card.mdx';
+import MonitorCard from '/snippets/cards/monitor-card.mdx';
 
 ## How Everything Connects
 
@@ -73,6 +74,7 @@ A few relationships are easy to misread, and some are omitted from the diagram f
 - **Per-turn evaluations.** An [Evaluation](/concepts/product/version/session/evaluation) can target a single [Inference Result](/concepts/product/version/session/inference-result) instead of the whole Session — useful when you want to score, for example, how the agent's output reflected the retrieval context the RAG system provided on that turn. Per-turn Evaluations still belong to the Session that contains the turn; they additionally point at the specific Inference Result being scored.
 - **Two types of model.** The standard [Model](/concepts/model) is what your Product runs on — linked to a Version and used to track costs, token usage, and similar. The **evaluator model** is the LLM Galtea uses to perform the judgment for non-deterministic Metrics; it's selected by name on the Metric, not on the Version. See [Models vs. Evaluator Models](/concepts/model#models-vs-evaluator-models) on the Model page for the full distinction.
 - **[User Groups](/concepts/user-group) for human evaluation.** A User Group routes [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) Metrics to a specific set of annotators, so only the right reviewers see those Evaluations on the dashboard.
+- **[Monitors](/concepts/product/monitor) watch production automatically.** A Monitor is an always-on rule on a [Product](/concepts/product) (optionally one [Version](/concepts/product/version)) that scores a sampled fraction of its production [Sessions](/concepts/product/version/session) with a set of metric families, with no run to trigger by hand.
 
 ## All Concepts
 
@@ -81,6 +83,7 @@ A few relationships are easy to misread, and some are omitted from the diagram f
   <SpecificationCard />
   <VersionCard />
   <EndpointConnectionCard />
+  <MonitorCard />
   <TestCard />
   <TestCaseCard />
   <SessionCard />
