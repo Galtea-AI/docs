@@ -1,0 +1,142 @@
+---
+title: 'Monitor Production via OpenTelemetry'
+description: "What Galtea's OpenTelemetry compatibility covers, what your setup needs before you start, and how OTLP spans become production sessions and traces."
+icon: "satellite-dish"
+---
+
+If your AI system already emits [OpenTelemetry](https://opentelemetry.io/) (OTel) traces, you can send them to Galtea. This page explains what "Galtea is OTel compatible" means in practice, what your setup needs **before** you start, and which span shapes Galtea understands.
+
+<Info>
+  There are three ways to get traces into Galtea. They use two endpoints: the **REST Trace API** and the **public OTel endpoint** (the OTLP collector).
+
+  1. **Galtea SDK** — decorate your code with `@trace`. The SDK posts to the REST Trace API. See [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations).
+  2. **OpenTelemetry export** — send OTLP traces to the public OTel endpoint. This is what this page covers.
+  3. **REST API** — create traces directly through the [REST Trace API](/api-reference) with your API key. Same endpoint the SDK uses.
+</Info>
+
+## What "OTel Compatible" Means
+
+Galtea accepts standard OTLP traces (OTLP is the OpenTelemetry export protocol) at its collector endpoint. To configure your exporter or your own OTel Collector, follow [Point your OTel exporter to the Galtea collector](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#3-point-your-otel-exporter-to-the-galtea-collector) — the endpoint, authentication, and configuration are the same for everything on this page.
+
+Once spans arrive, each one takes exactly one of three paths:
+
+- **Enrich an existing inference result.** Spans correlated to an existing [Inference Result](/concepts/product/version/session/inference-result) become [Trace](/concepts/product/version/session/trace) records attached to it. Correlation happens through a shared W3C trace ID (when Galtea propagated a `traceparent` header during [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation)) or through an explicit `galtea.inference_result.id` span attribute.
+- **Create a production conversation.** Uncorrelated spans that carry both a conversation key and a product-version route are assembled into production [Sessions](/concepts/product/version/session) with conversation turns. See [Create Production Conversations from OTel Traces](#create-production-conversations-from-otel-traces).
+- **Rejected.** Uncorrelated spans missing a conversation key, a version route, or both are rejected. A span that names an inference result which does not exist (or is not visible to your API key) is also rejected; it does not fall back to conversation assembly. Galtea never guesses where your data belongs.
+
+## Before You Start: A One-Minute Eligibility Check
+
+You can use this path if you can do **at least one** of the following:
+
+1. **Add `galtea.*` attributes to your spans.** You control the instrumentation code.
+2. **Set resource attributes on your own OTel Collector.** This works even when the spans are emitted by a managed platform you cannot edit.
+3. **Propagate a `traceparent` header Galtea mints.** Available only with [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform), where Galtea calls your endpoint.
+4. **Your platform already emits a recognized span shape.** Either the OpenTelemetry [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) or a supported managed-platform shape (see [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records)).
+
+Find your situation:
+
+| Your situation | What works |
+|---|---|
+| You control the instrumentation and can add span attributes | Full control. Set the `galtea.session.custom_id` span attribute and the `galtea.version.id` resource attribute to create production conversations, and `galtea.trace.*` span attributes to fill each trace's input and output. |
+| A managed platform emits your spans and you cannot edit them, but you run your own OTel Collector | Set `galtea.version.id` once on the Collector as a resource attribute. If the platform is built on Temporal, the conversation key is derived automatically. Note: conversations created this way currently take their input and output only from `galtea.trace.*` attributes (see [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records)). |
+| Your service is OTel-instrumented and Galtea calls it via Direct Inference | Enable `traceparent` propagation on the endpoint connection. Your spans enrich the inference results Galtea creates. No Galtea attributes needed. |
+| Your platform emits the OpenTelemetry GenAI semantic conventions | When these spans enrich an existing inference result, input and output map automatically, with zero Galtea-specific attributes. To create new sessions you still need a conversation key and a version route. |
+| None of the above | This path does not work for you yet. Use the [Galtea SDK](/sdk/tutorials/tracing-agent-operations) or the [REST API](/api-reference) instead. |
+
+## Create Production Conversations from OTel Traces
+
+Galtea can assemble uncorrelated spans into full multi-turn production conversations. It needs two pieces of information: a **conversation key** (which spans belong to the same conversation) and a **version route** (which product version the conversation belongs to).
+
+### Group Spans into Conversations: `galtea.session.custom_id`
+
+Set the `galtea.session.custom_id` **span attribute** to your own conversation identifier, for example your chat session ID. Spans carrying it are grouped into one Galtea session per distinct ID. Within a session, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+
+### Route to a Product Version: `galtea.version.id`
+
+Assembly requires the `galtea.version.id` **resource attribute**. It routes the spans to a [Version](/concepts/product/version) of your product and is validated against the organization of the API key you authenticate with. Without it, uncorrelated spans are rejected.
+
+A resource attribute describes the whole telemetry source, not a single span. So you can set it once on your own OTel Collector, even when a managed platform emits the spans and you cannot edit them:
+
+```yaml
+# Add this to the Collector config from the setup section linked above.
+# The otlp receiver, the batch processor, and the otlphttp/galtea exporter
+# are defined there; here you only add the resource/galtea processor and
+# reference it in the traces pipeline.
+processors:
+  resource/galtea:
+    attributes:
+      - key: galtea.version.id
+        value: "<your-version-id>"
+        action: upsert
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resource/galtea, batch]
+      exporters: [otlphttp/galtea]
+```
+
+### Managed Platforms: Vendor-Derived Conversation Keys
+
+Some platforms cannot attach `galtea.session.custom_id` to their spans. Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key. It splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
+
+### What You Get
+
+- **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
+- **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or traces. Later turns append to the same session.
+- **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
+
+<Note>
+  Two limits to plan for:
+
+  - **Finished sessions reject new turns.** A finished session still accepts late traces for its existing turns, but does not open new ones. To start new turns, begin a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow).
+  - **One payload can open at most 100 new conversations.** New sessions beyond that in the same OTLP payload are rejected (they appear in the export response's rejected-span count). Continuations of conversations that already exist do not count toward the limit. If you send a large backfill or a high-volume export, split it across smaller export batches. Self-hosted deployments can raise the limit with the `OTEL_MAX_NEW_CONVERSATIONS_PER_PAYLOAD` setting.
+</Note>
+
+<Warning>
+  Conversations created from OTel traces currently take each turn's input and output **only** from the `galtea.trace.input` / `galtea.trace.output` attributes on the turn's spans. The automatic `gen_ai.*` and managed-platform content reading described in the next section applies today to the enrichment path (spans attached to an existing inference result), not yet to conversations assembled from OTel traces. So a managed platform that sets no `galtea.trace.*` attributes produces conversations whose turns have empty input and output. Extending automatic content reading to assembled conversations is planned.
+</Warning>
+
+## How Span Content Maps to Trace Records
+
+When a span **enriches an existing inference result**, it becomes a [Trace](/concepts/product/version/session/trace) record whose input and output are filled **per field**, using the first source that provides a value:
+
+1. **`galtea.trace.*` explicit attributes** — full control, always wins.
+2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
+3. **Recognized managed-platform span shapes** — platform-specific formats Galtea knows.
+
+Supported `gen_ai.*` forms:
+
+- `gen_ai.input.messages` / `gen_ai.output.messages` (the current semantic conventions)
+- the legacy `gen_ai.prompt` / `gen_ai.completion` attributes
+- the GenAI content span events
+
+<Tip>
+  If your system is already instrumented with plain OpenTelemetry GenAI conventions, input and output map with **zero** Galtea-specific attributes.
+</Tip>
+
+For managed platforms, Galtea recognizes some span shapes automatically. For example, platforms whose telemetry carries the abraxas span-event format (such as Mistral's agent platform) are recognized without any configuration.
+
+<Warning>
+  Some common instrumentation styles do **not** populate input/output yet: Traceloop / OpenLLMetry (`gen_ai.prompt.0.content`-style flattened attributes) and OpenInference (`input.value`). Their data is still stored in the trace's `metadata` field, so nothing is lost, but evaluations that read the trace input and output will not see it.
+</Warning>
+
+For the full `galtea.trace.*` attribute table and the automatically mapped OTel fields, see [Controlling how spans map to Trace records](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#4-controlling-how-spans-map-to-trace-records).
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Exporter and Collector setup" icon="tower-broadcast" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform#3-point-your-otel-exporter-to-the-galtea-collector">
+    Configure your OTel exporter or Collector to send traces to Galtea.
+  </Card>
+  <Card title="Monitor" icon="gauge-high" href="/concepts/product/monitor">
+    The always-on rule that evaluates your production sessions automatically.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Collect traces with the Galtea SDK's `@trace` decorator.
+  </Card>
+  <Card title="Trace" icon="timeline" href="/concepts/product/version/session/trace">
+    What a Trace record is and which properties it holds.
+  </Card>
+</CardGroup>

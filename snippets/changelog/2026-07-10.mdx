@@ -1,0 +1,35 @@
+<Update label="2026-07-10" description="Voice Evaluation over WebRTC and Version-Optional Runs">
+
+## Evaluate Your Voice Agents over WebRTC
+
+You can now evaluate AI voice agents that connect over [WebRTC](/concepts/product/webrtc-connection), the standard for real-time audio over the internet. Instead of calling an HTTP API, Galtea opens a live WebRTC session with your agent through [Pipecat Cloud](https://pipecat.ai) and runs the conversation as a real voice call.
+
+Set it up once: create a **WebRTC Connection** with your Pipecat Cloud public API key and the name of the agent to target, then attach it to a [version](/concepts/product/version). A version reaches your product through exactly one target — an [endpoint](/concepts/product/endpoint-connection), a [phone connection](/concepts/product/phone-connection), or a WebRTC connection — so choose WebRTC when Galtea should open a WebRTC session. The API key is stored encrypted and never returned; a fetched connection reports only whether a key is set.
+
+WebRTC connections run any test type with no extra setup:
+
+- **Behavior** test cases run multi-turn, with the conversation simulator driving each user turn from the test case's persona, goal, and scenario.
+- **Accuracy** and **Security** test cases run single-turn: Galtea speaks the test case's input line into the call and evaluates the reply.
+
+The caller's language comes from each test case, so one connection serves test cases in many languages, and with a multilingual voice the caller speaks that language with a natural accent. Both sides of every turn — the synthetic caller and your agent — are recorded, transcribed, and available to play back in the dashboard and read through the SDK. Manage connections in the dashboard's **WebRTC Connections** section or with the SDK's [`webrtc-connection`](/sdk/api/webrtc-connection/service) resource.
+
+## Launch Runs Without Picking a Version
+
+You no longer have to select a [version](/concepts/product/version) every time you start work. Point Galtea at a product and it resolves the version for you.
+
+- **Evaluations:** In the **Run Evaluation** dialog, the version field now offers **Automatic (latest configured version)**. Leave it on Automatic and Galtea clones your latest properly configured version, then runs the evaluation against that new copy. The clone keeps a link back to its parent, so your version history stays clear.
+- **Sessions and single-turn logging:** When you log a session or a single-turn result without a version, Galtea reuses the product's latest version instead of asking you to choose one.
+- **SDK:** Session and evaluation methods now accept `product_id` as an alternative to `version_id`, so you can write scripts against a product and let Galtea pick the version. See [`sessions.create`](/sdk/api/session/create) and [`evaluations.create_single_turn`](/sdk/api/evaluation/create-single-turn).
+
+## Platform Improvements
+
+- **Lists and details refresh on their own:** Pending [evaluations](/concepts/product/version/session/evaluation), [sessions](/concepts/product/version/session), and the evaluation details page now update about every 5 seconds while work is in progress, so a finished status, score, and reason appear without a page reload. Polling stops once nothing is pending.
+- **Simulated conversations speak the regional variety:** When a [test case](/concepts/product/test/case) uses a regional language tag such as `es-MX` (Mexican Spanish) or `pt-BR` (Brazilian Portuguese), the simulated user now writes in that local variety, not just generic Spanish or Portuguese.
+- **Human evaluation is reachable again:** The **Manual Evaluation** button and the per-row **Annotate** action are visible once more. A permission-check bug had hidden them for every role, which blocked starting a human evaluation from the dashboard.
+- **Clearer status filter and Manual Evaluation button:** The evaluations status filter now shows readable labels (Pending, Pending Human, Success, Failed, Skipped), and the Manual Evaluation button hides when there is nothing left to annotate instead of showing a "(0)" count.
+- **More accurate coverage insight:** The analytics coverage insight now counts only Policy [specifications](/concepts/product/specification). Capability and inability specifications, which never carry evaluation scores, no longer inflate the "specifications with no scores yet" count.
+- **No credit charge for deterministic-only evaluations:** Evaluations scored only by deterministic [metrics](/concepts/metric) use no LLM credits, but each one was still charged a single credit. They are now correctly free.
+- **ZIP uploads with special characters now process:** Uploading a ZIP for dataset generation whose files have spaces, accented characters, or subfolders in their names failed with an opaque error, while single files worked. Those ZIPs now parse correctly.
+- **Cleaner, more reliable voice test calls:** Voice runs over a [phone connection](/concepts/product/phone-connection) are steadier. The per-turn timer now starts when the caller's audio finishes playing, so slow personas no longer trigger a false "agent did not respond in time". A genuinely slow agent reply is saved as a partial turn instead of being dropped, and captured agent audio has its leading and trailing silence trimmed for cleaner playback.
+
+</Update>

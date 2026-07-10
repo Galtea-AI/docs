@@ -108,6 +108,7 @@
             "icon": "chart-line",
             "pages": [
               "sdk/tutorials/monitor-production-responses-to-user-queries",
+              "sdk/tutorials/monitor-production-with-opentelemetry",
               "sdk/tutorials/evaluating-conversations"
             ]
           },

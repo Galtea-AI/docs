@@ -325,6 +325,10 @@ All `@trace`-decorated functions called while the context is active will be auto
 
 If your service is instrumented with [OpenTelemetry](https://opentelemetry.io/), you can automatically correlate your internal spans with Galtea inference results using the [W3C Trace Context](https://www.w3.org/TR/trace-context/) standard — no code changes required on your side.
 
+<Note>
+  **Prerequisites:** Your service must be instrumented with OpenTelemetry and must receive the `traceparent` header Galtea sends with each Direct Inference request. This option correlates your spans with the inference results Direct Inference creates. To create production sessions from OTel traces without Direct Inference, see [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry).
+</Note>
+
 #### How it works
 
 When enabled, Galtea creates a unique [W3C trace ID](https://www.w3.org/TR/trace-context/#trace-id) for each direct inference call and injects a `traceparent` header into the outbound request to your endpoint. Your OTEL-instrumented service automatically creates child spans under that trace. The trace ID is also stored on the inference result for collector-side correlation.
@@ -599,7 +603,7 @@ curl -sS -w 'HTTP %{http_code}\n' -X POST \
 
 #### 4. Controlling how spans map to Trace records
 
-When using the OTel Collector path, you can set Galtea-specific attributes on your spans to control how data maps to Trace records. If you don't set any, spans are still ingested using the automatically mapped OTel fields.
+When using the OTel Collector path, you can set Galtea-specific attributes on your spans to control how data maps to Trace records. If you don't set any, spans are still ingested. The trace's input and output are filled **per field**, using the first source that provides a value: explicit `galtea.trace.*` attributes first, then the OpenTelemetry [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) (`gen_ai.*`), then recognized managed-platform span shapes.
 
 **Galtea span attributes:**
 
@@ -620,7 +624,13 @@ When using the OTel Collector path, you can set Galtea-specific attributes on yo
 - **`span.status`** → `error` (fallback when `galtea.trace.error` is not set; only for `STATUS_CODE_ERROR`)
 - **`parentSpanId`** → `parentTraceId` (parent-child hierarchy)
 
+**GenAI semantic conventions** (no Galtea attributes needed): when `galtea.trace.input` / `galtea.trace.output` are not set, input and output are filled from `gen_ai.input.messages` / `gen_ai.output.messages` (the current conventions), the legacy `gen_ai.prompt` / `gen_ai.completion` attributes, or the GenAI content span events.
+
 All remaining unmapped span attributes are collected into the `metadata` field so no data is lost.
+
+<Info>
+  OTel ingestion can also assemble uncorrelated spans into full production conversations — sessions, turns, and traces — without Direct Inference. See [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry) for the span attributes that drive this and the span shapes Galtea recognizes.
+</Info>
 
 ## Learn More
 
