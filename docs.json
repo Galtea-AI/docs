@@ -351,6 +351,7 @@
                 "pages": [
                   "concepts/product/test",
                   "concepts/product/test/data-augmentation",
+                  "concepts/product/test/extend-test-cases",
                   {
                     "group": "Accuracy",
                     "icon": "certificate",
