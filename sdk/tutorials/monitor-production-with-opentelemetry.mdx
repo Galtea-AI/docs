@@ -38,20 +38,31 @@ Find your situation:
 | Your situation | What works |
 |---|---|
 | You control the instrumentation and can add span attributes | Full control. Set the `galtea.session.custom_id` span attribute and the `galtea.version.id` resource attribute to create production conversations, and `galtea.trace.*` span attributes to fill each trace's input and output. |
-| A managed platform emits your spans and you cannot edit them, but you run your own OTel Collector | Set `galtea.version.id` once on the Collector as a resource attribute. If the platform is built on Temporal, the conversation key is derived automatically. Note: conversations created this way currently take their input and output only from `galtea.trace.*` attributes (see [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records)). |
+| A managed platform emits your spans and you cannot edit them, but you run your own OTel Collector | Set `galtea.version.id` once on the Collector as a resource attribute. If the platform is built on Temporal, the conversation key is derived automatically, and each turn's input and output are read automatically from the platform's span shapes (see [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records)). |
 | Your service is OTel-instrumented and Galtea calls it via Direct Inference | Enable `traceparent` propagation on the endpoint connection. Your spans enrich the inference results Galtea creates. No Galtea attributes needed. |
-| Your platform emits the OpenTelemetry GenAI semantic conventions | When these spans enrich an existing inference result, input and output map automatically, with zero Galtea-specific attributes. To create new sessions you still need a conversation key and a version route. |
+| Your platform emits the OpenTelemetry GenAI semantic conventions | Input and output map automatically from the `gen_ai.*` spans, with zero Galtea-specific attributes — whether the spans enrich an existing inference result or are assembled into a new production conversation. To create new sessions you still need a conversation key and a version route. |
 | None of the above | This path does not work for you yet. Use the [Galtea SDK](/sdk/tutorials/tracing-agent-operations) or the [REST API](/api-reference) instead. |
 
 ## Create Production Conversations from OTel Traces
 
 Galtea can assemble uncorrelated spans into full multi-turn production conversations. It needs two pieces of information: a **conversation key** (which spans belong to the same conversation) and a **version route** (which product version the conversation belongs to).
 
-### Group Spans into Conversations: `galtea.session.custom_id`
+### Set a Conversation Key
 
-Set the `galtea.session.custom_id` **span attribute** to your own conversation identifier, for example your chat session ID. Spans carrying it are grouped into one Galtea session per distinct ID. Within a session, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+The conversation key decides which spans belong to the same Galtea session. Provide it in whichever way fits your setup.
 
-### Route to a Product Version: `galtea.version.id`
+<Tabs>
+  <Tab title="Your own session ID">
+    Set the `galtea.session.custom_id` **span attribute** to your own conversation identifier, for example your chat session ID. Spans carrying it are grouped into one Galtea session per distinct ID. Within a session, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+  </Tab>
+  <Tab title="Managed platform (vendor-derived)">
+    Some platforms cannot attach `galtea.session.custom_id` to their spans. For these, Galtea derives the conversation key from a recognized vendor attribute, so you do not change the platform's instrumentation.
+
+    Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key, and splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
+  </Tab>
+</Tabs>
+
+### Route to a Product Version
 
 Assembly requires the `galtea.version.id` **resource attribute**. It routes the spans to a [Version](/concepts/product/version) of your product and is validated against the organization of the API key you authenticate with. Without it, uncorrelated spans are rejected.
 
@@ -77,13 +88,10 @@ service:
       exporters: [otlphttp/galtea]
 ```
 
-### Managed Platforms: Vendor-Derived Conversation Keys
-
-Some platforms cannot attach `galtea.session.custom_id` to their spans. Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key. It splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
-
 ### What You Get
 
 - **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
+- **Automatic input and output.** Each turn's input and output are read from the turn's own spans using the same per-field precedence as the enrichment path (`galtea.trace.*` > `gen_ai.*` > managed-platform span shapes). A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events — with no `galtea.trace.*` attributes — still produces turns with non-empty input and output. When a turn contains several LLM calls, the first prompt becomes the turn input and the last completion becomes the turn output. See [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records).
 - **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or traces. Later turns append to the same session.
 - **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
 
@@ -94,13 +102,9 @@ Some platforms cannot attach `galtea.session.custom_id` to their spans. Temporal
   - **One payload can open at most 100 new conversations.** New sessions beyond that in the same OTLP payload are rejected (they appear in the export response's rejected-span count). Continuations of conversations that already exist do not count toward the limit. If you send a large backfill or a high-volume export, split it across smaller export batches. Self-hosted deployments can raise the limit with the `OTEL_MAX_NEW_CONVERSATIONS_PER_PAYLOAD` setting.
 </Note>
 
-<Warning>
-  Conversations created from OTel traces currently take each turn's input and output **only** from the `galtea.trace.input` / `galtea.trace.output` attributes on the turn's spans. The automatic `gen_ai.*` and managed-platform content reading described in the next section applies today to the enrichment path (spans attached to an existing inference result), not yet to conversations assembled from OTel traces. So a managed platform that sets no `galtea.trace.*` attributes produces conversations whose turns have empty input and output. Extending automatic content reading to assembled conversations is planned.
-</Warning>
-
 ## How Span Content Maps to Trace Records
 
-When a span **enriches an existing inference result**, it becomes a [Trace](/concepts/product/version/session/trace) record whose input and output are filled **per field**, using the first source that provides a value:
+When a span becomes a [Trace](/concepts/product/version/session/trace) record — whether it **enriches an existing inference result** or is **assembled into a production conversation** — its input and output are filled **per field**, using the first source that provides a value:
 
 1. **`galtea.trace.*` explicit attributes** — full control, always wins.
 2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
