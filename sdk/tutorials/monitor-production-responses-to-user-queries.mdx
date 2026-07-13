@@ -6,6 +6,8 @@ icon: "users"
 
 You can use Galtea to log and evaluate real user interactions from your production environment. This helps you monitor your product's performance over time.
 
+<Tip>This tutorial evaluates production sessions on demand, one call at a time. To score production sessions automatically and continuously, create a [Monitor](/concepts/product/monitor) instead: an always-on rule that samples and scores a product's production sessions with a set of metric families, with no run to trigger by hand.</Tip>
+
 ### Single-Turn Production Monitoring
 
 For simple, single-turn interactions, create a production session and use `galtea.inference_results.create_and_evaluate()` to log and evaluate the interaction in a single call.
@@ -162,6 +164,27 @@ galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
 <Info>
 For more details on evaluating multi-turn conversations, see the [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) guide.
 </Info>
+
+## Reading Monitor Results
+
+If you have set up a [Monitor](https://platform.galtea.ai/) on the Galtea dashboard to continuously evaluate a sample of your production sessions, you can pull its results with a single call:
+
+```bash
+curl -sS -H "Authorization: Bearer ${GALTEA_API_KEY}" \
+  "https://api.galtea.ai/monitors/${MONITOR_ID}/results?days=7"
+```
+
+The `days` query parameter sets the trailing window to aggregate, bucketed by day. It defaults to 7 and accepts up to 90.
+
+The response is built to give you an honest read of your product's quality, not just a bare average. Keep these ideas in mind when you interpret it:
+
+- **Each metric family gets its own score series.** A metric family is a metric and every later revision of it (for example, when you edit its judge prompt), grouped as one line of history. The response returns one series per family bound to the monitor, each with a whole-range `headline` score and one point per day bucket.
+- **Scores are sampling-weighted.** A monitor does not evaluate every session; it evaluates a sample to control cost. Sessions from a period when sampling was lower count for more in the average, so a period with a smaller sample does not silently pull the score toward its own noise.
+- **A confidence interval tells you how much to trust a score.** The confidence interval is the range that most likely contains the true score. Galtea publishes a 95% interval once a bucket has scored at least 30 sessions. Below that floor, `confidenceInterval` is `null` and `collectingData` is `true`, so you know the score is a preview, not a settled number, until more sessions land.
+- **The worst metric family drives the headline, never an average.** `worstMetric` is the lowest-scoring family over the whole range, not a blended score across families. Use it to see which quality dimension needs attention first.
+- **Markers flag context changes.** `markers.metricRevisions` marks when a bound metric family was edited, and `markers.samplingChanges` marks when the sampling rate changed. Both can explain a shift in the score series that isn't a real quality change.
+- **Spend shows your current billing cycle.** `spend.spentCredits` and `spend.pendingCredits` are the credits already used and reserved for evaluations still running this cycle; `spend.capCredits` is the monthly cap you configured for the monitor (`null` if you did not set one). If spend nears the cap, the monitor lowers its sampling rate to stay within budget, which is exactly what the sampling-change markers and sampling-weighted scores are designed to absorb.
+- **Sessions are listed, not just counted.** `sessions.scored` lists the most recently evaluated sessions (capped at 200) with a human-readable reason each one was scored (an explicit end signal, or an inactivity window closing the session). `sessions.waiting` lists production sessions still inside that inactivity window (capped at 100) that have not been scored yet.
 
 ## Next Steps
 

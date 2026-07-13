@@ -26,8 +26,8 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 | `{{ test_id }}` | The test ID |
 | `{{ galtea_session_id }}` | The Galtea session ID |
 | `{{ inference_result_id }}` | The inference result ID for this turn (also sent automatically as the `X-Galtea-Inference-Id` HTTP header -- useful for [trace collection](/sdk/tutorials/tracing-agent-operations)) |
-| `{{ language_code }}` | ISO 639-1 language code of the test case (e.g. `"es"`). Empty string when no language is set. |
-| `{{ language_name }}` | ISO 639-1 English language name of the test case (e.g. `"Spanish"`). Empty string when no language is set. |
+| `{{ language_code }}` | Full BCP-47 language tag of the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when no language is set. |
+| `{{ language_name }}` | English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when no language is set. |
 | Any metadata key | Any field stored in session metadata (e.g., `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`) |
 
 ### Conversation History

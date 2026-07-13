@@ -97,8 +97,15 @@ evaluations = galtea.evaluations.create_single_turn(
 ```
 
 ## Parameters
-<ResponseField name="version_id" type="string" required>
+<ResponseField name="version_id" type="string" optional>
   The ID of the version you want to evaluate.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored.</Note>
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The ID of the product you want to evaluate, as an alternative to `version_id`. The API resolves the product's latest version, or creates a default one if the product has none yet.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored.</Note>
 </ResponseField>
 <ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" required>
   A list of metrics to use for the evaluation. 

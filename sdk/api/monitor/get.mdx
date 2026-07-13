@@ -1,0 +1,18 @@
+---
+title: 'Retrieving Monitor'
+sidebarTitle: "Get"
+description: "Retrieve a specific monitor by its ID."
+---
+
+## Returns
+Returns a [Monitor](/concepts/product/monitor) object for the given monitor ID.
+
+## Example
+```python
+monitor = galtea.monitors.get(monitor_id=monitor.id)
+```
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor you want to retrieve.
+</ResponseField>

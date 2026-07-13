@@ -1,0 +1,48 @@
+---
+title: "Create Monitor"
+sidebarTitle: "Create"
+description: "Create a monitor for a product."
+---
+
+## Returns
+
+Returns a [Monitor](/concepts/product/monitor) object for the given parameters, or `None` if an error occurs.
+
+## Example
+```python
+monitor = galtea.monitors.create(
+    name="Production quality monitor",
+    product_id=product_id,
+    metric_group_ids=[metric_group_id],
+    # Optional: watch a single version. Omit to watch every version of the product.
+    # version_id="your-version-id",
+    sampling_percentage=10,  # score 10% of production sessions (default)
+    monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
+    inactivity_window_minutes=5,  # a session is scored 5 minutes after its last activity (default)
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the monitor.
+</ResponseField>
+<ResponseField name="product_id" type="string" required>
+  The ID of the product whose production sessions this monitor scores.
+</ResponseField>
+<ResponseField name="metric_group_ids" type="list[string]" required>
+  The metric family IDs (`metric.metric_group_id`) the monitor scores with. At least one is required.
+  The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  The ID of a single version to watch. Omit to watch every version of the product.
+</ResponseField>
+<ResponseField name="sampling_percentage" type="number" default="10">
+  Percentage of production sessions to score, from just above `0` up to `100`. Defaults to `10` (10%).
+</ResponseField>
+<ResponseField name="monthly_credit_cap" type="int" optional>
+  Maximum credits to spend per month. Must be positive when set. `None` (default) means uncapped.
+  The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
+</ResponseField>
+<ResponseField name="inactivity_window_minutes" type="int" default="5">
+  Minutes of session inactivity before a session is treated as finished and eligible for scoring. Defaults to `5`.
+</ResponseField>

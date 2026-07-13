@@ -13,8 +13,15 @@ session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_i
 ```
 
 ## Parameters
-<ResponseField name="version_id" type="string" required>
+<ResponseField name="version_id" type="string" optional>
   The ID of the version to associate with this session.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Prefer `version_id` when you already have a specific version to attach to.</Note>
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The ID of the product to associate with this session, as an alternative to `version_id`. The API resolves the product's latest version, or creates a default one if the product has none yet.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored.</Note>
 </ResponseField>
 <ResponseField name="test_case_id" type="string" optional>
   The ID of a test case. Forbidden when `is_production=True`. Sessions backed by a test case derive their `context` from the test case rather than the request.

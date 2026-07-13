@@ -243,6 +243,25 @@
                 ]
               },
               {
+                "group": "Monitor",
+                "icon": "gauge-high",
+                "pages": [
+                  "concepts/product/monitor",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/monitor/service",
+                      "sdk/api/monitor/create",
+                      "sdk/api/monitor/list",
+                      "sdk/api/monitor/get",
+                      "sdk/api/monitor/update",
+                      "sdk/api/monitor/delete"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Version",
                 "icon": "code-branch",
                 "pages": [

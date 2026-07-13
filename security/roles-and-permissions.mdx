@@ -112,6 +112,16 @@ Galtea uses role-based access control. Every member of your organization has one
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If result's product in own org | If result's product in own org | ❌ | ❌ |
 
+**Monitor**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If product in own org | If product in own org | ❌ | ❌ |
+| Read | If product in own org | If product in own org | If product in own org | If product in own org |
+| Update | If product in own org | If product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If product in own org | If product in own org | ❌ | ❌ |
+
 ### Reference Data
 
 **Metric**

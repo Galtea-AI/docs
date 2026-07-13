@@ -1,0 +1,116 @@
+---
+title: "Monitor"
+sidebarTitle: "Overview"
+description: "An always-on evaluation rule for production sessions"
+---
+
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+import ProductCard from '/snippets/cards/product-card.mdx';
+import MetricCard from '/snippets/cards/metric-card.mdx';
+import SDKMonitorServiceCard from '/snippets/cards/sdk-monitor-service-card.mdx';
+
+## What is a Monitor?
+
+A Monitor is an always-on evaluation rule for a product's production sessions. The Monitor is the rule; the production sessions are the data it watches. Once you create a Monitor, Galtea keeps scoring a sampled fraction of that product's production sessions on its own, with no run to trigger by hand.
+
+Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with a set of metric families and records the result.
+
+<Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged.</Note>
+
+## Metric families follow revisions automatically
+
+A Monitor binds **metric families**, not specific metric revisions. A metric family is every revision of a metric that shares the same family key (`metric.metric_group_id` in the SDK). When you revise a metric, the Monitor picks up the new revision automatically. You do not edit the Monitor.
+
+This is why `metric_group_ids` takes family keys, not metric IDs. Read the family key off any metric in the family:
+
+```python
+metric = galtea.metrics.get(metric_id="your-metric-id")
+family_key = metric.metric_group_id
+```
+
+## Sampling
+
+`sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
+
+## Inactivity window
+
+A production session has no explicit "end" signal. `inactivity_window_minutes` sets how long the Monitor waits after a session's last activity before it treats the session as finished and eligible for scoring. It defaults to `5` minutes.
+
+## Credit cap
+
+`monthly_credit_cap` is an optional ceiling on how many credits the Monitor spends per month:
+
+- **`None` (default)** means the Monitor is uncapped. It scores sampled sessions until the organization runs out of credits.
+- **A positive number** caps monthly spend. Only the "greater than zero" rule is enforced. The cap may be larger than the organization's monthly credit allocation; the effective budget is `min(organization balance, cap)`. So the cap protects a single Monitor's spend, and the organization balance is always the hard limit.
+
+## Status
+
+A Monitor has a `status` that tells you whether it is scoring and, if not, why. This makes the reasons a Monitor stopped visible instead of silent:
+
+- **`ACTIVE`** — the Monitor is scoring sampled production sessions. New Monitors start here.
+- **`PAUSED`** — a user paused the Monitor. It scores nothing until resumed.
+- **`CAPPED`** — the monthly credit cap was reached. Scoring resumes next month, or sooner if you raise the cap.
+- **`NO_CREDITS`** — the organization ran out of credits. Scoring resumes when credits are available.
+- **`FAILING`** — the Monitor keeps failing to score sessions and needs attention.
+
+You can set only `ACTIVE` (to resume) or `PAUSED` (to pause). `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
+
+## SDK Integration
+
+The SDK lets you create, list, retrieve, update (including pause and resume), and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
+
+<SDKMonitorServiceCard />
+
+## Monitor Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier of the monitor.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Name of the monitor.
+</ResponseField>
+
+<ResponseField name="product_id" type="string" required>
+  The ID of the product whose production sessions this monitor scores.
+</ResponseField>
+
+<ResponseField name="version_id" type="string" optional>
+  The ID of a single version to watch. When unset, the monitor watches every version of the product.
+</ResponseField>
+
+<ResponseField name="metric_group_ids" type="list[string]" required>
+  The metric family IDs (`metric.metric_group_id`) the monitor scores with. At least one is required.
+  The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
+</ResponseField>
+
+<ResponseField name="sampling_percentage" type="number" default="10">
+  Percentage of production sessions to score, from just above `0` up to `100`. Defaults to `10` (10%).
+</ResponseField>
+
+<ResponseField name="monthly_credit_cap" type="int" optional>
+  Maximum credits to spend per month. Must be positive when set. `None` means uncapped.
+  The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
+</ResponseField>
+
+<ResponseField name="inactivity_window_minutes" type="int" default="5">
+  Minutes of session inactivity before a session is treated as finished and eligible for scoring. Defaults to `5`.
+</ResponseField>
+
+<ResponseField name="status" type="Enum">
+  The lifecycle status of the monitor.
+  Possible values: `ACTIVE`, `PAUSED`, `CAPPED`, `NO_CREDITS`, `FAILING`.
+  Only `ACTIVE` and `PAUSED` can be set by a user; the rest are system-set.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Timestamp of when the monitor was created (ISO 8601 format).
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <ProductCard />
+  <MetricCard />
+</CardGroup>
