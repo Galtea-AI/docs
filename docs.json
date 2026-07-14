@@ -108,6 +108,7 @@
             "icon": "chart-line",
             "pages": [
               "sdk/tutorials/monitor-production-responses-to-user-queries",
+              "sdk/tutorials/monitor-production-with-opentelemetry",
               "sdk/tutorials/evaluating-conversations"
             ]
           },
@@ -350,6 +351,7 @@
                 "pages": [
                   "concepts/product/test",
                   "concepts/product/test/data-augmentation",
+                  "concepts/product/test/extend-test-cases",
                   {
                     "group": "Accuracy",
                     "icon": "certificate",

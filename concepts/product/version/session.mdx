@@ -11,7 +11,7 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 A session groups the turns of a single conversation between a user and your AI product. It contains one or more [inference results](/concepts/product/version/session/inference-result) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-Sessions must be created explicitly with `sessions.create()` before logging inference results and evaluations. This gives you full control over session lifecycle and grouping.
+Sessions are usually created explicitly with `sessions.create()` before logging inference results and evaluations. This gives you full control over session lifecycle and grouping. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry).
 
 You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 

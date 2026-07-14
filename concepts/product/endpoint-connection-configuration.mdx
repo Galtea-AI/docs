@@ -193,6 +193,8 @@ Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and
 
 When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's traces without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
 
+See [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry) for how correlated spans become Trace records.
+
 ## Timeout
 
 How long Galtea waits for a single HTTP call to your endpoint before giving up. It is applied **per attempt**, so each retry gets the full timeout again.

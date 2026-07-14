@@ -104,7 +104,7 @@ The Galtea SDK allows you to create, view, and manage tests programmatically.
 </CardGroup>
 
 <Note>
-  Already have a baseline test? Use **Data Augmentation** to automatically expand it with new test cases generated from your existing examples. Works with all test types. Learn more in the [Data Augmentation](/concepts/product/test/data-augmentation) documentation.
+  Already have a test and want more cases? If Galtea generated the test, use [Extend](/concepts/product/test/extend-test-cases) to add more cases the same way it was created. For any test with cases, use [Data Augmentation](/concepts/product/test/data-augmentation) to expand it from its existing examples.
 </Note>
 
 ## Test Properties
@@ -120,6 +120,8 @@ The Galtea SDK allows you to create, view, and manage tests programmatically.
   - `SUCCESS`: Test is ready
   - `FAILED`: Test generation failed
   - `AUGMENTING`: Test cases are being augmented with additional generated cases
+  - `EXTENDING`: Test cases are being extended by re-running the test's original generator
+  - `CANCELLED`: Test generation was cancelled
 </ResponseField>
 
 <ResponseField name="Type" type="Enum" required>
