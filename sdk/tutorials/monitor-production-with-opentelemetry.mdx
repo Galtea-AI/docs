@@ -40,8 +40,8 @@ Find your situation:
 | You control the instrumentation and can add span attributes | Full control. Set the `galtea.session.custom_id` span attribute and the `galtea.version.id` resource attribute to create production conversations, and `galtea.trace.*` span attributes to fill each trace's input and output. |
 | A managed platform emits your spans and you cannot edit them, but you run your own OTel Collector | Set `galtea.version.id` once on the Collector as a resource attribute. If the platform is built on Temporal, the conversation key is derived automatically, and each turn's input and output are read automatically from the platform's span shapes (see [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records)). |
 | Your service is OTel-instrumented and Galtea calls it via Direct Inference | Enable `traceparent` propagation on the endpoint connection. Your spans enrich the inference results Galtea creates. No Galtea attributes needed. |
-| Your platform emits the OpenTelemetry GenAI semantic conventions | Input and output map automatically from the `gen_ai.*` spans, with zero Galtea-specific attributes — whether the spans enrich an existing inference result or are assembled into a new production conversation. To create new sessions you still need a conversation key and a version route. |
-| Your platform emits [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) spans | Input and output map automatically from MLflow's `mlflow.*` span attributes, with zero Galtea-specific attributes — whether the spans enrich an existing inference result or are assembled into a new production conversation. To create new sessions you still need a conversation key and a version route: set the `galtea.session.custom_id` span attribute yourself. |
+| Your platform emits the OpenTelemetry GenAI semantic conventions | Input and output map automatically from the `gen_ai.*` spans, with zero Galtea-specific attributes — whether the spans enrich an existing inference result or are assembled into a new production conversation. The conversation key also comes from the standard: Galtea groups spans by `gen_ai.conversation.id` (or `session.id`), so you only add a version route. |
+| Your platform emits [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) spans | Input and output map automatically from MLflow's `mlflow.*` span attributes, with zero Galtea-specific attributes — whether the spans enrich an existing inference result or are assembled into a new production conversation. To create new sessions you still need a conversation key and a version route. MLflow does not emit a standard conversation key on its spans by default, so set the `session.id` (or `galtea.session.custom_id`) span attribute yourself. |
 | None of the above | This path does not work for you yet. Use the [Galtea SDK](/sdk/tutorials/tracing-agent-operations) or the [REST API](/api-reference) instead. |
 
 ## Create Production Conversations from OTel Traces
@@ -55,6 +55,11 @@ The conversation key decides which spans belong to the same Galtea session. Prov
 <Tabs>
   <Tab title="Your own session ID">
     Set the `galtea.session.custom_id` **span attribute** to your own conversation identifier, for example your chat session ID. Spans carrying it are grouped into one Galtea session per distinct ID. Within a session, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+  </Tab>
+  <Tab title="OpenTelemetry standard keys">
+    If your instrumentation follows the OpenTelemetry conventions, Galtea groups spans by the standard conversation key with no Galtea-specific attribute. It reads `gen_ai.conversation.id` (the [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)) first, and falls back to `session.id` (the [session convention](https://opentelemetry.io/docs/specs/semconv/general/session/)). As with your own session ID, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+
+    An explicit `galtea.session.custom_id` still takes priority over both when a span carries it. `gen_ai.conversation.id` wins over `session.id` when both are present.
   </Tab>
   <Tab title="Managed platform (vendor-derived)">
     Some platforms cannot attach `galtea.session.custom_id` to their spans. For these, Galtea derives the conversation key from a recognized vendor attribute, so you do not change the platform's instrumentation.
