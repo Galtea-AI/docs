@@ -91,7 +91,7 @@ service:
 ### What You Get
 
 - **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
-- **Automatic input and output.** Each turn's input and output are read from the turn's own spans using the same per-field precedence as the enrichment path (`galtea.trace.*` > `gen_ai.*` > managed-platform span shapes). A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events — with no `galtea.trace.*` attributes — still produces turns with non-empty input and output. When a turn contains several LLM calls, the first prompt becomes the turn input and the last completion becomes the turn output. See [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records).
+- **Automatic input and output.** Each turn's input and output are read from the turn's own spans using the same per-field precedence as the enrichment path (`galtea.trace.*` > `gen_ai.*` > managed-platform span shapes). A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events — with no `galtea.trace.*` attributes — still produces turns with non-empty input and output. When a turn contains several LLM calls, the first prompt becomes the turn input and the last completion becomes the turn output. See [How Span Content Maps to Trace Records](#how-span-content-maps-to-trace-records). For turns answered without any LLM call (a templated or guardrail reply), see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
 - **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or traces. Later turns append to the same session.
 - **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
 
@@ -127,6 +127,38 @@ For managed platforms, Galtea recognizes some span shapes automatically. For exa
 </Warning>
 
 For the full `galtea.trace.*` attribute table and the automatically mapped OTel fields, see [Controlling how spans map to Trace records](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#4-controlling-how-spans-map-to-trace-records).
+
+## Recover Replies That Do Not Come from the LLM
+
+Some turns are answered without an LLM completion. A guardrail can replace the answer, a template can redirect the user, or a tool can return the final reply on its own. For these turns the user-visible answer lives on a non-LLM span. So by default the assembled turn output is empty, or it shows an internal label such as an intent-classifier tag, instead of the real reply.
+
+The `otelOutputSourceRule` config field fixes this. It names the exact span and field that carry the real reply, so the turn shows the true answer. Set it on a [Product](/concepts/product) or a [Version](/concepts/product/version). The Version value overrides the Product value. Leave it `null` (the default) to keep the rule off.
+
+The rule has four parts:
+
+- **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
+- **`attribute`** — the span attribute that holds the reply, stored as a JSON string.
+- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`.
+- **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the user's own message as the reply.
+
+Here is a complete rule:
+
+```json
+{
+  "spanName": "ExecuteActivity:save_reply",
+  "attribute": "app.arguments",
+  "path": "$[0].message.content",
+  "predicate": { "path": "$[0].message.role", "equals": "assistant" }
+}
+```
+
+Read it step by step. The assistant's reply is saved on the `ExecuteActivity:save_reply` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the reply text inside that array. The predicate keeps user messages out: the same span also carries the user's message with role `"user"`, so the predicate makes the rule fire only for role `"assistant"`.
+
+<Note>
+  This rule is a last resort. It fills only the turn output, and only when the turn has no LLM output. Galtea first tries the normal per-field sources (`galtea.trace.*`, then `gen_ai.*`, then recognized managed-platform span shapes). The rule applies only if none of those produced an output. Within one turn, the latest span with output by start time wins. So the rule recovers the reply when the reply-bearing span is emitted after the LLM or classifier span. This is the common classify-then-reply order.
+</Note>
+
+Set `otelOutputSourceRule` on a product or a version. In the Python SDK you can set it when you create a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products or on version updates. To set it on a product, or to change it on an existing version, use the API or the dashboard. The version value wins over the product value.
 
 ## Learn More
 
