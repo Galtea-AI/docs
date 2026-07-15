@@ -52,7 +52,7 @@ inference_result = galtea.inference_results.create(
   The version of Galtea's conversation simulator used to generate the user message (input). This should only be provided when logging a conversation that was generated using the simulator.
 </ResponseField>
 <ResponseField name="status" type="str | InferenceResultStatus" optional>
-  The initial status of the inference result. Accepts a case-insensitive string or an `InferenceResultStatus` enum value. Valid values: `PENDING`, `GENERATED`, `FAILED`, `SKIPPED`.
+  The initial status of the inference result. Accepts a case-insensitive string or an `InferenceResultStatus` enum value. Valid values: `PENDING`, `GENERATED`, `FAILED`, `SKIPPED`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 
   The two typical SDK flows are:
   - **Omit (default)** to create the inference result as `GENERATED` — the right choice when the output is already known at create time.

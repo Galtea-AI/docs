@@ -41,7 +41,7 @@ Pause and resume are just a `status` update. Users may set only `ACTIVE` (resume
   New inactivity window in minutes.
 </ResponseField>
 <ResponseField name="status" type="string | MonitorStatus" optional>
-  New status. Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause).
+  New status. Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 
 <Note>

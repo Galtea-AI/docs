@@ -30,7 +30,7 @@ monitors = galtea.monitors.list(
 </ResponseField>
 <ResponseField name="statuses" type="list[string | MonitorStatus]" optional>
   Filter by monitor status.
-  Possible values: `ACTIVE`, `PAUSED`, `CAPPED`, `NO_CREDITS`, `FAILING`.
+  Possible values: `ACTIVE`, `PAUSED`, `CAPPED`, `NO_CREDITS`, `FAILING`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="metric_group_ids" type="list[string]" optional>
   Filter by bound metric family IDs (`metric.metric_group_id`).

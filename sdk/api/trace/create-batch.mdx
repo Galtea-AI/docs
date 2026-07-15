@@ -42,3 +42,7 @@ galtea.traces.create_batch(
 | `start_time` | `str` | No | ISO 8601 timestamp when the trace started |
 | `end_time` | `str` | No | ISO 8601 timestamp when the trace ended |
 | `metadata` | `dict` | No | Additional custom metadata |
+
+<Note>
+  For `type`, other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</Note>

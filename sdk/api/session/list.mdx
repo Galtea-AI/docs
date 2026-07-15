@@ -49,7 +49,7 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
   The ID or IDs of the session(s) to retrieve.
 </ResponseField>
 <ResponseField name="status" type="string | list[string]" default="None">
-  Filter sessions by status. Valid values are `PENDING`, `COMPLETED`, and `FAILED`. Accepts a single value or a list of values (results are OR-combined).
+  Filter sessions by status. Valid values are `PENDING`, `COMPLETED`, and `FAILED`. Accepts a single value or a list of values (results are OR-combined). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <Note>
   At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `test_id`, `id`) described above must be passed to the method. `status` is an additional filter and does **not** satisfy this requirement on its own.

@@ -27,10 +27,14 @@ endpoint_connection = galtea.endpoint_connections.update(
   New endpoint URL. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
 </ResponseField>
 <ResponseField name="http_method" type="string" optional>
-  New HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+  New HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values are
+  sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
 </ResponseField>
 <ResponseField name="auth_type" type="string" optional>
-  New authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`.
+  New authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Other string values
+  are sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
 </ResponseField>
 <ResponseField name="auth_token" type="string" optional>
   New authentication token.
@@ -66,7 +70,9 @@ endpoint_connection = galtea.endpoint_connections.update(
   New initial delay in milliseconds before first retry.
 </ResponseField>
 <ResponseField name="retry_backoff_strategy" type="string" optional>
-  New backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`.
+  New backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`. Other string values are sent
+  to the API unchanged, so values added in newer API versions can be used; the API rejects invalid
+  ones.
 </ResponseField>
 <ResponseField name="retry_max_delay_ms" type="int" optional>
   New maximum delay between retry attempts, in milliseconds. Capped at `60000`; values above this are rejected.

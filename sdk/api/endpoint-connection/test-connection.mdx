@@ -47,13 +47,17 @@ This method can be called in two ways:
   The endpoint URL to test. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
 </ResponseField>
 <ResponseField name="http_method" type="string" optional>
-  HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+  HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values are sent
+  to the API unchanged, so values added in newer API versions can be used; the API rejects invalid
+  ones.
 </ResponseField>
 <ResponseField name="input_template" type="string" optional>
   Input template with Jinja2 placeholders. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
 </ResponseField>
 <ResponseField name="auth_type" type="string" optional>
-  Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`.
+  Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Other string values are
+  sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
 </ResponseField>
 <ResponseField name="auth_token" type="string" optional>
   Authentication token.
@@ -74,6 +78,8 @@ This method can be called in two ways:
   Endpoint connection type. Valid values: `INITIALIZATION`, `CONVERSATION`, `FINALIZATION`.
   `CONVERSATION` is required for all products. `INITIALIZATION` and `FINALIZATION` are only needed
   for [complex session management](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced).
+  Other string values are sent to the API unchanged, so values added in newer API versions can be
+  used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="timeout" type="int" optional>
   Request timeout in seconds.

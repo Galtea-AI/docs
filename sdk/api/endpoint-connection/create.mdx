@@ -38,13 +38,18 @@ endpoint_connection = galtea.endpoint_connections.create(
   `CONVERSATION` is required for all products. `INITIALIZATION` and `FINALIZATION` are only needed
   for [complex session management](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced)
   (e.g., when your API requires a separate setup call that returns a session ID, or a cleanup call
-  after the conversation ends).
+  after the conversation ends). Other string values are sent to the API unchanged, so values added
+  in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="http_method" type="string" default="POST">
-  HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Defaults to `POST`.
+  HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Defaults to `POST`. Other string
+  values are sent to the API unchanged, so values added in newer API versions can be used; the API
+  rejects invalid ones.
 </ResponseField>
 <ResponseField name="auth_type" type="string" default="BEARER">
-  Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Defaults to `BEARER`.
+  Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Defaults to `BEARER`. Other
+  string values are sent to the API unchanged, so values added in newer API versions can be used;
+  the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="auth_token" type="string" optional>
   Authentication token. Required for `BEARER` and `API_KEY` auth types.
@@ -80,7 +85,9 @@ endpoint_connection = galtea.endpoint_connections.create(
   Initial delay in milliseconds before first retry. Defaults to `1000`.
 </ResponseField>
 <ResponseField name="retry_backoff_strategy" type="string" optional>
-  Backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`. Defaults to `EXPONENTIAL`.
+  Backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`. Defaults to `EXPONENTIAL`. Other
+  string values are sent to the API unchanged, so values added in newer API versions can be used;
+  the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="retry_max_delay_ms" type="int" optional>
   Maximum delay between retry attempts, in milliseconds. Defaults to `3000`. Capped at `60000`; values above this are rejected.
