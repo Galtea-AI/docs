@@ -15,7 +15,7 @@ A Monitor is an always-on evaluation rule for a product's production sessions. T
 
 Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with a set of metric families and records the result.
 
-<Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry).</Note>
+<Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Note>
 
 ## Metric families follow revisions automatically
 
