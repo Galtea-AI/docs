@@ -58,6 +58,7 @@ completed = galtea.evaluations.wait_for(
 
 specification = galtea.specifications.create(
     product_id,
+    "Greets before answering",
     "The user should always salute the user with a greeting before providing an answer.",
     SpecificationType.POLICY,
     TestType.BEHAVIOR,

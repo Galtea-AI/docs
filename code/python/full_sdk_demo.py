@@ -234,7 +234,7 @@ if session is None:
     raise ValueError("session from get is None")
 
 # @start session_get_by_custom_id
-session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id)
+session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id, version_id=version_id)
 # @end session_get_by_custom_id
 if session_by_custom is None:
     raise ValueError("session from get_by_custom_id is None")
@@ -315,6 +315,7 @@ if evaluations is None or len(evaluations) == 0:
 # Create a specification and link a metric so we can evaluate by specification_ids
 specification = galtea.specifications.create(
     product_id=product_id,
+    name="Accurate and relevant answers",
     description="The assistant must provide accurate and relevant answers to user questions.",
     type="POLICY",
     test_type="BEHAVIOR",

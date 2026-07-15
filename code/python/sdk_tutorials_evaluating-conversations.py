@@ -54,6 +54,7 @@ if role_adherence is None or conversation_relevancy is None or knowledge_retenti
 
 conversation_spec = galtea_client.specifications.create(
     product_id=product_id,
+    name="Consistent in-role conversation",
     description="The assistant stays in role and gives relevant, consistent answers across the conversation.",
     type="CAPABILITY",
     metric_ids=[role_adherence.id, conversation_relevancy.id, knowledge_retention.id],

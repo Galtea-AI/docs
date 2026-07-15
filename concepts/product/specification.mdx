@@ -80,6 +80,11 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
   The ID of the product this specification belongs to.
 </ResponseField>
 
+<ResponseField name="name" type="string" required>
+  A short, human-readable name for the specification. Shown wherever the specification is listed or referenced.
+  **Example**: "Declines political questions".
+</ResponseField>
+
 <ResponseField name="description" type="string" required>
   A description of the testable behavioral expectation.
   **Example**: "Must decline political questions and redirect the user to authoritative sources."

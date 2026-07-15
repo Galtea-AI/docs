@@ -8,6 +8,82 @@ You can use Galtea to log and evaluate real user interactions from your producti
 
 <Tip>This tutorial evaluates production sessions on demand, one call at a time. To score production sessions automatically and continuously, create a [Monitor](/concepts/product/monitor) instead: an always-on rule that samples and scores a product's production sessions with a set of metric families, with no run to trigger by hand.</Tip>
 
+### Recommended: Use Your Own Conversation IDs
+
+If your application already has its own conversation or chat ids, you can keep using them as the handle for a Galtea session, so you never store Galtea's own session id. First, create the session once with `galtea.sessions.create(custom_id=<your id>, ...)`. Then log every turn with `session_custom_id=<your id>` (plus a `version_id` or `product_id` anchor): each call finds that session by your custom id and appends to it.
+
+```python
+# At the start of the conversation, create the session ONCE with YOUR own id.
+galtea.sessions.create(
+    custom_id="conversation-42",  # your own conversation id
+    version_id=VERSION_ID,
+    is_production=True,
+)
+
+
+# In your application's request handler...
+def handle_user_query_with_custom_id(conversation_id: str, user_query: str) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query)
+
+    # Log and evaluate in one call, using YOUR conversation id as the handle.
+    # Galtea finds the existing session by that id and appends the turn to it.
+    galtea.inference_results.create_and_evaluate(
+        session_custom_id=conversation_id,  # the id you created the session with
+        version_id=VERSION_ID,  # or product_id=product_id to find it under the product
+        input=user_query,
+        output=model_response,
+        metrics=[
+            {"name": "Role Adherence"},
+            {"name": "Answer Relevancy"},
+        ],
+    )
+
+    return model_response
+
+
+# Test the handler: both calls land in the same session
+handle_user_query_with_custom_id("conversation-42", "What are your business hours?")
+handle_user_query_with_custom_id("conversation-42", "Are you open on weekends?")
+```
+
+The same works for logging turns without evaluating them:
+
+```python
+# Create the session once, up front, with your own conversation id.
+galtea.sessions.create(
+    custom_id="conversation-1234",
+    version_id=VERSION_ID,
+    is_production=True,
+)
+
+
+def handle_conversation_turn(conversation_id: str, user_input: str) -> str:
+    # Replace this with your actual model call
+    model_output = f"This is a simulated response to '{user_input}'"
+
+    # Log each turn under your own conversation id. Galtea finds the existing
+    # session by that id and appends the turn to it.
+    galtea.inference_results.create(
+        session_custom_id=conversation_id,
+        version_id=VERSION_ID,  # or product_id=product_id
+        input=user_input,
+        output=model_output,
+    )
+    return model_output
+
+
+# This would happen dynamically in your application.
+for question in [
+    "What are some lower-risk investment strategies?",
+    "With age, should the investment strategy change?",
+    "Great, thanks!",
+]:
+    handle_conversation_turn("conversation-1234", question)
+```
+
+<Note>Sessions are created only through the sessions API. If no session matches your `session_custom_id` and anchor, the call returns a `400` error. Create the session first with `galtea.sessions.create(custom_id=...)`.</Note>
+
 <Tip>If your system already emits OpenTelemetry traces, you can create production sessions without any SDK calls. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Tip>
 
 ### Single-Turn Production Monitoring
@@ -73,7 +149,7 @@ handle_user_query("What are your business hours?", "Business hours: 9am-5pm Mond
 
 ### Multi-Turn Production Monitoring (Conversations)
 
-For multi-turn conversations, use the session-based workflow to log the entire interaction first and then evaluate it.
+For multi-turn conversations, use the session-based workflow to log the entire interaction first and then evaluate it. If your application has its own conversation ids, prefer the `session_custom_id` flow above: create the session once with a `custom_id` in step 1, then pass `session_custom_id` (plus `version_id` or `product_id`) instead of `session_id` in step 2.
 
 <Steps>
 <Step title="1. Create a Session">

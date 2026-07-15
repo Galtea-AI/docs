@@ -21,18 +21,18 @@ session = galtea.sessions.get_or_create(
 <ResponseField name="custom_id" type="string" required>
   The Custom ID of the session to fetch or create.
   <Note>
-    This is useful to associate sessions in the Galtea platform with those in your application.
+    This is useful to associate sessions in the Galtea platform with those in your application. It is unique only per version, so a `version_id` or `product_id` anchor is required to resolve it unambiguously.
   </Note>
 </ResponseField>
 <ResponseField name="version_id" type="string" optional>
-  The ID of the version to associate with this session if it needs to be created.
+  The version to look the session up on, and to associate with it if it needs to be created.
 
-  <Note>When a new session is created, provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Not used when an existing session is found.</Note>
+  <Note>Provide `version_id` or `product_id` (at least one is required) — both for the lookup and if the session needs to be created. If both are given, `version_id` wins and `product_id` is ignored.</Note>
 </ResponseField>
 <ResponseField name="product_id" type="string" optional>
-  The ID of the product to associate with this session if it needs to be created, as an alternative to `version_id`. The API resolves the product's latest version, or creates a default one if the product has none yet.
+  The product to search across (any of its versions) for the lookup, and to associate with this session if it needs to be created, as an alternative to `version_id`. If more than one version has a session with this custom ID, the most recently created one is returned. When creating, the API resolves the product's latest version, or creates a default one if the product has none yet.
 
-  <Note>When a new session is created, provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Not used when an existing session is found.</Note>
+  <Note>Provide `version_id` or `product_id` (at least one is required) — both for the lookup and if the session needs to be created. If both are given, `version_id` wins and `product_id` is ignored.</Note>
 </ResponseField>
 <ResponseField name="test_case_id" type="string" optional>
   The test case ID. Forbidden when `is_production=True`. A non-production session may be created without a test case (e.g. externally ingested traces) — the context will then come from the request rather than the test case.

@@ -79,9 +79,27 @@ inference_result, evaluations = galtea.inference_results.create_and_evaluate(
 ```
 
 ## Parameters
-<ResponseField name="session_id" type="string" required>
+<ResponseField name="session_id" type="string" optional>
   The session ID to log the inference result to.
+
+  <Note>Instead of a `session_id`, you can reference an existing session by its own conversation id (see the section below). Provide exactly one of the two.</Note>
 </ResponseField>
+
+<Accordion title="Log to an existing session by your own conversation ID">
+  If you already created the session via the [sessions API](/sdk/api/session/service) with your own `custom_id`, reference it here with `session_custom_id` plus a `version_id` or `product_id` to log and evaluate a turn in one call. If no matching session exists, the call returns a `400` error — create it first via the sessions API.
+
+  <ResponseField name="session_custom_id" type="string" optional>
+    Your own conversation id, as an alternative to `session_id`. Galtea finds an existing session with this id (per version); the session is not created here. Requires `version_id` or `product_id`.
+  </ResponseField>
+  <ResponseField name="version_id" type="string" optional>
+    The version the session is anchored to when using `session_custom_id`. If both anchors are given, `version_id` wins and `product_id` is ignored.
+  </ResponseField>
+  <ResponseField name="product_id" type="string" optional>
+    Product anchor used when no `version_id` is given with `session_custom_id`: Galtea finds the session with this custom id under the product (across its versions).
+  </ResponseField>
+
+  <Note>If no session matches the `session_custom_id` and anchor, the call returns a `400` error. Create the session first via the [sessions API](/sdk/api/session/service).</Note>
+</Accordion>
 <ResponseField name="output" type="string" required>
   The generated output/response from the AI model.
 </ResponseField>
