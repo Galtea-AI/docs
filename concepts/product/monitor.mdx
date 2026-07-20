@@ -17,6 +17,12 @@ Each Monitor watches one [Product](/concepts/product). You can narrow it to a si
 
 <Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Note>
 
+## Finding monitors in the dashboard
+
+In the dashboard, open a product and go to its **Monitors** tab. That tab lists every monitor for the product and is the home for all monitor management. It appears only in **Production** view mode, because monitors watch production sessions. Use the view-mode selector at the top of the product page to switch to Production if you do not see it.
+
+From the tab you can create a monitor, open one to see its results, and edit, pause, resume, or delete it. Each row shows the monitor's status, its recent score, its sampling rate, and its credit spend for the month.
+
 ## Metric families follow revisions automatically
 
 A Monitor binds **metric families**, not specific metric revisions. A metric family is every revision of a metric that shares the same family key (`metric.metric_group_id` in the SDK). When you revise a metric, the Monitor picks up the new revision automatically. You do not edit the Monitor.
