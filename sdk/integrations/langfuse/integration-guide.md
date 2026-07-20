@@ -126,6 +126,8 @@ with start_as_current_observation(
 
 The `langfuse.` client prefix is no longer needed for the root call — the wrapper calls `get_client()` internally. But keeping the client does not introduce any issues, since it is singleton and refers to the same object.
 
+> **Tip:** Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that trace type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the span name.
+
 **CallbackHandler (LangChain)**
 
 Swap the import and call `set_inference_result_id` before each invocation. Your existing handler initialization stays the same:
