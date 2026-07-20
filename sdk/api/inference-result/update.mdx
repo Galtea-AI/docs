@@ -26,6 +26,8 @@ The `update()` method allows you to modify an existing inference result after it
 
 <ParamField path="retrieval_context" type="string">
   The context retrieved by a RAG system, if applicable.
+
+  <Note>When you set `retrieval_context`, Galtea also records it as a `RETRIEVER` trace on this inference result. Sending `null` (or an empty string) clears the value and removes that trace.</Note>
 </ParamField>
 
 ### Performance Fields

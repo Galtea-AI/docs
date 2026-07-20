@@ -290,6 +290,10 @@ These OTel fields are mapped **automatically for every span**, whichever source 
 
 All remaining unmapped span attributes are collected into the `metadata` field, so no data is lost.
 
+<Note>
+  **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.trace.output`). This is the convention Galtea will use to read retrieval context from traces (that reader arrives in a later release), and the output has no required shape.
+</Note>
+
 <Warning>
   Some common instrumentation styles do **not** populate input/output yet: Traceloop / OpenLLMetry (`gen_ai.prompt.0.content`-style flattened attributes) and OpenInference (`input.value`). Their data is still stored in the trace's `metadata` field, so nothing is lost, but evaluations that read the trace input and output will not see it.
 </Warning>

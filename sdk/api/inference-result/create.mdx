@@ -50,6 +50,8 @@ inference_result = galtea.inference_results.create(
 </ResponseField>
 <ResponseField name="retrieval_context" type="string" optional>
   Context retrieved for RAG systems.
+
+  <Note>When you set `retrieval_context`, Galtea also records it as a `RETRIEVER` trace on this inference result.</Note>
 </ResponseField>
 <ResponseField name="latency" type="float" optional>
   Latency in milliseconds.
