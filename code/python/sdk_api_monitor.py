@@ -44,7 +44,6 @@ monitor = galtea.monitors.create(
     # version_id="your-version-id",
     sampling_percentage=10,  # score 10% of production sessions (default)
     monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
-    inactivity_window_minutes=5,  # a session is scored 5 minutes after its last activity (default)
 )
 # @end create
 

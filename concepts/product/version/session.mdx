@@ -11,7 +11,7 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 A session groups the turns of a single conversation between a user and your AI product. It contains one or more [inference results](/concepts/product/version/session/inference-result) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-Sessions are usually created explicitly with `sessions.create()` before logging inference results and evaluations. This gives you full control over session lifecycle and grouping. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry).
+You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating an inference result](/sdk/api/inference-result/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 
 You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 
@@ -24,6 +24,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 <ResponseField name="Custom ID" type="Text" required>
   The custom ID associated with the session.
   This is usually a client-side generated ID that identifies the conversation session between a user and a LLM app.
+  It is unique per version: logging an inference result with a `session_custom_id` finds the existing session with that custom ID and appends to it (see [Create Inference Result](/sdk/api/inference-result/create)).
 </ResponseField>
 
 <ResponseField name="Version" type="Version" required>

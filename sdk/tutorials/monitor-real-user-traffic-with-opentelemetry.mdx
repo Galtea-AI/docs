@@ -1,0 +1,140 @@
+---
+title: 'Monitor Real User Traffic via OpenTelemetry'
+description: "Send your live traffic's OpenTelemetry traces to Galtea to create production sessions that Monitors evaluate automatically."
+icon: "satellite-dish"
+---
+
+If your AI system serves real users and emits [OpenTelemetry](https://opentelemetry.io/) (OTel) traces, export them to Galtea. OTel is the open standard for emitting traces. Galtea assembles the spans into production [Sessions](/concepts/product/version/session) with conversation turns, and [Monitors](/concepts/product/monitor) evaluate those sessions automatically.
+
+<Note>
+  This page is about real production traffic. To attach OTel spans to the test runs Galtea triggers via Direct Inference, see [W3C Trace Context Propagation](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation).
+</Note>
+
+## Prerequisites
+
+- A [Product](/concepts/product) and a [Version](/concepts/product/version) in Galtea.
+- A Galtea API key.
+- Your system emits OpenTelemetry traces.
+
+<Steps>
+  <Step title="Send your traces to Galtea">
+    Point your OTel exporter or Collector at Galtea's public OTel endpoint. [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) covers the endpoint, the `Authorization: Bearer <API key>` requirement, the exporter and Collector configuration, and a curl check to verify your key.
+  </Step>
+
+  <Step title="Set a conversation key">
+    The conversation key decides which spans belong to the same Galtea session. Provide it in whichever way fits your setup.
+
+    <Tabs>
+      <Tab title="Your own session ID">
+        Set the `galtea.session.custom_id` **span attribute** to your own conversation identifier, for example your chat session ID. Spans carrying it are grouped into one Galtea session per distinct ID. Within a session, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+      </Tab>
+      <Tab title="OpenTelemetry standard keys">
+        If your instrumentation follows the OpenTelemetry conventions, Galtea groups spans by the standard conversation key with no Galtea-specific attribute. It reads `gen_ai.conversation.id` (the [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)) first, and falls back to `session.id` (the [session convention](https://opentelemetry.io/docs/specs/semconv/general/session/)). As with your own session ID, one OTel trace becomes one conversation turn.
+
+        An explicit `galtea.session.custom_id` still takes priority over both when a span carries it. `gen_ai.conversation.id` wins over `session.id` when both are present.
+
+        [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) does not emit a standard conversation key on its spans by default. If your platform uses MLflow, set the `session.id` (or `galtea.session.custom_id`) span attribute yourself.
+      </Tab>
+      <Tab title="Managed platform (vendor-derived)">
+        Some platforms cannot attach `galtea.session.custom_id` to their spans. For these, Galtea derives the conversation key from a recognized vendor attribute, so you do not change the platform's instrumentation.
+
+        Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key, and splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Route to a product version">
+    Assembly requires the `galtea.version.id` **resource attribute**. It routes the spans to a [Version](/concepts/product/version) of your product and is validated against the organization of the API key you authenticate with. Without it, uncorrelated spans are rejected.
+
+    A resource attribute describes the whole telemetry source, not a single span. So you can set it once on your own OTel Collector, even when a managed platform emits the spans and you cannot edit them:
+
+    ```yaml
+    # Add this to the Collector config from the "Send OpenTelemetry Traces to Galtea" setup page.
+    # The otlp receiver, the batch processor, and the otlphttp/galtea exporter
+    # are defined there; here you only add the resource/galtea processor and
+    # reference it in the traces pipeline.
+    processors:
+      resource/galtea:
+        attributes:
+          - key: galtea.version.id
+            value: "<your-version-id>"
+            action: upsert
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [resource/galtea, batch]
+          exporters: [otlphttp/galtea]
+    ```
+  </Step>
+
+  <Step title="Send traffic and verify">
+    Once traffic flows, the assembled conversations appear as production sessions under the version you routed to, in the dashboard. Monitors evaluate them automatically.
+
+    Galtea never guesses where your data belongs. Uncorrelated spans missing a conversation key, a version route, or both are rejected.
+  </Step>
+</Steps>
+
+## What You Get
+
+- **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
+- **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When a turn contains several LLM calls, the first prompt becomes the turn input and the last completion becomes the turn output. See [How span content maps to Trace records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-trace-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
+- **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or traces. Later turns append to the same session.
+- **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
+
+<Note>
+  Two limits to plan for:
+
+  - **Finished sessions reject new turns.** A finished session still accepts late traces for its existing turns, but does not open new ones. To start new turns, begin a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow).
+  - **One payload can open at most 100 new conversations.** New sessions beyond that in the same OTLP payload are rejected (they appear in the export response's rejected-span count). Continuations of conversations that already exist do not count toward the limit. If you send a large backfill or a high-volume export, split it across smaller export batches. Self-hosted deployments can raise the limit with the `OTEL_MAX_NEW_CONVERSATIONS_PER_PAYLOAD` setting.
+</Note>
+
+## Recover Replies That Do Not Come from the LLM
+
+Some turns are answered without an LLM completion. A guardrail can replace the answer, a template can redirect the user, or a tool can return the final reply on its own. For these turns the user-visible answer lives on a non-LLM span. So by default the assembled turn output is empty, or it shows an internal label such as an intent-classifier tag, instead of the real reply.
+
+The `otelOutputSourceRule` config field fixes this. It names the exact span and field that carry the real reply, so the turn shows the true answer. Set it on a [Product](/concepts/product) or a [Version](/concepts/product/version). The Version value overrides the Product value. Leave it `null` (the default) to keep the rule off.
+
+The rule has four parts:
+
+- **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
+- **`attribute`** — the span attribute that holds the reply, stored as a JSON string.
+- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`.
+- **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the user's own message as the reply.
+
+Here is a complete rule:
+
+```json
+{
+  "spanName": "ExecuteActivity:save_reply",
+  "attribute": "app.arguments",
+  "path": "$[0].message.content",
+  "predicate": { "path": "$[0].message.role", "equals": "assistant" }
+}
+```
+
+Read it step by step. The assistant's reply is saved on the `ExecuteActivity:save_reply` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the reply text inside that array. The predicate keeps user messages out: the same span also carries the user's message with role `"user"`, so the predicate makes the rule fire only for role `"assistant"`.
+
+<Note>
+  This rule is a last resort. It fills only the turn output, and only when the turn has no LLM output. Galtea first tries the normal per-field sources (`galtea.trace.*`, then `gen_ai.*`, then recognized managed-platform span shapes). The rule applies only if none of those produced an output. Within one turn, the latest span with output by start time wins. So the rule recovers the reply when the reply-bearing span is emitted after the LLM or classifier span. This is the common classify-then-reply order.
+</Note>
+
+Set `otelOutputSourceRule` on a product or a version. In the Python SDK you can set it when you create a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products or on version updates. To set it on a product, or to change it on an existing version, use the API or the dashboard. The version value wins over the product value.
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Send OpenTelemetry Traces to Galtea" icon="tower-cell" href="/sdk/tutorials/send-opentelemetry-traces-to-galtea">
+    Endpoint, authentication, exporter and Collector setup, and the span-to-Trace mapping reference.
+  </Card>
+  <Card title="Monitor" icon="gauge-high" href="/concepts/product/monitor">
+    The always-on rule that evaluates your production sessions automatically.
+  </Card>
+  <Card title="Trace" icon="timeline" href="/concepts/product/version/session/trace">
+    What a Trace record is and which properties it holds.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
+    Collect traces with the Galtea SDK's `@trace` decorator.
+  </Card>
+</CardGroup>

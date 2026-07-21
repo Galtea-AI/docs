@@ -27,6 +27,7 @@ version_id = version.id
 _metric = galtea.metrics.get_by_name(name="Role Adherence")
 _spec = galtea.specifications.create(
     product_id=product_id,
+    name="Helpful financial information",
     description="The assistant provides helpful financial information.",
     type="POLICY",
     test_type="BEHAVIOR",

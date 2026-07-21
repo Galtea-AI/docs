@@ -73,6 +73,7 @@ if factual_accuracy is None:
 
 galtea.specifications.create(
     product_id=product_id,
+    name="Factually correct answers",
     description="The assistant provides factually correct answers to user questions.",
     type="CAPABILITY",
     metric_ids=[factual_accuracy.id],

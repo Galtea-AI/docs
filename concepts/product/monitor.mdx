@@ -15,7 +15,13 @@ A Monitor is an always-on evaluation rule for a product's production sessions. T
 
 Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with a set of metric families and records the result.
 
-<Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry).</Note>
+<Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Note>
+
+## Finding monitors in the dashboard
+
+In the dashboard, open a product and go to its **Monitors** tab. That tab lists every monitor for the product and is the home for all monitor management. It appears only in **Production** view mode, because monitors watch production sessions. Use the view-mode selector at the top of the product page to switch to Production if you do not see it.
+
+From the tab you can create a monitor, open one to see its results, and edit, pause, resume, or delete it. Each row shows the monitor's status, its recent score, its sampling rate, and its credit spend for the month.
 
 ## Metric families follow revisions automatically
 
@@ -32,9 +38,11 @@ family_key = metric.metric_group_id
 
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
 
-## Inactivity window
+## When a session gets scored
 
-A production session has no explicit "end" signal. `inactivity_window_minutes` sets how long the Monitor waits after a session's last activity before it treats the session as finished and eligible for scoring. It defaults to `5` minutes.
+A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
+
+This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
 
 ## Credit cap
 
@@ -91,10 +99,6 @@ The SDK lets you create, list, retrieve, update (including pause and resume), an
 <ResponseField name="monthly_credit_cap" type="int" optional>
   Maximum credits to spend per month. Must be positive when set. `None` means uncapped.
   The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
-</ResponseField>
-
-<ResponseField name="inactivity_window_minutes" type="int" default="5">
-  Minutes of session inactivity before a session is treated as finished and eligible for scoring. Defaults to `5`.
 </ResponseField>
 
 <ResponseField name="status" type="Enum">

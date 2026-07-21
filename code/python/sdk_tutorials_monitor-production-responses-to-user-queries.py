@@ -74,6 +74,7 @@ if answer_relevancy is None or role_adherence is None:
 
 production_spec = galtea.specifications.create(
     product_id=product_id,
+    name="Stays relevant and in role",
     description="The assistant gives relevant answers and stays within its defined role.",
     type="CAPABILITY",
     metric_ids=[answer_relevancy.id, role_adherence.id],
@@ -105,6 +106,76 @@ def handle_user_query_with_specifications(user_query: str, retrieval_context: st
 # Test the handler
 handle_user_query_with_specifications("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
 # @end single_turn_specification_ids
+
+
+# @start single_turn_custom_id
+# At the start of the conversation, create the session ONCE with YOUR own id.
+galtea.sessions.create(
+    custom_id="conversation-42",  # your own conversation id
+    version_id=VERSION_ID,
+    is_production=True,
+)
+
+
+# In your application's request handler...
+def handle_user_query_with_custom_id(conversation_id: str, user_query: str) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query)
+
+    # Log and evaluate in one call, using YOUR conversation id as the handle.
+    # Galtea finds the existing session by that id and appends the turn to it.
+    galtea.inference_results.create_and_evaluate(
+        session_custom_id=conversation_id,  # the id you created the session with
+        version_id=VERSION_ID,  # or product_id=product_id to find it under the product
+        input=user_query,
+        output=model_response,
+        metrics=[
+            {"name": "Role Adherence"},
+            {"name": "Answer Relevancy"},
+        ],
+    )
+
+    return model_response
+
+
+# Test the handler: both calls land in the same session
+handle_user_query_with_custom_id("conversation-42", "What are your business hours?")
+handle_user_query_with_custom_id("conversation-42", "Are you open on weekends?")
+# @end single_turn_custom_id
+
+
+# @start log_turns_custom_id
+# Create the session once, up front, with your own conversation id.
+galtea.sessions.create(
+    custom_id="conversation-1234",
+    version_id=VERSION_ID,
+    is_production=True,
+)
+
+
+def handle_conversation_turn(conversation_id: str, user_input: str) -> str:
+    # Replace this with your actual model call
+    model_output = f"This is a simulated response to '{user_input}'"
+
+    # Log each turn under your own conversation id. Galtea finds the existing
+    # session by that id and appends the turn to it.
+    galtea.inference_results.create(
+        session_custom_id=conversation_id,
+        version_id=VERSION_ID,  # or product_id=product_id
+        input=user_input,
+        output=model_output,
+    )
+    return model_output
+
+
+# This would happen dynamically in your application.
+for question in [
+    "What are some lower-risk investment strategies?",
+    "With age, should the investment strategy change?",
+    "Great, thanks!",
+]:
+    handle_conversation_turn("conversation-1234", question)
+# @end log_turns_custom_id
 
 
 METRICS_TO_EVALUATE = [

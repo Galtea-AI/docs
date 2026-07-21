@@ -19,7 +19,7 @@ The `update()` method allows you to modify an existing session after it has been
 </ResponseField>
 
 <ResponseField name="status" type="string" optional>
-  The status of the session. Valid values are `PENDING`, `COMPLETED`, `FAILED`.
+  The status of the session. Valid values are `PENDING`, `COMPLETED`, `FAILED`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 
 <ResponseField name="context" type="string" optional>

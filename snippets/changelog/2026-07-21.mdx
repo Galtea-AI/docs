@@ -1,0 +1,55 @@
+<Update label="2026-07-21" description="Automatic Session Closing, Retrieval Context from Traces, and More">
+
+## Sessions Close Themselves Automatically
+
+Production [sessions](/concepts/product/version/session) used to stay open forever unless your integration explicitly finished them. Now the product closes them for you.
+
+- **Configure it per product.** In the product's advanced settings you choose the scope (`NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL` — the default is `PRODUCTION`), the inactivity window in minutes (default 30), and what happens when an inference result arrives for an already-closed session: `REJECT` it with an error, or `IGNORE` it silently.
+- **[Monitors](/concepts/product/monitor) evaluate closed sessions only.** A monitor no longer guesses whether a conversation is over with its own settle window; it samples and evaluates sessions the product has already closed. Because of this, a product whose auto-close scope excludes production will not feed its monitors unless your integration finishes sessions explicitly — the dashboard warns you on the monitor pages when that is the case.
+
+## Retrieval Context Now Comes from Traces
+
+`retrieval_context` is now derived from `RETRIEVER` [trace](/concepts/product/version/session/trace) spans, the same way `tools_used` is derived from `TOOL` spans, instead of living only as a standalone field.
+
+- When you pass `retrieval_context` explicitly (SDK parameter, endpoint output mapping, or session turns), Galtea also records it as a `RETRIEVER` trace linked to the inference result.
+- The dashboard reads retrieval context from those traces everywhere it is displayed: the inference result details, the evaluations table and its CSV export, and the human-annotation dialog.
+- [Metrics](/concepts/metric) that need `retrieval_context` can now get it from your instrumented retriever spans directly — if your RAG pipeline emits `RETRIEVER` spans, there is nothing extra to send. See [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) for the span conventions.
+
+## Import Traces from More Frameworks
+
+Trace ingestion recognizes more of the ecosystem, so conversations assemble with real content instead of empty turns:
+
+- **MLflow Tracing.** OTLP spans exported by MLflow-instrumented products are now decoded natively (`mlflow.spanInputs`/`mlflow.spanOutputs`, model and token-usage metadata included).
+- **Standard OpenTelemetry session attributes.** Traces that follow the GenAI semantic conventions group into conversations by `gen_ai.conversation.id` or `session.id` out of the box — no Galtea-specific attributes needed.
+- **Langfuse imports work for any framework.** The importer no longer requires a LangChain-family signal: any Langfuse-shaped export with real conversation content imports, every observation type maps to its matching trace type (`retriever`, `tool`, `agent`, `chain`, and more), and outputs are stored verbatim. See the [Langfuse integration guide](/sdk/integrations/langfuse/integration-guide).
+- **Answers produced without an LLM are recovered.** When a turn is answered by a guardrail replacement, a templated redirect, or a tool-terminal reply, you can now teach assembly where that reply lives with a per-product (or per-version) output source rule in the advanced settings. Details in [Monitor Real User Traffic with OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+
+## Replay Evaluations After Revising a Test Case
+
+When you edit a [test case](/concepts/product/test/case)'s content, Galtea forks a new revision — and now offers to bring your evaluation history along. Right after the edit, a dialog lists every product that evaluated the test case family before, each with its evaluation count, and re-runs them against the new revision with fresh inferences. Deselect any product you want to leave out, or skip the dialog entirely.
+
+## Log Inference Results with Your Own Conversation ID
+
+You can now append inference results to an existing [session](/concepts/product/version/session) using your own conversation identifier instead of a Galtea session ID. Pass `session_custom_id` together with a `version_id` (or `product_id`) anchor to [`inference_results.create`](/sdk/api/inference-result/create), and Galtea finds the session by the custom ID you set when creating it. If no session matches, the call fails with a clear error — session creation stays where it belongs, in the [sessions API](/sdk/api/session/get-by-custom-id).
+
+## Specifications Get a Name
+
+[Specifications](/concepts/product/specification) now have a short, human-readable `name` alongside the long description, so lists and pickers are scannable at a glance. The field is editable across the dashboard, [API, SDK](/sdk/api/specification/create), and CLI; existing specifications were backfilled from their description.
+
+## Evaluator Model Retirement: Bedrock Claude Sonnet 4
+
+As announced in the deprecation notice, the grace window for **Claude Sonnet 4** (Bedrock) as an evaluator model has closed and the model is now retired, ahead of Bedrock's end-of-life for it. Metrics that used it were migrated during the grace period; Claude Sonnet 4.5 and 4.6 remain available.
+
+## Platform Improvements
+
+- **Monitors have their own tab:** The [monitor](/concepts/product/monitor) list moved from the collapsible card in Analytics to a **Monitors** tab in the Product Hub, between **Sessions** and **Evaluations** (Production view).
+- **Production mode sticks:** Clicking **Production** on a product with no production evaluations no longer reverts to **Development** a second later. Your explicit choice is remembered.
+- **Connection fields match the target:** Version forms only show the Initialization/Finalization connection fields when the Conversation Target is an HTTP endpoint; for Phone and WebRTC targets they are hidden, and stale selections are cleared when you switch.
+- **Copied products keep their files:** Copying a product into another organization re-homes its stored assets (including call recordings), so downloads no longer fail in the destination organization.
+- **One score, everywhere:** The Analytics insight for low specification scores now shows the same sample-weighted score as the Overview ring, instead of two different numbers for the same specification.
+- **Production session details filled in:** The Details tab of a production session (which has no test case) now shows the inference metrics and stopping reason instead of rendering mostly empty.
+- **Clearer skip reasons:** When an evaluation is skipped because a metric is missing parameters, the reason now lists every missing parameter, not just some of them.
+- **Dashboard form polish:** The caret no longer jumps to the end while typing in list fields; the role dropdown for a new user starts empty instead of silently pre-selecting **Member**; and the organization settings page was redesigned into clear General, Security, and SAML SSO cards with an instant-save MFA toggle.
+- **Deleted organization handling:** If your organization is removed while you are signed in, you are logged out instead of seeing broken pages.
+
+</Update>

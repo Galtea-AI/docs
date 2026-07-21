@@ -31,7 +31,7 @@ inference_result = galtea.inference_results.generate(
   Custom span name. Defaults to the function name.
 </ResponseField>
 <ResponseField name="type" type="string" optional>
-  TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details.
+  TraceType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Trace Types](/concepts/product/version/session/trace#trace-types) for details. An unrecognized value emits a `UserWarning` and is still sent as-is, so values added in newer API versions can be used without upgrading the SDK.
 </ResponseField>
 <ResponseField name="log_args" type="bool" optional>
   Whether to log function arguments as input data. Default: `True`.

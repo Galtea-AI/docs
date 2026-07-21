@@ -98,6 +98,7 @@
               "sdk/tutorials/writing-specifications",
               "sdk/tutorials/specification-driven-evaluations",
               "sdk/tutorials/simulating-conversations",
+              "sdk/tutorials/evaluating-conversations",
               "sdk/tutorials/create-test",
               "sdk/tutorials/run-test-based-evaluations",
               "sdk/tutorials/direct-inferences-and-evaluations-from-platform"
@@ -108,8 +109,8 @@
             "icon": "chart-line",
             "pages": [
               "sdk/tutorials/monitor-production-responses-to-user-queries",
-              "sdk/tutorials/monitor-production-with-opentelemetry",
-              "sdk/tutorials/evaluating-conversations"
+              "sdk/tutorials/send-opentelemetry-traces-to-galtea",
+              "sdk/tutorials/monitor-real-user-traffic-with-opentelemetry"
             ]
           },
           {
@@ -670,6 +671,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/sdk/tutorials/monitor-production-with-opentelemetry",
+      "destination": "/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry"
+    },
     {
       "source": "/concepts/product#how-everything-connects",
       "destination": "/concepts/overview"

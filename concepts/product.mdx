@@ -95,6 +95,29 @@ The SDK allows you to list existing products, retrieve specific products by thei
   <Info>Legal definitions available in the [EU AI Act](https://artificialintelligenceact.eu/article/3/).</Info>
 </ResponseField>
 
+<ResponseField name="Auto Close Scope" type="Enum" optional>
+  Which sessions Galtea closes automatically after they stay inactive too long. Set it through the API; the SDK only reads it.
+  Possible values:
+  - `None`: never close sessions automatically.
+  - `Development`: only close development (test) sessions.
+  - `Production`: only close production sessions.
+  - `All`: close both development and production sessions.
+  <Info>The API default is `Production`.</Info>
+</ResponseField>
+
+<ResponseField name="Auto Close Inactivity Minutes" type="Number" optional>
+  How many minutes a session can stay inactive before Galtea closes it automatically.
+  <Info>The API default is `30`.</Info>
+</ResponseField>
+
+<ResponseField name="Closed Session Inference Creation Policy" type="Enum" optional>
+  What happens when you try to add an inference to a session that is already closed.
+  Possible values:
+  - `Reject`: refuse the inference and return an error.
+  - `Ignore`: silently drop the inference.
+  <Info>The API default is `Ignore`.</Info>
+</ResponseField>
+
 ## How Everything Connects
 
 The cross-entity diagram now lives on the [Concepts overview](/concepts/overview) — see it there along with reading guidance and per-entity links.

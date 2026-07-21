@@ -31,12 +31,18 @@ endpoint_connections = galtea.endpoint_connections.list(
 </ResponseField>
 <ResponseField name="types" type="list[string]" optional>
   Filter by endpoint connection types. Valid values: `INITIALIZATION`, `CONVERSATION`, `FINALIZATION`.
+  Other string values are sent to the API unchanged, so values added in newer API versions can be
+  used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="http_methods" type="list[string]" optional>
-  Filter by HTTP methods. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+  Filter by HTTP methods. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values
+  are sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
 </ResponseField>
 <ResponseField name="auth_types" type="list[string]" optional>
-  Filter by authentication types. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`.
+  Filter by authentication types. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Other string
+  values are sent to the API unchanged, so values added in newer API versions can be used; the API
+  rejects invalid ones.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" optional>
   Filter connections created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.

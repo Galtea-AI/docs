@@ -19,7 +19,7 @@ A trace in Galtea represents a single operation or function call that occurs dur
 
 Traces are **always linked to an [inference result](/concepts/product/version/session/inference-result)**, enabling you to understand not just *what* your agent responded, but *how* it arrived at that response. Every trace must belong to a specific inference result.
 
-Traces can also be ingested from OpenTelemetry spans; see [Monitor Production via OpenTelemetry](/sdk/tutorials/monitor-production-with-opentelemetry).
+Traces can also be ingested from OpenTelemetry spans; see [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea).
 
 ## Why Use Traces?
 
@@ -74,6 +74,14 @@ Traces are classified by type to help you understand the nature of each operatio
 | **EVALUATOR** | Functions that assess LLM outputs. | Operations that evaluate quality, safety, or correctness of generated content. |
 | **EMBEDDING** | Embedding model calls. | Vector embedding operations for semantic search or similarity. |
 | **GUARDRAIL** | Components that protect against malicious content. | Safety checks that filter or validate inputs/outputs. |
+
+### Retrieval context in RETRIEVER traces
+
+If your product uses RAG (retrieval-augmented generation, where the model reads retrieved documents before answering), the convention for recording what was retrieved is a **RETRIEVER** trace:
+
+- Put the retrieved data in the trace's **output**. This is the convention Galtea will use to read retrieval context from traces. That reader arrives in a later release. Today, retrieval context comes from the `retrieval_context` field on the inference result.
+- The output has **no required shape**. It is stored as-is, so a plain string, a list of chunks, or any other structure all work.
+- One RETRIEVER trace per retrieval step is fine. If an inference result has several RETRIEVER traces, Galtea will join their outputs in chronological order once the reader ships.
 
 ## Best Practices
 

@@ -21,11 +21,14 @@ specifications = galtea.specifications.list(
 </ResponseField>
 <ResponseField name="type" type="string | SpecificationType" optional>
   Filter by specification type.
-  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="test_type" type="string | TestType" optional>
   Filter by test type.
   Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  Filter by specification name (partial, case-insensitive match).
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
   Filter specifications created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.

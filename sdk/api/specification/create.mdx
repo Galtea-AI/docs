@@ -13,6 +13,7 @@ Returns a [Specification](/concepts/product/specification) object for the given 
 # POLICY specification — test_type and test_variant are required for ACCURACY and SECURITY
 specification = galtea.specifications.create(
     product_id=product_id,
+    name="No political opinions",
     description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
     type="POLICY",
     test_type="SECURITY",
@@ -22,6 +23,7 @@ specification = galtea.specifications.create(
 # CAPABILITY specification — test_type is not needed
 capability_spec = galtea.specifications.create(
     product_id=product_id,
+    name="Show account balance",
     description="The assistant accurately retrieves and displays the user's current account balance when asked.",
     type="CAPABILITY",
 )
@@ -31,12 +33,15 @@ capability_spec = galtea.specifications.create(
 <ResponseField name="product_id" type="string" required>
   The ID of the product this specification belongs to.
 </ResponseField>
+<ResponseField name="name" type="string" required>
+  A short, human-readable name for the specification (a few words). Shown wherever the specification is listed or referenced.
+</ResponseField>
 <ResponseField name="description" type="string" required>
   A description of the testable behavioral expectation.
 </ResponseField>
 <ResponseField name="type" type="string | SpecificationType" required>
   The type of specification.
-  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="test_type" type="string | TestType" optional>
   The type of test for this specification. Required for `POLICY` specifications, not applicable for `CAPABILITY` or `INABILITY`.

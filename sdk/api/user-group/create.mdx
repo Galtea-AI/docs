@@ -21,7 +21,7 @@ user_group = galtea.user_groups.create(
   Name of the user group.
 </ResponseField>
 <ResponseField name="type" type="string" default="EVALUATOR">
-  Type of user group. Defaults to `"EVALUATOR"`.
+  Type of user group. Defaults to `"EVALUATOR"`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="description" type="string" optional>
   Description of the user group.

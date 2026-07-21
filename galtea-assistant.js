@@ -19,8 +19,9 @@
 (function () {
   "use strict";
 
-  // Replaced at build time by docs/scripts/run.py from the FRONTEND_URL env var
-  // (defaults to https://platform.galtea.ai when the env var is unset).
+  // Replaced at build time by docs/scripts/run.py from the DASHBOARD_URL env var
+  // (deprecated fallback: FRONTEND_URL; defaults to https://platform.galtea.ai
+  // when both are unset).
   const DASHBOARD_URL = "https://platform.galtea.ai";
   const ASSISTANT_PATH = "/embed/assistant?embed=true";
 

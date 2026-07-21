@@ -83,6 +83,8 @@ metric = galtea.metrics.create(
   - `"partial_prompt"` — [AI Evaluation](/concepts/metric#creating-custom-metrics-via-ai-evaluation): You provide the core evaluation criteria and rubric. Galtea dynamically constructs the final prompt by prepending selected evaluation parameters to your criteria.
   - `"human_evaluation"` — **Human Evaluation**: Human annotators manually review and score evaluations using the annotation criteria you define. Evaluations enter a `PENDING_HUMAN` status and are completed when an annotator submits a score.
   - `"self_hosted"` — [Self-Hosted](/concepts/metric#self-hosted): For deterministic metrics scored locally using the SDK's `CustomScoreEvaluationMetric`. Your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform.
+
+  Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="evaluation_params" type="list[string]" optional>
   Evaluation parameters to include in the judge prompt. These parameters are prepended to the judge prompt to construct the final evaluation prompt.

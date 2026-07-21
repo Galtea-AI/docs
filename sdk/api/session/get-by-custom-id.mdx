@@ -9,10 +9,18 @@ Returns a [Session](/concepts/product/version/session) object.
 
 ## Example
 ```python
-session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id)
+session_by_custom = galtea.sessions.get_by_custom_id(custom_id=custom_session_id, version_id=version_id)
 ```
 
 ## Parameters
 <ResponseField name="custom_id" type="string" required>
   The Custom ID associated with the session to retrieve.
+
+  <Note>A custom ID is unique only per version, so a `version_id` or `product_id` anchor is required to resolve it unambiguously.</Note>
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  The version to look the session up on. Provide this or `product_id` (at least one is required). If both are given, `version_id` wins and `product_id` is ignored.
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The product to search across (any of its versions) when no `version_id` is given. If more than one version has a session with this custom ID, the most recently created one is returned.
 </ResponseField>

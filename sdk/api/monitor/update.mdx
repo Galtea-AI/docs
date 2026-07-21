@@ -37,11 +37,8 @@ Pause and resume are just a `status` update. Users may set only `ACTIVE` (resume
 <ResponseField name="monthly_credit_cap" type="int" optional>
   New monthly credit cap. Must be positive when set. Pass `None` for no cap.
 </ResponseField>
-<ResponseField name="inactivity_window_minutes" type="int" optional>
-  New inactivity window in minutes.
-</ResponseField>
 <ResponseField name="status" type="string | MonitorStatus" optional>
-  New status. Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause).
+  New status. Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 
 <Note>

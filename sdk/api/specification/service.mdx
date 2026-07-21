@@ -25,6 +25,7 @@ Create a specification:
 # POLICY specification — test_type and test_variant are required for ACCURACY and SECURITY
 specification = galtea.specifications.create(
     product_id=product_id,
+    name="No political opinions",
     description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
     type="POLICY",
     test_type="SECURITY",
@@ -34,6 +35,7 @@ specification = galtea.specifications.create(
 # CAPABILITY specification — test_type is not needed
 capability_spec = galtea.specifications.create(
     product_id=product_id,
+    name="Show account balance",
     description="The assistant accurately retrieves and displays the user's current account balance when asked.",
     type="CAPABILITY",
 )
