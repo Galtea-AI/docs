@@ -74,7 +74,7 @@ The `generate()` method automatically captures and saves:
 |------|--------|-------------|
 | **Input** | `input` parameter | The user's input (string or structured dict) |
 | **Output** | `AgentResponse.content` | The agent's response |
-| **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG) |
+| **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG). Stored as a `RETRIEVER` trace, not a readable field on the returned inference result. |
 | **Latency** | Measured | End-to-end execution time in ms |
 | **Usage Info** | `AgentResponse.usage_info` | Token counts (if provided) |
 | **Cost Info** | `AgentResponse.cost_info` | Cost data (if provided) |

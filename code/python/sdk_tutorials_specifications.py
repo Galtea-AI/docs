@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from _test_helpers import create_test_product
@@ -99,6 +100,39 @@ test = galtea.tests.create(
 
 print(f"Test '{test.name}' created with type auto-derived from specification")
 # @end create_test_from_spec
+
+
+# Wait for the spec's test cases to be generated before running
+for _ in range(120):
+    if galtea.tests.get(test_id=test.id).uri and len(galtea.test_cases.list(test_id=test.id)) > 0:
+        break
+    time.sleep(1)
+else:
+    raise ValueError("Test cases were not generated in time. Test id: " + test.id)
+
+
+# @start inspect_spec_tests
+# Inspect which tests a specification resolved to
+tests = galtea.specifications.get_tests(specification_id=policy_security.id)
+print(f"Specification '{policy_security.name}' has {len(tests)} linked test(s)")
+# @end inspect_spec_tests
+
+
+# @start run_from_specs
+def my_agent(user_message: str) -> str:
+    # Replace with your actual agent logic
+    return "I can share general information, but I can't give personalized investment advice."
+
+
+# One call resolves each spec's tests and linked metrics, runs your agent on every
+# test case, and submits the results for scoring — no manual per-test-case loop.
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+    specification_ids=[policy_security.id],
+)
+print(f"Evaluated {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
+# @end run_from_specs
 
 
 # Cleanup

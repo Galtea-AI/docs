@@ -37,7 +37,7 @@ print(f"Remaining products after cleanup: {len(products)}")
 # Register a product for this demo
 _created_product_id = create_test_product(
     galtea,
-    name="Financial Assistant " + run_identifier,
+    name="Financial Assistant",
     description="A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
     security_boundaries="* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
     capabilities="* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
@@ -48,38 +48,25 @@ versions = galtea.versions.list(product_id=_created_product_id)
 if versions is None or len(versions) == 0:
     galtea.versions.create(
         product_id=_created_product_id,
-        name="quickstart-version-" + run_identifier,
+        name="v1",
         description="Created via the Galtea SDK quickstart example",
     )
 
-# @start version_your_product
-products = galtea.products.list()
-for p in products:
-    print(p.id, p.name)
+# @start find_ids
+# Look your product and version up by name — no need to copy IDs from the dashboard.
+product = galtea.products.get_by_name(name="Financial Assistant")
+version = galtea.versions.get_by_name(product_id=product.id, version_name="v1")
 
-versions = galtea.versions.list(product_id=products[0].id)
-for v in versions:
-    print(v.id, v.name)
-# @end version_your_product
-
-# @start set_ids
-product_id = "your_product_id"
-version_id = "your_version_id"
-# @end set_ids
-
-product_id = _created_product_id
-if product_id is None:
-    raise ValueError("No product ID found")
-version_id = galtea.versions.list(product_id=_created_product_id)[0].id
-if version_id is None:
-    raise ValueError("No version ID found")
+product_id = product.id
+version_id = version.id
+# @end find_ids
 
 # @start create_accuracy_test
 test = galtea.tests.create(
     name="rag-accuracy-test",
     type="ACCURACY",
     product_id=product_id,
-    ground_truth_file_path="path/to/knowledge.md",
+    ground_truth_file_path="knowledge.md",
     language="english",
     max_test_cases=20,
 )
@@ -229,11 +216,12 @@ def my_agent(input_data: AgentInput) -> AgentResponse:
 # @end define_agent_structured_function
 
 
-# Setup: create a specification and link a metric so evaluations.run() can discover it
+# Setup: create a specification, then link a metric AND a test to it so
+# evaluations.run() has something to discover and evaluate.
 _spec = galtea.specifications.create(
     product_id=product_id,
-    name="Accurate financial information",
-    description="The assistant must provide factually accurate financial information.",
+    name="Stays in its financial-assistant role",
+    description="The assistant must stay in its role and follow its guidelines when answering.",
     type="POLICY",
     test_type="BEHAVIOR",
 )
@@ -241,131 +229,44 @@ if _spec is None:
     raise ValueError("Failed to create specification")
 galtea.specifications.link_metrics(
     specification_id=_spec.id,
-    metric_ids=[accuracy_metric.id],
+    metric_ids=[behavior_metric.id],
+)
+galtea.specifications.link_tests(
+    specification_id=_spec.id,
+    test_ids=[behavior_test.id],
 )
 
 # @start run_evaluation_run
+# One call resolves your specifications, their tests and metrics, runs your agent
+# on every test case, and submits the results for scoring.
 result = galtea.evaluations.run(
     version_id=version_id,
     agent=my_agent,
 )
-
-print(f"Evaluated {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
-print(f"View results at: https://platform.galtea.ai/product/{product_id}")
+print(f"Launched {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
 # @end run_evaluation_run
 
-# For demo purposes, use the structured function
-MyAgentInstance = my_agent
-
-# Ensure it works with all test types, then do the actual demo code
-accuracy_test_case = galtea.test_cases.list(test_id=accuracy_test.id)[0]
-security_test_case = galtea.test_cases.list(test_id=security_test.id)[0]
-behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id)[0]
-if accuracy_test_case is None or security_test_case is None or behavior_test_case is None:
-    raise ValueError("No test cases found for one or more tests")
-
-accuracy_session = galtea.sessions.create(version_id=version_id, test_case_id=accuracy_test_case.id)
-security_session = galtea.sessions.create(version_id=version_id, test_case_id=security_test_case.id)
-behavior_session = galtea.sessions.create(version_id=version_id, test_case_id=behavior_test_case.id)
-if accuracy_session is None or security_session is None or behavior_session is None:
-    raise ValueError("Failed to create one or more sessions")
-# galtea.simulator.simulate(
-#     session_id=accuracy_session.id,
-#     agent=my_agent,
-#     max_turns=accuracy_test_case.max_iterations or 10,
-# )
-accuracy_inference_result = galtea.inference_results.generate(
-    session=accuracy_session,
-    agent=my_agent,
-    input=accuracy_test_case.input,
-)
-# galtea.simulator.simulate(
-#     session_id=security_session.id,
-#     agent=my_agent,
-#     max_turns=security_test_case.max_iterations or 10,
-# )
-security_inference_result = galtea.inference_results.generate(
-    session=security_session,
-    agent=my_agent,
-    input=security_test_case.input,
-)
-conversational_simulation_result = galtea.simulator.simulate(
-    session_id=behavior_session.id,
-    agent=my_agent,
-    max_turns=behavior_test_case.max_iterations or 10,
-)
-if accuracy_inference_result is None or security_inference_result is None or conversational_simulation_result is None:
-    raise ValueError("Failed to generate one or more inference results")
-galtea.evaluations.create(
-    session_id=accuracy_session.id,
-    metrics=[{"name": accuracy_metric.name}],
-)
-galtea.evaluations.create(
-    session_id=security_session.id,
-    metrics=[{"name": security_metric.name}],
-)
-galtea.evaluations.create(
-    session_id=behavior_session.id,
-    metrics=[{"name": behavior_metric.name}],
-)
-
-test_cases = accuracy_test_cases
-metric = accuracy_metric
-# @start run_evaluation
-for test_case in test_cases:
-    # Create a session linked to the test case and version
-    session = galtea.sessions.create(
-        version_id=version_id,
-        test_case_id=test_case.id,
-    )
-
-    # Run a synthetic user conversation against your agent
-    inference_result = galtea.inference_results.generate(
-        session=session,
-        agent=my_agent,
-        input=test_case.input,
-    )
-
-    # Evaluate the full conversation (session)
-    galtea.evaluations.create(
-        session_id=session.id,
-        metrics=[{"name": metric.name}],
-    )
-
-print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-
-# @end run_evaluation
-
-# Only run the first behavior test case
-test_cases = behavior_test_cases[:1]
-metric = behavior_metric
-# @start run_evaluation_conversational
-for test_case in test_cases:
-    # Create a session linked to the test case and version
-    session = galtea.sessions.create(
-        version_id=version_id,
-        test_case_id=test_case.id,
-    )
-
-    # Run a synthetic user conversation against your agent
-    galtea.simulator.simulate(
-        session_id=session.id,
-        agent=my_agent,
-        max_turns=test_case.max_iterations or 10,
-    )
-
-    # Evaluate the full conversation (session)
-    galtea.evaluations.create(
-        session_id=session.id,
-        metrics=[{"name": metric.name}],
-    )
-
-print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-
-# @end run_evaluation_conversational
-
 # @start see_results
-print(f"View results at: https://platform.galtea.ai/product/{product_id}")
+# Block until every evaluation leaves PENDING (defaults: up to 300s, polling every 5s).
+completed = galtea.evaluations.wait_for(
+    evaluation_ids=[e.id for e in result["evaluations"]],
+)
+
+# A readable pass/fail summary. Each metric defines its own passing threshold;
+# 0.5 is used here as a simple example — adjust it to your metrics.
+pass_threshold = 0.5
+scored = [e for e in completed if e.score is not None]
+passed = [e for e in scored if e.score >= pass_threshold]
+print(f"{len(passed)}/{len(scored)} evaluations scored >= {pass_threshold}")
+
+# Triage: list sessions whose agent run failed and produced no output to score.
+failed_sessions = galtea.sessions.list(version_id=version_id, status="FAILED")
+if failed_sessions:
+    print(f"{len(failed_sessions)} sessions failed to run — inspect them:")
+    for session in failed_sessions:
+        print(f"  session {session.id}")
+
+print(f"View full results at: https://platform.galtea.ai/product/{product_id}")
 # @end see_results
 
 # === Cleanup: delete the product created for this demo ===

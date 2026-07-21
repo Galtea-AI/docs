@@ -79,9 +79,9 @@ Traces are classified by type to help you understand the nature of each operatio
 
 If your product uses RAG (retrieval-augmented generation, where the model reads retrieved documents before answering), the convention for recording what was retrieved is a **RETRIEVER** trace:
 
-- Put the retrieved data in the trace's **output**. This is the convention Galtea will use to read retrieval context from traces. That reader arrives in a later release. Today, retrieval context comes from the `retrieval_context` field on the inference result.
+- Put the retrieved data in the trace's **output**. This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` trace spans. It is no longer a stored field on the inference result.
 - The output has **no required shape**. It is stored as-is, so a plain string, a list of chunks, or any other structure all work.
-- One RETRIEVER trace per retrieval step is fine. If an inference result has several RETRIEVER traces, Galtea will join their outputs in chronological order once the reader ships.
+- One RETRIEVER trace per retrieval step is fine. If an inference result has several RETRIEVER traces, Galtea joins their outputs in chronological order (by start time).
 
 ## Best Practices
 

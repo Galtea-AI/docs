@@ -31,9 +31,16 @@ You can create inference results from the [Galtea dashboard](https://platform.ga
   The generated output or response for the inference result. For most runs this is a plain string. For phone (voice) runs, when the agent's audio was captured, this is a content-parts envelope `{"assistant_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `assistant_message` field is the canonical scored scalar. Access the envelope via the SDK's `.actual_output_data` field and the scored transcript via `.actual_output`.
 </ResponseField>
 
-<ResponseField name="Retrieval Context" type="string" optional>
-  The context retrieved by a RAG system, if applicable.
-</ResponseField>
+<Note>
+  Retrieval context is not a stored field on the inference result. It is derived from the inference
+  result's [`RETRIEVER` trace spans](/concepts/product/version/session/trace#retrieval-context-in-retriever-traces).
+  You can still supply `retrieval_context` when logging (on create, update, or an agent response); Galtea
+  records it as a `RETRIEVER` trace.
+
+  If your agent already emits traces, we recommend sending `RETRIEVER` spans directly instead. This keeps
+  one source of truth and lets you capture several retrieval steps per turn, which a single
+  `retrieval_context` value cannot.
+</Note>
 
 <ResponseField name="Latency" type="float" optional>
   The latency in milliseconds for the model's response.

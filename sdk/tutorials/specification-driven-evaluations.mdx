@@ -160,6 +160,34 @@ test = galtea.tests.create(
 print(f"Test '{test.name}' created with type auto-derived from specification")
 ```
 
+## Step 4: Run the Evaluation
+
+With specifications, their metrics, and their tests in place, `galtea.evaluations.run()` runs everything in one call. Pass your `agent` and it resolves each specification's tests and metrics, runs the agent on every test case, and submits the results for scoring — no manual per-test-case loop.
+
+```python
+def my_agent(user_message: str) -> str:
+    # Replace with your actual agent logic
+    return "I can share general information, but I can't give personalized investment advice."
+
+
+# One call resolves each spec's tests and linked metrics, runs your agent on every
+# test case, and submits the results for scoring — no manual per-test-case loop.
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+    specification_ids=[policy_security.id],
+)
+print(f"Evaluated {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
+```
+
+To see which tests a specification resolved to, use `specifications.get_tests()`:
+
+```python
+# Inspect which tests a specification resolved to
+tests = galtea.specifications.get_tests(specification_id=policy_security.id)
+print(f"Specification '{policy_security.name}' has {len(tests)} linked test(s)")
+```
+
 ## Next Steps
 
 <CardGroup cols={2}>

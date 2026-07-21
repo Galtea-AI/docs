@@ -100,23 +100,15 @@ To find IDs in the dashboard, open your product and click the **3-dot menu** on 
     src="/videos/copy-id-from-dashboard.mp4"
   ></video>
 
-Alternatively, list them via the SDK:
+Or resolve your product and version by name in the SDK — no IDs to copy:
 
 ```python
-products = galtea.products.list()
-for p in products:
-    print(p.id, p.name)
+# Look your product and version up by name — no need to copy IDs from the dashboard.
+product = galtea.products.get_by_name(name="Financial Assistant")
+version = galtea.versions.get_by_name(product_id=product.id, version_name="v1")
 
-versions = galtea.versions.list(product_id=products[0].id)
-for v in versions:
-    print(v.id, v.name)
-```
-
-Then set them once here:
-
-```python
-product_id = "your_product_id"
-version_id = "your_version_id"
+product_id = product.id
+version_id = version.id
 ```
 
 ## 4. Create Your Tests
@@ -150,7 +142,7 @@ test = galtea.tests.create(
     name="rag-accuracy-test",
     type="ACCURACY",
     product_id=product_id,
-    ground_truth_file_path="path/to/knowledge.md",
+    ground_truth_file_path="knowledge.md",
     language="english",
     max_test_cases=20,
 )
@@ -247,98 +239,54 @@ metric = galtea.metrics.get_by_name(name="Role Adherence")
 
 ## 6. Run the Evaluation
 
-Now connect Galtea to your product. You define an **agent function** — a wrapper that takes a test case input, calls your AI system, and returns its output. The SDK then loops through test cases, calls your agent, and scores the results via [evaluations](/concepts/product/version/session/evaluation).
+Now connect Galtea to your product. You define an **agent function** — a wrapper that takes a test case input, calls your AI system, and returns its output.
 
 The SDK supports three agent function signatures — pick the one that matches how much context your agent needs:
 
 <AgentCallables />
 
-<Tabs>
-  <Tab title="RAG">
-  ```python
-  for test_case in test_cases:
-      # Create a session linked to the test case and version
-      session = galtea.sessions.create(
-          version_id=version_id,
-          test_case_id=test_case.id,
-      )
+`galtea.evaluations.run()` does the rest in one call: it finds the [specifications](/concepts/product/specification) linked to your version, resolves their tests and metrics, runs your agent on every test case, and submits the results for [scoring](/concepts/product/version/session/evaluation).
 
-      # Run a synthetic user conversation against your agent
-      inference_result = galtea.inference_results.generate(
-          session=session,
-          agent=my_agent,
-          input=test_case.input,
-      )
-
-      # Evaluate the full conversation (session)
-      galtea.evaluations.create(
-          session_id=session.id,
-          metrics=[{"name": metric.name}],
-      )
-
-  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-  ```
-
-  </Tab>
-
-  <Tab title="Security">
-  ```python
-  for test_case in test_cases:
-      # Create a session linked to the test case and version
-      session = galtea.sessions.create(
-          version_id=version_id,
-          test_case_id=test_case.id,
-      )
-
-      # Run a synthetic user conversation against your agent
-      inference_result = galtea.inference_results.generate(
-          session=session,
-          agent=my_agent,
-          input=test_case.input,
-      )
-
-      # Evaluate the full conversation (session)
-      galtea.evaluations.create(
-          session_id=session.id,
-          metrics=[{"name": metric.name}],
-      )
-
-  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-  ```
-  </Tab>
-
-  <Tab title="Conversational">
-  ```python
-  for test_case in test_cases:
-      # Create a session linked to the test case and version
-      session = galtea.sessions.create(
-          version_id=version_id,
-          test_case_id=test_case.id,
-      )
-
-      # Run a synthetic user conversation against your agent
-      galtea.simulator.simulate(
-          session_id=session.id,
-          agent=my_agent,
-          max_turns=test_case.max_iterations or 10,
-      )
-
-      # Evaluate the full conversation (session)
-      galtea.evaluations.create(
-          session_id=session.id,
-          metrics=[{"name": metric.name}],
-      )
-
-  print(f"Submitted evaluations for version {version_id} using test '{test.name}'.")
-  ```
-  </Tab>
-</Tabs>
+```python
+# One call resolves your specifications, their tests and metrics, runs your agent
+# on every test case, and submits the results for scoring.
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+)
+print(f"Launched {result['testCaseCount']} test cases across {len(result['specifications'])} specifications")
+```
 
 <Note>
-  If you already computed a score, you can upload it directly: `{"name": "my-metric", "score": 0.85}`.
+  Prefer to drive each test case yourself? The [Run Test-Based Evaluations](/sdk/tutorials/run-test-based-evaluations) tutorial shows the manual per-test-case loop for full control.
 </Note>
 
 ## 7. See Your Results
+
+After launching, block until scoring finishes and read a summary straight from the SDK — a pass/fail count, plus any sessions that failed to run so you can triage them:
+
+```python
+# Block until every evaluation leaves PENDING (defaults: up to 300s, polling every 5s).
+completed = galtea.evaluations.wait_for(
+    evaluation_ids=[e.id for e in result["evaluations"]],
+)
+
+# A readable pass/fail summary. Each metric defines its own passing threshold;
+# 0.5 is used here as a simple example — adjust it to your metrics.
+pass_threshold = 0.5
+scored = [e for e in completed if e.score is not None]
+passed = [e for e in scored if e.score >= pass_threshold]
+print(f"{len(passed)}/{len(scored)} evaluations scored >= {pass_threshold}")
+
+# Triage: list sessions whose agent run failed and produced no output to score.
+failed_sessions = galtea.sessions.list(version_id=version_id, status="FAILED")
+if failed_sessions:
+    print(f"{len(failed_sessions)} sessions failed to run — inspect them:")
+    for session in failed_sessions:
+        print(f"  session {session.id}")
+
+print(f"View full results at: https://platform.galtea.ai/product/{product_id}")
+```
 
 {/* <!-- VIDEO PLACEHOLDER: Analytics results review walkthrough (60-90s)
 <video
@@ -348,13 +296,9 @@ The SDK supports three agent function signatures — pick the one that matches h
 ></video>
 --> */}
 
-Once your evaluations are submitted, open your product in the [Galtea platform](https://platform.galtea.ai/) and head to **Analytics**. Start with the aggregate scores to get a quick baseline, then slice by **version**, **test**, and **metric** to see where performance shifts.
+For the full picture, open your product in the [Galtea platform](https://platform.galtea.ai/) and head to **Analytics**. Start with the aggregate scores to get a quick baseline, then slice by **version**, **test**, and **metric** to see where performance shifts.
 
 The most useful part is drilling into individual test cases: you can inspect the exact prompt/output pair (or the full conversation for scenarios) and understand which specific inputs move the score up or down. This makes it easier to identify failure patterns, validate fixes in new versions, and iterate with confidence as you move toward production.
-
-```python
-print(f"View results at: https://platform.galtea.ai/product/{product_id}")
-```
 
 ## Next Steps
 
