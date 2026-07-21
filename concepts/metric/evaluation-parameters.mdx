@@ -48,7 +48,7 @@ When creating or configuring a metric, you select which parameters are relevant 
     </tr>
     <tr>
       <td>**retrieval_context**</td>
-      <td>The context retrieved by your RAG system before sending the user query to your LLM.</td>
+      <td>The context retrieved by your RAG system before sending the user query to your LLM. Derived from your `RETRIEVER` trace spans; you can also supply it directly and it is stored as a `RETRIEVER` trace, not a directly-readable field.</td>
       <td>Accuracy, Security & Safety, and Behavior</td>
     </tr>
     <tr>
@@ -129,10 +129,8 @@ Missing from product settings:
 Missing from test case:
   • expected_output - Provide an "Expected Output" value on your test cases.
 
-Missing from endpoint connection's output mapping:
-  • retrieval_context - Add a "retrieval_context" key to your endpoint connection's output mapping so this field is extracted from your API response.
-
 Missing trace data:
+  • retrieval_context - "retrieval_context" is derived from RETRIEVER trace spans. Configure tracing so your product emits retrieval steps — see the tracing setup docs.
   • traces - This metric needs tracing data. Configure your product to send traces — see the tracing setup docs.
 
 Learn more: https://docs.galtea.ai/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations
@@ -158,11 +156,11 @@ Each section points to a different place to look:
     </tr>
     <tr>
       <td>**Missing from endpoint connection's output mapping**</td>
-      <td>Edit the endpoint connection and add the missing key to the output mapping. `actual_output` is extracted from the `output` key; `retrieval_context` from a `retrieval_context` key. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration) for the JSONPath syntax used in mapping values.</td>
+      <td>Edit the endpoint connection and add the missing key to the output mapping. `actual_output` is extracted from the `output` key. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration) for the JSONPath syntax used in mapping values.</td>
     </tr>
     <tr>
       <td>**Missing trace data**</td>
-      <td>The metric needs `traces` or `tools_used`. Configure your product to send traces — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Trace concept page](/concepts/product/version/session/trace) for what gets captured. `tools_used` is automatically extracted from your trace data (specifically from trace entries of type `TOOL`); you do not provide it directly.</td>
+      <td>The metric needs trace-derived data (`traces`, `tools_used`, or `retrieval_context`). Configure your product to send traces — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Trace concept page](/concepts/product/version/session/trace) for what gets captured. `tools_used` (from `TOOL` spans) and `retrieval_context` (from `RETRIEVER` spans) are automatically extracted from your trace data; you do not provide them directly.</td>
     </tr>
     <tr>
       <td>**Missing inference data**</td>
