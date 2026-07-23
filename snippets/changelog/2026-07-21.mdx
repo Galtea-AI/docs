@@ -24,6 +24,10 @@ Trace ingestion recognizes more of the ecosystem, so conversations assemble with
 - **Langfuse imports work for any framework.** The importer no longer requires a LangChain-family signal: any Langfuse-shaped export with real conversation content imports, every observation type maps to its matching trace type (`retriever`, `tool`, `agent`, `chain`, and more), and outputs are stored verbatim. See the [Langfuse integration guide](/sdk/integrations/langfuse/integration-guide).
 - **Answers produced without an LLM are recovered.** When a turn is answered by a guardrail replacement, a templated redirect, or a tool-terminal reply, you can now teach assembly where that reply lives with a per-product (or per-version) output source rule in the advanced settings. Details in [Monitor Real User Traffic with OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 
+## Evaluation Scores Over Time on Product Analytics
+
+The product [analytics](/concepts/product/analytics) page now shows a time-series chart of evaluation scores, bucketed per day. Switch between a **by metric** view (one line per metric family) and a **by specification** view (one line per [specification](/concepts/product/specification), derived from the metrics linked to it). The chart follows the same filters as the rest of the page — version, test, metric, language, time frame, and the development/production toggle — and aggregates every matching evaluation, including manually-triggered ones.
+
 ## Replay Evaluations After Revising a Test Case
 
 When you edit a [test case](/concepts/product/test/case)'s content, Galtea forks a new revision — and now offers to bring your evaluation history along. Right after the edit, a dialog lists every product that evaluated the test case family before, each with its evaluation count, and re-runs them against the new revision with fresh inferences. Deselect any product you want to leave out, or skip the dialog entirely.

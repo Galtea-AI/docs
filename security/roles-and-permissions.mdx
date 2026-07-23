@@ -11,8 +11,8 @@ Galtea uses role-based access control. Every member of your organization has one
 
 ## Roles
 
-- **OWNER**: Manages users and resources in their own organization. Cannot hard-delete.
-- **MEMBER**: Day-to-day access in their organization: view and contribute, with limited edits. Cannot hard-delete.
+- **OWNER**: Manages users and resources in their own organization. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most.
+- **MEMBER**: Day-to-day access in their organization: view and contribute, with limited edits. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most.
 - **HUMAN_EVALUATOR**: Read-only across the organization, plus may annotate AI metrics and submit human evaluations.
 - **READER**: Read-only across the organization. Cannot create, update, or delete anything.
 
@@ -43,6 +43,26 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | Own org | ❌ | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | ❌ | ❌ | ❌ | ❌ |
+
+**Subscription**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | ❌ | ❌ | ❌ | ❌ |
+| Read | Own org | Own org | Own org | Own org |
+| Update | If subscription in own org and billed through Stripe | If subscription in own org and billed through Stripe | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | ❌ | ❌ | ❌ | ❌ |
+
+**User Group**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If group in own org | If group in own org | ❌ | ❌ |
+| Read | If group in own org | If group in own org | If group in own org | If group in own org |
+| Update | If group in own org | If group in own org | ❌ | ❌ |
+| Delete | If group in own org | If group in own org | ❌ | ❌ |
+| Soft delete | If group in own org | If group in own org | ❌ | ❌ |
 
 ### Test Assets
 
@@ -86,7 +106,59 @@ Galtea uses role-based access control. Every member of your organization has one
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent test in own org | If parent test in own org | ❌ | ❌ |
 
+**Specification**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If parent product in own org | If parent product in own org | ❌ | ❌ |
+| Read | If parent product in own org | If parent product in own org | If parent product in own org | If parent product in own org |
+| Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
+
+### Connections
+
+**Endpoint Connection**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+| Read | If connection's product in own org | If connection's product in own org | If connection's product in own org | If connection's product in own org |
+| Update | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+
+**Phone Connection**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+| Read | If connection's product in own org | If connection's product in own org | If connection's product in own org | If connection's product in own org |
+| Update | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+
+**WebRTC Connection**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+| Read | If connection's product in own org | If connection's product in own org | If connection's product in own org | If connection's product in own org |
+| Update | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
+
 ### Evaluation & Results
+
+**Session**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If session's product in own org | If session's product in own org | ❌ | ❌ |
+| Read | If session's product in own org | If session's product in own org | If session's product in own org | If session's product in own org |
+| Update | If session's product in own org | If session's product in own org | ❌ | ❌ |
+| Delete | If session's product in own org | If session's product in own org | ❌ | ❌ |
+| Soft delete | If session's product in own org | If session's product in own org | ❌ | ❌ |
 
 **Evaluation**
 
@@ -111,6 +183,16 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | If result's product in own org | If result's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If result's product in own org | If result's product in own org | ❌ | ❌ |
+
+**Trace**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
+| Read | If trace's product in own org | If trace's product in own org | If trace's product in own org | If trace's product in own org |
+| Update | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
 
 **Monitor**
 
@@ -158,4 +240,4 @@ Galtea uses role-based access control. Every member of your organization has one
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
 - **Parent scope**: For nested records (Version, Test, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
 - **Global records**: Some records (Metric, Model, and a Test with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
-- **Hard delete**: None of these roles can permanently delete records. Where deletion is shown it is a soft delete: the record is hidden, not removed.
+- **Hard delete**: Each entity table has two delete rows. **Soft delete** hides a record without removing it. **Delete** is a permanent removal, shown as allowed only for Session and User Group (OWNER and MEMBER, within their own organization); for every other entity it is denied to all roles listed here.
