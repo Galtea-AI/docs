@@ -153,6 +153,14 @@ galtea_client.inference_results.create_batch(session_id=session.id, conversation
 # @end capture_monitoring_batch
 
 
+# @start finish_session
+# When the live conversation is over, finish the session. This closes it (status COMPLETED)
+# so it accepts no more turns. Under a default-config product this is how a session completes,
+# and a Monitor scores only closed sessions, so finishing gets it picked up on the next scan.
+galtea_client.sessions.finish(session_id=session.id)
+# @end finish_session
+
+
 # @start evaluate_specifications
 # Evaluate the whole conversation; metrics are resolved from the specifications automatically
 galtea_client.evaluations.create(

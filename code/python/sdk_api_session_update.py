@@ -55,5 +55,29 @@ galtea.sessions.update(
 # @end metadata_update
 
 
+# The finish examples use their own fresh session: finishing is terminal, so each example
+# closes a session that has not already been errored or finished by the examples above.
+session = galtea.sessions.create(version_id=version_id, is_production=True)
+if session is None:
+    raise ValueError("session is None")
+
+# @start session_finish
+# Call finish when the conversation is over. This closes the session (status COMPLETED)
+# so it accepts no more turns and becomes eligible for monitor evaluation on the next scan.
+galtea.sessions.finish(session_id=session.id, stopping_reason="GOAL_ACHIEVED")
+# @end session_finish
+
+
+session = galtea.sessions.create(version_id=version_id, is_production=True)
+if session is None:
+    raise ValueError("session is None")
+
+# @start session_finish_default
+# Omit stopping_reason to send the default reason ("FINISHED"). The API requires a
+# non-empty reason, so the SDK substitutes this token for you.
+galtea.sessions.finish(session_id=session.id)
+# @end session_finish_default
+
+
 # === Cleanup ===
 galtea.products.delete(product_id=product_id)

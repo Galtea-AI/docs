@@ -220,7 +220,7 @@ galtea.inference_results.create_batch(session_id=session_batch.id, conversation_
 </Step>
 
 <Step title="3. Evaluate the Session">
-Finally, once the conversation is complete and all turns are logged, you can run an evaluation on the entire session. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+Once the conversation is complete and all turns are logged, you can run an evaluation on the entire session. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
 
 <Tabs>
 <Tab title="Using specification IDs">
@@ -236,6 +236,18 @@ galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
 </Tab>
 </Tabs>
 
+</Step>
+
+<Step title="4. Finish the Session">
+When the user's conversation ends, finish the session with [`finish()`](/sdk/api/session/finish). This closes the session, so it accepts no more turns.
+
+```python
+# When the user's conversation ends, finish the session. This closes it, so a monitor
+# can score it on the next scan instead of waiting for the product's auto-close window.
+galtea.sessions.finish(session.id)
+```
+
+Finishing matters most when you use a [Monitor](/concepts/product/monitor) to score production sessions automatically: a monitor scores only closed sessions. An explicit finish makes the session eligible on the next scan, instead of waiting for the product's inactivity auto-close window (30 minutes by default). Only call `finish()` once the conversation is truly over: appending a turn to a closed session follows the product's closed-session policy, so the turn is either rejected or silently discarded.
 </Step>
 </Steps>
 
