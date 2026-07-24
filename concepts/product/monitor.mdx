@@ -38,6 +38,8 @@ family_key = metric.metric_group_id
 
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
 
+Changing `sampling_percentage` only affects sessions that close after the change. Raising it does not go back and score older sessions that were already skipped.
+
 ## When a session gets scored
 
 A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
@@ -56,10 +58,10 @@ This depends on the product's Auto Close Scope. When that scope excludes product
 A Monitor has a `status` that tells you whether it is scoring and, if not, why. This makes the reasons a Monitor stopped visible instead of silent:
 
 - **`ACTIVE`** — the Monitor is scoring sampled production sessions. New Monitors start here.
-- **`PAUSED`** — a user paused the Monitor. It scores nothing until resumed.
-- **`CAPPED`** — the monthly credit cap was reached. Scoring resumes next month, or sooner if you raise the cap.
-- **`NO_CREDITS`** — the organization ran out of credits. Scoring resumes when credits are available.
-- **`FAILING`** — the Monitor keeps failing to score sessions and needs attention.
+- **`PAUSED`** — a user paused the Monitor. It scores nothing until resumed. Sessions that close while it is paused are skipped for good. After a resume, the Monitor only scores sessions that close from that point on.
+- **`CAPPED`** — the monthly credit cap was reached. Sessions that close while it is capped are skipped for good, like `PAUSED`. Scoring resumes next month, or sooner if you raise the cap.
+- **`NO_CREDITS`** — the organization ran out of credits. Sessions that close in the meantime are skipped for good. Scoring resumes when credits are available.
+- **`FAILING`** — reserved for a Monitor that keeps failing to score sessions. The system does not currently set it automatically.
 
 You can set only `ACTIVE` (to resume) or `PAUSED` (to pause). `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
 
@@ -85,6 +87,7 @@ The SDK lets you create, list, retrieve, update (including pause and resume), an
 
 <ResponseField name="version_id" type="string" optional>
   The ID of a single version to watch. When unset, the monitor watches every version of the product.
+  Changing it only affects sessions that close after the change; sessions already skipped under the old value are not picked up.
 </ResponseField>
 
 <ResponseField name="metric_group_ids" type="list[string]" required>
