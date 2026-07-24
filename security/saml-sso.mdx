@@ -71,7 +71,7 @@ Open **Organization Settings** and scroll to the **Advanced Options** section. T
 | **Issuer** | The issuer Galtea sends in SAML requests, also used as the expected **audience** of the IdP's response. Set it to the **same value as the SP Entity ID**. Your IdP's Identifier / Entity ID / Audience must match this value. |
 | **Public Certificate** | The X.509 signing certificate from your IdP, in PEM format (starts with `-----BEGIN CERTIFICATE-----`). |
 | **Signed Response** | Require the IdP to sign the full SAML response. Enabled by default. Most enterprise IdPs support this. |
-| **Signed Assertions** | Require the IdP to sign the assertions inside the SAML response. **Enable both options** if you are not sure — most modern IdPs (Azure AD, Okta, Google Workspace, and other enterprise IdPs) support signing both. |
+| **Signed Assertions** | Require the IdP to sign the assertions inside the SAML response. These two toggles must match **what your IdP actually signs**. If you are unsure, enable both — most modern IdPs (Azure AD, Okta, Google Workspace) support signing both. If sign-in fails with an *Invalid signature* error, your IdP is likely signing only one of the two: turn the other off so the settings match (for example, disable **Signed Assertions** when the IdP signs only the response). |
 
 ## How users sign in
 
@@ -84,7 +84,11 @@ After SAML is configured, users sign in using the **Team Slug** assigned to your
 5. Authenticate with the identity provider.
 6. The browser returns to Galtea with an active session.
 
-On first sign-in, Galtea creates a new user account linked to the SAML identity. On later sign-ins, the same account is reused.
+On first sign-in, Galtea creates a new user account linked to the SAML identity. On later sign-ins, the same account is reused. Accounts are matched by **email** and by **SAML NameID** — on first sign-in the two are linked, so an existing account found by one gets the other attached. If the email and the SAML NameID already belong to two different accounts, sign-in fails and the accounts must be reconciled manually.
+
+<Note>
+  In this SAML setup, users are created with the default **Member** role. Galtea does **not** read group or role claims from your IdP — the IdP controls *who* can sign in, not *what* role they receive in Galtea. To grant **Owner** or **Admin**, change the user's role manually in Galtea after their first sign-in.
+</Note>
 
 ## Provider-specific guides
 
@@ -119,6 +123,6 @@ Most identity providers offer a "Download Certificate (Base64)" or "PEM" option.
 | Error | Likely cause | Fix |
 |---|---|---|
 | `unknown_team_slug` | The team slug entered does not match any organization | Check the Team Slug in Organization Settings |
-| `saml_auth_failed` | Invalid signature or misconfigured certificate | Re-download the IdP certificate and paste it again |
+| `saml_auth_failed` / `Invalid signature` | The certificate is wrong, **or** the **Signed Response** / **Signed Assertions** toggles don't match what the IdP signs | Re-download the IdP certificate and paste it again. If the certificate is correct, make **Signed Response** / **Signed Assertions** match exactly what your IdP signs (see [Configuration fields](#configuration-fields)) — e.g. disable **Signed Assertions** if the IdP signs only the response |
 | `saml_disabled` | SAML SSO is not enabled for your account | Contact [support@galtea.ai](mailto:support@galtea.ai) |
 | Assertion expired | Clock difference between IdP and Galtea servers | Ensure the IdP server clock is accurate (up to 90 seconds of skew is accepted) |
