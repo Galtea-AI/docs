@@ -194,6 +194,16 @@ Galtea uses role-based access control. Every member of your organization has one
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
 
+**Comment**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | ✅ | ✅ | ❌ | ❌ |
+| Read | ✅ | ✅ | ✅ | ✅ |
+| Delete | ✅ | If the comment's author | ❌ | ❌ |
+
+*Free-form reviewer text on an inference result. Access also requires the parent inference result to be in your organization. Deleting is a soft delete; you may delete your own comments, and organization owners may delete any.*
+
 **Monitor**
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
