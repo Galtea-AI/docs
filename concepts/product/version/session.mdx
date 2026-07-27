@@ -49,9 +49,11 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 
 <ResponseField name="Status" type="Enum">
   The current status of the session. Possible values:
-  - `PENDING`: The session has been created but has not yet received all inference results.
-  - `COMPLETED`: The session has finished successfully.
+  - `PENDING`: The session is open and still accepts new inference results (turns). This is the status of a new session.
+  - `COMPLETED`: The session has finished successfully and is closed (accepts no more turns).
   - `FAILED`: The session encountered an error during processing.
+
+  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session.
 </ResponseField>
 
 <ResponseField name="Error" type="Text" optional>

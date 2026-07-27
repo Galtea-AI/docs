@@ -257,6 +257,13 @@ galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
 galtea.evaluations.create(session_id=session.id, specification_ids=specification_ids)
 # @end evaluate_session_specifications
 
+# @start finish_session
+# When the user's conversation ends, finish the session. This closes it, so a monitor
+# can score it on the next scan instead of waiting for the product's auto-close window.
+galtea.sessions.finish(session.id)
+# @end finish_session
+
+
 print(f"Logged and evaluated production session {session.id}")
 
 

@@ -448,7 +448,8 @@
                       "sdk/api/session/get",
                       "sdk/api/session/get-by-custom-id",
                       "sdk/api/session/delete",
-                      "sdk/api/session/update"
+                      "sdk/api/session/update",
+                      "sdk/api/session/finish"
                     ]
                   }
                 ]
