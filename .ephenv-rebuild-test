@@ -1,0 +1,4 @@
+# Ephemeral-env dev-lifecycle validation marker.
+# No-op: forces deploy-services to rebuild this service as ephenv-<slug>-<sha>
+# on push to ephenv/testraulnew, so the per-branch image-updater promotes it.
+# report-generator is intentionally left untouched as the unchanged control.
