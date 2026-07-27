@@ -23,6 +23,12 @@ In the dashboard, open a product and go to its **Monitors** tab. That tab lists 
 
 From the tab you can create a monitor, open one to see its results, and edit, pause, resume, or delete it. Each row shows the monitor's status, its recent score, its sampling rate, and its credit spend for the month.
 
+## Seeing production scores across the whole product
+
+A monitor's own page shows the results of that one monitor. To see the trend across every production evaluation of the product, open the product's **Analytics** tab in **Production** view mode. It shows an **evaluation scores over time** chart: the average score per day across all production evaluations that match your current filters.
+
+The chart is only in Production view mode, because it is a production-monitoring view. Use the toggle on the card to switch between two views: **by metric** (one line per metric) and **by specification** (one line per specification, built from the metrics linked to each specification). It follows the same filters as the rest of the page, so changing the version, test, metric, language, or time frame updates it too. It aggregates every matching production evaluation, including ones you triggered by hand, so it is a product-wide trend, not one monitor's view.
+
 ## Metric families follow revisions automatically
 
 A Monitor binds **metric families**, not specific metric revisions. A metric family is every revision of a metric that shares the same family key (`metric.metric_group_id` in the SDK). When you revise a metric, the Monitor picks up the new revision automatically. You do not edit the Monitor.
