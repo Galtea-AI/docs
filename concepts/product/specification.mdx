@@ -98,10 +98,7 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
 <ResponseField name="test_type" type="Enum" optional>
   The type of test for this specification.
   Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
-  <Note>
-    Required for `POLICY` specifications. For `CAPABILITY` specifications it is always `BEHAVIOR`, assigned
-    automatically. Must not be provided for `INABILITY` specifications.
-  </Note>
+  <Note>Required for `POLICY` specifications. Must not be provided for `CAPABILITY` or `INABILITY` specifications.</Note>
 </ResponseField>
 
 <ResponseField name="test_variant" type="string" optional>

@@ -12,13 +12,21 @@ This is the difference between finding a quality regression in a weekly report a
 
 Get started with [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries), or point a Monitor at [real user traffic ingested over OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 
+### See the Score Trend Across the Whole Product
+
+A Monitor's own page shows the results of that one Monitor. To see the trend across every production evaluation of a product, open its **Analytics** tab in **Production** view mode: an **evaluation scores over time** chart plots the average score per day. Switch between a **by metric** view (one line per metric family) and a **by specification** view (one line per [specification](/concepts/product/specification), built from the metrics linked to it). The chart follows the same filters as the rest of the page (version, test, metric, language, and time frame) and includes every matching production evaluation, including the ones you triggered by hand.
+
 ### Sessions Close Themselves, so Monitors Know When to Score
 
 A Monitor scores a [session](/concepts/product/version/session) only once the conversation is over. So that Galtea knows when that is, a session now closes on its own after a period of inactivity, instead of staying open forever waiting for your integration to end it.
 
-- **Configure it per product.** In the product's advanced settings you set the auto-close scope (`NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL` — the default is `PRODUCTION`), the inactivity window in minutes (default 30), and what happens if a new turn arrives for an already-closed session: reject it with an error, or ignore it silently.
+- **Configure it per product.** In the product's advanced settings you set the auto-close scope (`NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL` — the default is `PRODUCTION`), the inactivity window in minutes (default 30), and what happens if a new turn arrives for an already-closed session: `REJECT` it with an error, or `IGNORE` it silently.
 - **Close a conversation the moment it ends.** When you already know a conversation is finished, close it right away with the SDK's [`sessions.finish(session_id)`](/sdk/api/session/finish) so its Monitor scores it on the next scan instead of waiting out the inactivity window.
 - **Know when production will not be scored.** If a product's auto-close scope excludes production, open production sessions never close on inactivity, so their Monitors score only the sessions you finish explicitly. The dashboard warns you when that is the case.
+
+### Evaluation Scores Over Time Moved to the Production View
+
+The scores-over-time chart announced in the 2026-07-21 release now appears only in the **Production** view of a product's Analytics tab. It plots one average score per day, which answers "is the live product drifting", so it belongs next to your Monitors rather than beside your test runs. Development still compares versions with the existing scores and performance charts. Details in [Monitor](/concepts/product/monitor).
 
 ## Manage Metrics and Tests Directly from a Specification
 

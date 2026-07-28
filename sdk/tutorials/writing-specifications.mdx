@@ -83,10 +83,6 @@ Describe what the product **can do** — its core functions and the information 
 - "Can calculate retirement planning scenarios and savings goals based on user-provided data"
 - "Can compare investment products (stocks, bonds, ETFs, mutual funds) side by side"
 
-<Note>
-  Capability specifications always get the `BEHAVIOR` test type, assigned automatically — you never choose it. This means every capability is eligible for AI test generation, the same as a Behavior policy.
-</Note>
-
 ### Inability Specifications
 
 Describe what the product **cannot do** due to hard technical limits — tools it lacks, data it can't access, actions it can't perform.
@@ -103,7 +99,7 @@ Describe what the product **cannot do** due to hard technical limits — tools i
 
 ### Policy Specifications
 
-Describe rules the product **must follow** — refusal rules, mandatory disclaimers, interaction patterns, and behavioral guardrails. Policies can drive either Security or Behavior test generation, depending on their test type (Capabilities, by contrast, always drive Behavior test generation).
+Describe rules the product **must follow** — refusal rules, mandatory disclaimers, interaction patterns, and behavioral guardrails. Policies are the most powerful specification type because they drive both Security and Behavior test generation.
 
 <Tip>
   Use **"Must..."**, **"Always..."**, **"If asked about X, respond with Y"** patterns. Be specific about the trigger and the expected behavior.
