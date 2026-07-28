@@ -42,7 +42,7 @@ The specification-driven flow works like this:
 - **Policy** — rules the product *must* follow (e.g., "Must refuse personalized investment advice")
 
 <Note>
-  **Policy** specifications require a `test_type` (`ACCURACY`, `SECURITY`, or `BEHAVIOR`) that determines how the spec is evaluated. Capability and Inability specs do not need a test type.
+  **Policy** specifications require a `test_type` (`ACCURACY`, `SECURITY`, or `BEHAVIOR`) that determines how the spec is evaluated. **Capability** specifications always get the `BEHAVIOR` test type, assigned automatically — you never choose it. **Inability** specs do not have a test type.
 </Note>
 
 ```python
@@ -129,7 +129,7 @@ Tests can be created from specifications in two ways:
 
 ### Option A: AI-Generated Test Configurations (Dashboard)
 
-From the dashboard, navigate to your product's **Tests** tab and click **Generate with AI**. Select the Policy specifications you want to generate tests for, and the system will suggest test configurations — including name, type, variants, strategies, and max test cases — all auto-derived from your specifications. Review each candidate, edit if needed, and save.
+From the dashboard, navigate to your product's **Specifications** tab, select the Policy and Capability specifications you want to generate tests for, and use the bulk actions menu to click **Create Tests**. The system will suggest test configurations — including name, type, variants, strategies, and max test cases — all auto-derived from your specifications. Review each candidate, edit if needed, and save.
 
 {/* <!-- VIDEO PLACEHOLDER: AI test generation from specs dashboard walkthrough
 <video
@@ -140,7 +140,7 @@ From the dashboard, navigate to your product's **Tests** tab and click **Generat
 --> */}
 
 <Note>
-  AI test generation is available for **Policy** specifications with a `SECURITY` or `BEHAVIOR` test type. The system uses the specification's description as context — for Security tests it becomes the `custom_variant_description`, and for Behavior tests it shapes the scenario generation.
+  AI test generation is available for **Policy** specifications with a `SECURITY` or `BEHAVIOR` test type, and for every **Capability** specification (always `BEHAVIOR`). The system uses the specification's description as context — for Security tests it becomes the `custom_variant_description`, and for Behavior tests it shapes the scenario generation.
 </Note>
 
 ### Option B: SDK — Create Test with Specification ID

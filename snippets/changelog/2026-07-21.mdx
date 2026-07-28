@@ -1,4 +1,11 @@
-<Update label="2026-07-21" description="Retrieval Context from Traces, Trace Imports from More Frameworks, and More">
+<Update label="2026-07-21" description="Automatic Session Closing, Retrieval Context from Traces, and More">
+
+## Sessions Close Themselves Automatically
+
+Production [sessions](/concepts/product/version/session) used to stay open forever unless your integration explicitly finished them. Now the product closes them for you.
+
+- **Configure it per product.** In the product's advanced settings you choose the scope (`NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL` — the default is `PRODUCTION`), the inactivity window in minutes (default 30), and what happens when an inference result arrives for an already-closed session: `REJECT` it with an error, or `IGNORE` it silently.
+- **[Monitors](/concepts/product/monitor) evaluate closed sessions only.** A monitor no longer guesses whether a conversation is over with its own settle window; it samples and evaluates sessions the product has already closed. Because of this, a product whose auto-close scope excludes production will not feed its monitors unless your integration finishes sessions explicitly — the dashboard warns you on the monitor pages when that is the case.
 
 ## Retrieval Context Now Comes from Traces
 
@@ -16,6 +23,10 @@ Trace ingestion recognizes more of the ecosystem, so conversations assemble with
 - **Standard OpenTelemetry session attributes.** Traces that follow the GenAI semantic conventions group into conversations by `gen_ai.conversation.id` or `session.id` out of the box — no Galtea-specific attributes needed.
 - **Langfuse imports work for any framework.** The importer no longer requires a LangChain-family signal: any Langfuse-shaped export with real conversation content imports, every observation type maps to its matching trace type (`retriever`, `tool`, `agent`, `chain`, and more), and outputs are stored verbatim. See the [Langfuse integration guide](/sdk/integrations/langfuse/integration-guide).
 - **Answers produced without an LLM are recovered.** When a turn is answered by a guardrail replacement, a templated redirect, or a tool-terminal reply, you can now teach assembly where that reply lives with a per-product (or per-version) output source rule in the advanced settings. Details in [Monitor Real User Traffic with OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+
+## Evaluation Scores Over Time on Product Analytics
+
+The product [analytics](/concepts/product/analytics) page now shows a time-series chart of evaluation scores, bucketed per day. Switch between a **by metric** view (one line per metric family) and a **by specification** view (one line per [specification](/concepts/product/specification), derived from the metrics linked to it). The chart follows the same filters as the rest of the page — version, test, metric, language, time frame, and the development/production toggle — and aggregates every matching evaluation, including manually-triggered ones.
 
 ## Replay Evaluations After Revising a Test Case
 

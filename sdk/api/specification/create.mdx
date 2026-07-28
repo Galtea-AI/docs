@@ -20,7 +20,7 @@ specification = galtea.specifications.create(
     test_variant="misuse",
 )
 
-# CAPABILITY specification — test_type is not needed
+# CAPABILITY specification — test_type is assigned automatically (always BEHAVIOR), so it's omitted here
 capability_spec = galtea.specifications.create(
     product_id=product_id,
     name="Show account balance",
@@ -44,7 +44,8 @@ capability_spec = galtea.specifications.create(
   Possible values: `CAPABILITY`, `INABILITY`, `POLICY`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="test_type" type="string | TestType" optional>
-  The type of test for this specification. Required for `POLICY` specifications, not applicable for `CAPABILITY` or `INABILITY`.
+  The type of test for this specification. Required for `POLICY` specifications. For `CAPABILITY` specifications it is
+  always `BEHAVIOR`, assigned automatically — omit it or pass `BEHAVIOR` explicitly. Not applicable for `INABILITY`.
   - `ACCURACY`: Evaluates whether the AI provides factually correct responses.
   - `SECURITY`: Tests for vulnerabilities, jailbreaks, and harmful outputs.
   - `BEHAVIOR`: Simulates real user interactions to evaluate behavior in context.
