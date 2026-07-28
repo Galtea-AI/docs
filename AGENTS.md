@@ -19,6 +19,8 @@ docs/
 
 **NEVER write inline Python code blocks in `.mdx` files.** All code examples live in standalone Python scripts under `docs/code/` so they can be tested in CI/CD.
 
+Snippets are validated against the mocked docker-compose stack on every PR and push to main (`.github/workflows/docs-snippets-mocked.yml`) and on prod releases (`deploy-services.yml` via the reusable `_docs-snippets-mocked.yml`); the nightly `e2e.yml` run validates all of them against the live environment, the only coverage for the `docs/mocked_ci_skip.txt` entries (#3587).
+
 ### How it works
 
 1. Code files live in `docs/code/python/` as full, runnable Python scripts with section markers:
