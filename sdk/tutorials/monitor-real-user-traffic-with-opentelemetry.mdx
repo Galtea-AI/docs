@@ -86,7 +86,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 <Note>
   Two limits to plan for:
 
-  - **Closed sessions reject new turns.** A session is closed once it reaches `COMPLETED` or `FAILED`, either by an explicit finish or by the auto-close sweep (see [Session lifecycle](/concepts/product/version/session#session-lifecycle)). Late spans for turns it already has are still accepted. Spans for a new turn are rejected and appear in the export response's rejected-span count; nothing is stored. To start new turns, begin a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow).
+  - **Finished sessions reject new turns.** A finished session still accepts late traces for its existing turns, but does not open new ones. To start new turns, begin a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow).
   - **One payload can open at most 100 new conversations.** New sessions beyond that in the same OTLP payload are rejected (they appear in the export response's rejected-span count). Continuations of conversations that already exist do not count toward the limit. If you send a large backfill or a high-volume export, split it across smaller export batches. Self-hosted deployments can raise the limit with the `OTEL_MAX_NEW_CONVERSATIONS_PER_PAYLOAD` setting.
 </Note>
 
