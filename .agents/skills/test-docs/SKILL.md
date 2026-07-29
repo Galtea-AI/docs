@@ -13,9 +13,12 @@ Run these from the repo root after editing anything under `docs/`.
 cd docs && npm install && npm run dev   # http://localhost:3000
 ```
 
-## Validate and build
+## Validate
 
-- **Validate** (broken links, code-embed misses, navigation issues): `python scripts/run.py`
-- **Build**: `python scripts/run.py --build`
+**`python scripts/run.py --build` is the validation command** (it runs `mint validate`, strict: broken links, navigation issues). Run it before committing docs changes.
 
-Run the validate step before committing docs changes. The code-embed check fails when an MDX `{/* @embed ... */}` points at a missing file or section, so it catches the most common docs regression.
+Do **not** use bare `python scripts/run.py` to validate: it runs `mint dev`, a hot-reload preview server that never exits, so it will hang until you kill it. Use `--embed-only` when you want just the clone plus code-embed pass with no `mint` step.
+
+The code-embed check fails when an MDX `{/* @embed ... */}` points at a missing file or section, so it catches the most common docs regression.
+
+On Windows, prefix the command with `PYTHONIOENCODING=utf-8`. The script prints a `→`, which the default cp1252 console cannot encode, so it dies on a `UnicodeEncodeError` traceback that looks like a docs failure but is not.

@@ -40,6 +40,13 @@ Snippets are validated against the mocked docker-compose stack on every PR and p
 - File naming: `sdk_api_<service>_<method>.py`, `sdk_tutorials_<topic>.py`, `concepts_<topic>.py`
 - Before creating a new code file, check if an existing one covers the topic; add a section to it instead.
 
+## Verify Prose Claims Against the Code
+
+No hand-written page is the API contract: the wire-level contract is the generated OpenAPI reference (the `openapi` entry in `docs.json`). `concepts/` pages describe product fields as display labels ("Stopping Reason") in SDK vocabulary, so their field names do not track the API's. Two traps follow.
+
+- **Absolute claims.** Before writing "every", "always", or "never", check the field in `api/prisma/schema.prisma` and `api/src/swagger.ts`, not only the SDK method. The API often accepts what the SDK does not expose: `SessionInput.status` lets a caller create an already-closed session, while `session_service.create()` has no such parameter.
+- **Contrasting two settings.** Confirm **both** still exist. A removed field is easy to describe from memory and yields prose that contradicts the page it links to, as happened with a per-Monitor inactivity window documented after #3379 deleted it.
+
 ## Adding a New Page
 
 1. Create the MDX file with frontmatter (`title`, `description`, `icon`)
