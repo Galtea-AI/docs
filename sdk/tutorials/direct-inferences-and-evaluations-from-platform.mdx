@@ -162,14 +162,12 @@ Turn by turn:
 Navigate to your product and create a new **Version**. When configuring the version:
 
 1. Fill in the version name, model, and any other relevant properties.
-2. Turn on the **Link Connection** toggle. It is off by default; turning it on reveals the connection fields.
-3. Choose **HTTP Endpoint** as the **Conversation Target**.
-4. In the **Endpoint Connection** field, select the endpoint connection you created in Step 1.
+2. In the **Conversation Endpoint Connection** field, select the endpoint connection you created in Step 1.
 
-Once **Link Connection** is on, the **Endpoint Connection** is the only required connection. For most integrations, this single endpoint handles the entire interaction lifecycle.
+The Conversation Endpoint Connection is the only required endpoint connection. For most integrations, this single endpoint handles the entire interaction lifecycle.
 
 <Note>
-  If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. These also appear only under **Link Connection** with the **HTTP Endpoint** target. See [Endpoint Connection — Multi-Step Session Lifecycle](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced) for details.
+  If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. See [Version — Multi-Step Session Lifecycle](/concepts/product/version#multi-step-session-lifecycle-advanced) for details.
 </Note>
 
 ## Step 3: Run a Test
