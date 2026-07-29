@@ -48,12 +48,16 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 </ResponseField>
 
 <ResponseField name="Status" type="Enum">
-  The current status of the session. Possible values:
-  - `PENDING`: The session is open and still accepts new inference results (turns). This is the status of a new session.
-  - `COMPLETED`: The session has finished successfully and is closed (accepts no more turns).
-  - `FAILED`: The session encountered an error during processing.
+  The lifecycle state of the session, and the single signal for whether it is open or closed.
+  - `PENDING` (**open**): the session accepts new turns. Every session starts here.
+  - `COMPLETED` (**closed**): the session finished successfully and accepts no new turns.
+  - `FAILED` (**closed**): the session ended with an error and accepts no new turns.
 
-  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session.
+  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
+</ResponseField>
+
+<ResponseField name="Stopping Reason" type="Text" optional>
+  Human-readable text describing why the conversation ended, for example "Automatically closed after 30 minutes of inactivity". It is a label for people to read: it does not lock the session or drive any behavior. The session `Status` alone decides whether the session is open or closed.
 </ResponseField>
 
 <ResponseField name="Error" type="Text" optional>
@@ -63,6 +67,31 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 <ResponseField name="Recording URI" type="Text" optional>
   The canonical storage URI of the full-call recording for telephony sessions. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
 </ResponseField>
+
+## Session Lifecycle
+
+A session is either **open** or **closed**, and its `Status` is the single source of truth for which one it is:
+
+- **Open** (`PENDING`): the session accepts new turns. Every new session starts open by default.
+- **Closed** (`COMPLETED` or `FAILED`): the session accepts no new turns.
+
+### How a session closes
+
+A session becomes closed in one of two ways:
+
+- **Explicit finish.** You end the session on purpose, and it closes right away. Call [`sessions.finish()`](/sdk/api/session/finish) from the SDK: it records a `Stopping Reason` and sets the status to `COMPLETED`. The endpoint behind it (`PATCH /sessions/{id}/finish`) also accepts an `error` instead, which closes the session as `FAILED`.
+- **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent inference result is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
+
+You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `PRODUCTION`, so production sessions auto-close after the window while development (test) sessions stay open until you finish them.
+
+### Turns that arrive after a session closes
+
+When a new inference result arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
+
+- `IGNORE` (the default): the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
+- `REJECT`: the API refuses the call and returns an error.
+
+If your users sometimes reply after a long gap and you do not want those late turns dropped or rejected, raise the inactivity window or set the scope so those sessions are not auto-closed. The [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries#late-turns-on-a-closed-session) tutorial walks through this trade-off.
 
 ## Related
 
