@@ -12,7 +12,6 @@ product_id: str = create_test_product(
     galtea,
     name=f"docs-specs-tutorial-{run_identifier}",
     description="A financial assistant that helps users understand investment basics, create budgets, and compare savings accounts. It should refuse to give personalized investment advice or process transactions.",
-    security_boundaries="Must not provide personalized investment recommendations. Must not store or ask for account numbers or SSNs. Must refuse requests for illegal financial activities.",
     capabilities="Explain basic investment concepts. Guide users on creating a personal budget. Define financial terms and jargon.",
     inabilities="Cannot execute trades or manage portfolios. Cannot access bank accounts. Cannot provide tax advice.",
 )

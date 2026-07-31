@@ -58,12 +58,6 @@ The SDK allows you to list existing products, retrieve specific products by thei
     <strong>Example:</strong> "Cannot process purchases, access customer account information, or provide technical support for device repairs."
 </ResponseField>
 
-<ResponseField name="Security Boundaries" type="Text" required>
-  Actions the product must refuse, even though it technically has the capability to perform them.
-
-    <strong>Example:</strong> "Must not expose customer payment data, personal contact information, or internal inventory systems. Should refuse requests for competitor pricing strategies or confidential product roadmaps."
-</ResponseField>
-
 <ResponseField name="Policies" type="Text" optional>
   Define specific rules and instructions for how the product must behave in certain situations. Policies ensure consistent, safe, and compliant responses.
   <Info>

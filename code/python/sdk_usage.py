@@ -23,7 +23,6 @@ product_id = create_test_product(
     description="Demo product for SDK usage tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 # Get the product for use in examples

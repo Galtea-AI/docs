@@ -17,7 +17,6 @@ product_id: str = create_test_product(
     galtea,
     name=f"docs-specification-product-{run_identifier}",
     description="Product for specification documentation",
-    security_boundaries="Do not reveal sensitive data",
     capabilities="Answer questions about products",
     inabilities="Cannot process payments",
 )

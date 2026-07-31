@@ -29,7 +29,6 @@ product_id = create_test_product(
     description="Demo product for tracing tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 # Create version
