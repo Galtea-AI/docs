@@ -1,16 +1,16 @@
 ---
-title: "Accuracy Tests"
+title: "Accuracy Datasets"
 description: "Evaluate the accuracy and correctness of your outputs"
 sidebarTitle: "Overview"
 ---
 
-## What are Accuracy Tests?
+## What are Accuracy Datasets?
 
-Accuracy tests in Galtea are designed to evaluate the quality, accuracy, and correctness of your [product's](/concepts/product) outputs. These tests typically consist of questions or prompts paired with ideal answers, allowing Galtea to assess how well your product's responses match the expected standard.
+Accuracy datasets in Galtea are designed to evaluate the quality, accuracy, and correctness of your [product's](/concepts/product) outputs. These datasets typically consist of questions or prompts paired with ideal answers, allowing Galtea to assess how well your product's responses match the expected standard.
 
-## Creating Accuracy Tests
+## Creating Accuracy Datasets
 
-You can create accuracy tests in Galtea through two methods:
+You can create accuracy datasets in Galtea through two methods:
 
 <Tabs>
   <Tab title="Generate from Knowledge Base">
@@ -18,14 +18,14 @@ You can create accuracy tests in Galtea through two methods:
       <Step title="Prepare your knowledge base file">
         Create a file containing all the information that the Product should **know and adhere to**
       </Step>
-      <Step title="Configure the test">
-        Select *Accuracy* as the test type and *Generated* as the test origin
+      <Step title="Configure the dataset">
+        Select *Accuracy* as the dataset type and *Generated* as the dataset origin
         <Info>
-          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+          The dataset creation process can be done via the [SDK](/sdk/api/dataset/create) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
       </Step>
-      <Step title="Generate the test">
-        Galtea will process the Knowledge Base and generate a *Test File* containing *Test Cases* for you
+      <Step title="Generate the dataset">
+        Galtea will process the Knowledge Base and generate a *Dataset File* containing *Test Cases* for you
       </Step>
     </Steps>
 
@@ -37,25 +37,25 @@ You can create accuracy tests in Galtea through two methods:
       src="/videos/generate-from-kb.mp4"
     ></video>
   </Tab>
-  <Tab title="Upload Your Own Test">
+  <Tab title="Upload Your Own Dataset">
     <Steps>
-      <Step title="Create your test file">
-        Prepare a CSV file following the structure shown [below](#example-accuracy-tests-and-file-format)
+      <Step title="Create your dataset file">
+        Prepare a CSV file following the structure shown [below](#example-accuracy-datasets-and-file-format)
       </Step>
-      <Step title="Configure the test">
-        Select "Accuracy" as the test type and "Uploaded" as the test origin
+      <Step title="Configure the dataset">
+        Select "Accuracy" as the dataset type and "Uploaded" as the dataset origin
         <Info>
-          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+          The dataset creation process can be done via the [SDK](/sdk/api/dataset/create) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
       </Step>
-      <Step title="Upload your test file">
+      <Step title="Upload your dataset file">
         Select the file you created and upload it to Galtea
       </Step>
           </Steps>
   </Tab>
 </Tabs>
 
-## Example Accuracy Tests and File Format
+## Example Accuracy Datasets and File Format
 
 Here are examples of the content and its creation-document structure:
 
@@ -117,7 +117,7 @@ Here are examples of the content and its creation-document structure:
 </AccordionGroup>
 
 <Note>
-  This structure is the required by Galtea in order to automatically generate the [test cases](/concepts/product/test/case) for your [test](/concepts/product/test). If that format is not provided, you can still [manually create the test cases](/sdk/api/test-case/service#create-test-case).
+  This structure is the required by Galtea in order to automatically generate the [test cases](/concepts/product/dataset/test-case) for your [dataset](/concepts/product/dataset). If that format is not provided, you can still [manually create the test cases](/sdk/api/test-case/create).
 </Note>
 
 <Info>
@@ -128,9 +128,9 @@ Here are examples of the content and its creation-document structure:
   The extent of the examples provided above are short extractions. In the actual CSV files they can be much longer and the amount of test cases (rows) can be much higher.
 </Warning>
 
-## Structure of Accuracy Tests
+## Structure of Accuracy Datasets
 
-Accuracy tests have a specific structure designed to facilitate effective evaluation:
+Accuracy datasets have a specific structure designed to facilitate effective evaluation:
 
 <ResponseField name="instance_id" type="Number" required>
   A unique identifier for the test instance.
@@ -166,10 +166,10 @@ Accuracy tests have a specific structure designed to facilitate effective evalua
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Create a Test" icon="clipboard-list" href="/sdk/tutorials/create-test">
-    Step-by-step tutorial on creating and uploading custom tests using the SDK.
+  <Card title="Create a Dataset" icon="clipboard-list" href="/sdk/tutorials/create-dataset">
+    Step-by-step tutorial on creating and uploading custom datasets using the SDK.
   </Card>
-  <Card title="Test Cases" icon="list" href="/concepts/product/test/case">
+  <Card title="Test Cases" icon="list" href="/concepts/product/dataset/test-case">
     Understand how test cases are structured and used in evaluations.
   </Card>
 </CardGroup>

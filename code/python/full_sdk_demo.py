@@ -102,11 +102,11 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=versio
 if version is None:
     raise ValueError("version from get_by_name is None")
 
-test_name = "accuracy-test-docs-" + run_identifier
+dataset_name = "accuracy-test-docs-" + run_identifier
 
 # @start test_create
-test = galtea.tests.create(
-    name=test_name,
+dataset = galtea.datasets.create(
+    name=dataset_name,
     type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
@@ -114,33 +114,33 @@ test = galtea.tests.create(
     max_test_cases=5,
 )
 # @end test_create
-if test is None:
-    raise ValueError("test from create is None")
+if dataset is None:
+    raise ValueError("dataset from create is None")
 
-test_id = test.id
+dataset_id = dataset.id
 
 # @start test_list
-tests = galtea.tests.list(product_id=product_id, limit=10)
+datasets = galtea.datasets.list(product_id=product_id, limit=10)
 # @end test_list
-if tests is None or len(tests) == 0:
-    raise ValueError("tests from list is None or empty")
+if datasets is None or len(datasets) == 0:
+    raise ValueError("datasets from list is None or empty")
 
 # @start test_get
-test = galtea.tests.get(test_id=test_id)
+dataset = galtea.datasets.get(dataset_id=dataset_id)
 # @end test_get
-if test is None:
-    raise ValueError("test from get is None")
+if dataset is None:
+    raise ValueError("dataset from get is None")
 
 # @start test_get_by_name
-test = galtea.tests.get_by_name(product_id=product_id, test_name=test_name)
+dataset = galtea.datasets.get_by_name(product_id=product_id, dataset_name=dataset_name)
 # @end test_get_by_name
-if test is None:
-    raise ValueError("test from get_by_name is None")
+if dataset is None:
+    raise ValueError("dataset from get_by_name is None")
 
 
 # @start test_case_create
 test_case = galtea.test_cases.create(
-    test_id=test_id,
+    dataset_id=dataset_id,
     input="What is the capital of France?",
     expected_output="Paris",
     context="Geography facts",
@@ -153,7 +153,7 @@ if test_case is None:
 test_case_id = test_case.id
 
 # @start test_case_list
-test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
+test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
 # @end test_case_list
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("test_cases from list is None or empty")
@@ -318,7 +318,7 @@ specification = galtea.specifications.create(
     name="Accurate and relevant answers",
     description="The assistant must provide accurate and relevant answers to user questions.",
     type="POLICY",
-    test_type="BEHAVIOR",
+    dataset_type="BEHAVIOR",
 )
 galtea.specifications.link_metrics(
     specification_id=specification.id,
@@ -426,28 +426,28 @@ trace = galtea.traces.get(trace_id=trace_id)
 if trace is None:
     raise ValueError("trace from get is None")
 
-behavior_test = galtea.tests.create(
+behavior_dataset = galtea.datasets.create(
     product_id=product_id,
     name="behavior-test-from-file-docs-" + run_identifier,
     type="BEHAVIOR",
-    test_file_path="path/to/behavior_test.csv",
+    dataset_file_path="path/to/behavior_dataset.csv",
 )
 
-security_test = galtea.tests.create(
+security_dataset = galtea.datasets.create(
     product_id=product_id,
     name="security-test-from-file-docs-" + run_identifier,
     type="SECURITY",
-    test_file_path="path/to/security_test.csv",
+    dataset_file_path="path/to/security_dataset.csv",
 )
 
-accuracy_test = galtea.tests.create(
+accuracy_dataset = galtea.datasets.create(
     product_id=product_id,
     name="accuracy-test-from-file-docs-" + run_identifier,
     type="ACCURACY",
-    test_file_path="path/to/accuracy_test.csv",
+    dataset_file_path="path/to/accuracy_dataset.csv",
 )
 
-behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id, limit=1)[0]
+behavior_test_case = galtea.test_cases.list(dataset_id=behavior_dataset.id, limit=1)[0]
 
 behavior_session = galtea.sessions.create(
     version_id=version_id,
@@ -689,16 +689,16 @@ if evaluation is None:
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    test = galtea.tests.get(test_id=test.id)
-    if test.uri:
+    dataset = galtea.datasets.get(dataset_id=dataset.id)
+    if dataset.uri:
         break
     print("Waiting for test file to be ready...")
     time.sleep(1)
 else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
+    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
 
 # @start test_download
-downloaded_path = galtea.tests.download(test=test, output_directory="./.temp")
+downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")
 # @end test_download
 if downloaded_path is None:
     raise ValueError("downloaded_path from download is None")
@@ -732,7 +732,7 @@ galtea.test_cases.delete(test_case_id=test_case_id)
 # @end test_case_delete
 
 # @start test_delete
-galtea.tests.delete(test_id=test_id)
+galtea.datasets.delete(dataset_id=dataset_id)
 # @end test_delete
 
 # Deleting the product ensures complete cleanup of all associated resources

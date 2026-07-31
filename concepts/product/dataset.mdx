@@ -1,0 +1,224 @@
+---
+title: "Dataset"
+sidebarTitle: "Overview"
+description: "A dataset of test cases for evaluating product performance"
+---
+
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+import SDKDatasetServiceCard from '/snippets/cards/sdk-dataset-service-card.mdx';
+
+## What is a Dataset?
+
+**A dataset in Galtea is a group of test cases** designed to evaluate the performance of a [product](/concepts/product). A dataset file provides simulations of interactions with the product (and, in [Accuracy datasets](/concepts/product/dataset/accuracy-datasets), expected outcomes for each interaction).
+
+You can **create**, view and manage your datasets on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/dataset/service).
+
+## Dataset Origin
+
+When creating a dataset in the Galtea dashboard, you'll be asked to specify the dataset origin:
+
+<CardGroup cols={2}>
+  <Card title="Generated" icon="wand-magic-sparkles">
+    Galtea will take the knowledge base file and generate a set of test cases that will define the dataset.
+  </Card>
+  <Card title="Uploaded" icon="file-arrow-up">
+    The dataset is uploaded by you as a complete set of test cases.
+  </Card>
+</CardGroup>
+
+Your selection will determine whether you need to provide a *Knowledge Base File* or a *Dataset File*.
+
+  <video
+    controls
+    muted
+    playsInline
+    className="w-full aspect-video rounded-xl"
+    src="/videos/test-generation-demo.mp4"
+  ></video>
+
+<Info>
+  The SDK parameter `variants` is used to specify "Threats" for Security datasets. Similarly, the `strategies` parameter is used for Security datasets to apply different attack modifications.
+</Info>
+
+<Info>
+  More information on how to create datasets can be found in the [Create Accuracy Datasets](/concepts/product/dataset/accuracy-datasets) and [Create Security Datasets](/concepts/product/dataset/security-datasets) documentation.
+</Info>
+
+<Note>
+  It is important to note that the information you provide during **product onboarding**, such as the product's description and intended use, plays a valuable role when generating test cases. Galtea can leverage this metadata to generate more targeted and context-aware test cases when creating both Accuracy and Security datasets, leading to more effective and insightful evaluations.
+</Note>
+
+## Dataset Types
+
+Galtea supports three main types of datasets:
+
+<CardGroup cols={3}>
+  <Card title="Accuracy Datasets" icon="star" href="/concepts/product/dataset/accuracy-datasets">
+    Datasets that evaluate the quality and correctness of outputs.
+  </Card>
+  <Card title="Security & Safety Datasets" icon="shield-halved" href="/concepts/product/dataset/security-datasets">
+    Datasets that evaluate security, safety, and bias aspects, often by generating adversarial inputs based on defined threats and applying various strategies to make them more challenging.
+  </Card>
+  <Card title="Behavior Datasets" icon="user-group" href="/concepts/product/dataset/behavior-datasets">
+    Datasets that evaluate multi-turn dialogue capabilities of an agent, through the use of scenarios which are based on user personas and specific goals.
+  </Card>
+</CardGroup>
+
+## Using Datasets in Evaluations
+
+The [Test Cases](/concepts/product/dataset/test-case) of a Dataset are used in [evaluations](/concepts/product/version/session/evaluation) to assess the performance of specific [versions](/concepts/product/version) of your product. These evaluations are grouped within [sessions](/concepts/product/version/session).
+
+<Warning>
+  The [Test Cases](/concepts/product/dataset/test-case) of a Dataset should be reused across multiple [sessions](/concepts/product/version/session) of distinct [versions](/concepts/product/version) to ensure consistent comparison between different [product](/concepts/product) [versions](/concepts/product/version).
+</Warning>
+
+<Card title="Using Datasets in Evaluations" icon="badge-check" iconType="solid" href="/concepts/product/version/session/evaluation">
+  Learn how to use datasets with evaluations
+</Card>
+
+## Dataset File Formats
+
+When uploading a dataset file, the required columns depend on the dataset type:
+
+<CardGroup cols={3}>
+  <Card title="Accuracy Dataset Format" icon="star" href="/concepts/product/dataset/accuracy-datasets#example-accuracy-datasets-and-file-format">
+    Required: `input`, `expected_output`. Optional: `context`, `tag`, `source`. The `input` column accepts plain strings or JSON objects for structured inputs.
+  </Card>
+  <Card title="Security & Safety Dataset Format" icon="shield-halved" href="/concepts/product/dataset/security-datasets#example-security--safety-datasets-and-file-format">
+    Required: `input`. Optional: `expected_output`, `tag`, `source`.
+  </Card>
+  <Card title="Behavior Dataset Format" icon="comments" href="/concepts/product/dataset/behavior-datasets#example-behavior-datasets-and-file-format">
+    Required: `goal`, `user_persona`. Optional: `input`, `stopping_criterias`, `max_iterations`.
+  </Card>
+</CardGroup>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage datasets programmatically.
+
+<CardGroup cols={2}>
+  <SDKDatasetServiceCard />
+  <Card title="Create a Custom Dataset" icon="clipboard-list" href="/sdk/tutorials/create-dataset">
+    See how to create and upload custom datasets using the SDK.
+  </Card>
+</CardGroup>
+
+<Note>
+  Already have a dataset and want more cases? If Galtea generated the dataset, use [Extend](/concepts/product/dataset/extend-test-cases) to add more cases the same way it was created. For any dataset with cases, use [Data Augmentation](/concepts/product/dataset/data-augmentation) to expand it from its existing examples.
+</Note>
+
+## Dataset Properties
+
+<ResponseField name="Dataset Name" type="Text" required>
+  The name of the dataset. **Example**: "Legal Document Accuracy Test" or "Customer Support Safety Evaluation"
+</ResponseField>
+
+<ResponseField name="Status" type="Enum">
+  The current status of the dataset.
+  Possible values:
+  - `PENDING`: Test cases are being generated
+  - `SUCCESS`: Dataset is ready
+  - `FAILED`: Dataset generation failed
+  - `AUGMENTING`: Test cases are being augmented with additional generated cases
+  - `EXTENDING`: Test cases are being extended by re-running the dataset's original generator
+  - `CANCELLED`: Dataset generation was cancelled
+</ResponseField>
+
+<ResponseField name="Type" type="Enum" required>
+  The type of the dataset.
+  Possible values:
+  - [Accuracy](/concepts/product/dataset/accuracy-datasets) (`ACCURACY`): Datasets that evaluate the quality and correctness of outputs
+  - [Security & Safety](/concepts/product/dataset/security-datasets) (`SECURITY`): Datasets that evaluate security, safety, and bias aspects
+  - [Behavior](/concepts/product/dataset/behavior-datasets) (`BEHAVIOR`): Datasets that use conversation simulation to evaluate multi-turn dialogue interactions
+</ResponseField>
+
+<ResponseField name="Metadata" type="Any">
+  An open field where you can store any value for tracking or organizational purposes. Accepts plain text, numbers, JSON objects, arrays, or booleans.
+
+  **Example**: `{"environment": "staging", "team": "ml-ops"}` or `"my tracking note"`
+</ResponseField>
+
+<ResponseField name="Background Noise Profile" type="Enum">
+  Background noise mixed into the simulated caller's audio for voice datasets run over a [phone connection](/concepts/product/phone-connection). Only applies to voice datasets; has no effect otherwise.
+  Possible values:
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  Every test case Galtea generates or ingests from a CSV file inherits this value at creation time. Must be set together with **Background Noise Level**.
+</ResponseField>
+
+<ResponseField name="Background Noise Level" type="Enum">
+  How loud the background noise is relative to the caller's speech.
+  Possible values: `light`, `medium`, `heavy`. Must be set together with **Background Noise Profile**.
+</ResponseField>
+
+<Tabs>
+  <Tab title="Generated">
+    <ResponseField name="Few Shot Examples" type="Text">
+      Optional few-shot examples to provide more context to our system about how the test cases should be generated. This can help our system better understand the expected format and style wanted for the test cases.
+      **Example**:
+      ```
+      Q: What is the capital of France?
+      A: The capital of France is Paris.
+      Q: What is the capital of Germany?
+      A: The capital of Germany is Berlin.
+      ```
+      <Note>This field only applies if datasets are generated by Galtea and are of type Accuracy.</Note>
+    </ResponseField>
+    <ResponseField name="Language" type="Text">
+      The language for generating synthetic test cases if `Knowledge Base File` is provided (e.g., 'english', 'spanish'). This should be the English name of the language. If not provided, Galtea attempts to infer the language from the knowledge base file. Supported languages include English, Spanish, Catalan, French, German, Portuguese, Italian, Dutch, Polish, Chinese, Korean, and Japanese.
+      <Note>This field only applies if datasets are generated by Galtea (using `Knowledge Base File`).</Note>
+    </ResponseField>
+    <ResponseField name="Max Test Cases" type="Number">
+      The maximum number of test cases generated by Galtea. This helps control the size of the dataset and associated costs.
+    </ResponseField>
+    <Tabs>
+      <Tab title="Accuracy">
+        <ResponseField name="Knowledge Base File" type="File" required>
+          The path to a local file (e.g., PDF, TXT, JSON, HTML, Markdown) containing the knowledge base. This file is uploaded to Galtea, which then generates test cases based on its content. Required if the test cases are to be generated by Galtea. **Example**: "path/to/your/knowledge_base.pdf"
+        </ResponseField>
+      </Tab>
+      <Tab title="Security & Safety">
+        <ResponseField name="Threats" type="List[Enum]" required>
+          Specifies which [threat categories](/concepts/product/dataset/security-threats) to generate test cases for. This corresponds to the `variants` parameter in the SDK.
+        </ResponseField>
+        <ResponseField name="Strategies" type="List[Enum]">
+          A list of [security strategies](/concepts/product/dataset/security-strategies) to modify prompts for each threat. This corresponds to the `strategies` parameter in the SDK.
+        </ResponseField>
+      </Tab>
+      <Tab title="Behavior">
+        <ResponseField name="Knowledge Base File" type="File" optional>
+          Optional file containing context or domain knowledge to help generate more realistic conversation scenarios. **Example**: "path/to/your/domain_context.pdf"
+        </ResponseField>
+        <ResponseField name="custom_user_focus" type="Text" optional>
+          Narrow down the scope of generated scenarios by describing a specific type of user, context, or situation. This helps ensure test cases align with your most relevant goals and flows. **Example**: "A medical professional specialized in dementia with more than 15 years in the field."
+        </ResponseField>
+        <ResponseField name="Max Test Cases" type="Number">
+          The maximum number of conversation scenarios generated by Galtea. This helps control the size of the dataset.
+        </ResponseField>
+      </Tab>
+    </Tabs>
+
+  </Tab>
+  <Tab title="Uploaded">
+    <ResponseField name="Dataset File" type="File" required>
+      The path to a local CSV file containing predefined test cases. This file is uploaded to Galtea. Required if you are providing your own set of test cases instead of having Galtea generate them. **Example**: "path/to/your/test_file.csv"
+
+      **File Format Requirements:**
+      - **Accuracy/Security Datasets**: Must include `input`, `expected_output`, `tag`, `source` columns
+      - **Behavior Datasets**: Must include conversation simulation columns (see Behavior Dataset File Format below)
+    </ResponseField>
+  </Tab>
+</Tabs>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Create a Dataset" icon="flask" href="/sdk/tutorials/create-dataset">
+    Tutorial on creating datasets via the SDK.
+  </Card>
+  <Card title="Specification-Driven Datasets" icon="bullseye" href="/sdk/tutorials/specification-driven-evaluations">
+    Auto-derive dataset types from specifications.
+  </Card>
+</CardGroup>

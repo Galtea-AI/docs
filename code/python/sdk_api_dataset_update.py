@@ -14,7 +14,7 @@ product_id: str = create_test_product(
     description="Product for test update documentation",
 )
 
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     name=f"original-test-{run_identifier}",
     type="SECURITY",
     product_id=product_id,
@@ -25,24 +25,24 @@ test = galtea.tests.create(
 )
 
 # @start rename_test
-renamed = galtea.tests.update(
-    test_id=test.id,
+renamed = galtea.datasets.update(
+    dataset_id=dataset.id,
     name=f"renamed-test-{run_identifier}",
 )
 # @end rename_test
 print(f"Renamed test to: {renamed.name}")
 
 # @start update_metadata
-with_new_metadata = galtea.tests.update(
-    test_id=test.id,
+with_new_metadata = galtea.datasets.update(
+    dataset_id=dataset.id,
     metadata={"owner": "platform-team", "ticket": "QA-200", "priority": "high"},
 )
 # @end update_metadata
 print(f"Updated metadata: {with_new_metadata.metadata}")
 
 # @start update_both
-updated = galtea.tests.update(
-    test_id=test.id,
+updated = galtea.datasets.update(
+    dataset_id=dataset.id,
     name=f"final-test-{run_identifier}",
     metadata={"owner": "platform-team", "archived": True},
 )

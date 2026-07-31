@@ -6,10 +6,10 @@ icon: "user-group"
 
 import AgentCallables from '/snippets/agent-callables.mdx';
 
-Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) allows you to test your AI products — chatbots, assistants, and agents — by simulating realistic multi-turn user interactions. This guide walks you through integrating your agent and running simulations using [Behavior Tests](/concepts/product/test/behavior-tests).
+Galtea's [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator) allows you to test your AI products — chatbots, assistants, and agents — by simulating realistic multi-turn user interactions. This guide walks you through integrating your agent and running simulations using [Behavior Datasets](/concepts/product/dataset/behavior-datasets).
 
 <Tip>
-  **Using the specification-driven workflow?** If you've defined [Specifications](/concepts/product/specification) with linked metrics and tests, the evaluation pipeline handles simulation automatically — no manual session creation needed. See [Evaluations from Specs](/sdk/tutorials/specification-driven-evaluations).
+  **Using the specification-driven workflow?** If you've defined [Specifications](/concepts/product/specification) with linked metrics and datasets, the evaluation pipeline handles simulation automatically — no manual session creation needed. See [Evaluations from Specs](/sdk/tutorials/specification-driven-evaluations).
 </Tip>
 
 ## Agent Integration Options
@@ -25,8 +25,8 @@ Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simul
   <Step title="Prepare Scenario Data">
     Create a CSV file with scenario data, or generate test cases from your [specifications](/concepts/product/specification). Each row describes a user goal, persona, scenario, and the first user message.
   </Step>
-  <Step title="Create a Test and Sessions">
-    Upload your scenario CSV to create a test, or use AI-generated tests from the dashboard. The platform generates a session for each test case.
+  <Step title="Create a Dataset and Sessions">
+    Upload your scenario CSV to create a dataset, or use AI-generated datasets from the dashboard. The platform generates a session for each test case.
   </Step>
   <Step title="Run the Simulator with Your Agent">
     Use `simulator.simulate()` to execute the conversation between your agent and the simulated user for each session.
@@ -38,27 +38,27 @@ Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simul
 
 ### Step-by-Step Guide
 
-#### 1. Create a Test and Sessions
+#### 1. Create a Dataset and Sessions
 
 First, create behavior test cases with user personas and goals. You can generate these from your product description or upload a CSV:
 
 ```python
-# Create a test suite using the behavior test options
+# Create a dataset using the behavior dataset options
 # This can be done via the Dashboard or programmatically as shown here
-test = galtea_client.tests.create(
+dataset = galtea_client.datasets.create(
     product_id=product.id,
-    name=test_name,
+    name=dataset_name,
     type="BEHAVIOR",
-    # This time we provide a path to a CSV file with behavior tests, but you can also have Galtea generate them if you do not provide a CSV file
-    test_file_path="path/to/behavior_test.csv",
+    # This time we provide a path to a CSV file of behavior test cases, but you can also have Galtea generate them if you do not provide a CSV file
+    dataset_file_path="path/to/behavior_dataset.csv",
 )
 
 # Get your test cases
-# If Galtea is generating the test for you, it might take a few moments to be ready
-test_cases = galtea_client.test_cases.list(test_id=test.id)
+# If Galtea is generating the dataset for you, it might take a few moments to be ready
+test_cases = galtea_client.test_cases.list(dataset_id=dataset.id)
 ```
 
-Once generation completes, you'll see the resulting test cases in your dashboard. For the CSV upload format, see [Behavior Tests](/concepts/product/test/behavior-tests).
+Once generation completes, you'll see the resulting test cases in your dashboard. For the CSV upload format, see [Behavior Datasets](/concepts/product/dataset/behavior-datasets).
 
 #### 2. Run the Conversation Simulator
 

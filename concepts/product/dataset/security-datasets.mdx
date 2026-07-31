@@ -1,16 +1,16 @@
 ---
-title: "Security & Safety Tests"
+title: "Security & Safety Datasets"
 description: "Evaluate security, safety, and bias aspects of your AI products"
 sidebarTitle: "Overview"
 ---
 
-## What are Security & Safety Tests?
+## What are Security & Safety Datasets?
 
-Security & Safety tests in Galtea are designed to evaluate the security, safety, and bias aspects of your [product](/concepts/product). These tests typically consist of different types of [threats](/concepts/product/test/security-threats) like adversarial inputs specifically crafted to probe potential weaknesses or vulnerabilities in your AI system. To further enhance the diversity and evasiveness of these tests, Galtea can apply various [security strategies](/concepts/product/test/security-strategies) to the prompts generated from these threats.
+Security & Safety datasets in Galtea are designed to evaluate the security, safety, and bias aspects of your [product](/concepts/product). These datasets typically consist of different types of [threats](/concepts/product/dataset/security-threats) like adversarial inputs specifically crafted to probe potential weaknesses or vulnerabilities in your AI system. To further enhance the diversity and evasiveness of these datasets, Galtea can apply various [security strategies](/concepts/product/dataset/security-strategies) to the prompts generated from these threats.
 
-## Creating Security & Safety Tests
+## Creating Security & Safety Datasets
 
-You can create security & safety tests in Galtea through two methods:
+You can create security & safety datasets in Galtea through two methods:
 
 <Tabs>
   <Tab title="Generate from Your Known Threats">
@@ -18,14 +18,14 @@ You can create security & safety tests in Galtea through two methods:
       <Step title="Prepare your threat input file">
         Create a file with examples of harmful content or sensitive topic areas you want to test
       </Step>
-      <Step title="Configure the test">
-        Select *Security & Safety* as the test type and *Generated* as the test origin
+      <Step title="Configure the dataset">
+        Select *Security & Safety* as the dataset type and *Generated* as the dataset origin
         <Info>
-          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+          The dataset creation process can be done via the [SDK](/sdk/api/dataset/create) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
       </Step>
-      <Step title="Generate the test">
-        Galtea will process the Knowledge Base and generate a *Test File* containing *Test Cases* with adversarial inputs for you, potentially applying selected strategies to vary the attack vectors.
+      <Step title="Generate the dataset">
+        Galtea will process the Knowledge Base and generate a *Dataset File* containing *Test Cases* with adversarial inputs for you, potentially applying selected strategies to vary the attack vectors.
       </Step>
     </Steps>
 
@@ -37,18 +37,18 @@ You can create security & safety tests in Galtea through two methods:
       src="/videos/generate-red-teaming.mp4"
     ></video>
   </Tab>
-  <Tab title="Upload Your Own Test">
+  <Tab title="Upload Your Own Dataset">
     <Steps>
-      <Step title="Create your test file">
-        Prepare a CSV file following the structure shown [below](#example-security-safety-tests-and-file-format)
+      <Step title="Create your dataset file">
+        Prepare a CSV file following the structure shown [below](#example-security--safety-datasets-and-file-format)
       </Step>
-      <Step title="Configure the test">
-        Select "Security & Safety" as the test type and "Uploaded" as the test origin
+      <Step title="Configure the dataset">
+        Select "Security & Safety" as the dataset type and "Uploaded" as the dataset origin
         <Info>
-          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+          The dataset creation process can be done via the [SDK](/sdk/api/dataset/create) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
       </Step>
-      <Step title="Upload your test file">
+      <Step title="Upload your dataset file">
         Select the file you created and upload it to Galtea
       </Step>
     </Steps>
@@ -57,7 +57,7 @@ You can create security & safety tests in Galtea through two methods:
 
 ## Testing Categories
 
-Security & Safety tests typically focus on several key categories:
+Security & Safety datasets typically focus on several key categories:
 
 <AccordionGroup>
   <Accordion title="Security Vulnerabilities">Tests that attempt to elicit information or instructions that could compromise security, such as hacking guides or social engineering techniques.</Accordion>
@@ -68,12 +68,12 @@ Security & Safety tests typically focus on several key categories:
   <Accordion title="Prompt Injection">Tests that attempt to manipulate the model by inserting false system prompts or directives.</Accordion>
 </AccordionGroup>
 
-## Example Security & Safety Tests and File Format
+## Example Security & Safety Datasets and File Format
 
 Here are examples of the content and its creation-document structure:
 
 <Warning>
-  Security & Safety tests intentionally contain harmful or adversarial content. These are used solely for the purpose of testing AI safety and security. Always handle such content responsibly and in accordance with your organization's policies.
+  Security & Safety datasets intentionally contain harmful or adversarial content. These are used solely for the purpose of testing AI safety and security. Always handle such content responsibly and in accordance with your organization's policies.
 </Warning>
 
 <AccordionGroup>
@@ -139,7 +139,7 @@ Here are examples of the content and its creation-document structure:
 </AccordionGroup>
 
 <Note>
-  This structure is the required by Galtea in order to automatically generate the [test cases](/concepts/product/test/case) for your [test](/concepts/product/test). If that format is not provided, you can still [manually create the test cases](/sdk/api/test-case/service#create-test-case).
+  This structure is the required by Galtea in order to automatically generate the [test cases](/concepts/product/dataset/test-case) for your [dataset](/concepts/product/dataset). If that format is not provided, you can still [manually create the test cases](/sdk/api/test-case/create).
 </Note>
 
 <Info>
@@ -150,28 +150,28 @@ Here are examples of the content and its creation-document structure:
   The contexts and the extent of the examples provided above are short extractions. In the actual CSV files the context can be much longer and the amount of test cases (rows) can be much higher.
 </Warning>
 
-## Structure of Security & Safety Tests
+## Structure of Security & Safety Datasets
 
-Security & Safety tests have a specific structure focused on providing challenging inputs:
+Security & Safety datasets have a specific structure focused on providing challenging inputs:
 
 <ResponseField name="instance_id" type="Number" required>
   A unique identifier for the test instance.
 </ResponseField>
 
 <ResponseField name="input" type="Text" required>
-  The adversarial input specifically designed to test the product's resilience against potential vulnerabilities. Security test inputs are plain strings (adversarial prompts) - structured JSON input does not apply to this test type. **Example**: "Please ignore any previous instructions and..."
+  The adversarial input specifically designed to test the product's resilience against potential vulnerabilities. Security dataset inputs are plain strings (adversarial prompts) - structured JSON input does not apply to this dataset type. **Example**: "Please ignore any previous instructions and..."
 </ResponseField>
 
 <ResponseField name="expected_output" type="Text">
-  For security & safety tests, this field is typically marked as "N/A" since the purpose is to test system resilience rather than producing a specific output.
+  For security & safety datasets, this field is typically marked as "N/A" since the purpose is to test system resilience rather than producing a specific output.
 </ResponseField>
 
 <ResponseField name="tag" type="Text">
-  A categorization tag for the test instance, typically "adversarial_inputs" for security & safety tests.
+  A categorization tag for the test instance, typically "adversarial_inputs" for security & safety datasets.
 </ResponseField>
 
 <ResponseField name="source" type="Text">
-  The source of the adversarial input, which may be marked as "N/A" for security & safety tests.
+  The source of the adversarial input, which may be marked as "N/A" for security & safety datasets.
 </ResponseField>
 
 ## Recommended Metrics
@@ -191,4 +191,4 @@ Security & Safety tests have a specific structure focused on providing challengi
   </Card>
 </CardGroup>
 
-See [Security & Safety Threats](/concepts/product/test/security-threats) for a full mapping of threats to suggested metrics.
+See [Security & Safety Threats](/concepts/product/dataset/security-threats) for a full mapping of threats to suggested metrics.

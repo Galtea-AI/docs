@@ -7,7 +7,7 @@ icon: "tower-broadcast"
 Galtea allows you to run inferences against your AI system and evaluate its responses **directly from the Dashboard**, without writing any SDK code. This is made possible by [Endpoint Connections](/concepts/product/endpoint-connection), which tell Galtea how to call your API, extract the response, and manage session state across turns.
 
 <Info>
-  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/run-test-based-evaluations) instead.
+  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/run-dataset-based-evaluations) instead.
 </Info>
 
 ## Prerequisites
@@ -15,7 +15,7 @@ Galtea allows you to run inferences against your AI system and evaluate its resp
 Before you begin, make sure you have the following set up in the [Galtea Dashboard](https://platform.galtea.ai/):
 
 - A [Product](/concepts/product) representing your AI system
-- A [Test](/concepts/product/test) with at least one [Test Case](/concepts/product/test/case) to run against your endpoint
+- A [Dataset](/concepts/product/dataset) with at least one [Test Case](/concepts/product/dataset/test-case) to run against your endpoint
 
 ## Workflow Overview
 
@@ -26,8 +26,8 @@ Before you begin, make sure you have the following set up in the [Galtea Dashboa
   <Step title="Create a Version with the Endpoint Connection">
     Create a new version of your product and attach the endpoint connection to it.
   </Step>
-  <Step title="Run a Test from the Dashboard">
-    Select a test and run it against the version. Galtea calls your endpoint for each test case and records the inference results.
+  <Step title="Run a Dataset from the Dashboard">
+    Select a dataset and run it against the version. Galtea calls your endpoint for each test case and records the inference results.
   </Step>
   <Step title="Evaluate the Results">
     Once inferences are generated, trigger evaluations with the metrics of your choice to assess your AI's performance.
@@ -172,14 +172,14 @@ Once **Link Connection** is on, the **Endpoint Connection** is the only required
   If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. These also appear only under **Link Connection** with the **HTTP Endpoint** target. See [Endpoint Connection — Multi-Step Session Lifecycle](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced) for details.
 </Note>
 
-## Step 3: Run a Test
+## Step 3: Run a Dataset
 
-Once your version is set up with an endpoint connection, you can run tests directly from the Dashboard:
+Once your version is set up with an endpoint connection, you can run datasets directly from the Dashboard:
 
-1. Navigate to your product's **Tests** section.
-2. Select the test you want to run.
+1. Navigate to your product's **Datasets** section.
+2. Select the dataset you want to run.
 3. Choose the version with the configured endpoint connection.
-4. Start the test run.
+4. Start the dataset run.
 
 Galtea will iterate through each test case, call your endpoint using the configured endpoint connection, and record the resulting [Inference Results](/concepts/product/version/session/inference-result). Each test case produces a session with one or more inference results depending on whether it's a single-turn or multi-turn test.
 
