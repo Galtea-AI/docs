@@ -15,11 +15,11 @@ PRODUCT_ID: str = create_test_product(
 )
 
 # Create a test with test cases
-dataset = galtea.datasets.create(
+test = galtea.tests.create(
     product_id=PRODUCT_ID,
     name=f"github-actions-test-{run_identifier}",
     type="ACCURACY",
-    dataset_file_path="path/to/accuracy_dataset.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
 
 # @start github_actions_workflow
@@ -28,7 +28,7 @@ dataset = galtea.datasets.create(
 
 version = galtea.versions.create(name=f"v1.X-{run_identifier}", product_id=PRODUCT_ID)
 
-test_cases = galtea.test_cases.list(dataset_id=dataset.id)
+test_cases = galtea.test_cases.list(test_id=test.id)
 
 metrics = [{"name": "Factual Accuracy"}]
 

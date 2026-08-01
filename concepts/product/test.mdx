@@ -1,0 +1,224 @@
+---
+title: "Test"
+sidebarTitle: "Overview"
+description: "A set of test cases for evaluating product performance"
+---
+
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+import SDKTestServiceCard from '/snippets/cards/sdk-test-service-card.mdx';
+
+## What is a Test?
+
+**A test in Galtea is a group of test cases** designed to evaluate the performance of a [product](/concepts/product). A test file provides simulations of interactions with the product (and, in [Accuracy tests](/concepts/product/test/accuracy-tests), expected outcomes for each interaction).
+
+You can **create**, view and manage your tests on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/test/service).
+
+## Test Origin
+
+When creating a test in the Galtea dashboard, you'll be asked to specify the test origin:
+
+<CardGroup cols={2}>
+  <Card title="Generated" icon="wand-magic-sparkles">
+    Galtea will take the knowledge base file and generate a set of test cases that will define the test.
+  </Card>
+  <Card title="Uploaded" icon="file-arrow-up">
+    The test is uploaded by you as a complete set of test cases.
+  </Card>
+</CardGroup>
+
+Your selection will determine whether you need to provide a *Knowledge Base File* or a *Test File*.
+
+  <video
+    controls
+    muted
+    playsInline
+    className="w-full aspect-video rounded-xl"
+    src="/videos/test-generation-demo.mp4"
+  ></video>
+
+<Info>
+  The SDK parameter `variants` is used to specify "Threats" for Security tests. Similarly, the `strategies` parameter is used for Security tests to apply different attack modifications.
+</Info>
+
+<Info>
+  More information on how to create tests can be found in the [Create Accuracy Tests](/concepts/product/test/accuracy-tests) and [Create Security Tests](/concepts/product/test/security-tests) documentation.
+</Info>
+
+<Note>
+  It is important to note that the information you provide during **product onboarding**, such as the product's description and intended use, plays a valuable role when generating test cases. Galtea can leverage this metadata to generate more targeted and context-aware test cases when creating both Accuracy and Security tests, leading to more effective and insightful evaluations.
+</Note>
+
+## Test Types
+
+Galtea supports three main types of tests:
+
+<CardGroup cols={3}>
+  <Card title="Accuracy Tests" icon="star" href="/concepts/product/test/accuracy-tests">
+    Tests that evaluate the quality and correctness of outputs.
+  </Card>
+  <Card title="Security & Safety Tests" icon="shield-halved" href="/concepts/product/test/security-tests">
+    Tests that evaluate security, safety, and bias aspects, often by generating adversarial inputs based on defined threats and applying various strategies to make them more challenging.
+  </Card>
+  <Card title="Behavior Tests" icon="user-group" href="/concepts/product/test/behavior-tests">
+    Tests that evaluate multi-turn dialogue capabilities of an agent, through the use of scenarios which are based on user personas and specific goals.
+  </Card>
+</CardGroup>
+
+## Using Tests in Evaluations
+
+The [Test Cases](/concepts/product/test/case) of a Test are used in [evaluations](/concepts/product/version/session/evaluation) to assess the performance of specific [versions](/concepts/product/version) of your product. These evaluations are grouped within [sessions](/concepts/product/version/session).
+
+<Warning>
+  The [Test Cases](/concepts/product/test/case) of a Test should be reused across multiple [sessions](/concepts/product/version/session) of distinct [versions](/concepts/product/version) to ensure consistent comparison between different [product](/concepts/product) [versions](/concepts/product/version).
+</Warning>
+
+<Card title="Using Tests in Evaluations" icon="badge-check" iconType="solid" href="/concepts/product/version/session/evaluation">
+  Learn how to use tests with evaluations
+</Card>
+
+## Test File Formats
+
+When uploading a test file, the required columns depend on the test type:
+
+<CardGroup cols={3}>
+  <Card title="Accuracy Test Format" icon="star" href="/concepts/product/test/accuracy-tests#example-accuracy-tests-and-file-format">
+    Required: `input`, `expected_output`. Optional: `context`, `tag`, `source`. The `input` column accepts plain strings or JSON objects for structured inputs.
+  </Card>
+  <Card title="Security & Safety Test Format" icon="shield-halved" href="/concepts/product/test/security-tests#example-security--safety-tests-and-file-format">
+    Required: `input`. Optional: `expected_output`, `tag`, `source`.
+  </Card>
+  <Card title="Behavior Test Format" icon="comments" href="/concepts/product/test/behavior-tests#example-behavior-tests-and-file-format">
+    Required: `goal`, `user_persona`. Optional: `input`, `stopping_criterias`, `max_iterations`.
+  </Card>
+</CardGroup>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage tests programmatically.
+
+<CardGroup cols={2}>
+  <SDKTestServiceCard />
+  <Card title="Create a Custom Test" icon="clipboard-list" href="/sdk/tutorials/create-test">
+    See how to create and upload custom tests using the SDK.
+  </Card>
+</CardGroup>
+
+<Note>
+  Already have a test and want more cases? If Galtea generated the test, use [Extend](/concepts/product/test/extend-test-cases) to add more cases the same way it was created. For any test with cases, use [Data Augmentation](/concepts/product/test/data-augmentation) to expand it from its existing examples.
+</Note>
+
+## Test Properties
+
+<ResponseField name="Test Name" type="Text" required>
+  The name of the test. **Example**: "Legal Document Accuracy Test" or "Customer Support Safety Evaluation"
+</ResponseField>
+
+<ResponseField name="Status" type="Enum">
+  The current status of the test.
+  Possible values:
+  - `PENDING`: Test cases are being generated
+  - `SUCCESS`: Test is ready
+  - `FAILED`: Test generation failed
+  - `AUGMENTING`: Test cases are being augmented with additional generated cases
+  - `EXTENDING`: Test cases are being extended by re-running the test's original generator
+  - `CANCELLED`: Test generation was cancelled
+</ResponseField>
+
+<ResponseField name="Type" type="Enum" required>
+  The type of the test.
+  Possible values:
+  - [Accuracy](/concepts/product/test/accuracy-tests) (`ACCURACY`): Tests that evaluate the quality and correctness of outputs
+  - [Security & Safety](/concepts/product/test/security-tests) (`SECURITY`): Tests that evaluate security, safety, and bias aspects
+  - [Behavior](/concepts/product/test/behavior-tests) (`BEHAVIOR`): Tests that use conversation simulation to evaluate multi-turn dialogue interactions
+</ResponseField>
+
+<ResponseField name="Metadata" type="Any">
+  An open field where you can store any value for tracking or organizational purposes. Accepts plain text, numbers, JSON objects, arrays, or booleans.
+
+  **Example**: `{"environment": "staging", "team": "ml-ops"}` or `"my tracking note"`
+</ResponseField>
+
+<ResponseField name="Background Noise Profile" type="Enum">
+  Background noise mixed into the simulated caller's audio for voice tests run over a [phone connection](/concepts/product/phone-connection). Only applies to voice tests; has no effect otherwise.
+  Possible values:
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  Every test case Galtea generates or ingests from a CSV file inherits this value at creation time. Must be set together with **Background Noise Level**.
+</ResponseField>
+
+<ResponseField name="Background Noise Level" type="Enum">
+  How loud the background noise is relative to the caller's speech.
+  Possible values: `light`, `medium`, `heavy`. Must be set together with **Background Noise Profile**.
+</ResponseField>
+
+<Tabs>
+  <Tab title="Generated">
+    <ResponseField name="Few Shot Examples" type="Text">
+      Optional few-shot examples to provide more context to our system about how the test cases should be generated. This can help our system better understand the expected format and style wanted for the test cases.
+      **Example**:
+      ```
+      Q: What is the capital of France?
+      A: The capital of France is Paris.
+      Q: What is the capital of Germany?
+      A: The capital of Germany is Berlin.
+      ```
+      <Note>This field only applies if tests are generated by Galtea and are of type Accuracy.</Note>
+    </ResponseField>
+    <ResponseField name="Language" type="Text">
+      The language for generating synthetic test cases if `Knowledge Base File` is provided (e.g., 'english', 'spanish'). This should be the English name of the language. If not provided, Galtea attempts to infer the language from the knowledge base file. Supported languages include English, Spanish, Catalan, French, German, Portuguese, Italian, Dutch, Polish, Chinese, Korean, and Japanese.
+      <Note>This field only applies if tests are generated by Galtea (using `Knowledge Base File`).</Note>
+    </ResponseField>
+    <ResponseField name="Max Test Cases" type="Number">
+      The maximum number of test cases generated by Galtea. This helps control the size of the test dataset and associated costs.
+    </ResponseField>
+    <Tabs>
+      <Tab title="Accuracy">
+        <ResponseField name="Knowledge Base File" type="File" required>
+          The path to a local file (e.g., PDF, TXT, JSON, HTML, Markdown) containing the knowledge base. This file is uploaded to Galtea, which then generates test cases based on its content. Required if the test cases are to be generated by Galtea. **Example**: "path/to/your/knowledge_base.pdf"
+        </ResponseField>
+      </Tab>
+      <Tab title="Security & Safety">
+        <ResponseField name="Threats" type="List[Enum]" required>
+          Specifies which [threat categories](/concepts/product/test/security-threats) to generate test cases for. This corresponds to the `variants` parameter in the SDK.
+        </ResponseField>
+        <ResponseField name="Strategies" type="List[Enum]">
+          A list of [security strategies](/concepts/product/test/security-strategies) to modify prompts for each threat. This corresponds to the `strategies` parameter in the SDK.
+        </ResponseField>
+      </Tab>
+      <Tab title="Behavior">
+        <ResponseField name="Knowledge Base File" type="File" optional>
+          Optional file containing context or domain knowledge to help generate more realistic conversation scenarios. **Example**: "path/to/your/domain_context.pdf"
+        </ResponseField>
+        <ResponseField name="custom_user_focus" type="Text" optional>
+          Narrow down the scope of generated scenarios by describing a specific type of user, context, or situation. This helps ensure test cases align with your most relevant goals and flows. **Example**: "A medical professional specialized in dementia with more than 15 years in the field."
+        </ResponseField>
+        <ResponseField name="Max Test Cases" type="Number">
+          The maximum number of conversation scenarios generated by Galtea. This helps control the size of the test dataset.
+        </ResponseField>
+      </Tab>
+    </Tabs>
+
+  </Tab>
+  <Tab title="Uploaded">
+    <ResponseField name="Test File" type="File" required>
+      The path to a local CSV file containing predefined test cases. This file is uploaded to Galtea. Required if you are providing your own set of test cases instead of having Galtea generate them. **Example**: "path/to/your/test_file.csv"
+
+      **File Format Requirements:**
+      - **Accuracy/Security Tests**: Must include `input`, `expected_output`, `tag`, `source` columns
+      - **Behavior Tests**: Must include conversation simulation columns (see Behavior Test File Format below)
+    </ResponseField>
+  </Tab>
+</Tabs>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Create a Test" icon="flask" href="/sdk/tutorials/create-test">
+    Tutorial on creating tests via the SDK.
+  </Card>
+  <Card title="Specification-Driven Tests" icon="bullseye" href="/sdk/tutorials/specification-driven-evaluations">
+    Auto-derive test types from specifications.
+  </Card>
+</CardGroup>
