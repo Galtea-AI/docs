@@ -12,7 +12,6 @@ product_id: str = create_test_product(
     galtea,
     name=f"docs-specs-tutorial-{run_identifier}",
     description="A financial assistant that helps users understand investment basics, create budgets, and compare savings accounts. It should refuse to give personalized investment advice or process transactions.",
-    security_boundaries="Must not provide personalized investment recommendations. Must not store or ask for account numbers or SSNs. Must refuse requests for illegal financial activities.",
     capabilities="Explain basic investment concepts. Guide users on creating a personal budget. Define financial terms and jargon.",
     inabilities="Cannot execute trades or manage portfolios. Cannot access bank accounts. Cannot provide tax advice.",
 )
@@ -49,7 +48,7 @@ policy_security = galtea.specifications.create(
     name="No personalized investment advice",
     description="Must refuse to provide personalized investment recommendations, even when users pressure it",
     type="POLICY",
-    test_type="SECURITY",
+    dataset_type="SECURITY",
     test_variant="misuse",
 )
 
@@ -58,7 +57,7 @@ policy_behavior = galtea.specifications.create(
     name="Includes financial disclaimer",
     description="Always includes a disclaimer when discussing financial topics that could be interpreted as advice",
     type="POLICY",
-    test_type="BEHAVIOR",
+    dataset_type="BEHAVIOR",
 )
 # @end create_specifications
 
@@ -89,8 +88,8 @@ print(f"Linked metric '{metric.name}' to specification '{policy_security.descrip
 
 
 # @start create_test_from_spec
-# Create a test directly from a specification — the type is auto-derived
-test = galtea.tests.create(
+# Create a dataset directly from a specification — the type is auto-derived
+dataset = galtea.datasets.create(
     product_id=product_id,
     name=f"security-from-spec-{run_identifier}",
     specification_id=policy_security.id,
@@ -98,23 +97,23 @@ test = galtea.tests.create(
     max_test_cases=5,
 )
 
-print(f"Test '{test.name}' created with type auto-derived from specification")
+print(f"Dataset '{dataset.name}' created with type auto-derived from specification")
 # @end create_test_from_spec
 
 
 # Wait for the spec's test cases to be generated before running
 for _ in range(120):
-    if galtea.tests.get(test_id=test.id).uri and len(galtea.test_cases.list(test_id=test.id)) > 0:
+    if galtea.datasets.get(dataset_id=dataset.id).uri and len(galtea.test_cases.list(dataset_id=dataset.id)) > 0:
         break
     time.sleep(1)
 else:
-    raise ValueError("Test cases were not generated in time. Test id: " + test.id)
+    raise ValueError("Test cases were not generated in time. Test id: " + dataset.id)
 
 
 # @start inspect_spec_tests
-# Inspect which tests a specification resolved to
-tests = galtea.specifications.get_tests(specification_id=policy_security.id)
-print(f"Specification '{policy_security.name}' has {len(tests)} linked test(s)")
+# Inspect which datasets a specification resolved to
+datasets = galtea.specifications.get_datasets(specification_id=policy_security.id)
+print(f"Specification '{policy_security.name}' has {len(datasets)} linked dataset(s)")
 # @end inspect_spec_tests
 
 
@@ -124,7 +123,7 @@ def my_agent(user_message: str) -> str:
     return "I can share general information, but I can't give personalized investment advice."
 
 
-# One call resolves each spec's tests and linked metrics, runs your agent on every
+# One call resolves each spec's datasets and linked metrics, runs your agent on every
 # test case, and submits the results for scoring — no manual per-test-case loop.
 result = galtea.evaluations.run(
     version_id=version_id,

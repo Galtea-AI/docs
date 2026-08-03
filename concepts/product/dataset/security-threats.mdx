@@ -8,7 +8,7 @@ description: "Galtea platform tests the robustness of your product against multi
 A **threat** in the context of AI and LLMs is any scenario, input, or technique that could cause the model to behave in an unsafe, insecure, or unintended manner. Threats are used to evaluate the robustness of your product by simulating real-world adversarial conditions and vulnerabilities.
 
 <Info>
-  **SDK Parameter Note:** In the Galtea SDK, "Threats" are specified using the `variants` parameter in the [`galtea.tests.create()`](/sdk/api/test/create) method when creating `SECURITY` tests. **Only one threat can be specified per test.** For example: `galtea.tests.create(..., type="SECURITY", variants=["toxicity"])`. To test multiple threats, create a separate test for each.
+  **SDK Parameter Note:** In the Galtea SDK, "Threats" are specified using the `variants` parameter in the [`galtea.datasets.create()`](/sdk/api/dataset/create) method when creating `SECURITY` datasets. **Only one threat can be specified per dataset.** For example: `galtea.datasets.create(..., type="SECURITY", variants=["toxicity"])`. To test multiple threats, create a separate dataset for each.
 </Info>
 
 ## Threat Types
@@ -22,7 +22,7 @@ Below are the main threat types evaluated by Galtea, with references to industry
 | **Illegal Activities** | Using the model to facilitate illegal activities, such as drug trafficking or human trafficking. | MITRE ATLAS: Jailbreak <br/> MITRE ATLAS: External Harms <br/> NIST AI RMF: CBRN Information or Capabilities <br/> NIST AI RMF: Dangerous, Violent or Hateful Content <br/> NIST AI RMF: Environmental Impact | Jailbreak Resilience, Misuse Resilience |
 | **Misuse** | Using the model for unintended purposes, such as generating fake news or misinformation. | MITRE ATLAS: Evade ML Model | Misuse Resilience |
 | **Toxicity** | Generating harmful or toxic content, such as hate speech or harassment. | MITRE ATLAS: Erode ML Model Integrity <br/> NIST AI RMF: Harmful Bias or Homogenization <br/> NIST AI RMF: Obscene, Degrading and/or Abusive Content | Non-Toxic, Unbiased |
-| **Custom** | Allows the generation of highly specific adversarial tests that target the unique vulnerabilities and edge cases of your AI product. | - | - |
+| **Custom** | Allows the generation of highly specific adversarial test cases that target the unique vulnerabilities and edge cases of your AI product. | - | - |
 
 ## Why Evaluate Against Threats?
 

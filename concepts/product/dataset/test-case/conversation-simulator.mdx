@@ -11,7 +11,7 @@ import SDKSimulatorServiceCard from '/snippets/cards/sdk-conversation-simulator-
 
 The Conversation Simulator is a Galtea feature for testing any AI system that interacts with users through multi-turn conversations — from customer-facing chatbots to autonomous AI agents that execute tasks, call tools, and make decisions. It programmatically generates realistic user messages to simulate dialogues, helping you evaluate your AI's ability to handle complex interactions, maintain context, and achieve user goals.
 
-Each simulation is guided by a [Behavior Test Case](/concepts/product/test/case) containing a user persona, goal, scenario, and stopping criteria. You can run simulations directly via `simulator.simulate()` or as part of the specification-driven [`evaluations.run()`](/sdk/tutorials/specification-driven-evaluations) workflow, which handles simulation and evaluation together.
+Each simulation is guided by a [Behavior Test Case](/concepts/product/dataset/test-case) containing a user persona, goal, scenario, and stopping criteria. You can run simulations directly via `simulator.simulate()` or as part of the specification-driven [`evaluations.run()`](/sdk/tutorials/specification-driven-evaluations) workflow, which handles simulation and evaluation together.
 
 ## Typical Uses
 
@@ -28,7 +28,7 @@ The simulator supports two communication strategies that control how the simulat
 - **Written** (default) — Concise, text-based messages mimicking real chat or messaging interactions
 - **Spoken** — Natural speech patterns with filler words, hesitations, and a conversational tone
 
-The strategy is set on the [Test Case](/concepts/product/test/case) (via CSV upload or SDK) and is passed to the simulator automatically.
+The strategy is set on the [Test Case](/concepts/product/dataset/test-case) (via CSV upload or SDK) and is passed to the simulator automatically.
 
 ## Simulation Result Structure
 
@@ -68,8 +68,8 @@ The `simulate()` method returns a `SimulationResult` object containing the compl
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Behavior Tests" icon="user-group" href="/concepts/product/test/behavior-tests">
-    The scenario-based tests that drive conversation simulations.
+  <Card title="Behavior Datasets" icon="user-group" href="/concepts/product/dataset/behavior-datasets">
+    The scenario-based datasets that drive conversation simulations.
   </Card>
   <Card title="Simulating Conversations Tutorial" icon="comments" href="/sdk/tutorials/simulating-conversations">
     Step-by-step guide to running multi-turn conversation simulations.

@@ -1,6 +1,6 @@
 """
-Tutorial: Create a Custom Test
-Demonstrates how to create and upload custom tests using the SDK.
+Tutorial: Create a Custom Dataset
+Demonstrates how to create and upload custom datasets using the SDK.
 """
 
 from datetime import datetime
@@ -17,25 +17,25 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 product_id = create_test_product(galtea, name="Test Creation Demo " + run_identifier)
 
 
-# @start upload_existing_test
-# Upload a pre-existing test file to the Galtea Platform
-test = galtea.tests.create(
+# @start upload_existing_dataset
+# Upload a pre-existing dataset file to the Galtea Platform
+dataset = galtea.datasets.create(
     name="financial-qa-test-" + run_identifier,
     type="ACCURACY",
     product_id=product_id,
-    test_file_path="path/to/accuracy_test.csv",
+    dataset_file_path="path/to/accuracy_dataset.csv",
 )
-# @end upload_existing_test
+# @end upload_existing_dataset
 
-if test is None:
-    raise ValueError("test is None")
+if dataset is None:
+    raise ValueError("dataset is None")
 
-print(f"Test created with ID: {test.id}")
+print(f"Dataset created with ID: {dataset.id}")
 
 
 # @start generate_from_knowledge
-# Generate a test from a knowledge base file (PDF, TXT, etc.)
-generated_test = galtea.tests.create(
+# Generate a dataset from a knowledge base file (PDF, TXT, etc.)
+generated_dataset = galtea.datasets.create(
     name="generated-financial-qa-test-" + run_identifier,
     type="ACCURACY",
     product_id=product_id,
@@ -45,10 +45,10 @@ generated_test = galtea.tests.create(
 )
 # @end generate_from_knowledge
 
-if generated_test is None:
-    raise ValueError("generated_test is None")
+if generated_dataset is None:
+    raise ValueError("generated_dataset is None")
 
-print(f"Test generated from knowledge base with ID: {generated_test.id}")
+print(f"Dataset generated from knowledge base with ID: {generated_dataset.id}")
 
 # === Cleanup ===
 galtea.products.delete(product_id=product_id)
