@@ -62,7 +62,7 @@ child_version = galtea.versions.create(
 An Endpoint Connection tells Galtea how to call your AI system's API — the URL, authentication, request format, and how to extract the response.
 
 Three roles are available:
-- **Conversation** (required): Handles each interaction turn
+- **Conversation**: Handles each interaction turn. Required once you link a connection, and it is the role used when the Conversation Target is HTTP Endpoint
 - **Initialization** (optional): Runs before the conversation to set up a session
 - **Finalization** (optional): Runs after the conversation to release resources
 
@@ -106,7 +106,7 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
 </ResponseField>
 
 <ResponseField name="Conversation Endpoint Connection" type="EndpointConnection">
-  The primary [Endpoint Connection](/concepts/product/endpoint-connection) used for the main conversational interactions with your AI product. This is the only required endpoint connection.
+  The primary [Endpoint Connection](/concepts/product/endpoint-connection) used for the main conversational interactions with your AI product. Connections are optional on a version: in the Dashboard they only appear once you turn on the **Link Connection** toggle, and when it is on, the required connection is the one matching the selected Conversation Target (HTTP Endpoint, Phone, or WebRTC).
 
   **Used for**:
   - Sending user messages
