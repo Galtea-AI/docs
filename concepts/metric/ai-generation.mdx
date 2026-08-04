@@ -24,12 +24,12 @@ AI Metric Generation lets you automatically create evaluation metrics from your 
 ## Requirements
 
 - A [product](/concepts/product) with a description
-- At least one [specification](/concepts/product/specification) of type **POLICY** with a test type assigned (Accuracy, Security, or Behavior)
+- At least one [specification](/concepts/product/specification) of type **POLICY** or **CAPABILITY** with a test type assigned (Accuracy, Security, or Behavior)
 
 <Warning>
-  CAPABILITY and INABILITY specifications cannot be used for AI metric generation — only POLICY specifications can be
-  linked to metrics. (CAPABILITY specifications do carry a test type, always `BEHAVIOR`, but that only makes them
-  eligible for test generation, not metric generation.)
+  INABILITY specifications cannot be used for AI metric generation. They are the only type with no test type, and a
+  metric is generated from that test type. POLICY and CAPABILITY specifications can both be linked to metrics
+  (a CAPABILITY always carries the `BEHAVIOR` test type).
 </Warning>
 
 ## How to Generate Metrics

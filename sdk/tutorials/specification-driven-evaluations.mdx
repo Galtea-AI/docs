@@ -140,8 +140,12 @@ From the dashboard, navigate to your product's **Specifications** tab, select th
 --> */}
 
 <Note>
-  AI dataset generation is available for **Policy** specifications with a `SECURITY` or `BEHAVIOR` dataset type, and for every **Capability** specification (always `BEHAVIOR`). The system uses the specification's description as context — for Security datasets it becomes the `custom_variant_description`, and for Behavior datasets it shapes the scenario generation.
+  The bulk **Create Datasets** action covers **Policy** specifications with a `SECURITY` or `BEHAVIOR` dataset type, and every **Capability** specification (always `BEHAVIOR`). An `ACCURACY` specification is generated one at a time instead, because its questions and their known-correct answers are built from a knowledge base file you provide: use **Setup for evaluation** on the specification's row, which asks you for that file. The system uses the specification's description as context — for Security datasets it becomes the `custom_variant_description`, and for Behavior datasets it shapes the scenario generation.
 </Note>
+
+<Tip>
+  **Setup for evaluation**, in the row menu of a single specification, does Step 2 and Step 3 at once: you set how many test cases to generate, attach the knowledge base file if the specification is `ACCURACY`, and confirm. It creates whatever that specification is still missing — the dataset, its metrics, or both — then tells you what it did. The dataset's test cases keep generating in the background. If it generated metrics, click **Review** to open the review page and accept or edit them there; closing the dialog instead discards them, and you would have to generate them again.
+</Tip>
 
 ### Option B: SDK — Create Dataset with Specification ID
 
