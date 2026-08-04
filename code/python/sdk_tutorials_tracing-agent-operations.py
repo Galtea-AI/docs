@@ -29,6 +29,7 @@ product_id = create_test_product(
     description="Demo product for tracing tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 # Create version
@@ -38,11 +39,11 @@ version = galtea.versions.create(
 )
 
 # Create a behavior test for simulation
-behavior_dataset = galtea.datasets.create(
+behavior_test = galtea.tests.create(
     name="tracing-behavior-" + run_identifier,
     type="BEHAVIOR",
     product_id=product_id,
-    dataset_file_path="path/to/behavior_dataset.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
 
 
@@ -112,7 +113,7 @@ inference_result = galtea.inference_results.generate(agent=my_agent, session=ses
 
 
 # Create a session for multi-turn simulation (requires test case)
-test_cases = galtea.test_cases.list(dataset_id=behavior_dataset.id, limit=1)
+test_cases = galtea.test_cases.list(test_id=behavior_test.id, limit=1)
 if test_cases:
     simulation_session = galtea.sessions.create(version_id=version.id, test_case_id=test_cases[0].id)
 
