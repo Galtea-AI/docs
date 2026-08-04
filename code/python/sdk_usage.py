@@ -23,6 +23,7 @@ product_id = create_test_product(
     description="Demo product for SDK usage tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 # Get the product for use in examples
@@ -38,8 +39,8 @@ version = galtea.versions.create(
 # @end creating_a_version
 
 # @start creating_a_test
-# 2) Create a dataset
-dataset = galtea.datasets.create(
+# 2) Create a test
+test = galtea.tests.create(
     name="example-test-tutorial-" + run_identifier,
     type="ACCURACY",
     product_id=product.id,
@@ -88,7 +89,7 @@ class MyKeywordMetric(CustomScoreEvaluationMetric):
 keyword_metric = MyKeywordMetric()
 
 # 5) Retrieve test cases for the test
-test_cases = galtea.test_cases.list(dataset_id=dataset.id)
+test_cases = galtea.test_cases.list(test_id=test.id)
 
 # 6) Run evaluations for each test case (placeholders used for retriever & product)
 for test_case in test_cases:
@@ -121,11 +122,11 @@ for session in sessions:
 
 
 # 8) Pagination examples
-def fetch_all_test_cases(dataset_id: str, limit: int = 100) -> list:
+def fetch_all_test_cases(test_id: str, limit: int = 100) -> list:
     all_test_cases = []
     offset = 0
     while True:
-        batch = galtea.test_cases.list(dataset_id=dataset_id, offset=offset, limit=limit)
+        batch = galtea.test_cases.list(test_id=test_id, offset=offset, limit=limit)
         if not batch:
             break
         all_test_cases.extend(batch)

@@ -21,6 +21,7 @@ product_id = create_test_product(
     description="Demo product for conversation evaluation tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 version = galtea_client.versions.create(
@@ -33,14 +34,14 @@ if version is None:
 version_id = version.id
 
 # Create a behavior test for test-based evaluation
-behavior_dataset = galtea_client.datasets.create(
+behavior_test = galtea_client.tests.create(
     product_id=product_id,
     name="behavior-test-" + run_identifier,
     type="BEHAVIOR",
-    dataset_file_path="path/to/behavior_dataset.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
-if behavior_dataset is None:
-    raise ValueError("behavior_dataset is None")
+if behavior_test is None:
+    raise ValueError("behavior_test is None")
 
 
 # Create a specification with linked metrics so the specification-based evaluation
@@ -68,8 +69,8 @@ def my_agent(user_message: str) -> str:
 
 
 # @start capture_test_based
-# Fetch your test cases (created from a CSV of behavior test cases)
-test_cases = galtea_client.test_cases.list(dataset_id=behavior_dataset.id)
+# Fetch your test cases (created from a CSV of behavior tests)
+test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
 if not test_cases:
     raise ValueError("No test cases found")
 

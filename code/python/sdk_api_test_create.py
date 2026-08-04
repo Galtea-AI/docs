@@ -12,12 +12,13 @@ product_id: str = create_test_product(
     galtea,
     name=f"docs-test-create-product-{run_identifier}",
     description="Product for test creation documentation",
+    security_boundaries="Do not reveal sensitive data",
     capabilities="Answer questions about products",
     inabilities="Cannot process payments",
 )
 
-# @start accuracy_dataset
-dataset = galtea.datasets.create(
+# @start accuracy_test
+test = galtea.tests.create(
     name=f"accuracy-test-{run_identifier}",
     type="ACCURACY",
     product_id=product_id,
@@ -25,11 +26,11 @@ dataset = galtea.datasets.create(
     language="english",
     max_test_cases=100,
 )
-# @end accuracy_dataset
-print(f"Created accuracy test: {dataset.id}")
+# @end accuracy_test
+print(f"Created accuracy test: {test.id}")
 
-# @start security_dataset
-security_dataset = galtea.datasets.create(
+# @start security_test
+security_test = galtea.tests.create(
     name=f"security-test-{run_identifier}",
     type="SECURITY",
     product_id=product_id,
@@ -37,11 +38,11 @@ security_dataset = galtea.datasets.create(
     strategies=["original", "role_play", "base64"],
     max_test_cases=50,
 )
-# @end security_dataset
-print(f"Created security test: {security_dataset.id}")
+# @end security_test
+print(f"Created security test: {security_test.id}")
 
-# @start behavior_dataset
-behavior_dataset = galtea.datasets.create(
+# @start behavior_test
+behavior_test = galtea.tests.create(
     name=f"behavior-test-{run_identifier}",
     type="BEHAVIOR",
     product_id=product_id,
@@ -51,18 +52,18 @@ behavior_dataset = galtea.datasets.create(
     max_iterations=10,
     strategies=["written"],
 )
-# @end behavior_dataset
-print(f"Created behavior test: {behavior_dataset.id}")
+# @end behavior_test
+print(f"Created behavior test: {behavior_test.id}")
 
-# @start quality_custom_dataset_from_csv
-csv_dataset = galtea.datasets.create(
+# @start quality_custom_test_from_csv
+csv_test = galtea.tests.create(
     name=f"csv-accuracy-test-{run_identifier}",
     type="ACCURACY",
     product_id=product_id,
-    dataset_file_path="path/to/accuracy_dataset.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
-# @end quality_custom_dataset_from_csv
-print(f"Created CSV accuracy test: {csv_dataset.id}")
+# @end quality_custom_test_from_csv
+print(f"Created CSV accuracy test: {csv_test.id}")
 
 # Cleanup
 galtea.products.delete(product_id=product_id)

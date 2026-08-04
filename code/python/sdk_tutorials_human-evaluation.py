@@ -20,13 +20,13 @@ version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier
 version_id: str = version.id
 
 # Create a test with test cases
-dataset = galtea.datasets.create(
+test = galtea.tests.create(
     product_id=product_id,
     name=f"human-eval-tutorial-test-{run_identifier}",
     type="ACCURACY",
-    dataset_file_path="path/to/accuracy_dataset.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
-dataset_id: str = dataset.id
+test_id: str = test.id
 
 # Setup: create a user group for the human evaluation metric
 user_group = galtea.user_groups.create(
@@ -66,7 +66,7 @@ def your_product_function(input_prompt: str) -> str:
 
 
 # Fetch test cases and run evaluations
-test_cases = galtea.test_cases.list(dataset_id=dataset_id)
+test_cases = galtea.test_cases.list(test_id=test_id)
 print(f"Found {len(test_cases)} test cases")
 
 for test_case in test_cases:
@@ -87,7 +87,7 @@ print("All evaluations submitted!")
 
 # @start list_pending_evaluations
 # List evaluations to confirm they are PENDING_HUMAN
-sessions = galtea.sessions.list(version_id=version_id, dataset_id=dataset_id)
+sessions = galtea.sessions.list(version_id=version_id, test_id=test_id)
 if sessions:
     evaluations = galtea.evaluations.list(session_id=sessions[0].id)
     for evaluation in evaluations:

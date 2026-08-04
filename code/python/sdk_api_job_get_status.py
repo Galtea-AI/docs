@@ -51,7 +51,7 @@ try:
         name="Helpful financial information",
         description="The assistant provides helpful financial information.",
         type="POLICY",
-        dataset_type="BEHAVIOR",
+        test_type="BEHAVIOR",
     )
     galtea.specifications.link_metrics(
         specification_id=_spec.id,
@@ -59,7 +59,7 @@ try:
     )
 
     # Create a behavior test linked to the specification, then wait for test cases
-    _dataset = galtea.datasets.create(
+    _test = galtea.tests.create(
         product_id=product_id,
         name=f"job-status-test-{run_identifier}",
         type="BEHAVIOR",
@@ -69,13 +69,13 @@ try:
         specification_id=_spec.id,
     )
     for _ in range(120):
-        _t = galtea.datasets.get(dataset_id=_dataset.id)
+        _t = galtea.tests.get(test_id=_test.id)
         if _t.uri:
             break
         print("Waiting for test file to be ready...")
         time.sleep(1)
     for _ in range(120):
-        _test_cases = galtea.test_cases.list(dataset_id=_dataset.id)
+        _test_cases = galtea.test_cases.list(test_id=_test.id)
         if len(_test_cases) > 0:
             break
         print("Waiting for test cases to be generated...")
