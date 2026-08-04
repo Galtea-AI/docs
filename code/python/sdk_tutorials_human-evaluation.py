@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from requests.exceptions import HTTPError
+
 from _test_helpers import create_test_product
 from galtea import Galtea
 
@@ -105,7 +107,14 @@ if sessions:
         print(f"Evaluation {evaluation.id}: status={evaluation.status}")
 # @end list_pending_evaluations
 
-# Cleanup
-galtea.products.delete(product_id=product_id)
+# Cleanup. The product now owns a specification, so guard the delete: an unguarded 500 here
+# would abort before the metric and the user group are removed, leaking both in the real org
+# on every nightly live run.
+try:
+    galtea.products.delete(product_id=product_id)
+except HTTPError as e:
+    # Known API issue: cascade soft-delete may hit unique constraint on specifications
+    if e.response.status_code != 500:
+        raise
 galtea.metrics.delete(metric_id=metric.id)
 galtea.user_groups.delete(user_group_id=user_group_id)
