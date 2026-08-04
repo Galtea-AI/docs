@@ -6,7 +6,6 @@ Demonstrates how to evaluate multi-turn conversations using Galtea's session-bas
 from datetime import datetime
 
 from galtea import Galtea
-from requests.exceptions import HTTPError
 
 from _test_helpers import create_test_product
 
@@ -228,11 +227,6 @@ galtea_client.evaluations.create(
 
 
 # === Cleanup ===
-try:
-    galtea_client.products.delete(product_id=product_id)
-except HTTPError as e:
-    # Known API issue: cascade soft-delete may hit unique constraint on specifications
-    if e.response.status_code != 500:
-        raise
+galtea_client.products.delete(product_id=product_id)
 if metric_created:
     galtea_client.metrics.delete(metric_id=metric_created.id)

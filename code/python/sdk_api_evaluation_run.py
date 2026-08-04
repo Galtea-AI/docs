@@ -53,12 +53,16 @@ for _ in range(120):
         break
     print("Waiting for test file to be ready...")
     time.sleep(1)
+else:
+    raise ValueError("Test file URI is still None after waiting. Test id: " + _dataset.id)
 for _ in range(120):
     _test_cases = galtea.test_cases.list(dataset_id=_dataset.id)
     if len(_test_cases) > 0:
         break
     print("Waiting for test cases to be generated...")
     time.sleep(1)
+else:
+    raise ValueError("Test cases were not generated in time. Test id: " + _dataset.id)
 
 specification_ids = [_spec.id]
 
@@ -107,6 +111,12 @@ result = galtea.evaluations.run(
 print(f"Processed {result['testCaseCount']} test cases")
 print(f"Created {len(result['evaluations'])} evaluations")
 # @end run_with_agent
+
+# Guard the gate itself: `run()` returns testCaseCount 0 and raises nothing when the
+# specification resolves no datasets, so without this the snippet would stay green while
+# documenting a run() call that evaluated nothing.
+if result["testCaseCount"] == 0:
+    raise ValueError("evaluations.run() resolved no test cases — specification linking is broken")
 
 # Cleanup
 galtea.products.delete(product_id=product_id)

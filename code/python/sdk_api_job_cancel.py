@@ -75,12 +75,16 @@ try:
             break
         print("Waiting for test file to be ready...")
         time.sleep(1)
+    else:
+        raise ValueError("Test file URI is still None after waiting. Test id: " + _dataset.id)
     for _ in range(120):
         _test_cases = galtea.test_cases.list(dataset_id=_dataset.id)
         if len(_test_cases) > 0:
             break
         print("Waiting for test cases to be generated...")
         time.sleep(1)
+    else:
+        raise ValueError("Test cases were not generated in time. Test id: " + _dataset.id)
 
     # job_id is the value returned as result["jobId"] from evaluations.run()
     job_id = galtea.evaluations.run(version_id=version_id)["jobId"]
