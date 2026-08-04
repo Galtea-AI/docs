@@ -1,8 +1,6 @@
 import os
 from datetime import datetime
 
-from requests.exceptions import HTTPError
-
 from _test_helpers import create_test_product
 from galtea import Galtea
 
@@ -99,13 +97,8 @@ print(f"Evaluated {result['testCaseCount']} test cases against version {version.
 if result["testCaseCount"] == 0:
     raise ValueError("evaluations.run() resolved no test cases — specification linking is broken")
 
-# Cleanup. Guarded because the product owns a specification, and the cascade soft-delete can
-# 500 on the specifications unique constraint — a failure unrelated to what this file documents.
-try:
-    galtea_fixture.products.delete(product_id=PRODUCT_ID)
-except HTTPError as e:
-    if e.response.status_code != 500:
-        raise
+# Cleanup
+galtea_fixture.products.delete(product_id=PRODUCT_ID)
 if previous_product_id is None:
     os.environ.pop("GALTEA_PRODUCT_ID", None)
 else:
