@@ -108,7 +108,7 @@ For each documentation page in scope, check:
 - Related section heading must be `## Related` (not `## Related Topics`, `## Related Concepts`, `## Related Metrics`, or `## See Also`)
 
 **Terminology Standards:**
-- Test types: `Accuracy` (not "Quality"), `Security & Safety` (not "Red Teaming"), `Behavior` (not "Scenarios")
+- Dataset types: `Accuracy` (not "Quality"), `Security & Safety` (not "Red Teaming"), `Behavior` (not "Scenarios")
 - Brand: `Galtea` (always capitalized, never lowercase "galtea" in prose)
 - Conversation Simulator: use "simulated user" (not "synthetic user" or "Synthetic User")
 - Metric categories in intro sentences: `[non-deterministic Metric](/concepts/metric)` (singular), `[Deterministic Metric](/concepts/metric)` (singular), `[Security & Safety Metric](/concepts/metric)` (singular)
@@ -135,7 +135,7 @@ All individual metric pages (under `docs/concepts/metric/`) must follow:
 Concept overview pages explain *what* something is. SDK code (decorators, method calls, code examples) belongs in tutorials or SDK API reference pages. Concept pages should link to tutorials via `## SDK Integration` cards instead.
 
 **Tutorial Grouping (Guides tab):**
-- **Core Workflows**: Writing Specs → Evaluations from Specs → Simulating Conversations → Create Custom Test → Run Test-Based Evaluations → Direct Inferences from Platform
+- **Core Workflows**: Writing Specs → Evaluations from Specs → Simulating Conversations → Create a Custom Dataset → Run Dataset-Based Evaluations → Direct Inferences from Platform
 - **Production & Monitoring**: Monitor Production Responses → Evaluating Conversations
 - **Advanced**: Judge Prompts → Custom Metrics → Tracing → Agentic Evaluation → Human Evaluation
 - Manual/advanced tutorials should have a `<Note>` at the top pointing to the spec-driven workflow as the recommended alternative
@@ -143,7 +143,7 @@ Concept overview pages explain *what* something is. SDK code (decorators, method
 **Video Placement:**
 Videos must be placed consistently based on their type:
 - **Overview/demo videos**: right after the intro paragraph(s) of "What is [X]?", before the first domain section (e.g., `trace.mdx`, `ai-generation.mdx`, `data-augmentation.mdx`)
-- **Contextual workflow videos**: inside the relevant creation/setup section they demonstrate (e.g., endpoint connection creation video inside "Creating an Endpoint Connection", test generation video inside "Test Origin" Tab)
+- **Contextual workflow videos**: inside the relevant creation/setup section they demonstrate (e.g., endpoint connection creation video inside "Creating an Endpoint Connection", dataset generation video inside "Dataset Origin" Tab)
 - **Tutorial videos**: right after the intro paragraph or Tip, before the step-by-step content
 - Video placeholders for missing videos use `{/* <!-- VIDEO PLACEHOLDER: description ... --> */}` comment wrapping
 - Track all pending and existing videos in `docs/VIDEO_PLACEHOLDERS.md`
@@ -159,7 +159,7 @@ For each code snippet file in scope, check:
 
 **SDK Method Signatures:**
 - Parameter names match the current SDK service methods exactly
-- Parameter types are correct (e.g., `str` vs `Union[str, TestType]`)
+- Parameter types are correct (e.g., `str` vs `Union[str, DatasetType]`)
 - Removed parameters are no longer used
 - Return types and accessed fields are correct
 - Deprecated methods are not used when a replacement exists
@@ -169,7 +169,7 @@ For each code snippet file in scope, check:
 - No missing or unused imports
 
 **Enum and Constant Values:**
-- `TestType`: `"ACCURACY"`, `"SECURITY"`, `"BEHAVIOR"` (or legacy: `"QUALITY"`, `"RED_TEAMING"`, `"SCENARIOS"`)
+- `DatasetType`: `"ACCURACY"`, `"SECURITY"`, `"BEHAVIOR"` (or legacy: `"QUALITY"`, `"RED_TEAMING"`, `"SCENARIOS"`)
 - `TraceType`: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
 - `EvaluationStatus`: `PENDING`, `PENDING_HUMAN`, `SUCCESS`, `FAILED`, `SKIPPED`, `CANCELLED`
 - `SpecificationType`: `CAPABILITY`, `INABILITY`, `POLICY`

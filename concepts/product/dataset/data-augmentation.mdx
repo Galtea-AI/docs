@@ -1,0 +1,56 @@
+---
+title: "Data Augmentation"
+description: "Automatically expand your datasets from a handful of examples into comprehensive, realistic datasets"
+sidebarTitle: "Data Augmentation"
+---
+
+## What is Data Augmentation?
+
+Data Augmentation is a Galtea feature that **automatically generates new test cases from a small set of examples**. Instead of manually writing hundreds of test cases, you provide a few representative samples and Galtea produces a diverse dataset that preserves the realism, structure, and domain-specific patterns of your original data.
+
+It is especially useful when you already have a baseline set of test cases and want to expand your coverage without the overhead of manual creation.
+
+<Info>
+  Data Augmentation works with all dataset types — [Accuracy](/concepts/product/dataset/accuracy-datasets), [Security & Safety](/concepts/product/dataset/security-datasets), and [Behavior](/concepts/product/dataset/behavior-datasets). When triggered, your [dataset](/concepts/product/dataset) enters the `AUGMENTING` status while new cases are being generated.
+</Info>
+
+<video
+  controls
+  muted
+  playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/data-augmentation-demo.mp4"
+></video>
+
+## How It Works
+
+Galtea goes beyond simple paraphrasing or template filling. The augmentation engine analyzes your existing test cases to understand their structure, detect domain-specific patterns, and plan diverse scenarios — then generates new cases that are realistic, structurally consistent, and cover different ground from each other.
+
+The result is a larger, high-quality dataset in minutes instead of days, with full control over the output size.
+
+## How to Use Data Augmentation
+
+You can augment any existing dataset directly from the [Galtea dashboard](https://platform.galtea.ai/):
+
+<Steps>
+  <Step title="Navigate to your dataset">
+    Go to the **Datasets** section and select the dataset you want to augment.
+  </Step>
+  <Step title="Click Augment Test Cases">
+    Use the **Augment Test Cases** button to start the augmentation process.
+  </Step>
+  <Step title="Wait for generation">
+    Your dataset will enter the `AUGMENTING` status. Once complete, the new test cases will be added to your dataset.
+  </Step>
+</Steps>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Datasets" icon="flask" href="/concepts/product/dataset">
+    Learn about datasets and dataset types in Galtea.
+  </Card>
+  <Card title="Test Cases" icon="list" href="/concepts/product/dataset/test-case">
+    Understand the structure of individual test cases.
+  </Card>
+</CardGroup>

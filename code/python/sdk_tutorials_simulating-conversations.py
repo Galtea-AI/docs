@@ -25,7 +25,7 @@ version = galtea_client.versions.create(
 if version is None:
     raise ValueError("version is None")
 version_id = version.id
-test = galtea_client.tests.create(
+dataset = galtea_client.datasets.create(
     name="behavior-test-docs-" + run_identifier,
     type="BEHAVIOR",
     strategies=["written"],
@@ -37,7 +37,7 @@ test = galtea_client.tests.create(
 test_cases = []
 tries = 0
 while len(test_cases) == 0:
-    test_cases = galtea_client.test_cases.list(test_id=test.id)
+    test_cases = galtea_client.test_cases.list(dataset_id=dataset.id)
     tries += 1
     time.sleep(1)
     print("Waiting for test cases to be generated...")
@@ -145,22 +145,22 @@ product = galtea_client.products.get(product_id=product_id)
 if product is None:
     raise ValueError("product is None")
 
-test_name = f"Multi-turn Conversation Test-{run_identifier}"
+dataset_name = f"Multi-turn Conversation Test-{run_identifier}"
 
 # @start create_test_and_sessions
-# Create a test suite using the behavior test options
+# Create a dataset using the behavior dataset options
 # This can be done via the Dashboard or programmatically as shown here
-test = galtea_client.tests.create(
+dataset = galtea_client.datasets.create(
     product_id=product.id,
-    name=test_name,
+    name=dataset_name,
     type="BEHAVIOR",
-    # This time we provide a path to a CSV file with behavior tests, but you can also have Galtea generate them if you do not provide a CSV file
-    test_file_path="path/to/behavior_test.csv",
+    # This time we provide a path to a CSV file of behavior test cases, but you can also have Galtea generate them if you do not provide a CSV file
+    dataset_file_path="path/to/behavior_dataset.csv",
 )
 
 # Get your test cases
-# If Galtea is generating the test for you, it might take a few moments to be ready
-test_cases = galtea_client.test_cases.list(test_id=test.id)
+# If Galtea is generating the dataset for you, it might take a few moments to be ready
+test_cases = galtea_client.test_cases.list(dataset_id=dataset.id)
 # @end create_test_and_sessions
 
 if test_cases is None or len(test_cases) == 0:

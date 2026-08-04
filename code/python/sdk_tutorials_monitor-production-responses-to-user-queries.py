@@ -20,7 +20,6 @@ product_id = create_test_product(
     description="Demo product for production monitoring tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(

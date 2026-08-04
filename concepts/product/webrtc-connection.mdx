@@ -10,7 +10,7 @@ import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 
 A WebRTC Connection tells Galtea how to reach your AI voice agent over WebRTC. WebRTC is a standard for real-time audio and video over the internet. Instead of calling an HTTP API, Galtea **opens a live WebRTC session with your agent** and runs the conversation as a real voice call. This is **Direct Inference over WebRTC**.
 
-Galtea reaches your agent through [Pipecat Cloud](https://pipecat.ai). You give Galtea two things once: a Pipecat Cloud **public API key** (`pk_...`) and the **agent name** to target. Galtea then uses them to drive voice evaluations against your agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-caller-s-language-is-chosen)), so one connection serves test cases in different languages.
+Galtea reaches your agent through [Pipecat Cloud](https://pipecat.ai). You give Galtea two things once: a Pipecat Cloud **public API key** (`pk_...`) and the **agent name** to target. Galtea then uses them to drive voice evaluations against your agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-callers-language-is-chosen)), so one connection serves test cases in different languages.
 
 <Note>
   The API key is a secret. Galtea stores it encrypted and the API never returns it. A fetched connection tells you only whether a key is set, through a `has_api_key` boolean. It never shows the key itself.
@@ -57,7 +57,7 @@ To create a WebRTC Connection:
 
 ## How the caller's language is chosen
 
-The simulated caller's spoken language is **not** set on the WebRTC connection. It comes from each [test case](/concepts/product/test/case)'s language. Because a WebRTC connection is attached to a [Version](/concepts/product/version) and a version runs many test cases, this lets one connection cover test cases in different languages.
+The simulated caller's spoken language is **not** set on the WebRTC connection. It comes from each [test case](/concepts/product/dataset/test-case)'s language. Because a WebRTC connection is attached to a [Version](/concepts/product/version) and a version runs many test cases, this lets one connection cover test cases in different languages.
 
 With a multilingual text-to-speech provider, the test case's language drives the synthesis language and the voice is selected automatically (for example, a Spanish test case means the caller speaks Spanish with a natively-accented voice). When a test case has no language set, the provider falls back to its configured default voice.
 
@@ -71,13 +71,13 @@ A version's conversation target is **mutually exclusive**. A version connects to
 
 WebRTC Connections power **voice evaluation**: because Galtea drives a real voice call, the conversation, transcription, and resulting inferences reflect how your agent behaves over the voice channel. This makes WebRTC connections one entry point for evaluating voice agents end-to-end.
 
-WebRTC connections run **any** test type. No extra configuration is required beyond attaching the WebRTC connection to the version:
+WebRTC connections run **any** dataset type. No extra configuration is required beyond attaching the WebRTC connection to the version:
 
 - **Behavior** test cases run multi-turn: the conversation simulator drives each user turn from the test case's persona, goal, and scenario.
 - **Accuracy** and **Security** test cases run single-turn: Galtea speaks the test case's input line into the call and evaluates the agent's reply.
 
 <Note>
-  For single-turn (Accuracy/Security) tests scored by **deterministic metrics**, leave **Agent Speaks First** unchecked (the default). When the agent speaks first, the call has two turns (the agent's greeting plus the scripted line), which deterministic metrics, designed for a single turn, cannot score correctly. Multi-turn (Behavior) tests are unaffected.
+  For single-turn (Accuracy/Security) datasets scored by **deterministic metrics**, leave **Agent Speaks First** unchecked (the default). When the agent speaks first, the call has two turns (the agent's greeting plus the scripted line), which deterministic metrics, designed for a single turn, cannot score correctly. Multi-turn (Behavior) datasets are unaffected.
 </Note>
 
 The API automatically transcribes the agent's audio responses using speech-to-text, so no manual transcript preparation is required. Each recorded agent turn is transcribed before evaluation runs, and the written transcript is what metrics score. Your agent's voice output is evaluated as accurately as any text-based agent.

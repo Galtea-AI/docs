@@ -1,14 +1,14 @@
 ---
-title: "Behavior Tests"
+title: "Behavior Datasets"
 description: "Evaluate multi-turn dialogue interactions using conversation simulation with simulated users"
 sidebarTitle: "Overview"
 ---
 
-## What are Behavior Tests?
+## What are Behavior Datasets?
 
-Behavior tests in Galtea are designed to evaluate your [product](/concepts/product) through multi-turn dialogue interactions — whether it's a conversational chatbot, a task-oriented assistant, or an autonomous AI agent. These tests use the [Conversation Simulator](/concepts/product/test/case/conversation-simulator) to create realistic conversations with simulated users that have specific goals, personalities, and behaviors.
+Behavior datasets in Galtea are designed to evaluate your [product](/concepts/product) through multi-turn dialogue interactions — whether it's a conversational chatbot, a task-oriented assistant, or an autonomous AI agent. These datasets use the [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator) to create realistic conversations with simulated users that have specific goals, personalities, and behaviors.
 
-Unlike [Accuracy Tests](/concepts/product/test/accuracy-tests) that focus on single-turn question-answer pairs, or [Security & Safety Tests](/concepts/product/test/security-tests) that test security vulnerabilities, Behavior tests evaluate how well your AI product can:
+Unlike [Accuracy Datasets](/concepts/product/dataset/accuracy-datasets) that focus on single-turn question-answer pairs, or [Security & Safety Datasets](/concepts/product/dataset/security-datasets) that test security vulnerabilities, Behavior datasets evaluate how well your AI product can:
 
 - Maintain context across multiple conversation turns
 - Guide users toward successful task completion
@@ -16,9 +16,9 @@ Unlike [Accuracy Tests](/concepts/product/test/accuracy-tests) that focus on sin
 - Stay in character and follow conversation guidelines
 - Execute multi-step workflows and manage complex dialogue flows
 
-## Creating Behavior Tests
+## Creating Behavior Datasets
 
-You can create behavior tests in Galtea through two methods:
+You can create behavior datasets in Galtea through two methods:
 
 <Tabs>
   <Tab title="Behavior Generator">
@@ -26,10 +26,10 @@ You can create behavior tests in Galtea through two methods:
       <Step title="Define Your Product">
         Start by defining your product in Galtea. These detailed [product properties](/concepts/product#product-properties) will be used as the foundation for generating realistic behavior scenarios.
       </Step>
-      <Step title="Configure the test">
-        Select *Behavior* as the test type and *Generated* as the test origin
+      <Step title="Configure the dataset">
+        Select *Behavior* as the dataset type and *Generated* as the dataset origin
         <Info>
-          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+          The dataset creation process can be done via the [SDK](/sdk/api/dataset/create) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
       </Step>
       <Step title="Generate Behavior Scenarios">
@@ -48,18 +48,18 @@ You can create behavior tests in Galtea through two methods:
       src="/videos/generate-scenarios.mp4"
     ></video>
   </Tab>
-  <Tab title="Upload Your Own Behavior Tests">
+  <Tab title="Upload Your Own Behavior Datasets">
     <Steps>
-      <Step title="Create your behavior test file">
-        Prepare a CSV file following the behavior test structure shown [below](#example-behavior-tests-and-file-format)
+      <Step title="Create your behavior dataset file">
+        Prepare a CSV file following the behavior dataset structure shown [below](#example-behavior-datasets-and-file-format)
       </Step>
-      <Step title="Configure the test">
-        Select "Behavior" as the test type and "Uploaded" as the test origin
+      <Step title="Configure the dataset">
+        Select "Behavior" as the dataset type and "Uploaded" as the dataset origin
         <Info>
-          The test creation process can be done via the [SDK](/sdk/api/test/service#create-test) or the [Galtea dashboard](https://platform.galtea.ai/)
+          The dataset creation process can be done via the [SDK](/sdk/api/dataset/create) or the [Galtea dashboard](https://platform.galtea.ai/)
         </Info>
       </Step>
-      <Step title="Upload your behavior test file">
+      <Step title="Upload your behavior dataset file">
         Select the file you created and upload it to Galtea
       </Step>
     </Steps>
@@ -68,7 +68,7 @@ You can create behavior tests in Galtea through two methods:
 
 ## Conversation Flow Categories
 
-Behavior tests can cover various types of conversational interactions:
+Behavior datasets can cover various types of conversational interactions:
 
 <AccordionGroup>
   <Accordion title="Task Completion">Scenarios where the simulated user has a specific goal to accomplish, such as booking a service, making a purchase, or getting support for an issue.</Accordion>
@@ -79,9 +79,9 @@ Behavior tests can cover various types of conversational interactions:
   <Accordion title="Edge Cases and Challenges">Scenarios that test how the AI handles difficult, unclear, or unexpected user behavior while maintaining conversation quality.</Accordion>
 </AccordionGroup>
 
-## Example Behavior Tests and File Format
+## Example Behavior Datasets and File Format
 
-Here are examples of behavior test content and structure:
+Here are examples of behavior dataset content and structure:
 
 <AccordionGroup>
   <Accordion title="Travel Booking Scenarios">
@@ -146,7 +146,7 @@ Here are examples of behavior test content and structure:
 </AccordionGroup>
 
 <Note>
-  This structure is required by Galtea to automatically generate the [test cases](/concepts/product/test/case) for your behavior tests as [tests](/concepts/product/test) within the platform. If this format is not provided, you can still [manually create the test cases](/sdk/api/test-case/service#create-test-case).
+  This structure is required by Galtea to automatically generate the [test cases](/concepts/product/dataset/test-case) for your behavior datasets as [datasets](/concepts/product/dataset) within the platform. If this format is not provided, you can still [manually create the test cases](/sdk/api/test-case/create).
 </Note>
 
 <Info>
@@ -154,12 +154,12 @@ Here are examples of behavior test content and structure:
 </Info>
 
 <Warning>
-  The examples provided above are simplified demonstrations. In actual CSV files, behavior tests can be much more detailed and the number of test cases (rows) can be significantly higher to provide comprehensive conversation testing coverage.
+  The examples provided above are simplified demonstrations. In actual CSV files, behavior datasets can be much more detailed and the number of test cases (rows) can be significantly higher to provide comprehensive conversation testing coverage.
 </Warning>
 
-## Structure of Behavior Tests
+## Structure of Behavior Datasets
 
-Behavior tests have a specific structure designed to enable realistic conversation simulation:
+Behavior datasets have a specific structure designed to enable realistic conversation simulation:
 
 <ResponseField name="goal" type="Text" required>
   The overall objective the simulated user is trying to achieve during the conversation.
@@ -187,13 +187,13 @@ Behavior tests have a specific structure designed to enable realistic conversati
 </ResponseField>
 
 <ResponseField name="scenario" type="Text" optional>
-  A brief description of the scenario for documentation and organizational purposes. This helps categorize and manage different types of conversation tests.
+  A brief description of the scenario for documentation and organizational purposes. This helps categorize and manage different types of conversations.
   **Example**: "Flight booking scenario for business travelers"
 </ResponseField>
 
-## Using Behavior Tests with the Conversation Simulator
+## Using Behavior Datasets with the Conversation Simulator
 
-Behavior tests are specifically designed to work with Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator). When you run evaluations using behavior tests, the system will:
+Behavior datasets are specifically designed to work with Galtea's [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator). When you run evaluations using behavior datasets, the system will:
 
 1. **Initialize the conversation** using the `input` and `user_persona`
 2. **Generate realistic user responses** based on the `goal` and conversation history  
@@ -204,7 +204,7 @@ For detailed implementation examples, see the [Conversation Simulator Tutorial](
 
 ## Data Catalog
 
-When generating behavior tests, you can optionally upload a **Data Catalog** — a file containing
+When generating behavior datasets, you can optionally upload a **Data Catalog** — a file containing
 reference data from your product's domain. This helps the generator produce scenarios grounded in
 realistic values rather than fully fictional ones.
 
@@ -241,7 +241,7 @@ CSV, JSON, JSONL, XML, YAML, and TXT files up to 50 MB.
 - Internal system IDs or backend states that end users would never see
 - Extremely large datasets — the generator uses up to ~50,000 characters of content
 
-## Best Practices for Manually Creating Behavior Tests
+## Best Practices for Manually Creating Behavior Datasets
 
 <AccordionGroup>
   <Accordion title="Goal Definition">
@@ -290,7 +290,7 @@ CSV, JSON, JSONL, XML, YAML, and TXT files up to 50 MB.
   <Card title="Simulating Conversations" icon="comments" href="/sdk/tutorials/simulating-conversations">
     Tutorial on running multi-turn conversation simulations with the SDK.
   </Card>
-  <Card title="Conversation Simulator" icon="robot" href="/concepts/product/test/case/conversation-simulator">
+  <Card title="Conversation Simulator" icon="robot" href="/concepts/product/dataset/test-case/conversation-simulator">
     Learn how the Conversation Simulator creates realistic synthetic dialogues.
   </Card>
 </CardGroup>
