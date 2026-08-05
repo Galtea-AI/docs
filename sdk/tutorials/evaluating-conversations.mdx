@@ -1,6 +1,6 @@
 ---
 title: 'Evaluating Conversations'
-description: "Learn how to evaluate multi-turn conversations using Galtea's session-based workflow across test-based, past conversations, and production monitoring."
+description: "Learn how to evaluate multi-turn conversations using Galtea's session-based workflow across dataset-based, past conversations, and production monitoring."
 icon: "comments"
 ---
 
@@ -36,18 +36,18 @@ Every evaluation follows the same two steps: first get the conversation into a [
 How turns get into a session depends on where the conversation comes from. Pick the use case that matches yours. Each one ends with a logged `session` you evaluate in [step 2](#2-evaluate-the-session).
 
 <Tabs>
-  <Tab title="Test-based evaluation">
-    Use this when you have test cases. Galtea's [Conversation Simulator](/concepts/product/test/case/conversation-simulator) drives a synthetic user against your own agent, so you provide an agent function. It requires `test_case_id`.
+  <Tab title="Dataset-based evaluation">
+    Use this when you have test cases. Galtea's [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator) drives a synthetic user against your own agent, so you provide an agent function. It requires `test_case_id`.
 
     First, define an agent function that connects Galtea to your product:
 
 <AgentCallables />
 
-    Then fetch a test case, create a session, and run the simulator with your agent:
+    Then fetch a test case, create a session, and run the simulator with your agent. The session is created here on purpose: this page is about inspecting and evaluating one conversation, so you need the `session` object in hand.
 
 ```python
-# Fetch your test cases (created from a CSV of behavior tests)
-test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
+# Fetch your test cases (created from a CSV of behavior test cases)
+test_cases = galtea_client.test_cases.list(dataset_id=behavior_dataset.id)
 if not test_cases:
     raise ValueError("No test cases found")
 
@@ -67,6 +67,10 @@ galtea_client.simulator.simulate(
 <Info>
   See the full simulation workflow in [Simulating Conversations](/sdk/tutorials/simulating-conversations).
 </Info>
+
+<Tip>
+  To simulate and evaluate **every** test case of your product in one call, without handling sessions yourself, use `galtea.evaluations.run()` — see [Specification-Driven Evaluations](/sdk/tutorials/specification-driven-evaluations).
+</Tip>
   </Tab>
 
   <Tab title="Past conversations (offline ingestion)">
@@ -188,7 +192,7 @@ galtea_client.evaluations.create(
 </Tabs>
 
 <Info>
-  For test-based evaluation, run this evaluation inside your loop so every simulated session is evaluated.
+  For dataset-based evaluation, run this evaluation inside your loop so every simulated session is evaluated.
 </Info>
 
 ## Custom Metrics with Full Conversation Access

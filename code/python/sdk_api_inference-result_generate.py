@@ -21,7 +21,6 @@ product_id = create_test_product(
     description="Demo product for inference result generate API",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 version = galtea_client.versions.create(
