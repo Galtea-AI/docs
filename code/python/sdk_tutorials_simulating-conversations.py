@@ -111,7 +111,7 @@ def my_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
 
 # @start implement_agent
 # Structured function (for advanced features like usage/cost tracking)
-@galtea.trace(name="main_agent")
+@galtea.traced(name="main_agent")
 def call_my_llm(user_message: str) -> str:
     """Your main agent logic"""
     return "useful_response"

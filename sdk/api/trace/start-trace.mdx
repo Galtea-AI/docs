@@ -10,7 +10,7 @@ Yields a `GalteaSpan` object with helper methods for setting trace data dynamica
 ## Example
 
 ```python
-with start_trace("manual_span", type="SPAN") as span:
+with start_span("manual_span", type="SPAN") as span:
     # Do work
     span.update(metadata={"status": "done"})
 ```
@@ -66,7 +66,7 @@ def rag_pipeline(query: str, inference_result_id: str) -> str:
 
     try:
         # Retrieval step
-        with start_trace(
+        with start_span(
             "retrieve_documents",
             type="RETRIEVER",
             description="Searches vector store for relevant documents",
@@ -80,7 +80,7 @@ def rag_pipeline(query: str, inference_result_id: str) -> str:
             span.update(output={"doc_count": len(docs), "docs": docs})
 
         # Generation step
-        with start_trace(
+        with start_span(
             "generate_response",
             type="GENERATION",
             description="Generates final response using retrieved context",
@@ -118,14 +118,14 @@ def process_with_nested_traces(inference_result_id: str) -> dict:
     token = set_context(inference_result_id=inference_result_id)
 
     try:
-        with start_trace("parent_operation", type="CHAIN", input={"task": "process_all"}) as parent:
+        with start_span("parent_operation", type="CHAIN", input={"task": "process_all"}) as parent:
             # First child
-            with start_trace("child_step_1", type="TOOL") as span:
+            with start_span("child_step_1", type="TOOL") as span:
                 step1_result = {"processed": True, "items": 5}
                 span.update(output=step1_result)
 
             # Second child
-            with start_trace("child_step_2", type="TOOL") as span:
+            with start_span("child_step_2", type="TOOL") as span:
                 step2_result = {"validated": True, "errors": 0}
                 span.update(output=step2_result)
 

@@ -8,12 +8,12 @@ from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
-    TraceBase,
-    TraceType,
+    SpanBase,
+    SpanType,
     clear_context,
     set_context,
-    start_trace,
-    trace,
+    start_span,
+    traced,
 )
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -356,7 +356,7 @@ if inference_result is None:
 
 
 # @start trace_decorator
-@trace(type=TraceType.TOOL, name="calculate_sum")
+@traced(type=SpanType.TOOL, name="calculate_sum")
 def calculate(a, b):
     return a + b
 
@@ -383,51 +383,51 @@ clear_context(trace_context)
 # @end trace_clear_context
 
 # @start trace_start_trace
-with start_trace("manual_span", type="SPAN") as span:
+with start_span("manual_span", type="SPAN") as span:
     # Do work
     span.update(metadata={"status": "done"})
 # @end trace_start_trace
 
 
 # @start trace_create
-manual_trace = galtea.traces.create(
+manual_span = galtea.spans.create(
     inference_result_id=inference_result_id,
     name="manual_db_call",
-    type=TraceType.TOOL,
+    type=SpanType.TOOL,
     start_time="2023-01-01T12:00:00Z",
     end_time="2023-01-01T12:00:01Z",
 )
 # @end trace_create
 
-trace_id = manual_trace.id if manual_trace else "YOUR_TRACE_ID"
+span_id = manual_span.id if manual_span else "YOUR_SPAN_ID"
 
 # @start trace_create_batch
-galtea.traces.create_batch(
+galtea.spans.create_batch(
     [
-        TraceBase(
+        SpanBase(
             inference_result_id=inference_result_id,
-            name="batch_trace_1",
-            type=TraceType.SPAN,
+            name="batch_span_1",
+            type=SpanType.SPAN,
         )
     ]
 )
 # @end trace_create_batch
 
 # @start trace_list
-traces = galtea.traces.list(inference_result_id=inference_result_id)
+spans = galtea.spans.list(inference_result_id=inference_result_id)
 # @end trace_list
-if traces is None or len(traces) == 0:
-    raise ValueError("traces from list is None or empty")
+if spans is None or len(spans) == 0:
+    raise ValueError("spans from list is None or empty")
 
-trace_id = traces[0].id
-if trace_id is None:
-    raise ValueError("trace_id is None")
+span_id = spans[0].id
+if span_id is None:
+    raise ValueError("span_id is None")
 
 # @start trace_get
-trace = galtea.traces.get(trace_id=trace_id)
+span = galtea.spans.get(span_id=span_id)
 # @end trace_get
-if trace is None:
-    raise ValueError("trace from get is None")
+if span is None:
+    raise ValueError("span from get is None")
 
 behavior_dataset = galtea.datasets.create(
     product_id=product_id,
@@ -715,7 +715,7 @@ galtea.evaluations.delete(evaluation_id=evaluation_id)
 # @end evaluation_delete
 
 # @start trace_delete
-galtea.traces.delete(trace_id=trace_id)
+galtea.spans.delete(span_id=span_id)
 # @end trace_delete
 
 # @start inference_result_delete

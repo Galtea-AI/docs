@@ -10,10 +10,10 @@ Returns a [Trace](/concepts/product/version/session/trace) object.
 ## Example
 
 ```python
-manual_trace = galtea.traces.create(
+manual_span = galtea.spans.create(
     inference_result_id=inference_result_id,
     name="manual_db_call",
-    type=TraceType.TOOL,
+    type=SpanType.TOOL,
     start_time="2023-01-01T12:00:00Z",
     end_time="2023-01-01T12:00:01Z",
 )
