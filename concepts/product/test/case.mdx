@@ -1,0 +1,163 @@
+---
+title: "Test Case"
+sidebarTitle: "Overview"
+description: "A single challenge for evaluating product performance"
+---
+
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+import SDKTestCaseServiceCard from '/snippets/cards/sdk-test-case-service-card.mdx';
+
+## What is a Test Case?
+
+A test case in Galtea is a challenge designed to evaluate the performance of a particular [version](/concepts/product/version) of a [product](/concepts/product).
+
+It represents a specific set of *inputs* that must be sent to the product's AI model to generate an output. It also can define an *expected output* that can be used to assess the product's capabilities.
+
+<Info>
+  Test cases are part of a [test](/concepts/product/test), so you'll need to create a test first. You can do this in the Galtea dashboard or using the SDK.
+</Info>
+
+You can **create**, view and manage your test cases on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/test-case/service).
+
+## Using Test Cases in Evaluations
+
+Test cases are used with [evaluations](/concepts/product/version/session/evaluation). Sessions are created automatically when running evaluations.
+
+<Card title="Create an Evaluation" icon="badge-check" iconType="solid" href="/concepts/product/version/session/evaluation">
+  Learn how to use tests in evaluations
+</Card>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage test cases programmatically. 
+
+<SDKTestCaseServiceCard />
+
+## Test Case Properties
+
+<ResponseField name="Input" type="Text" required>
+  The input data used for inference on the LLM product's version. This is the question or prompt that will be sent to your AI model. **Example**: "What is the operating system of the Samsung Galaxy A8?"
+
+  When an [Input Schema](/concepts/product/endpoint-connection-input-schema) is defined on the endpoint connection, inputs become structured JSON objects with multiple typed fields instead of a single string.
+</ResponseField>
+
+<ResponseField name="Expected Output" type="Text">
+  The expected output for the evaluation. This represents the ideal response you want your AI model to provide. **Example**: "The operating system of the Samsung Galaxy A8 is Android 8.1."
+</ResponseField>
+
+<ResponseField name="Context" type="Text">
+  Test case-specific context that provides context to the model. It can be the past conversation or any other relevant information. Do not mistake for the system prompt/few-shot examples; those should be defined in the product's [version](/concepts/product/version) unless they change on an interaction basis.
+</ResponseField>
+
+<ResponseField name="Variant" type="Text">
+  A label that helps categorize the test case (e.g., "original", "paraphrased", "incorrect"). This corresponds to the `tag` column in an uploaded test CSV file and is used for organizing and filtering test cases.
+</ResponseField>
+
+<ResponseField name="Source" type="Text">
+  The original source text used to create the test case. This can be helpful for tracing where test cases originated from, especially when generating test cases from documentation or other reference materials.
+</ResponseField>
+
+<ResponseField name="Source File" type="Text">
+  The name of the file from which the test case was extracted. This is populated when test cases are generated from uploaded documents (e.g., ZIP or PDF files containing ground truth data).
+</ResponseField>
+
+<ResponseField name="Human Reviewed" type="Boolean">
+  Indicates if a test case has been manually reviewed and approved by a user. This is useful for tracking which test cases are considered reliable and validated. The system stores the ID of the user who reviewed the test case, upon creation or update, the one who created or updated the test case is set as the reviewer.
+</ResponseField>
+
+<ResponseField name="Is Augmented" type="Boolean">
+  Indicates if a test case was generated through the augmentation process. Test cases created via the generate-from-few-shots augmentation feature will have this flag set to `true`, while manually created test cases will have it set to `false`.
+</ResponseField>
+
+<ResponseField name="User Score" type="Integer" optional>
+  User vote for the test case quality. Possible values are `1` (upvote), `-1` (downvote), or `0` (unreviewed).
+</ResponseField>
+
+<ResponseField name="User Score Reason" type="Text" optional>
+  A justification for the user score, providing context on why a test case was downvoted (or upvoted).
+</ResponseField>
+
+<ResponseField name="Confidence" type="Float" optional>
+  The confidence level of the test case.
+</ResponseField>
+
+<ResponseField name="Confidence Reason" type="Text" optional>
+  A justification for the confidence level of the test case.
+</ResponseField>
+
+<ResponseField name="Gender" type="Text" optional>
+  The persona's gender, either `MALE` or `FEMALE`. In voice (phone) evaluations it selects the male or female synthesized caller voice; text evaluations ignore it, and when unset the voice uses the default for the language. For scenario test cases produced by the generator, it is inferred from the user persona.
+</ResponseField>
+
+<ResponseField name="Background Noise Profile" type="Enum" optional>
+  Background noise mixed into the simulated caller's audio when this test case runs over a [phone connection](/concepts/product/phone-connection). Only applies to voice tests; has no effect otherwise.
+  Possible values:
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  If not set explicitly, a test case generated by Galtea or ingested from a CSV file inherits its parent [test](/concepts/product/test)'s background noise at creation time. Must be set together with **Background Noise Level**.
+</ResponseField>
+
+<ResponseField name="Background Noise Level" type="Enum" optional>
+  How loud the background noise is relative to the caller's speech.
+  Possible values: `light`, `medium`, `heavy`. Must be set together with **Background Noise Profile**.
+</ResponseField>
+
+## Scenario-Based Test Case Properties
+
+The following properties apply specifically to test cases of type `BEHAVIOR` used with the [Conversation Simulator](/concepts/product/test/case/conversation-simulator):
+
+<ResponseField name="Goal" type="Text">
+  The objective the simulated user is trying to achieve in a conversation scenario. This defines what the simulated user wants to accomplish during the interaction. **Example**: "Book a flight to New York"
+</ResponseField>
+
+<ResponseField name="User Persona" type="Text">
+  The personality of the simulated user for a conversation scenario. This shapes how the simulated user will behave and communicate during the conversation. **Example**: "A busy professional who values efficiency"
+</ResponseField>
+
+<ResponseField name="Scenario" type="Text">
+  A description of the specific scenario or situation in which the conversation takes place. This provides additional context for the interaction. **Example**: "Flight booking scenario"
+</ResponseField>
+
+<ResponseField name="Input" type="Text">
+  The first message from the simulated user that starts the conversation. If not provided, the simulator will generate an appropriate opening message based on the goal and persona. **Example**: "I need to book a flight"
+</ResponseField>
+
+<ResponseField name="Stopping Criterias" type="Text">
+  Conditions that determine when the conversation should end, separated by `;` or `|`. The conversation will stop when any of these criteria are met. **Example**: "Booking confirmed|Unable to fulfill request"
+</ResponseField>
+
+<ResponseField name="Max Iterations" type="Number">
+  The maximum number of conversation turns allowed in the simulation. This prevents conversations from running indefinitely. **Example**: 10
+</ResponseField>
+
+## Revisions
+
+Editing a test case's evaluation content (for example its input, expected output, or context) creates a new **revision** instead of changing the existing row. This keeps your evaluation history accurate:
+
+- **Past evaluations stay pinned** to the exact content that produced them. An old score always reflects the test case as it was when that evaluation ran.
+- **The list shows the latest revision** of each test case by default. Turn on the **Include legacy** filter to also see superseded revisions, which are marked with a `Legacy` status.
+- **The details page links back** with an **Evolved from** link to the revision it was created from.
+- **Outdated evaluations are flagged.** When an evaluation ran against a revision that has since been replaced, it shows an outdated marker next to its score. Run a new evaluation against the current revision for an up-to-date score.
+- **Replay past evaluations in one step.** Right after an edit creates a new revision, a **Re-evaluate with this Test Case** dialog lists the products whose earlier evaluations of this test case can be re-run, all selected by default. Confirming generates fresh responses from your product for the new revision and evaluates them with the same metrics as before. The dialog only appears when at least one product has previous evaluations to replay.
+
+Only edits to content used during evaluation create a revision. Annotation edits (such as your quality vote or marking a test case reviewed) change the row in place and do not create a revision.
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Input Schema" icon="brackets-curly" href="/concepts/product/endpoint-connection-input-schema">
+    Define structured, multi-field inputs for test case generation.
+  </Card>
+  <Card title="Conversation Simulator" icon="comments" href="/concepts/product/test/case/conversation-simulator">
+    Run multi-turn conversations against scenario-based test cases.
+  </Card>
+  <Card title="Test" icon="flask" href="/concepts/product/test">
+    The tests that contain these test cases.
+  </Card>
+</CardGroup>
+
+<Note>
+  For Scenarios test cases, only `Goal` and `User Persona` are mandatory. All other scenario properties are optional but can help create more realistic and controlled conversation simulations.
+</Note>

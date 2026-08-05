@@ -28,6 +28,7 @@ _demo_product_id = create_test_product(
     galtea,
     name="Financial Assistant " + run_identifier,
     description="A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
+    security_boundaries="* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
     capabilities="* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
     inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
 )
@@ -101,11 +102,11 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=versio
 if version is None:
     raise ValueError("version from get_by_name is None")
 
-dataset_name = "accuracy-test-docs-" + run_identifier
+test_name = "accuracy-test-docs-" + run_identifier
 
 # @start test_create
-dataset = galtea.datasets.create(
-    name=dataset_name,
+test = galtea.tests.create(
+    name=test_name,
     type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
@@ -113,33 +114,33 @@ dataset = galtea.datasets.create(
     max_test_cases=5,
 )
 # @end test_create
-if dataset is None:
-    raise ValueError("dataset from create is None")
+if test is None:
+    raise ValueError("test from create is None")
 
-dataset_id = dataset.id
+test_id = test.id
 
 # @start test_list
-datasets = galtea.datasets.list(product_id=product_id, limit=10)
+tests = galtea.tests.list(product_id=product_id, limit=10)
 # @end test_list
-if datasets is None or len(datasets) == 0:
-    raise ValueError("datasets from list is None or empty")
+if tests is None or len(tests) == 0:
+    raise ValueError("tests from list is None or empty")
 
 # @start test_get
-dataset = galtea.datasets.get(dataset_id=dataset_id)
+test = galtea.tests.get(test_id=test_id)
 # @end test_get
-if dataset is None:
-    raise ValueError("dataset from get is None")
+if test is None:
+    raise ValueError("test from get is None")
 
 # @start test_get_by_name
-dataset = galtea.datasets.get_by_name(product_id=product_id, dataset_name=dataset_name)
+test = galtea.tests.get_by_name(product_id=product_id, test_name=test_name)
 # @end test_get_by_name
-if dataset is None:
-    raise ValueError("dataset from get_by_name is None")
+if test is None:
+    raise ValueError("test from get_by_name is None")
 
 
 # @start test_case_create
 test_case = galtea.test_cases.create(
-    dataset_id=dataset_id,
+    test_id=test_id,
     input="What is the capital of France?",
     expected_output="Paris",
     context="Geography facts",
@@ -152,7 +153,7 @@ if test_case is None:
 test_case_id = test_case.id
 
 # @start test_case_list
-test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
+test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
 # @end test_case_list
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("test_cases from list is None or empty")
@@ -199,10 +200,6 @@ metric = galtea.metrics.get_by_name(name=metric_name)
 if metric is None:
     raise ValueError("metric from get_by_name is None")
 
-
-# This file keeps the manual session / inference-result / evaluation calls on purpose: it is the
-# per-method reference the SDK API pages embed, so each call has to appear on its own. Product code
-# should prefer `galtea.evaluations.run()`, which does the whole loop in one call.
 
 # @start session_create
 session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id, is_production=False)
@@ -321,7 +318,7 @@ specification = galtea.specifications.create(
     name="Accurate and relevant answers",
     description="The assistant must provide accurate and relevant answers to user questions.",
     type="POLICY",
-    dataset_type="BEHAVIOR",
+    test_type="BEHAVIOR",
 )
 galtea.specifications.link_metrics(
     specification_id=specification.id,
@@ -429,28 +426,28 @@ trace = galtea.traces.get(trace_id=trace_id)
 if trace is None:
     raise ValueError("trace from get is None")
 
-behavior_dataset = galtea.datasets.create(
+behavior_test = galtea.tests.create(
     product_id=product_id,
     name="behavior-test-from-file-docs-" + run_identifier,
     type="BEHAVIOR",
-    dataset_file_path="path/to/behavior_dataset.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
 
-security_dataset = galtea.datasets.create(
+security_test = galtea.tests.create(
     product_id=product_id,
     name="security-test-from-file-docs-" + run_identifier,
     type="SECURITY",
-    dataset_file_path="path/to/security_dataset.csv",
+    test_file_path="path/to/security_test.csv",
 )
 
-accuracy_dataset = galtea.datasets.create(
+accuracy_test = galtea.tests.create(
     product_id=product_id,
     name="accuracy-test-from-file-docs-" + run_identifier,
     type="ACCURACY",
-    dataset_file_path="path/to/accuracy_dataset.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
 
-behavior_test_case = galtea.test_cases.list(dataset_id=behavior_dataset.id, limit=1)[0]
+behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id, limit=1)[0]
 
 behavior_session = galtea.sessions.create(
     version_id=version_id,
@@ -692,16 +689,16 @@ if evaluation is None:
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=dataset.id)
-    if dataset.uri:
+    test = galtea.tests.get(test_id=test.id)
+    if test.uri:
         break
     print("Waiting for test file to be ready...")
     time.sleep(1)
 else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+    raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 # @start test_download
-downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")
+downloaded_path = galtea.tests.download(test=test, output_directory="./.temp")
 # @end test_download
 if downloaded_path is None:
     raise ValueError("downloaded_path from download is None")
@@ -735,13 +732,18 @@ galtea.test_cases.delete(test_case_id=test_case_id)
 # @end test_case_delete
 
 # @start test_delete
-galtea.datasets.delete(dataset_id=dataset_id)
+galtea.tests.delete(test_id=test_id)
 # @end test_delete
 
 # Deleting the product ensures complete cleanup of all associated resources
-# @start product_delete
-galtea.products.delete(product_id=product_id)
-# @end product_delete
+try:
+    # @start product_delete
+    galtea.products.delete(product_id=product_id)
+    # @end product_delete
+except HTTPError as e:
+    # Known API issue: cascade soft-delete may hit unique constraint on specifications
+    if e.response.status_code != 500:
+        raise
 
 # Since metrics are organization-level, we delete the created metric as well
 # @start metric_delete
