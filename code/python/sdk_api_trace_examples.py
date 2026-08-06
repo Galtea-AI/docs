@@ -1,6 +1,6 @@
 """
 SDK API: Trace Examples
-Demonstrates trace decorator, start_trace, and context management patterns.
+Demonstrates trace decorator, start_span, and context management patterns.
 These examples are referenced from the trace documentation pages.
 """
 
@@ -10,11 +10,11 @@ from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
-    TraceType,
+    SpanType,
     clear_context,
     set_context,
-    start_trace,
-    trace,
+    start_span,
+    traced,
 )
 
 from _test_helpers import create_test_product
@@ -42,17 +42,17 @@ if session is None:
 
 # =============================================================================
 # TRACE SERVICE OVERVIEW EXAMPLE
-# Demonstrates @trace decorator usage with set_context/clear_context
+# Demonstrates @traced decorator usage with set_context/clear_context
 # =============================================================================
 
 
 # @start trace_overview
-@trace(type=TraceType.TOOL)
+@traced(type=SpanType.TOOL)
 def fetch_user_data(user_id: str) -> dict:
     return {"name": "John Doe", "email": "john@example.com"}
 
 
-@trace(type=TraceType.GENERATION)
+@traced(type=SpanType.GENERATION)
 def generate_response(prompt: str) -> str:
     return "Generated response..."
 
@@ -74,10 +74,10 @@ inference_result = galtea.inference_results.generate(
 
 # =============================================================================
 # START_TRACE EXAMPLES
-# Demonstrates start_trace() context manager for fine-grained control
+# Demonstrates start_span() context manager for fine-grained control
 # =============================================================================
 
-# Create a new session for start_trace examples
+# Create a new session for start_span examples
 session_start_trace = galtea.sessions.create(version_id=version_id, is_production=True)
 if session_start_trace is None:
     raise ValueError("session_start_trace is None")
@@ -89,7 +89,7 @@ def rag_pipeline(query: str, inference_result_id: str) -> str:
 
     try:
         # Retrieval step
-        with start_trace(
+        with start_span(
             "retrieve_documents",
             type="RETRIEVER",
             description="Searches vector store for relevant documents",
@@ -103,7 +103,7 @@ def rag_pipeline(query: str, inference_result_id: str) -> str:
             span.update(output={"doc_count": len(docs), "docs": docs})
 
         # Generation step
-        with start_trace(
+        with start_span(
             "generate_response",
             type="GENERATION",
             description="Generates final response using retrieved context",
@@ -138,14 +138,14 @@ def process_with_nested_traces(inference_result_id: str) -> dict:
     token = set_context(inference_result_id=inference_result_id)
 
     try:
-        with start_trace("parent_operation", type="CHAIN", input={"task": "process_all"}) as parent:
+        with start_span("parent_operation", type="CHAIN", input={"task": "process_all"}) as parent:
             # First child
-            with start_trace("child_step_1", type="TOOL") as span:
+            with start_span("child_step_1", type="TOOL") as span:
                 step1_result = {"processed": True, "items": 5}
                 span.update(output=step1_result)
 
             # Second child
-            with start_trace("child_step_2", type="TOOL") as span:
+            with start_span("child_step_2", type="TOOL") as span:
                 step2_result = {"validated": True, "errors": 0}
                 span.update(output=step2_result)
 
@@ -170,7 +170,7 @@ nested_result = process_with_nested_traces(inference_result_for_nested.id)
 
 # =============================================================================
 # TRACE DECORATOR FEATURE EXAMPLES
-# Demonstrates various @trace decorator features
+# Demonstrates various @traced decorator features
 # =============================================================================
 
 # Create a new session for decorator examples
@@ -180,7 +180,7 @@ if session_decorator is None:
 
 
 # @start trace_decorator_exception
-@trace(type=TraceType.TOOL)
+@traced(type=SpanType.TOOL)
 def risky_operation() -> str:
     # Exceptions are always recorded in traces for debugging
     # even with log_args=False and log_results=False
@@ -202,7 +202,7 @@ inference_result_risky = galtea.inference_results.generate(
 
 
 # @start trace_decorator_serialization
-@trace(type=TraceType.TOOL)
+@traced(type=SpanType.TOOL)
 def process_data(user_id: str, config: dict) -> dict:
     # Function arguments are automatically serialized to JSON
     # Non-serializable objects are converted to string representation
@@ -227,7 +227,7 @@ inference_result_data = galtea.inference_results.generate(
 
 
 # @start trace_decorator_context_propagation
-@trace(type=TraceType.AGENT)
+@traced(type=SpanType.AGENT)
 def agent_workflow() -> str:
     # This trace is automatically linked to the inference result
     # when set_context() has been called with inference_result_id
