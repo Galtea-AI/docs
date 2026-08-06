@@ -3,25 +3,25 @@ from datetime import datetime
 from _test_helpers import create_test_product
 
 # @start the_decorator_syntax_options
-from galtea import Galtea, SpanType, traced
+from galtea import Galtea, TraceType, trace
 
 
 # Full specification
-@traced(name="my_operation", type=SpanType.TOOL)
+@trace(name="my_operation", type=TraceType.TOOL)
 def my_function_1():
     # Function implementation ...
     print("Doing something...")
 
 
 # Name only (type defaults to SPAN)
-@traced(name="custom_name")
+@trace(name="custom_name")
 def my_function_2():
     # Function implementation ...
     print("Doing something else...")
 
 
 # Include function docstring as trace description
-@traced(type=SpanType.TOOL, include_docstring=True)
+@trace(type=TraceType.TOOL, include_docstring=True)
 def my_function_3(user_id: str):
     """Fetch user data from the database given a user ID."""
     # Function implementation ...
@@ -29,7 +29,7 @@ def my_function_3(user_id: str):
 
 
 # Bare decorator (uses function name)
-@traced()
+@trace()
 def my_function_4():
     # Function implementation ...
     print("Doing another thing...")
@@ -39,7 +39,7 @@ def my_function_4():
 
 
 # @start the_decorator_error_tracking
-@traced(name="risky_operation", type=SpanType.TOOL)
+@trace(name="risky_operation", type=TraceType.TOOL)
 def risky_call(self, data: str) -> str:
     if not data:
         raise ValueError("Data cannot be empty")
@@ -67,11 +67,11 @@ session = galtea.sessions.create(version.id, is_production=True)
 if session is None:
     raise ValueError("session is None")
 
-from galtea import AgentInput, AgentResponse, Galtea, SpanType  # noqa: E402
+from galtea import AgentInput, AgentResponse, Galtea, TraceType  # noqa: E402
 
 
 # Empty parentheses
-@traced(name="Function that calls another traced function")
+@trace(name="Function that calls another traced function")
 def my_function_nested():
     print("Calling another function...")
     my_function_1()
@@ -95,7 +95,7 @@ inference_result = galtea.inference_results.generate(
 )
 
 # @start the_decorator_viewing_trace_hierarchy
-traces = galtea.spans.list(inference_result_id=inference_result.id)
+traces = galtea.traces.list(inference_result_id=inference_result.id)
 
 print("Trace Hierarchy:")
 
@@ -114,15 +114,15 @@ print_trace_tree(traces)
 
 # @start naming_tips
 # ✅ Good - descriptive
-@traced(name="fetch_customer_orders")
+@trace(name="fetch_customer_orders")
 # ❌ Bad - generic
-@traced(name="step_1")
+@trace(name="step_1")
 # @end naming_tips
 
 
 # @start trace_at_meaningful_boundaries
 # ✅ Good - meaningful operation
-@traced(name="search_products", type=SpanType.RETRIEVER)
+@trace(name="search_products", type=TraceType.RETRIEVER)
 def search_products(self, query):
     results = self._query_vector_db(query)  # Internal, not traced
     return self._format_results(results)  # Internal, not traced
@@ -133,14 +133,14 @@ def search_products(self, query):
 
 # @start select_appropriate_node_types
 # ✅ Good - correct classification
-@traced(name="generate_evaluation_metrics", type=SpanType.RETRIEVER)
+@trace(name="generate_evaluation_metrics", type=TraceType.RETRIEVER)
 def fetch_user_data(self, user_id: str) -> dict:
     # Function implementation ...
     return {"user_id": user_id, "data": "Sample data"}
 
 
 # ❌ Bad - incorrect classification
-@traced(name="generate_evaluation_metrics", type=SpanType.TOOL)
+@trace(name="generate_evaluation_metrics", type=TraceType.TOOL)
 def fetch_user_data_incorrect(self, user_id: str) -> dict:
     # Function implementation ...
     return {"user_id": user_id, "data": "Sample data"}
@@ -150,7 +150,7 @@ def fetch_user_data_incorrect(self, user_id: str) -> dict:
 
 
 # @start keep_input_output_data_reasonable
-@traced(name="process_document", type=SpanType.TOOL)
+@trace(name="process_document", type=TraceType.TOOL)
 def process(self, doc_id: str) -> dict:
     # Only doc_id is captured as input, not the full document
     doc = self.fetch_document(doc_id)

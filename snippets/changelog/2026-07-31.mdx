@@ -1,0 +1,16 @@
+<Update label="2026-07-31" description="Claude Sonnet 4.5 Evaluator Model Renamed">
+
+## Breaking Change: Claude Sonnet 4.5 Model Name
+
+The evaluator model name for Claude Sonnet 4.5 changed to match its real name on our LLM gateway.
+
+- `"Claude-Sonnet-4.5"` is now `"claude-sonnet-4-5"`.
+- `"eu.claude-sonnet-4.5"` is now `"eu.claude-sonnet-4-5"`.
+
+**What breaks:** creating a [metric](/concepts/metric) that passes the old name as `evaluator_model_name`, through the SDK, the CLI, or the API directly. That call now returns a 400 error. Update it to use the new name. See the full list of [available models](/sdk/api/metric/create#param-evaluator-model-name).
+
+**What does not break:** the dashboard. Its model list comes from our API, so it already shows the new names.
+
+**What does not break:** metrics you already created. We renamed the model on our side and they now point at the new name automatically. Your existing evaluations keep running.
+
+</Update>
