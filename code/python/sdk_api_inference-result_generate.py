@@ -6,7 +6,7 @@ Demonstrates usage/cost info and error handling for the generate method.
 from datetime import datetime
 
 import galtea
-from galtea import AgentInput, AgentResponse, Galtea, SpanType
+from galtea import AgentInput, AgentResponse, Galtea, TraceType
 
 from _test_helpers import create_test_product
 
@@ -21,6 +21,7 @@ product_id = create_test_product(
     description="Demo product for inference result generate API",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 version = galtea_client.versions.create(
@@ -71,7 +72,7 @@ result = galtea_client.inference_results.generate(
 
 
 # @start usage_and_cost_info
-@galtea.traced(name="main", type=SpanType.AGENT)
+@galtea.trace(name="main", type=TraceType.AGENT)
 def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
     # Your agent logic...
 

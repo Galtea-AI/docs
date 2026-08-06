@@ -37,17 +37,17 @@ version = galtea.versions.create(
 )
 ```
 <Info>
-    More information about creating a version can be found [here](/sdk/api/version/create).
+    More information about creating a version can be found [here](/sdk/api/version/service#create-version).
 </Info>
 
-### Creating a Dataset
+### Creating a Test
 
-With a [Dataset](/concepts/product/dataset) you define the [test cases](/concepts/product/dataset/test-case) to evaluate your [product](/concepts/product).
-You can create [accuracy](/concepts/product/dataset/accuracy-datasets) or [security](/concepts/product/dataset/security-datasets) datasets depending on your evaluation needs.
+With a [Test](/concepts/product/test) you define the [test cases](/concepts/product/test/case) to evaluate your [product](/concepts/product).
+You can create [accuracy](/concepts/product/test/accuracy-tests) or [security](/concepts/product/test/security-tests) tests depending on your evaluation needs.
 
 ```python
-# 2) Create a dataset
-dataset = galtea.datasets.create(
+# 2) Create a test
+test = galtea.tests.create(
     name="example-test-tutorial-" + run_identifier,
     type="ACCURACY",
     product_id=product.id,
@@ -57,7 +57,7 @@ dataset = galtea.datasets.create(
 ```
 
 <Info>
-    More information about creating a dataset can be found [here](/sdk/api/dataset/create).
+    More information about creating a test can be found [here](/sdk/api/test/service#create-test).
 </Info>
 
 ### Creating a Metric
@@ -99,21 +99,19 @@ class MyKeywordMetric(CustomScoreEvaluationMetric):
 ```
 
 <Info>
-    More information about creating a metric can be found [here](/sdk/api/metric/create).
+    More information about creating a metric can be found [here](/sdk/api/metric/service#create-metric).
 </Info>
 
 ### Launching Evaluations
 
-[Evaluations](/concepts/product/version/session/evaluation) assess the performance of a [product](/concepts/product) [version](/concepts/product/version) against [test cases](/concepts/product/dataset/test-case) using specific [metrics](/concepts/metric). They are now directly linked to [sessions](/concepts/product/version/session) that contain all inference results.
-
-The example below loops over the test cases by hand, because it attaches a custom score object and a `retrieval_context` per test case, which only the manual loop can do.
+[Evaluations](/concepts/product/version/session/evaluation) assess the performance of a [product](/concepts/product) [version](/concepts/product/version) against [test cases](/concepts/product/test/case) using specific [metrics](/concepts/metric). They are now directly linked to [sessions](/concepts/product/version/session) that contain all inference results.
 
 ```python
 
 keyword_metric = MyKeywordMetric()
 
 # 5) Retrieve test cases for the test
-test_cases = galtea.test_cases.list(dataset_id=dataset.id)
+test_cases = galtea.test_cases.list(test_id=test.id)
 
 # 6) Run evaluations for each test case (placeholders used for retriever & product)
 for test_case in test_cases:
@@ -132,10 +130,6 @@ for test_case in test_cases:
         ],
     )
 ```
-
-<Tip>
-  If you only need standard metrics, skip the loop: `galtea.evaluations.run()` resolves your [Specifications](/concepts/product/specification), their datasets and metrics, runs your agent on every test case, and submits the results in one call. See [Specification-Driven Evaluations](/sdk/tutorials/specification-driven-evaluations).
-</Tip>
 
 <Info>
     More information about launching evaluations can be found [here](/sdk/api/evaluation/service).
@@ -156,7 +150,7 @@ for session in sessions:
 
 ### Working with Pagination
 
-When listing resources that may contain many items (products, datasets, sessions, evaluations, etc.), the Galtea SDK uses pagination with a **default limit of 10,000 items** per request.
+When listing resources that may contain many items (products, tests, sessions, evaluations, etc.), the Galtea SDK uses pagination with a **default limit of 10,000 items** per request.
 
 #### Basic Pagination Example
 
@@ -164,11 +158,11 @@ When listing resources that may contain many items (products, datasets, sessions
 
 
 # 8) Pagination examples
-def fetch_all_test_cases(dataset_id: str, limit: int = 100) -> list:
+def fetch_all_test_cases(test_id: str, limit: int = 100) -> list:
     all_test_cases = []
     offset = 0
     while True:
-        batch = galtea.test_cases.list(dataset_id=dataset_id, offset=offset, limit=limit)
+        batch = galtea.test_cases.list(test_id=test_id, offset=offset, limit=limit)
         if not batch:
             break
         all_test_cases.extend(batch)

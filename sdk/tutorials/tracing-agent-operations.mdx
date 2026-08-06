@@ -19,7 +19,7 @@ There are two primary ways to set up tracing in your agent. Choose the option th
 Add the `@trace` decorator to any function you want to track. It automatically captures: name, inputs, outputs, timing, errors, and parent-child relationships.
 
 ```python
-@traced(name="db_call", type=SpanType.TOOL)
+@trace(name="db_call", type=TraceType.TOOL)
 def my_function(query: str) -> str:
     result = db.query(query)
     return result
@@ -31,7 +31,7 @@ For fine-grained control over specific code blocks, use `start_trace`.
 
 ```python
 def get_user(user_id: str) -> str:
-    with start_span("database_query", type=SpanType.TOOL, input={"user_id": user_id}) as span:
+    with start_trace("database_query", type=TraceType.TOOL, input={"user_id": user_id}) as span:
         query = f"SELECT * FROM users WHERE id = {user_id}"
         result = db.query(query)
         span.update(output=result, metadata={"query": query})
@@ -59,17 +59,17 @@ Use `inference_results.generate()` or `simulator.simulate()` for hands-free trac
 To achieve this, implement the `Agent` abstract class and decorate your methods with `@trace`:
 
 ```python
-@traced(type=SpanType.RETRIEVER)
+@trace(type=TraceType.RETRIEVER)
 def search(query: str) -> list[dict]:
     return [{"id": "doc_1", "content": "..."}]
 
 
-@traced(type=SpanType.GENERATION)
+@trace(type=TraceType.GENERATION)
 def generate_response(context: list, query: str) -> str:
     return "Based on the context..."
 
 
-@traced(type=SpanType.AGENT)
+@trace(type=TraceType.AGENT)
 def my_agent(input_data: AgentInput) -> AgentResponse:
     query = input_data.last_user_message_str()
 
@@ -114,17 +114,17 @@ For full control, use `set_context()` and `clear_context()` to manually manage t
 
 ```python
 # Define traced functions
-@traced(type=SpanType.RETRIEVER)
+@trace(type=TraceType.RETRIEVER)
 def search(query: str) -> list[dict]:
     return [{"id": "doc_1", "content": "..."}]
 
 
-@traced(type=SpanType.GENERATION)
+@trace(type=TraceType.GENERATION)
 def generate(context: list, query: str) -> str:
     return "Based on the context..."
 
 
-@traced(type=SpanType.AGENT)
+@trace(type=TraceType.AGENT)
 def run_agent(query: str) -> str:
     docs = search(query)
     return generate(docs, query)
@@ -145,7 +145,7 @@ manual_inference_result = galtea.inference_results.create(
 token = set_context(inference_result_id=manual_inference_result.id)
 
 try:
-    # 3. Run your logic - all @traced calls will be associated with this inference result
+    # 3. Run your logic - all @trace calls will be associated with this inference result
     response = run_agent(user_input)
 
     # 4. Update inference result with the output
@@ -172,12 +172,12 @@ In your agent function, read `input_data.inference_result_id` and send it alongs
 ```python
 import httpx
 
-from galtea import AgentInput, AgentResponse, traced, SpanType
+from galtea import AgentInput, AgentResponse, trace, TraceType
 
 REMOTE_URL = "https://my-remote-agent.example.com/invoke"
 
 
-@traced(type=SpanType.AGENT)
+@trace(type=TraceType.AGENT)
 def remote_agent(input_data: AgentInput) -> AgentResponse:
     """Forward execution to a remote server, passing the inference_result_id for trace correlation."""
     response = httpx.post(
@@ -204,7 +204,7 @@ def handle_request(message: str, session_id: str, inference_result_id: str) -> s
     # Attach traces to the same inference result
     token = set_context(inference_result_id=inference_result_id)
     try:
-        # All @traced calls here will be associated with the inference result
+        # All @trace calls here will be associated with the inference result
         response = run_agent_logic(message)
         return response
     finally:

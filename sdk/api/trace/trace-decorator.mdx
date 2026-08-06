@@ -8,7 +8,7 @@ Returns the decorated function with automatic tracing enabled.
 
 ## Example
 ```python
-@traced(type=SpanType.TOOL, name="calculate_sum")
+@trace(type=TraceType.TOOL, name="calculate_sum")
 def calculate(a, b):
     return a + b
 
@@ -52,7 +52,7 @@ inference_result = galtea.inference_results.generate(
 Exceptions are always recorded in traces for debugging, regardless of `log_args` and `log_results` settings:
 
 ```python
-@traced(type=SpanType.TOOL)
+@trace(type=TraceType.TOOL)
 def risky_operation() -> str:
     # Exceptions are always recorded in traces for debugging
     # even with log_args=False and log_results=False
@@ -76,7 +76,7 @@ inference_result_risky = galtea.inference_results.generate(
 Function arguments and return values are automatically serialized to JSON. Non-serializable objects are converted to string representation:
 
 ```python
-@traced(type=SpanType.TOOL)
+@trace(type=TraceType.TOOL)
 def process_data(user_id: str, config: dict) -> dict:
     # Function arguments are automatically serialized to JSON
     # Non-serializable objects are converted to string representation
@@ -103,7 +103,7 @@ inference_result_data = galtea.inference_results.generate(
 Traces automatically inherit the context set by `set_context()`:
 
 ```python
-@traced(type=SpanType.AGENT)
+@trace(type=TraceType.AGENT)
 def agent_workflow() -> str:
     # This trace is automatically linked to the inference result
     # when set_context() has been called with inference_result_id

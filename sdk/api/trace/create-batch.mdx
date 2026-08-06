@@ -10,12 +10,12 @@ Returns a list of [Trace](/concepts/product/version/session/trace) objects.
 ## Example
 
 ```python
-galtea.spans.create_batch(
+galtea.traces.create_batch(
     [
-        SpanBase(
+        TraceBase(
             inference_result_id=inference_result_id,
-            name="batch_span_1",
-            type=SpanType.SPAN,
+            name="batch_trace_1",
+            type=TraceType.SPAN,
         )
     ]
 )

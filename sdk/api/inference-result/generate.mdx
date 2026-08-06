@@ -85,7 +85,7 @@ The `generate()` method automatically captures and saves:
 Your agent can return usage and cost information in the `AgentResponse`:
 
 ```python
-@galtea.traced(name="main", type=SpanType.AGENT)
+@galtea.trace(name="main", type=TraceType.AGENT)
 def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
     # Your agent logic...
 

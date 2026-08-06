@@ -23,12 +23,12 @@ The SDK provides two ways to collect traces:
 When using `galtea.inference_results.generate()`, trace collection is handled automatically:
 
 ```python
-@traced(type=SpanType.TOOL)
+@trace(type=TraceType.TOOL)
 def fetch_user_data(user_id: str) -> dict:
     return {"name": "John Doe", "email": "john@example.com"}
 
 
-@traced(type=SpanType.GENERATION)
+@trace(type=TraceType.GENERATION)
 def generate_response(prompt: str) -> str:
     return "Generated response..."
 
