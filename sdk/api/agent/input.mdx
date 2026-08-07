@@ -33,7 +33,7 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
 </ResponseField>
 
 <ResponseField name="inference_result_id" type="Optional[str]">
-  The inference result ID for this execution. Forward this to remote agents so they can attach spans to the correct session via `set_context(inference_result_id=...)`. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
+  The inference result ID for this execution. Forward this to remote agents so they can attach traces to the correct session via `set_context(inference_result_id=...)`. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
 </ResponseField>
 
 ## Helper Methods
@@ -163,7 +163,7 @@ print(
     Multi-turn conversation simulation tutorial.
   </Card>
   <Card title="Generate Inference Result" icon="play" href="/sdk/api/inference-result/generate">
-    Single-turn agent execution with automatic span collection.
+    Single-turn agent execution with automatic trace collection.
   </Card>
   <Card title="Templates & Mapping" icon="code" href="/concepts/product/endpoint-connection-configuration">
     Endpoint template syntax including `{{ input.field_name }}`.

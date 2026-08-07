@@ -23,8 +23,8 @@ specifications = galtea.specifications.list(
   Filter by specification type.
   Possible values: `CAPABILITY`, `INABILITY`, `POLICY`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
-<ResponseField name="dataset_type" type="string | DatasetType" optional>
-  Filter by dataset type.
+<ResponseField name="test_type" type="string | TestType" optional>
+  Filter by test type.
   Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
 </ResponseField>
 <ResponseField name="name" type="string" optional>
