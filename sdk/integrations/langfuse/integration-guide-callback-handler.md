@@ -16,7 +16,7 @@ The Galtea integration is **transparent to Langfuse**. It does not inject trace 
 
 ## When Does Galtea Export Data?
 
-Galtea **only** exports span data when an `inference_result_id` is linked. Without it, Galtea does nothing — no data is sent, no spans are modified.
+Galtea **only** exports trace data when an `inference_result_id` is linked. Without it, Galtea does nothing — no data is sent, no spans are modified.
 
 | Scenario | Galtea exports? |
 |---|---|
@@ -90,11 +90,11 @@ That's it. Three lines changed: the import, reading the header, and one `set_inf
 
 ### How it works under the hood
 
-The Galtea `CallbackHandler` wraps the Langfuse `CallbackHandler` and automatically manages Galtea span context around LangChain callback lifecycles:
+The Galtea `CallbackHandler` wraps the Langfuse `CallbackHandler` and automatically manages trace context around LangChain callback lifecycles:
 
 1. On the first `on_*_start` callback (chain, LLM, tool, etc.), Galtea calls `set_context(inference_result_id)`.
 2. Nested callbacks (tool calls, LLM calls inside a chain) are tracked via a depth counter — context stays active.
-3. On the last `on_*_end` or `on_*_error` callback, Galtea calls `clear_context()` and flushes spans to the Galtea API.
+3. On the last `on_*_end` or `on_*_error` callback, Galtea calls `clear_context()` and flushes traces to the Galtea API.
 
 No context managers or manual cleanup needed.
 
@@ -140,4 +140,4 @@ Langfuse's underlying `CallbackHandler` is not thread-safe — it stores per-run
 
 **Q: Can I mix CallbackHandler with @observe?**
 
-Yes. All three Galtea wrappers (`@observe`, `start_as_current_observation`, `CallbackHandler`) can be used together. For example, an `@observe`-decorated function can pass a `CallbackHandler` to LangChain inside it — the parent-child span hierarchy is preserved automatically.
+Yes. All three Galtea wrappers (`@observe`, `start_as_current_observation`, `CallbackHandler`) can be used together. For example, an `@observe`-decorated function can pass a `CallbackHandler` to LangChain inside it — the parent-child trace hierarchy is preserved automatically.

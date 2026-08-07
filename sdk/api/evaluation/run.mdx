@@ -4,7 +4,7 @@ sidebarTitle: "Run"
 description: "Run an evaluation pipeline for a version, using either your deployed endpoint or a local agent."
 ---
 
-Run an evaluation pipeline for a [Version](/concepts/product/version). This resolves all [Specifications](/concepts/product/specification) linked to the version's product, collects their linked [Metrics](/concepts/metric) and [Datasets](/concepts/product/dataset), and runs the evaluation.
+Run an evaluation pipeline for a [Version](/concepts/product/version). This resolves all [Specifications](/concepts/product/specification) linked to the version's product, collects their linked [Metrics](/concepts/metric) and [Tests](/concepts/product/test), and runs the evaluation.
 
 ## Two Execution Modes
 
@@ -26,7 +26,7 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     </Tip>
   </Tab>
   <Tab title="Agent (SDK-side)">
-    When an `agent` is provided, the SDK runs the agent locally for each test case. For every specification, the method resolves linked datasets and test cases, creates sessions, executes the agent, and triggers server-side evaluation.
+    When an `agent` is provided, the SDK runs the agent locally for each test case. For every specification, the method resolves linked tests and test cases, creates sessions, executes the agent, and triggers server-side evaluation.
 
     ### Returns
     - `evaluations` — list of all Evaluation objects created
@@ -43,7 +43,7 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     result = galtea.evaluations.run(version_id=version_id)
     print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
     for spec in result["specifications"]:
-        print(f"  Spec {spec['specificationId']}: {spec['testCount']} datasets, {spec['metricCount']} metrics")
+        print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
 ```
 
 **With specific specifications:**
@@ -91,9 +91,9 @@ print(f"Created {len(result['evaluations'])} evaluations")
   When omitted, the server-side endpoint connection pipeline is used. When provided, requires `version_id` (not `product_id`).
 </ResponseField>
 <ResponseField name="specification_ids" type="List[str]" optional>
-  A list of [Specification](/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and datasets are used.
+  A list of [Specification](/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and tests are used.
 
   <Note>
-    Specifications without linked metrics or without linked datasets are silently skipped. If no specification has linked metrics, or none of the linked datasets is ready to run, the call returns an error instead of running.
+    Specifications without linked metrics or without linked tests are silently skipped. If no specification has linked metrics, or none of the linked tests is ready to run, the call returns an error instead of running.
   </Note>
 </ResponseField>

@@ -27,6 +27,7 @@ Create a `requirements.txt` file in your repository and add the dependencies req
 
 ```txt requirements.txt
 galtea
+python-dotenv
 ```
 
 ## Create your GitHub Action
@@ -46,6 +47,10 @@ jobs:
     env:
       GALTEA_API_KEY: ${{ secrets.GALTEA_API_KEY }}
       GALTEA_PRODUCT_ID: ${{ vars.GALTEA_PRODUCT_ID }}
+      GALTEA_TEST_NAME: ${{ vars.GALTEA_TEST_NAME }}
+      GALTEA_ACCURACY_METRIC_NAME: ${{ vars.GALTEA_ACCURACY_METRIC_NAME }}
+      GALTEA_COMPLETENESS_METRIC_NAME: ${{ vars.GALTEA_COMPLETENESS_METRIC_NAME }}
+      GITHUB_SHA: ${{ github.sha }}
     runs-on: ubuntu-latest
     steps:
      - name: Checkout
@@ -67,48 +72,60 @@ jobs:
 
 ## Create your Test Script
 
-Create an `evaluate.py` file in your repository with the following content.
-
-You give `galtea.evaluations.run(version_id=..., agent=my_agent)` one thing: a Python function that calls your agent. From there it does the whole evaluation in one call. It finds the [Specifications](/concepts/product/specification) of your product, resolves their linked [Datasets](/concepts/product/dataset) and [Metrics](/concepts/metric), calls `my_agent` once per [Test Case](/concepts/product/dataset/test-case) inside this CI job, and submits the answers for scoring. Your agent does not need to be deployed anywhere, so this also works as a pre-deploy gate.
+Create a `evaluate.py` file in your repository with the following content:
 
 ```python
-import os
+from datetime import datetime
 
+from _test_helpers import create_test_product
 from galtea import Galtea
 
-# GALTEA_API_KEY and GALTEA_PRODUCT_ID come from the workflow's `env:` block above.
-# The GITHUB_* ones are provided by GitHub Actions itself, so you never declare them.
-galtea = Galtea(api_key=os.environ["GALTEA_API_KEY"])
+galtea = Galtea(api_key="YOUR_API_KEY")
 
-PRODUCT_ID = os.environ["GALTEA_PRODUCT_ID"]
-COMMIT_SHA = os.environ["GITHUB_SHA"]
+run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-# One version per workflow run, named after the commit so every result is traceable to the
-# code that produced it. Version names are unique per product, and the same commit is built
-# again on `pull_request` and on every job re-run, so the run id and attempt keep it unique.
-version = galtea.versions.create(
-    name=f"ci-{COMMIT_SHA[:7]}-{os.environ['GITHUB_RUN_ID']}.{os.environ['GITHUB_RUN_ATTEMPT']}",
-    product_id=PRODUCT_ID,
+# Register product via helper (SDK doesn't expose products.create)
+PRODUCT_ID: str = create_test_product(
+    galtea,
+    name=f"docs-github-actions-product-{run_identifier}",
+    description="Product for GitHub Actions integration documentation",
 )
-if version is None:
-    raise RuntimeError("Could not create the version — check GALTEA_API_KEY and GALTEA_PRODUCT_ID")
 
+# Create a test with test cases
+test = galtea.tests.create(
+    product_id=PRODUCT_ID,
+    name=f"github-actions-test-{run_identifier}",
+    type="ACCURACY",
+    test_file_path="path/to/accuracy_test.csv",
+)
 
-# Your product under test. Galtea calls it once per test case.
-def my_agent(user_message: str) -> str:
-    # In a real scenario, this would call your actual AI model or API
-    return "This is a placeholder model answer."
+# @start github_actions_workflow
+# GitHub Actions workflow environment variables would be:
+# GALTEA_API_KEY, GALTEA_PRODUCT_ID, GALTEA_TEST_NAME
 
+version = galtea.versions.create(name=f"v1.X-{run_identifier}", product_id=PRODUCT_ID)
 
-# One call runs the whole evaluation: it finds the product's specifications, resolves their
-# linked datasets and metrics, runs the agent on every test case, and submits the results.
-result = galtea.evaluations.run(version_id=version.id, agent=my_agent)
+test_cases = galtea.test_cases.list(test_id=test.id)
 
-print(f"Evaluated {result['testCaseCount']} test cases against version {version.name}")
+metrics = [{"name": "Factual Accuracy"}]
+
+# Placeholder for where the model's answer would be generated
+# In a real scenario, this would involve calling your model with test_case.input
+model_answer = "This is a placeholder model answer."
+
+for test_case in test_cases:
+    session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
+    galtea.inference_results.create_and_evaluate(
+        session_id=session.id,
+        output=model_answer,
+        metrics=metrics,
+    )
+# @end github_actions_workflow
+
+print(f"Evaluated {len(test_cases)} test cases against version {version.name}")
+
+# Cleanup
+galtea.products.delete(product_id=PRODUCT_ID)
 ```
-
-<Note>
-  `run()` discovers work through specifications, so each one needs both its metrics and a dataset linked. A specification missing either is skipped silently, and the run evaluates nothing. That setup is done once (see [Writing Specifications](/sdk/tutorials/writing-specifications)), not on every CI run. If you need per-test-case control instead, see [Run Dataset-Based Evaluations](/sdk/tutorials/run-dataset-based-evaluations).
-</Note>
 
 > **Success!** 🎉 Your GitHub Actions workflow is now configured to run evaluations with Galtea. Each time you push changes, it will automatically evaluate your product using the latest version of your code.

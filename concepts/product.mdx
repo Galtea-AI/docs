@@ -6,7 +6,7 @@ description: "A functionality or service evaluated by Galtea"
 
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
-import DatasetCard from '/snippets/cards/dataset-card.mdx';
+import TestCard from '/snippets/cards/test-card.mdx';
 import SpecificationCard from '/snippets/cards/specification-card.mdx';
 import SDKProductServiceCard from '/snippets/cards/sdk-product-service-card.mdx';
 
@@ -56,6 +56,12 @@ The SDK allows you to list existing products, retrieve specific products by thei
   List what your product cannot do — information it does not have access to, tools it cannot use, and its general scope boundaries. This prevents generation of irrelevant or misleading test cases.
 
     <strong>Example:</strong> "Cannot process purchases, access customer account information, or provide technical support for device repairs."
+</ResponseField>
+
+<ResponseField name="Security Boundaries" type="Text" required>
+  Actions the product must refuse, even though it technically has the capability to perform them.
+
+    <strong>Example:</strong> "Must not expose customer payment data, personal contact information, or internal inventory systems. Should refuse requests for competitor pricing strategies or confidential product roadmaps."
 </ResponseField>
 
 <ResponseField name="Policies" type="Text" optional>
@@ -123,6 +129,6 @@ A product in Galtea is associated with:
 <CardGroup cols={2}>
   <ConceptsOverviewCard />
   <VersionCard />
-  <DatasetCard />
+  <TestCard />
   <SpecificationCard />
 </CardGroup>

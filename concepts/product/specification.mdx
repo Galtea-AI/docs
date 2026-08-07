@@ -21,7 +21,7 @@ Each specification has a **type** that classifies the kind of behavioral expecta
 
 - **Policy**: A mandatory rule or guideline the product must follow — from restrictions to behavioral guidelines. This includes refusal rules (what it must decline), interaction patterns (how it responds), communication style, and mandatory disclaimers. For example: _"Must include a disclaimer when discussing medical topics"_ or _"Refuses requests to share confidential business data"_.
 
-Specifications also have a **dataset type** that determines the evaluation approach: `ACCURACY`, `SECURITY`, or `BEHAVIOR`.
+Specifications also have a **test type** that determines the evaluation approach: `ACCURACY`, `SECURITY`, or `BEHAVIOR`.
 
 <Note>Specifications replace the legacy free-text fields (Capabilities, Inabilities, Policies) on Products with structured, individually testable expectations linked to specific metrics.</Note>
 
@@ -37,19 +37,15 @@ Specifications are at the center of Galtea's recommended evaluation flow:
 
 1. **Define specifications** for your product (Capability, Inability, Policy)
 2. **Generate metrics** from specifications using [AI Metric Generation](/concepts/metric/ai-generation)
-3. **Create datasets** from specifications — the dataset type is auto-derived
-4. **Run evaluations** with `evaluations.run()` — resolves specs, datasets, and metrics automatically
+3. **Create tests** from specifications — the test type is auto-derived
+4. **Run evaluations** with `evaluations.run()` — resolves specs, tests, and metrics automatically
 
 <Note>
-  In the dashboard, specifications are managed in two places, one per **scope**. The product's **Specifications** tab holds the positive scope (Capability and Policy). The product's **Settings** tab holds the negative scope (Inability). Both use the same table and the same creation form; the form knows which scope it is in from the `scope` parameter in its URL (`?scope=positive` or `?scope=negative`).
-
-  You are never asked to pick a type up front. When you create a specification, **Fill with AI** opens automatically: describe the behavior in a rough note and the AI rewrites it into a properly written description, then classifies it behind the scenes. **Complete with AI** does the same classification for a description you have already written, without rewriting the text. Dataset type (and its variant, when applicable) appear under an Advanced section once classified. Review and edit before saving — nothing is persisted until you submit the form.
-
-  If your description does not match the scope you are in, the form says so and will not save it. Describe something the product cannot do while in the positive scope and it tells you a thing a product cannot do should not be set as a specification; describe a capability or a rule while in the negative scope and it tells you a thing a product can do cannot be set as an inability. In the positive scope you can also correct a wrong classification yourself: **Advanced Options** holds a Capability/Policy choice, pre-filled by the AI. Inability is never offered there, because it belongs to the other scope.
+  When creating or editing a specification in the dashboard, you have two AI assistance options. **Fill with AI** opens a dialog where you describe the behavior in a rough note and the AI rewrites it into a properly written specification description, then auto-fills the type, test type, and variant. **Complete with AI** classifies a description you have already written, suggesting the type, test type, and variant without changing the text. Review and edit the AI suggestions before saving — nothing is persisted until you submit the form.
 </Note>
 
 <Card title="Specification-Driven Evaluations Tutorial" icon="rocket" href="/sdk/tutorials/specification-driven-evaluations">
-  End-to-end guide: define specs, generate metrics, create datasets, and run evaluations — all from specifications.
+  End-to-end guide: define specs, generate metrics, create tests, and run evaluations — all from specifications.
 </Card>
 
 ## Keeping Specifications Up to Date
@@ -100,18 +96,13 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
 </ResponseField>
 
 <ResponseField name="test_type" type="Enum" optional>
-  The type of dataset for this specification.
+  The type of test for this specification.
   Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
-  <Note>
-    Required for `POLICY` specifications. For `CAPABILITY` specifications it is always `BEHAVIOR`, assigned
-    automatically. Must not be provided for `INABILITY` specifications.
-  </Note>
-
-  <Note>On `specifications.create()` and `specifications.list()` this is the `dataset_type` parameter. The attribute you read back off the returned object is still `test_type`.</Note>
+  <Note>Required for `POLICY` specifications. Must not be provided for `CAPABILITY` or `INABILITY` specifications.</Note>
 </ResponseField>
 
 <ResponseField name="test_variant" type="string" optional>
-  Variant of the dataset type. Applicable for `ACCURACY` and `SECURITY` dataset types.
+  Variant of the test type. Applicable for `ACCURACY` and `SECURITY` test types.
 </ResponseField>
 
 <ResponseField name="metric_ids" type="list[string]" optional>
