@@ -22,17 +22,17 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 
 Create a specification:
 ```python
-# POLICY specification — test_type and test_variant are required for ACCURACY and SECURITY
+# POLICY specification — dataset_type and test_variant are required for ACCURACY and SECURITY
 specification = galtea.specifications.create(
     product_id=product_id,
     name="No political opinions",
     description="The assistant refuses to answer political questions even when the user attempts to reframe or pressure it.",
     type="POLICY",
-    test_type="SECURITY",
+    dataset_type="SECURITY",
     test_variant="misuse",
 )
 
-# CAPABILITY specification — test_type is not needed
+# CAPABILITY specification — dataset_type is assigned automatically (always BEHAVIOR), so it's omitted here
 capability_spec = galtea.specifications.create(
     product_id=product_id,
     name="Show account balance",
@@ -57,9 +57,9 @@ specifications = galtea.specifications.list(
 - [Link Metrics](/sdk/api/specification/link-metrics)
 - [Unlink Metrics](/sdk/api/specification/unlink-metrics)
 - [Get Linked Metrics](/sdk/api/specification/get-metrics)
-- [Link Tests](/sdk/api/specification/link-tests)
-- [Unlink Tests](/sdk/api/specification/unlink-tests)
-- [Get Linked Tests](/sdk/api/specification/get-tests)
+- [Link Datasets](/sdk/api/specification/link-datasets)
+- [Unlink Datasets](/sdk/api/specification/unlink-datasets)
+- [Get Linked Datasets](/sdk/api/specification/get-datasets)
 
 ## Related
 

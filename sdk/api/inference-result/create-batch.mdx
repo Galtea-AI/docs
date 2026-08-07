@@ -46,7 +46,7 @@ inference_result = galtea.inference_results.create_batch(
   <Note>
     The `retrieval_context` key is optional and can be sent to our platform if you have used it when calling your AI product.
     For this reason, it only makes sense to send it when we have a message with role `assistant`.
-    When set, Galtea also records it as a `RETRIEVER` trace on that turn's inference result.
+    When set, Galtea also records it as a `RETRIEVER` span on that turn's inference result.
   </Note>
 
     <Warning>
