@@ -7,7 +7,7 @@ description: "Run a full conversation simulation between your agent and a simula
 import AgentCallables from '/snippets/agent-callables.mdx';
 
 ## Returns
-It returns a result object from the [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
+It returns a result object from the [Conversation Simulator](/concepts/product/test/case/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
 
 ## Agent Options
 
@@ -30,7 +30,7 @@ When using the **Structured** signature (`(input_data: AgentInput) -> AgentRespo
 </ResponseField>
 
 <ResponseField name="inference_result_id" type="Optional[str]">
-  The inference result ID for this execution. Forward this to remote agents so they can attach spans to the correct session. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
+  The inference result ID for this execution. Forward this to remote agents so they can attach traces to the correct session. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
 </ResponseField>
 
 <ResponseField name="metadata" type="Optional[dict[str, Any]]">
