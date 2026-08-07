@@ -19,14 +19,14 @@ product_id: str = create_test_product(
 version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
 version_id: str = version.id
 
-# Create a test with test cases
-test = galtea.tests.create(
+# Create a dataset with test cases
+dataset = galtea.datasets.create(
     product_id=product_id,
     name=f"human-eval-tutorial-test-{run_identifier}",
     type="ACCURACY",
-    test_file_path="path/to/accuracy_test.csv",
+    dataset_file_path="path/to/accuracy_dataset.csv",
 )
-test_id: str = test.id
+dataset_id: str = dataset.id
 
 # Setup: create a user group for the human evaluation metric
 user_group = galtea.user_groups.create(
@@ -59,35 +59,46 @@ print(f"Created metric: {metric.name} (ID: {metric.id})")
 # @end create_human_metric
 
 
+# Link the human evaluation metric and the dataset to a specification, so that
+# `evaluations.run()` below can discover both. This setup is done once per product.
+specification = galtea.specifications.create(
+    product_id=product_id,
+    name="Answers must be helpful and accurate",
+    description="The assistant answers helpfully and accurately, as judged by a human reviewer.",
+    type="POLICY",
+    dataset_type="ACCURACY",
+    test_variant="other",
+    metric_ids=[metric.id],
+)
+if specification is None:
+    raise ValueError("Failed to create specification")
+galtea.specifications.link_datasets(specification_id=specification.id, dataset_ids=[dataset_id])
+
+
 # @start run_evaluations
 # Simulate your product's response
-def your_product_function(input_prompt: str) -> str:
-    return f"Model response to: {input_prompt}"
+def your_product_function(user_message: str) -> str:
+    return f"Model response to: {user_message}"
 
 
-# Fetch test cases and run evaluations
-test_cases = galtea.test_cases.list(test_id=test_id)
-print(f"Found {len(test_cases)} test cases")
+# One call resolves the specifications, their datasets and metrics, runs your product on
+# every test case, and submits the results. Since the metric source is human_evaluation,
+# each evaluation lands in PENDING_HUMAN instead of running an LLM judge.
+result = galtea.evaluations.run(version_id=version_id, agent=your_product_function)
 
-for test_case in test_cases:
-    actual_output = your_product_function(test_case.input)
-
-    # Create session and evaluate — since the metric source is human_evaluation,
-    # the evaluation status will be PENDING_HUMAN instead of running an LLM judge
-    session = galtea.sessions.create(version_id=version_id, test_case_id=test_case.id)
-    galtea.inference_results.create_and_evaluate(
-        session_id=session.id,
-        output=actual_output,
-        metrics=[{"name": metric.name}],
-    )
-
-print("All evaluations submitted!")
+print(f"Submitted evaluations for {result['testCaseCount']} test cases")
 # @end run_evaluations
+
+# Guard the gate itself: `run()` returns testCaseCount 0 and raises nothing when the
+# specification resolves no datasets, so without this the snippet would stay green while
+# the PENDING_HUMAN check below silently degrades into a no-op.
+if result["testCaseCount"] == 0:
+    raise ValueError("evaluations.run() resolved no test cases — specification linking is broken")
 
 
 # @start list_pending_evaluations
 # List evaluations to confirm they are PENDING_HUMAN
-sessions = galtea.sessions.list(version_id=version_id, test_id=test_id)
+sessions = galtea.sessions.list(version_id=version_id, dataset_id=dataset_id)
 if sessions:
     evaluations = galtea.evaluations.list(session_id=sessions[0].id)
     for evaluation in evaluations:

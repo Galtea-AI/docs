@@ -7,7 +7,7 @@ icon: "tower-broadcast"
 Galtea allows you to run inferences against your AI system and evaluate its responses **directly from the Dashboard**, without writing any SDK code. This is made possible by [Endpoint Connections](/concepts/product/endpoint-connection), which tell Galtea how to call your API, extract the response, and manage session state across turns.
 
 <Info>
-  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/run-test-based-evaluations) instead.
+  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/sdk/tutorials/run-dataset-based-evaluations) instead.
 </Info>
 
 ## Prerequisites
@@ -15,7 +15,7 @@ Galtea allows you to run inferences against your AI system and evaluate its resp
 Before you begin, make sure you have the following set up in the [Galtea Dashboard](https://platform.galtea.ai/):
 
 - A [Product](/concepts/product) representing your AI system
-- A [Test](/concepts/product/test) with at least one [Test Case](/concepts/product/test/case) to run against your endpoint
+- A [Dataset](/concepts/product/dataset) with at least one [Test Case](/concepts/product/dataset/test-case) to run against your endpoint
 
 ## Workflow Overview
 
@@ -26,8 +26,8 @@ Before you begin, make sure you have the following set up in the [Galtea Dashboa
   <Step title="Create a Version with the Endpoint Connection">
     Create a new version of your product and attach the endpoint connection to it.
   </Step>
-  <Step title="Run a Test from the Dashboard">
-    Select a test and run it against the version. Galtea calls your endpoint for each test case and records the inference results.
+  <Step title="Run a Dataset from the Dashboard">
+    Select a dataset and run it against the version. Galtea calls your endpoint for each test case and records the inference results.
   </Step>
   <Step title="Evaluate the Results">
     Once inferences are generated, trigger evaluations with the metrics of your choice to assess your AI's performance.
@@ -172,14 +172,14 @@ Once **Link Connection** is on, the **Endpoint Connection** is the only required
   If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. These also appear only under **Link Connection** with the **HTTP Endpoint** target. See [Endpoint Connection — Multi-Step Session Lifecycle](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced) for details.
 </Note>
 
-## Step 3: Run a Test
+## Step 3: Run a Dataset
 
-Once your version is set up with an endpoint connection, you can run tests directly from the Dashboard:
+Once your version is set up with an endpoint connection, you can run datasets directly from the Dashboard:
 
-1. Navigate to your product's **Tests** section.
-2. Select the test you want to run.
+1. Navigate to your product's **Datasets** section.
+2. Select the dataset you want to run.
 3. Choose the version with the configured endpoint connection.
-4. Start the test run.
+4. Start the dataset run.
 
 Galtea will iterate through each test case, call your endpoint using the configured endpoint connection, and record the resulting [Inference Results](/concepts/product/version/session/inference-result). Each test case produces a session with one or more inference results depending on whether it's a single-turn or multi-turn test.
 
@@ -197,17 +197,17 @@ Galtea will assess each inference result using the selected metrics and provide 
   For single-turn tests, metrics like [Factual Accuracy](/concepts/metric/factual-accuracy) and [Answer Relevancy](/concepts/metric/answer-relevancy) work well. For multi-turn conversations, consider [Knowledge Retention](/concepts/metric/knowledge-retention), [Role Adherence](/concepts/metric/role-adherence), and [Conversation Completeness](/concepts/metric/conversation-completeness).
 </Tip>
 
-## Collecting Traces During Direct Inference
+## Collecting Spans During Direct Inference
 
-There are three ways to collect [traces](/concepts/product/version/session/trace) during Direct Inference:
+There are three ways to collect [spans](/concepts/product/version/session/span) during Direct Inference:
 
-1. **Output Mapping (no code)** — Extract traces from the API response using a `traces` key in your output mapping.
-2. **SDK `set_context` (in your handler)** — Pass `{{ inference_result_id }}` to your endpoint and use the SDK to create traces from within the handler.
+1. **Output Mapping (no code)** — Extract spans from the API response using a `traces` key in your output mapping.
+2. **SDK `set_context` (in your handler)** — Pass `{{ inference_result_id }}` to your endpoint and use the SDK to create spans from within the handler.
 3. **W3C Trace Context Propagation (zero code)** — Enable the `traceparent` header to automatically correlate your OTEL spans with Galtea inference results.
 
-### Option 1: Extract Traces via Output Mapping
+### Option 1: Extract Spans via Output Mapping
 
-If your endpoint returns trace data in its response, you can extract it using the `traces` key in the output mapping. Galtea will store each trace object linked to the inference result automatically.
+If your endpoint returns span data in its response, you can extract it using the `traces` key in the output mapping. Galtea will store each span object linked to the inference result automatically.
 
 **Example API response:**
 ```json
@@ -240,7 +240,7 @@ If your endpoint returns trace data in its response, you can extract it using th
 }
 ```
 
-Galtea extracts the `traces` array and creates `Trace` entities linked to the inference result. Each object in the array must contain at least a `name` field and can include any [Trace properties](/concepts/product/version/session/trace#trace-properties):
+Galtea extracts the `traces` array and creates `Span` entities linked to the inference result. Each object in the array must contain at least a `name` field and can include any [Span properties](/concepts/product/version/session/span#span-properties):
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
@@ -254,7 +254,7 @@ Galtea extracts the `traces` array and creates `Trace` entities linked to the in
 | `metadata` | object | No | Additional custom metadata |
 | `startTime` | string | No | ISO 8601 timestamp when the operation started |
 | `endTime` | string | No | ISO 8601 timestamp when the operation completed |
-| `parentTraceId` | string | No | ID of the parent trace for hierarchical relationships |
+| `parentTraceId` | string | No | ID of the parent span for hierarchical relationships |
 
 <Tip>
   This approach requires no SDK code in your endpoint handler — it works purely through configuration.
@@ -262,7 +262,7 @@ Galtea extracts the `traces` array and creates `Trace` entities linked to the in
 
 ### Option 2: Use `set_context` in Your Endpoint Handler
 
-When running evaluations via Direct Inference, you can collect traces from your endpoint handler by linking the `inference_result_id` to your tracing context. Galtea automatically sends the `X-Galtea-Inference-Id` HTTP header with every Direct Inference request, so your endpoint can read it directly — no template changes needed.
+When running evaluations via Direct Inference, you can collect spans from your endpoint handler by linking the `inference_result_id` to your span context. Galtea automatically sends the `X-Galtea-Inference-Id` HTTP header with every Direct Inference request, so your endpoint can read it directly — no template changes needed.
 
 Alternatively, you can pass `{{ inference_result_id }}` in the input template if you prefer to receive it in the request body.
 
@@ -290,12 +290,12 @@ inference_result_id = request.headers.get("X-Galtea-Inference-Id")
 
 #### 2. Use `set_context` in Your Endpoint Handler
 
-In your API endpoint, extract the `inference_result_id` from the request and use the SDK's `set_context` / `clear_context` to associate traces with it:
+In your API endpoint, extract the `inference_result_id` from the request and use the SDK's `set_context` / `clear_context` to associate spans with it:
 
 ```python
-@trace(type=TraceType.AGENT)
+@traced(type=SpanType.AGENT)
 def run_agent(query: str) -> str:
-    # Your agent logic here — all nested @trace calls
+    # Your agent logic here — all nested @traced calls
     # will be linked to the inference result automatically
     return "Agent response to: " + query
 
@@ -306,18 +306,18 @@ def my_endpoint_handler(request):
     user_input = body["messages"][-1]["content"]
     inference_result_id = body["metadata"]["inference_result_id"]
 
-    # Set trace context so all @trace calls are linked to this inference result
+    # Set Galtea context so all @traced calls are linked to this inference result
     token = set_context(inference_result_id=inference_result_id)
     try:
         response = run_agent(user_input)
     finally:
-        # Flush traces to Galtea and clear context
+        # Flush spans to Galtea and clear context
         clear_context(token)
 
     return {"choices": [{"message": {"content": response}}]}
 ```
 
-All `@trace`-decorated functions called while the context is active will be automatically linked to the inference result in Galtea.
+All `@traced`-decorated functions called while the context is active will be automatically linked to the inference result in Galtea.
 
 <Info>
   For a complete guide on tracing setup, decorators, and context managers, see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial.
@@ -374,11 +374,11 @@ Point your OTel exporter or Collector at Galtea's public OTel endpoint. [Send Op
 Once configured, spans from your service will be automatically linked to the corresponding Galtea inference results via the shared trace ID.
 
 <Warning>
-  This approach only works for **Direct Inference** (where Galtea initiates the call to your endpoint). For SDK-based connections where your code calls the Galtea API, use the SDK's [trace context](/sdk/api/trace/set-context) mechanism instead.
+  This approach only works for **Direct Inference** (where Galtea initiates the call to your endpoint). For SDK-based connections where your code calls the Galtea API, use the SDK's [span context](/sdk/api/span/set-context) mechanism instead.
 </Warning>
 
 <Info>
-  To control how span content maps to Trace records (the `galtea.trace.*` attributes and the automatically mapped OTel fields), see [How span content maps to Trace records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-trace-records). To create production sessions from OTel traffic without Direct Inference, see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+  To control how span content maps to Span records (the `galtea.trace.*` attributes and the automatically mapped OTel fields), see [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records). To create production sessions from OTel traffic without Direct Inference, see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 </Info>
 
 ## Learn More
