@@ -33,11 +33,11 @@ You can create inference results from the [Galtea dashboard](https://platform.ga
 
 <Note>
   Retrieval context is not a stored field on the inference result. It is derived from the inference
-  result's [`RETRIEVER` trace spans](/concepts/product/version/session/trace#retrieval-context-in-retriever-traces).
+  result's [`RETRIEVER` spans](/concepts/product/version/session/span#retrieval-context-in-retriever-spans).
   You can still supply `retrieval_context` when logging (on create, update, or an agent response); Galtea
-  records it as a `RETRIEVER` trace.
+  records it as a `RETRIEVER` span.
 
-  If your agent already emits traces, we recommend sending `RETRIEVER` spans directly instead. This keeps
+  If your agent already emits spans, we recommend sending `RETRIEVER` spans directly instead. This keeps
   one source of truth and lets you capture several retrieval steps per turn, which a single
   `retrieval_context` value cannot.
 </Note>
@@ -68,7 +68,7 @@ You can create inference results from the [Galtea dashboard](https://platform.ga
   <Card title="Evaluation" icon="clipboard-check" href="/concepts/product/version/session/evaluation">
     Score inference results using metrics.
   </Card>
-  <Card title="Trace" icon="sitemap" href="/concepts/product/version/session/trace">
+  <Card title="Span" icon="sitemap" href="/concepts/product/version/session/span">
     Capture internal operations linked to inference results.
   </Card>
 </CardGroup>

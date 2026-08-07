@@ -31,7 +31,7 @@ version = galtea_client.versions.create(
 if version is None:
     raise ValueError("version is None")
 
-test = galtea_client.tests.create(
+dataset = galtea_client.datasets.create(
     name=f"agent-input-test-{run_identifier}",
     type="ACCURACY",
     product_id=product_id,
@@ -39,11 +39,11 @@ test = galtea_client.tests.create(
     language="english",
     max_test_cases=1,
 )
-if test is None:
-    raise ValueError("test is None")
+if dataset is None:
+    raise ValueError("dataset is None")
 
 test_case = galtea_client.test_cases.create(
-    test_id=test.id,
+    dataset_id=dataset.id,
     input={"user_message": "hello", "chat_type": "support"},
     expected_output="Hi there!",
 )

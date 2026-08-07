@@ -1,0 +1,62 @@
+---
+title: "Extend Test Cases"
+description: "Add more test cases to a Galtea-generated dataset by re-running the generator that created it"
+sidebarTitle: "Extend Test Cases"
+icon: "layer-group"
+---
+
+## What is Extend?
+
+Extend adds more test cases to a dataset that **Galtea generated**. It re-runs the same generator that created the dataset and appends the new cases to it. The test cases it already has are kept.
+
+This is the right way to grow a generated dataset — for example an onboarding dataset that started with only a few cases. The new cases are produced the same way the original ones were, so they stay consistent with the dataset's purpose.
+
+<Info>
+  Extend keeps your existing cases and adds new ones. It never replaces them. While it runs, the [dataset](/concepts/product/dataset) is in the `EXTENDING` status; when it finishes, the dataset returns to `SUCCESS`.
+</Info>
+
+## Extend vs. Data Augmentation
+
+Both add more cases to a dataset, but they work differently:
+
+- **Extend** re-runs the dataset's **original generator** (for [Behavior](/concepts/product/dataset/behavior-datasets), [Security & Safety](/concepts/product/dataset/security-datasets), or [Accuracy](/concepts/product/dataset/accuracy-datasets)). It is available only for datasets Galtea generated.
+- **[Data Augmentation](/concepts/product/dataset/data-augmentation)** creates new cases by learning from the dataset's **existing cases**. It works on any dataset that has cases, including ones you uploaded.
+
+In the dashboard you will see one button or the other, depending on the dataset: **Extend Test Cases** for a generated dataset, **Augment Test Cases** for a dataset that cannot be extended (for example one you uploaded from a file).
+
+## When Extend is available
+
+A dataset can be extended when Galtea generated it **and** it still has the input its generator needs:
+
+- **Behavior** datasets need a scenario style (strategy).
+- **Security & Safety** datasets need at least one threat (variant).
+- **Accuracy** datasets need the ground-truth document they were generated from.
+
+Uploaded datasets cannot be extended, because there is no generator behind them — use Data Augmentation for those.
+
+## How to Use Extend
+
+You can extend a generated dataset directly from the [Galtea dashboard](https://platform.galtea.ai/):
+
+<Steps>
+  <Step title="Open a generated dataset">
+    Go to the **Datasets** section and open a dataset that Galtea generated.
+  </Step>
+  <Step title="Click Extend Test Cases">
+    Use the **Extend Test Cases** button and choose how many cases to add.
+  </Step>
+  <Step title="Wait for generation">
+    The dataset enters the `EXTENDING` status while the generator runs. When it finishes, the new cases are added alongside the existing ones and the dataset returns to `SUCCESS`.
+  </Step>
+</Steps>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Data Augmentation" icon="wand-magic-sparkles" href="/concepts/product/dataset/data-augmentation">
+    Expand any dataset from its existing cases.
+  </Card>
+  <Card title="Datasets" icon="flask" href="/concepts/product/dataset">
+    Learn about datasets and dataset types in Galtea.
+  </Card>
+</CardGroup>
