@@ -62,25 +62,14 @@ metric = galtea.metrics.create(
   The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.
   
   **Available models:**
-  - `"claude-sonnet-4-5"`
-  - `"GPT-5.2"`
-  - `"GPT-5.1"`
-  - `"GPT-5"`
-  - `"GPT-5-mini"`
-  - `"GPT-4.1"`
+  - `"Claude-Sonnet-4.5"`
+  - `"Claude-Sonnet-3.7"`
   - `"GPT-4.1-mini"`
-  - `"GPT-4o"`
-  - `"Gemini-2.5-Flash"`
   - `"Gemini-2.5-Flash-Lite"`
-
-  **EU data zone.** These are the same models, served from European infrastructure. Use them when your data must stay in the EU:
-  - `"eu.claude-sonnet-4-5"`
-  - `"eu.gpt-4.1"`
-  - `"eu.gpt-4.1-mini"`
-  - `"eu.gpt-4o"`
-  - `"eu.gpt-4o-mini"`
-
-  Model names are case-insensitive.
+  - `"Gemini-2.5-Flash"`
+  - `"Gemini-2.0-flash"`
+  - `"GPT-4o"`
+  - `"GPT-4.1"`
 
   <Note>
     It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation.
