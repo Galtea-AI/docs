@@ -80,7 +80,7 @@ policy_behavior = galtea.specifications.create(
 ```
 
 <Tip>
-  You can also create specifications from the dashboard with AI assistance, and you are never asked to pick a type up front. Capabilities and policies are created from the product's **Specifications** tab; inabilities from its **Settings** tab. When you create one, **Fill with AI** opens automatically: describe the behavior in a rough note and the AI rewrites it into a properly written description, then classifies it behind the scenes. **Complete with AI** does the same classification for a description you have already written, without rewriting the text. If the description does not match where you are creating it, the form says so and will not save it. See [Specifications](/concepts/product/specification) for the full flow.
+  You can also create specifications from the dashboard with AI assistance, and you are never asked to pick a type up front. Capabilities and policies are created from the product's **Specifications** section; inabilities from its **Settings** section. Both are sidebar entries of the open product. When you create one, **Fill with AI** opens automatically: describe the behavior in a rough note and the AI rewrites it into a properly written description, then classifies it behind the scenes. **Complete with AI** does the same classification for a description you have already written, without rewriting the text. If the description does not match where you are creating it, the form says so and will not save it. See [Specifications](/concepts/product/specification) for the full flow.
 </Tip>
 
 ## Step 2: Generate or Link Metrics
@@ -89,7 +89,7 @@ Metrics define how each specification is scored. You have two options:
 
 ### Option A: AI-Generated Metrics (Recommended)
 
-From the dashboard, navigate to your product's **Specifications** tab, open the dropdown on a specification, and click **Generate Metrics**. The AI creates judge prompts and evaluation parameters tailored to each spec. See [AI Metric Generation](/concepts/metric/ai-generation) for the full workflow.
+From the dashboard, open your product, pick **Specifications** in the sidebar, open the dropdown on a specification, and click **Generate Metrics**. The AI creates judge prompts and evaluation parameters tailored to each spec. See [AI Metric Generation](/concepts/metric/ai-generation) for the full workflow.
 
 ### Option B: Manual Metric Creation and Linking
 
@@ -97,7 +97,7 @@ Create a metric with a custom judge prompt and link it to a specification:
 
 ```python
 # Generate metrics from specifications using AI
-# This is done from the dashboard: Specifications tab → Generate Metrics
+# This is done from the dashboard: pick Specifications in the sidebar → Generate Metrics
 # The AI creates judge prompts and evaluation parameters tailored to each spec.
 #
 # Alternatively, create metrics manually and link them:
@@ -125,7 +125,7 @@ Datasets can be created from specifications in two ways:
 
 ### Option A: AI-Generated Dataset Configurations (Dashboard)
 
-From the dashboard, navigate to your product's **Specifications** tab, select the Policy and Capability specifications you want to generate datasets for, and use the bulk actions menu to click **Create Datasets**. The system will suggest dataset configurations — including name, type, variants, strategies, and max test cases — all auto-derived from your specifications. Review each candidate, edit if needed, and save.
+From the dashboard, open your product, pick **Specifications** in the sidebar, select the Policy and Capability specifications you want to generate datasets for, and use the bulk actions menu to click **Create Datasets**. The system will suggest dataset configurations — including name, type, variants, strategies, and max test cases — all auto-derived from your specifications. Review each candidate, edit if needed, and save.
 
 {/* <!-- VIDEO PLACEHOLDER: AI test generation from specs dashboard walkthrough
 <video

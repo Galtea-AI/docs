@@ -19,15 +19,15 @@ Each Monitor watches one [Product](/concepts/product). You can narrow it to a si
 
 ## Finding monitors in the dashboard
 
-In the dashboard, open a product and go to its **Settings** tab, then the **Monitors** card. That card is the default home for monitor management and lists every monitor for the product.
+In the dashboard, open a product, pick **Settings** in the sidebar, then open the **Monitors** card. That card is the default home for monitor management and lists every monitor for the product.
 
-Power users can turn on **Show all tabs** (in User Settings > Advanced) to also get a dedicated **Monitors** tab on the product page. It appears only in **Production** view mode, because monitors watch production sessions; use the Development/Production switch in the sidebar to switch to Production if you do not see it.
+The sidebar also has a dedicated **Monitors** entry, under **Product**. It appears only in **Production** view mode, because monitors watch production sessions; use the Development/Production switch in the sidebar to switch to Production if you do not see it.
 
 From either place you can create a monitor, open one to see its results, and edit, pause, resume, or delete it. Each row shows the monitor's status, its recent score, its sampling rate, and its credit spend for the month.
 
 ## Seeing production scores across the whole product
 
-A monitor's own page shows the results of that one monitor. To see the trend across every production evaluation of the product, open the product's **Analytics** tab in **Production** view mode. It shows an **evaluation scores over time** chart: the average score per day across all production evaluations that match your current filters.
+A monitor's own page shows the results of that one monitor. To see the trend across every production evaluation of the product, open the product's **Analytics** section in **Production** view mode. It shows an **evaluation scores over time** chart: the average score per day across all production evaluations that match your current filters.
 
 The chart is only in Production view mode, because it is a production-monitoring view. One **Group by** switch at the top of the Analytics page sets how the score charts group their scores: **by specification** (the default: one line per specification, built from the metrics linked to it) or **by metric** (one line per metric). It drives this chart, the selected version's score rings, and the version comparison radar. Your choice is remembered, so the page opens the same way next time. Every chart shows only the grouping you picked: if nothing has scores under that grouping, the chart says so instead of showing the other grouping's data. The chart follows the same filters as the rest of the page, so changing the version, test, metric, language, or time frame updates it too. It aggregates every matching production evaluation, including ones you triggered by hand, so it is a product-wide trend, not one monitor's view.
 

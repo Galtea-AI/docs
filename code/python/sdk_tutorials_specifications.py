@@ -64,7 +64,7 @@ policy_behavior = galtea.specifications.create(
 
 # @start generate_metrics
 # Generate metrics from specifications using AI
-# This is done from the dashboard: Specifications tab → Generate Metrics
+# This is done from the dashboard: pick Specifications in the sidebar → Generate Metrics
 # The AI creates judge prompts and evaluation parameters tailored to each spec.
 #
 # Alternatively, create metrics manually and link them:
