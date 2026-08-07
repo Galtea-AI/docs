@@ -183,8 +183,6 @@ Once your version is set up with an endpoint connection, you can run it from the
    - **Datasets & Metrics**: choose the datasets and [Metrics](/concepts/metric) yourself.
 4. Start the run.
 
-The Dashboard then opens the version's **Sessions** tab, where the run's new sessions are already listed. Their evaluations appear on the **Evaluations** tab as each inference finishes.
-
 Galtea will iterate through each test case, call your endpoint using the configured endpoint connection, record the resulting [Inference Results](/concepts/product/version/session/inference-result), and evaluate them with the metrics you selected. Each test case produces a session with one or more inference results depending on whether it's a single-turn or multi-turn test.
 
 ## Step 4: Evaluate Again with Other Metrics
@@ -195,8 +193,6 @@ The run above already produces scores. Use this step only when you want to score
 2. Click **Run Evaluation**.
 3. Select the [Metrics](/concepts/metric) you want to use.
 4. Run the evaluation.
-
-The Dashboard then opens that session's **Evaluations** tab, where the new evaluations are already listed.
 
 Galtea will assess each inference result using the selected metrics and provide scores and explanations.
 
