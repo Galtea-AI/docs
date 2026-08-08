@@ -45,6 +45,8 @@ Specifications are at the center of Galtea's recommended evaluation flow:
 
   You are never asked to pick a type up front. When you create a specification, **Fill with AI** opens automatically: describe the behavior in a rough note and the AI rewrites it into a properly written description, then classifies it behind the scenes. **Complete with AI** does the same classification for a description you have already written, without rewriting the text. Dataset type (and its variant, when applicable) appear under an Advanced section once classified. Review and edit before saving — nothing is persisted until you submit the form. Saving a Capability or Policy lands on its page, which opens **Setup for evaluation** when there is something to generate, offering the dataset, its metrics, or both. Dismiss it and the specification is still saved, just with nothing generated. Saving an Inability skips the offer, since an inability needs neither.
 
+  The **Specifications** section also warns you when some of the product's datasets belong to no specification, since those datasets are left out when you generate from specifications. A dataset counts as unlinked when it never had a specification, or when the specification it had was deleted. The warning's **Review datasets** link opens the product's Datasets list already filtered to those datasets, where you can select them and link them to a specification in one action.
+
   If your description does not match the scope you are in, the form says so and will not save it. Describe something the product cannot do while in the positive scope and it tells you a thing a product cannot do should not be set as a specification; describe a capability or a rule while in the negative scope and it tells you a thing a product can do cannot be set as an inability. In the positive scope you can also correct a wrong classification yourself: **Advanced Options** holds a Capability/Policy choice, pre-filled by the AI. Inability is never offered there, because it belongs to the other scope.
 </Note>
 
@@ -70,7 +72,7 @@ The endpoint **persists nothing**. Applying a suggestion — creating a new spec
 
 ## SDK Integration
 
-The SDK allows you to create, list, retrieve, and delete specifications, as well as link and unlink metrics. See the [Specification Service API documentation](/sdk/api/specification/service) for more details.
+The SDK allows you to create, list, retrieve, and delete specifications, as well as link and unlink both metrics and datasets. See the [Specification Service API documentation](/sdk/api/specification/service) for more details.
 
 <SDKSpecificationServiceCard />
 
