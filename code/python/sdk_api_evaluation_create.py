@@ -19,6 +19,7 @@ product_id = create_test_product(
     description="Demo product for evaluation create API",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(

@@ -19,6 +19,7 @@ product_id = create_test_product(
     description="Demo product for custom metrics tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(
@@ -30,16 +31,16 @@ if version is None:
     raise ValueError("version is None")
 version_id = version.id
 
-dataset = galtea.datasets.create(
+test = galtea.tests.create(
     name="test-custom-metrics-" + run_identifier,
     type="ACCURACY",
     product_id=product_id,
-    dataset_file_path="path/to/accuracy_dataset.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
-if dataset is None:
-    raise ValueError("dataset is None")
+if test is None:
+    raise ValueError("test is None")
 
-test_cases = galtea.test_cases.list(dataset_id=dataset.id, limit=1)
+test_cases = galtea.test_cases.list(test_id=test.id, limit=1)
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("test_cases is None or empty")
 test_case_id = test_cases[0].id
