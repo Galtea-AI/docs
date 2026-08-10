@@ -1,0 +1,25 @@
+---
+title: 'Clear Context'
+description: "Clear a previously attached context and optionally flush pending spans."
+---
+
+## Returns
+This method returns `None`.
+
+## Example
+
+```python
+clear_context(span_context)
+```
+
+## Parameters
+<ResponseField name="token" type="object" required>
+  The context token returned by `set_context()`.
+</ResponseField>
+<ResponseField name="flush" type="bool" optional>
+  If `True` (default), export any pending spans associated with the current inference result to the telemetry exporter before detaching the context.
+</ResponseField>
+
+<Note>
+  Always use `clear_context()` in a `finally` block to ensure proper cleanup, even if an exception occurs.
+</Note>

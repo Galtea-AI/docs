@@ -19,13 +19,13 @@ product_id: str = create_test_product(
 version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
 version_id: str = version.id
 
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     product_id=product_id,
     name=f"create-eval-tutorial-test-{run_identifier}",
     type="ACCURACY",
-    test_file_path="path/to/accuracy_test.csv",
+    dataset_file_path="path/to/accuracy_dataset.csv",
 )
-test_id: str = test.id
+dataset_id: str = dataset.id
 
 # --- Configuration ---
 METRICS_TO_EVALUATE = [
@@ -47,8 +47,8 @@ def your_product_function(input_prompt: str, context: str = None) -> str:
 
 # @start create_evaluations
 # 1. Fetch the test cases for the specified test
-test_cases = galtea.test_cases.list(test_id=test_id)
-print(f"Found {len(test_cases)} test cases for Test ID: {test_id}")
+test_cases = galtea.test_cases.list(dataset_id=dataset_id)
+print(f"Found {len(test_cases)} test cases for Test ID: {dataset_id}")
 
 # 2. Loop through each test case and run an evaluation
 for test_case in test_cases:
