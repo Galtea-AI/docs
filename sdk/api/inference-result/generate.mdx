@@ -1,23 +1,23 @@
 ---
 title: 'Generate Inference Result'
 sidebarTitle: "Generate"
-description: "Execute an agent and automatically capture spans, latency, and metadata"
+description: "Execute an agent and automatically capture traces, latency, and metadata"
 ---
 
 import AgentCallables from '/snippets/agent-callables.mdx';
 
 ## Overview
 
-The `generate()` method is the recommended way to execute your agent when you want automatic span collection, timing, and inference result creation. It handles the complete lifecycle:
+The `generate()` method is the recommended way to execute your agent when you want automatic trace collection, timing, and inference result creation. It handles the complete lifecycle:
 
-1. Initializes span collection
+1. Initializes trace collection
 2. Executes your agent with timing measurement
 3. Creates/updates the inference result with all metadata
-4. Saves collected spans to the platform
-5. Cleans up span context (prevents memory leaks)
+4. Saves collected traces to the platform
+5. Cleans up trace context (prevents memory leaks)
 
 <Info>
-  This is the recommended method for production use as it handles all span lifecycle management automatically.
+  This is the recommended method for production use as it handles all trace lifecycle management automatically.
 </Info>
 
 ## Agent Options
@@ -74,18 +74,18 @@ The `generate()` method automatically captures and saves:
 |------|--------|-------------|
 | **Input** | `input` parameter | The user's input (string or structured dict) |
 | **Output** | `AgentResponse.content` | The agent's response |
-| **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG). Stored as a `RETRIEVER` span, not a readable field on the returned inference result. |
+| **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG). Stored as a `RETRIEVER` trace, not a readable field on the returned inference result. |
 | **Latency** | Measured | End-to-end execution time in ms |
 | **Usage Info** | `AgentResponse.usage_info` | Token counts (if provided) |
 | **Cost Info** | `AgentResponse.cost_info` | Cost data (if provided) |
-| **Spans** | `@traced` decorators | All traced operations |
+| **Traces** | `@trace` decorators | All traced operations |
 
 ## Providing Usage and Cost Information
 
 Your agent can return usage and cost information in the `AgentResponse`:
 
 ```python
-@galtea.traced(name="main", type=SpanType.AGENT)
+@galtea.trace(name="main", type=TraceType.AGENT)
 def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
     # Your agent logic...
 
@@ -112,7 +112,7 @@ def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
 | Agent execution | Automatic | Manual call |
 | Timing measurement | Automatic | Manual |
 | Inference result | Auto-created | `inference_results.create()` |
-| Span export | Automatic | Automatic on `clear_context()` |
+| Trace export | Automatic | Automatic on `clear_context()` |
 | Memory cleanup | Automatic | `clear_context()` |
 | Error handling | Built-in | Manual try/finally |
 
@@ -122,7 +122,7 @@ def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
 
 ## Error Handling
 
-If the agent raises an exception, `generate()` ensures span context is cleaned up:
+If the agent raises an exception, `generate()` ensures trace context is cleaned up:
 
 ```python
 def failing_agent(input_data: AgentInput) -> AgentResponse:
@@ -132,12 +132,12 @@ def failing_agent(input_data: AgentInput) -> AgentResponse:
 try:
     result = galtea_client.inference_results.generate(agent=failing_agent, session=session_error, input="test")
 except Exception as e:
-    # Galtea context is automatically cleaned up
+    # Trace context is automatically cleaned up
     print(f"Agent failed: {e}")
 ```
 
 ## Related Methods
 
 - [Create Inference Result](/sdk/api/inference-result/create) - Manual creation
-- [Span Service](/sdk/api/span/service) - Manual span management
+- [Trace Service](/sdk/api/trace/service) - Manual trace management
 - [Simulating Conversations](/sdk/tutorials/simulating-conversations) - Multi-turn simulations
