@@ -7,7 +7,7 @@ icon: "arrow-right-arrow-left"
 
 In order to evaluate your AI agent, Galtea can take advantage of the rich information that comes from traces. If you already have Langfuse setup, Galtea has a very simple way of gathering those traces, in a non-intrusive way with minor changes to your application. Here we explain, how to send your Langfuse traces to Galtea.
 
-The integration requires two things: Galtea passes an `inference_result_id` to your endpoint on every call within the header, and you forward that ID to the Galtea SDK wrapper in your code. That link is all Galtea needs to collect your spans and associate them with the right inference made for the evaluation in question.
+The integration requires two things: Galtea passes an `inference_result_id` to your endpoint on every call within the header, and you forward that ID to the Galtea SDK wrapper in your code. That link is all Galtea needs to collect your traces and associate them with the right inference made for the evaluation in question.
 
 The changes to your code are minimal: one import swap and one line to read the ID from the request header.
 
@@ -28,7 +28,7 @@ The changes to your code are minimal: one import swap and one line to read the I
 
 ## When Does Galtea Export Data?
 
-Galtea **only** exports span data when an `inference_result_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified, no logs are written.
+Galtea **only** exports trace data when an `inference_result_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified, no logs are written.
 
 | Scenario | Galtea exports? |
 |---|---|
@@ -54,7 +54,7 @@ Content-Type: application/json
 Your request body is untouched — nothing is added to it. If the header is absent (non-Galtea traffic), the SDK wrapper is a no-op: no data is sent, nothing breaks.
 
 <Note>
-  Galtea uses inference results as the unit of evaluation — each one represents a single input/output pair that can be scored by metrics. By linking spans to an inference result, Galtea knows which execution spans belong to which response, enabling span-aware evaluations and hence full visibility into how your agent arrived at each answer.
+  Galtea uses inference results as the unit of evaluation — each one represents a single input/output pair that can be scored by metrics. By linking traces to an inference result, Galtea knows which execution traces belong to which response, enabling trace-aware evaluations and hence full visibility into how your agent arrived at each answer.
 </Note>
 
 ## What You Change in Your Code
@@ -104,9 +104,9 @@ Two changes: swap the Langfuse import for the Galtea wrapper and pass the ID; re
     result = my_agent("Hello", inference_result_id=inference_result_id)  # pass the ID
     ```
 
-    The `inference_result_id` kwarg is consumed by the wrapper — it does not reach your function's parameters. The wrapper sets up the Galtea span context before the function runs and flushes it when it returns.
+    The `inference_result_id` kwarg is consumed by the wrapper — it does not reach your function's parameters. The wrapper sets up the Galtea trace context before the function runs and flushes it when it returns.
 
-    `@observe` works on `async def` functions too. The wrapper detects the coroutine and awaits it before clearing context, so spans are correctly stamped with `inference_result_id`.
+    `@observe` works on `async def` functions too. The wrapper detects the coroutine and awaits it before clearing context, so traces are correctly stamped with `inference_result_id`.
 
     ```python
     import asyncio
@@ -160,7 +160,7 @@ Two changes: swap the Langfuse import for the Galtea wrapper and pass the ID; re
     </Note>
 
     <Tip>
-      Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that span type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the span name.
+      Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that trace type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the span name.
     </Tip>
   </Tab>
   <Tab title="CallbackHandler (LangChain)">
@@ -224,8 +224,8 @@ Yes. Swap the imports back (`from langfuse import observe`) and remove the `galt
 
 **Q: Does Galtea see my Langfuse API keys?**
 
-No. Galtea only receives span data (name, type, input, output, timing, hierarchy). It does not access your Langfuse credentials or cloud configuration.
+No. Galtea only receives trace data (name, type, input, output, timing, hierarchy). It does not access your Langfuse credentials or cloud configuration.
 
 **Q: What if Langfuse adds new observation types?**
 
-Unknown types are automatically mapped to `SPAN` in Galtea. Your spans are never dropped.
+Unknown types are automatically mapped to `SPAN` in Galtea. Your traces are never dropped.

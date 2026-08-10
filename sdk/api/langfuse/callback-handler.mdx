@@ -1,7 +1,7 @@
 ---
 title: 'CallbackHandler'
 sidebarTitle: "CallbackHandler"
-description: "Drop-in replacement for Langfuse's langchain.CallbackHandler with Galtea span linking."
+description: "Drop-in replacement for Langfuse's langchain.CallbackHandler with Galtea trace linking."
 ---
 
 ## Example
@@ -34,7 +34,7 @@ handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
 ## Constructor Parameters
 
 <ResponseField name="inference_result_id" type="str" optional>
-  Galtea inference result ID to link spans to. When provided, the handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles. All spans created during the invocation are stamped with this ID. Can also be set or changed later via `set_inference_result_id()`.
+  Galtea inference result ID to link traces to. When provided, the handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles. All spans created during the invocation are stamped with this ID. Can also be set or changed later via `set_inference_result_id()`.
 </ResponseField>
 
 All other keyword arguments are forwarded to Langfuse's `langchain.CallbackHandler`.
@@ -57,7 +57,7 @@ chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 
 ## Behavior
 
-The handler automatically manages Galtea span context using depth tracking across LangChain callbacks:
+The handler automatically manages Galtea trace context using depth tracking across LangChain callbacks:
 
 - On the first `on_*_start` callback (root depth), `set_context(inference_result_id)` is called
 - On the last `on_*_end` or `on_*_error` callback (back to root depth), `clear_context()` is called
