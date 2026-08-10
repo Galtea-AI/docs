@@ -43,7 +43,7 @@ galtea.sessions.finish(session_id=session.id)
 ## Notes
 
 <Warning>
-  Only call `finish()` when the conversation is truly over. A finished session is closed, so a later attempt to append a trace follows the product's closed-session policy: it is either rejected with an error or silently discarded (the default). See [Session](/concepts/product/version/session).
+  Only call `finish()` when the conversation is truly over. A finished session is closed, so a later attempt to append an inference result follows the product's closed-session policy: it is either rejected with an error or silently discarded (the default). See [Session](/concepts/product/version/session).
 </Warning>
 
 <Note>

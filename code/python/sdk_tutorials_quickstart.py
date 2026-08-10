@@ -39,6 +39,7 @@ _created_product_id = create_test_product(
     galtea,
     name="Financial Assistant",
     description="A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
+    security_boundaries="* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
     capabilities="* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
     inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
     policies="",
@@ -61,7 +62,7 @@ version_id = version.id
 # @end find_ids
 
 # @start create_accuracy_test
-dataset = galtea.datasets.create(
+test = galtea.tests.create(
     name="rag-accuracy-test",
     type="ACCURACY",
     product_id=product_id,
@@ -70,12 +71,12 @@ dataset = galtea.datasets.create(
     max_test_cases=20,
 )
 # @end create_accuracy_test
-if dataset is None:
+if test is None:
     raise ValueError("Failed to create accuracy test")
-accuracy_dataset = dataset
+accuracy_test = test
 
 # @start create_security_test
-dataset = galtea.datasets.create(
+test = galtea.tests.create(
     name="misuse-security-test",
     type="SECURITY",
     product_id=product_id,
@@ -84,12 +85,12 @@ dataset = galtea.datasets.create(
     max_test_cases=20,
 )
 # @end create_security_test
-if dataset is None:
+if test is None:
     raise ValueError("Failed to create security test")
-security_dataset = dataset
+security_test = test
 
 # @start create_behavior_test
-dataset = galtea.datasets.create(
+test = galtea.tests.create(
     name="conversation-behavior-test",
     type="BEHAVIOR",
     product_id=product_id,
@@ -98,58 +99,58 @@ dataset = galtea.datasets.create(
     strategies=["written"],
 )
 # @end create_behavior_test
-if dataset is None:
+if test is None:
     raise ValueError("Failed to create behavior test")
-behavior_dataset = dataset
+behavior_test = test
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
     # Pick the first test that has a URI
-    dataset = galtea.datasets.get(dataset_id=accuracy_dataset.id)
-    if dataset.uri:
+    test = galtea.tests.get(test_id=accuracy_test.id)
+    if test.uri:
         break
     print("Waiting for accuracy test file to be ready...")
     time.sleep(1)
 else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+    raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=security_dataset.id)
-    if dataset.uri:
+    test = galtea.tests.get(test_id=security_test.id)
+    if test.uri:
         break
     print("Waiting for security test file to be ready...")
     time.sleep(1)
 else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+    raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=behavior_dataset.id)
-    if dataset.uri:
+    test = galtea.tests.get(test_id=behavior_test.id)
+    if test.uri:
         break
     print("Waiting for behavior test file to be ready...")
     time.sleep(1)
 else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+    raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 # Ensure it works with all test types, then do the actual demo code
-test_cases = galtea.test_cases.list(dataset_id=accuracy_dataset.id)
+test_cases = galtea.test_cases.list(test_id=accuracy_test.id)
 if len(test_cases) == 0:
     raise ValueError("No test cases found for accuracy test")
 accuracy_test_cases = test_cases
-test_cases = galtea.test_cases.list(dataset_id=security_dataset.id)
+test_cases = galtea.test_cases.list(test_id=security_test.id)
 if len(test_cases) == 0:
     raise ValueError("No test cases found for security test")
 security_test_cases = test_cases
-test_cases = galtea.test_cases.list(dataset_id=behavior_dataset.id)
+test_cases = galtea.test_cases.list(test_id=behavior_test.id)
 if len(test_cases) == 0:
     raise ValueError("No test cases found for behavior test")
 behavior_test_cases = test_cases
 
 # @start list_test_cases
-test_cases = galtea.test_cases.list(dataset_id=dataset.id)
-print(f"Using dataset '{dataset.name}' with {len(test_cases)} test cases.")
+test_cases = galtea.test_cases.list(test_id=test.id)
+print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
 # @end list_test_cases
 
 # @start metric_pick_quality
@@ -222,7 +223,7 @@ _spec = galtea.specifications.create(
     name="Stays in its financial-assistant role",
     description="The assistant must stay in its role and follow its guidelines when answering.",
     type="POLICY",
-    dataset_type="BEHAVIOR",
+    test_type="BEHAVIOR",
 )
 if _spec is None:
     raise ValueError("Failed to create specification")
@@ -230,13 +231,13 @@ galtea.specifications.link_metrics(
     specification_id=_spec.id,
     metric_ids=[behavior_metric.id],
 )
-galtea.specifications.link_datasets(
+galtea.specifications.link_tests(
     specification_id=_spec.id,
-    dataset_ids=[behavior_dataset.id],
+    test_ids=[behavior_test.id],
 )
 
 # @start run_evaluation_run
-# One call resolves your specifications, their datasets and metrics, runs your agent
+# One call resolves your specifications, their tests and metrics, runs your agent
 # on every test case, and submits the results for scoring.
 result = galtea.evaluations.run(
     version_id=version_id,

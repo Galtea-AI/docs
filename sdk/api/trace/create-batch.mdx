@@ -1,60 +1,48 @@
 ---
 title: 'Create Trace Batch'
 sidebarTitle: "Create Batch"
-description: "Create a batch of traces in a session."
+description: "Create multiple traces in a single API call."
 ---
 
 ## Returns
 Returns a list of [Trace](/concepts/product/version/session/trace) objects.
 
 ## Example
+
 ```python
-trace = galtea.traces.create_batch(
-    session_id=session_id,
-    conversation_turns=[
-        {"role": "user", "content": "Hi"},
-        {"role": "assistant", "content": "Hello!"},
-    ],
+galtea.traces.create_batch(
+    [
+        TraceBase(
+            inference_result_id=inference_result_id,
+            name="batch_trace_1",
+            type=TraceType.SPAN,
+        )
+    ]
 )
 ```
 
 ## Parameters
-<ResponseField name="session_id" type="string" optional>
-  The session ID to log the traces to.
-
-  <Note>Instead of a `session_id`, you can reference an existing session by its own conversation id (see the section below). Provide exactly one of the two.</Note>
+<ResponseField name="traces" type="list[TraceBase]" required>
+  List of trace objects to create. Each trace should include `inference_result_id`, `name`, and optionally other fields.
 </ResponseField>
 
-<Accordion title="Log to an existing session by your own conversation ID">
-  If you already created the session via the [sessions API](/sdk/api/session/service) with your own `custom_id`, reference it here with `session_custom_id` plus a `version_id` or `product_id` to append traces to it. If no matching session exists, the call returns a `400` error — create it first via the sessions API.
+## TraceBase Fields
 
-  <ResponseField name="session_custom_id" type="string" optional>
-    Your own conversation id, as an alternative to `session_id`. Galtea finds an existing session with this id (per version); the session is not created here. Requires `version_id` or `product_id`.
-  </ResponseField>
-  <ResponseField name="version_id" type="string" optional>
-    The version the session is anchored to when using `session_custom_id`. If both anchors are given, `version_id` wins and `product_id` is ignored.
-  </ResponseField>
-  <ResponseField name="product_id" type="string" optional>
-    Product anchor used when no `version_id` is given with `session_custom_id`: Galtea finds the session with this custom id under the product (across its versions).
-  </ResponseField>
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `inference_result_id` | `str` | Yes | ID of the inference result this trace belongs to |
+| `name` | `str` | Yes | Name of the traced operation |
+| `id` | `str` | No | Client-generated ID (auto-generated if not provided) |
+| `type` | `TraceType` | No | Type: SPAN, GENERATION, EVENT, AGENT, TOOL, CHAIN, RETRIEVER, EVALUATOR, EMBEDDING, GUARDRAIL. See [Trace Types](/concepts/product/version/session/trace#trace-types) |
+| `parent_trace_id` | `str` | No | ID of parent trace |
+| `input_data` | `dict` | No | Input parameters |
+| `output_data` | `dict` | No | Output result |
+| `error` | `str` | No | Error message if failed |
+| `latency_ms` | `float` | No | Execution time in milliseconds |
+| `start_time` | `str` | No | ISO 8601 timestamp when the trace started |
+| `end_time` | `str` | No | ISO 8601 timestamp when the trace ended |
+| `metadata` | `dict` | No | Additional custom metadata |
 
-  <Note>If no session matches the `session_custom_id` and anchor, the call returns a `400` error. Create the session first via the [sessions API](/sdk/api/session/service).</Note>
-</Accordion>
-<ResponseField name="conversation_turns" type="list[dict]" required>
-  A list of dictionaries, where each dictionary represents a **conversation turn** with `role` and `content` keys as mandatory and an optional `retrieval_context` key.
-  The `role` key can only have these values: `user` or `assistant`.
-  <Note>
-    The `retrieval_context` key is optional and can be sent to our platform if you have used it when calling your AI product.
-    For this reason, it only makes sense to send it when we have a message with role `assistant`.
-    When set, Galtea also records it as a `RETRIEVER` span on that turn's trace.
-  </Note>
-
-    <Warning>
-    Maximum batch size recommended: **100 turns**. For longer conversations, split into 
-    multiple batches or use the individual `create()` method.
-  </Warning>
-</ResponseField>
-
-<ResponseField name="conversation_simulator_version" type="string" optional>
-  The version of Galtea's conversation simulator used to generate the user messages. This should only be provided when logging a conversation that was generated using the simulator. This parameter helps with traceability and analytics for conversations created through Galtea's simulation capabilities.
-</ResponseField>
+<Note>
+  For `type`, other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</Note>

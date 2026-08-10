@@ -75,13 +75,13 @@ def my_agent(user_input: str) -> str:
 
 # @start option_a_kwarg
 # The wrapper handles set_context/clear_context automatically:
-result = my_agent("What is gestational diabetes?", trace_id="trace_abc123")
+result = my_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
 # @end option_a_kwarg
 
 # @start option_b_manual
 from galtea.utils.tracing import clear_context, set_context
 
-token = set_context(trace_id="trace_abc123")
+token = set_context(inference_result_id="inferenceResult_abc123")
 try:
     result = my_agent("What is gestational diabetes?")
 finally:
@@ -90,9 +90,9 @@ finally:
 
 # @start sdk_methods
 # With generate() — zero extra lines, SDK manages context internally:
-result = client.traces.generate(agent=my_agent, session=session)
+result = client.inference_results.generate(agent=my_agent, session=session)
 
-# With simulate() — same, each turn gets its own trace and spans:
+# With simulate() — same, each turn gets its own IR and traces:
 result = client.simulator.simulate(session_id=session.id, agent=my_agent)
 # @end sdk_methods
 
@@ -147,7 +147,7 @@ def run_agent(user_input: str) -> str:
 result = run_agent("What is gestational diabetes?")
 
 # With Galtea correlation (traces go to both Langfuse and Galtea):
-result = run_agent("What is gestational diabetes?", trace_id="trace_abc123")
+result = run_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
 # @end api_observe_example
 
 # @start observe_async_example
@@ -166,7 +166,7 @@ async def run_async_agent(user_input: str) -> str:
 # `@observe` detects the wrapped function is `async def` and returns an async
 # wrapper that awaits the coroutine before clearing context. Call it like any
 # other coroutine:
-result = asyncio.run(run_async_agent("What is gestational diabetes?", trace_id="trace_abc123"))
+result = asyncio.run(run_async_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123"))
 # @end observe_async_example
 
 # @start api_start_observation_example
@@ -181,7 +181,7 @@ with start_as_current_observation(name="process-query", as_type="span") as span:
 with start_as_current_observation(
     name="process-query",
     as_type="span",
-    trace_id="trace_abc123",
+    inference_result_id="inferenceResult_abc123",
 ) as span:
     result = run_agent("user query")
     span.update(output=result)
@@ -195,7 +195,7 @@ from galtea.integrations.langfuse import start_as_current_observation
 with start_as_current_observation(
     name="pipeline",
     as_type="span",
-    trace_id="trace_abc123",
+    inference_result_id="inferenceResult_abc123",
 ) as root:
     with root.start_as_current_observation(name="retrieve", as_type="retriever") as ret:
         docs = ["doc1", "doc2"]
@@ -215,7 +215,7 @@ from galtea.integrations.langfuse import start_as_current_observation
 with start_as_current_observation(
     name="process-query",
     as_type="span",
-    trace_id="trace_abc123",
+    inference_result_id="inferenceResult_abc123",
 ) as root_span:
     # All child spans (decorator or context manager) are children of root_span
     docs = search_docs("user query")
@@ -245,7 +245,7 @@ from galtea.integrations.langfuse import CallbackHandler
 handler = CallbackHandler()
 
 # With Galtea correlation (traces go to both Langfuse and Galtea):
-handler = CallbackHandler(trace_id="trace_abc123")
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
 # @end callback_handler_usage
 
 # @start callback_handler_full_example
@@ -259,7 +259,7 @@ galtea_client = Galtea(api_key="YOUR_API_KEY")
 langfuse = get_client()
 
 # Create handler with Galtea correlation
-handler = CallbackHandler(trace_id="trace_abc123")
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
 
 # Use with any LangChain chain, agent, or LLM
 # chain.invoke({"input": "What is gestational diabetes?"}, config={"callbacks": [handler]})
@@ -268,10 +268,10 @@ handler = CallbackHandler(trace_id="trace_abc123")
 # @start callback_handler_singleton
 from galtea.integrations.langfuse import CallbackHandler
 
-handler = CallbackHandler()  # at app init — no trace_id yet
+handler = CallbackHandler()  # at app init — no inference_result_id yet
 
 # Per request:
-handler.set_trace_id("trace_abc123")
+handler.set_inference_result_id("inferenceResult_abc123")
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 # Context is automatically cleared when the chain finishes.
 # @end callback_handler_singleton
@@ -284,6 +284,6 @@ handler = CallbackHandler()
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 
 # With Galtea correlation (traces go to both Langfuse and Galtea):
-handler = CallbackHandler(trace_id="trace_abc123")
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 # @end api_callback_handler_example

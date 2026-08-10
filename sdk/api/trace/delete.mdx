@@ -1,8 +1,11 @@
 ---
 title: 'Delete Trace'
 sidebarTitle: "Delete"
-description: "Delete a trace log by its ID."
+description: "Delete a trace by ID."
 ---
+
+## Returns
+This method returns `None`.
 
 ## Example
 ```python
@@ -11,5 +14,5 @@ galtea.traces.delete(trace_id=trace_id)
 
 ## Parameters
 <ResponseField name="trace_id" type="string" required>
-  The ID of the trace log to delete.
+  The unique identifier of the trace to delete.
 </ResponseField>

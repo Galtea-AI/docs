@@ -23,7 +23,7 @@ We will walk through the full loop with a concrete example: a RAG-based support 
 
 ## Prerequisites
 
-**A product set up in Galtea.** You need a product with at least one version, and some way to produce sessions and traces against it — either by running your app and logging to Galtea, or by connecting your endpoint directly. If you have not set this up yet, start with the [Quickstart](/quickstart).
+**A product set up in Galtea.** You need a product with at least one version, and some way to produce sessions and inference results against it — either by running your app and logging to Galtea, or by connecting your endpoint directly. If you have not set this up yet, start with the [Quickstart](/quickstart).
 
 **Some metrics to evaluate against.** The loop is only as good as what you measure. The recommended path is specification-driven evaluation: you describe what your product should do, cannot do, and must follow, and Galtea generates LLM-as-a-judge metrics from those specifications. You can also link metrics manually. See [specification-driven evaluations](/sdk/tutorials/specification-driven-evaluations).
 
@@ -63,7 +63,7 @@ Then you repeat until the obvious issues are gone. The agent does the heavy lift
 
 ## The Example Application
 
-Our example is a support chatbot that answers user questions over a product knowledge base. It retrieves relevant docs, feeds them to an LLM with a system prompt, and returns an answer. Each interaction is logged to Galtea as a session, with the user message and the assistant answer as a trace, and the retrieved chunks attached as retrieval context.
+Our example is a support chatbot that answers user questions over a product knowledge base. It retrieves relevant docs, feeds them to an LLM with a system prompt, and returns an answer. Each interaction is logged to Galtea as a session, with the user message and the assistant answer as an inference result, and the retrieved chunks attached as retrieval context.
 
 We have a handful of sessions on version `v1` already — some clean answers, some that hallucinated, some that refused things they should have handled. That is enough to start the loop.
 
@@ -166,7 +166,7 @@ Repeat the loop until you stop seeing obvious failures. Each pass is the same fo
 We drove this loop from a small set of existing sessions, but the same approach works with other sources of signal:
 
 - **Production sessions.** If you log real traffic to Galtea, point the loop at production sessions instead of a hand-made set. Be selective — not every production failure is one you want to optimize for.
-- **Specification-driven datasets.** Drive the whole loop from specifications: describe the behavior you expect, let Galtea generate the metrics and datasets, and evaluate against them. This keeps "what good looks like" explicit and reusable across versions.
+- **Specification-driven tests.** Drive the whole loop from specifications: describe the behavior you expect, let Galtea generate the metrics and tests, and evaluate against them. This keeps "what good looks like" explicit and reusable across versions.
 - **Human annotations feeding the metrics optimizer.** Annotate a subset of evaluations yourself to define what a correct judgment looks like, then use the agent to apply that standard across a larger corpus — the input the metrics optimizer needs to make your LLM-as-a-judge metrics more reliable.
 
 ## What's Next
@@ -186,7 +186,7 @@ Once the obvious issues are gone, the next steps make the loop durable so change
     The `galtea` binary the skill runs under the hood.
   </Card>
   <Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specification-driven-evaluations">
-    Generate metrics and datasets from what your product should do.
+    Generate metrics and tests from what your product should do.
   </Card>
   <Card title="Skill Source" icon="github" href="https://github.com/Galtea-AI/skills">
     The open-source Galtea Agent Skill repository.
