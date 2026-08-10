@@ -1,0 +1,87 @@
+---
+title: 'Span Service'
+sidebarTitle: "Service"
+description: "Span Service API methods in the Galtea SDK"
+---
+
+import SpanCard from '/snippets/cards/span-card.mdx';
+
+The Span Service in the Galtea SDK allows you to collect, manage, and persist [spans](/concepts/product/version/session/span) that capture the internal operations of your AI agents during inference.
+
+This Service is exposed by the `galtea.spans` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Two Approaches to Span Collection
+
+The SDK provides two ways to collect spans:
+
+### 1. Automatic Collection with with `generate()`
+
+When using `galtea.traces.generate()`, span collection is handled automatically:
+
+```python
+@traced(type=SpanType.TOOL)
+def fetch_user_data(user_id: str) -> dict:
+    return {"name": "John Doe", "email": "john@example.com"}
+
+
+@traced(type=SpanType.GENERATION)
+def generate_response(prompt: str) -> str:
+    return "Generated response..."
+
+
+def my_overview_agent(input_data: AgentInput) -> AgentResponse:
+    user = fetch_user_data("user_123")
+    response = generate_response("Hello")
+    return AgentResponse(content=response)
+
+
+# Use generate() for automatic span context management
+trace = galtea.traces.generate(
+    agent=my_overview_agent,
+    session=session,
+    input="Show me user data",
+)
+```
+
+### 2. Manual Collection with Context Management
+
+For full control over the span lifecycle, use `set_context()` and `clear_context()`:
+
+Set context before running traced functions:
+```python
+span_context = set_context(trace_id=trace_id)
+```
+
+Then run your traced functions within this context set/open.
+
+Once done, clear the context to [flush](/sdk/api/span/clear-context#param-flush) and detach:
+```python
+clear_context(span_context)
+```
+
+<Tip>
+  Use `galtea.traces.generate()` for automatic span collection instead of manual collection.
+</Tip>
+
+## Service Methods
+
+### Context Management
+- [@traced Decorator](/sdk/api/span/traced-decorator)
+- [start_span](/sdk/api/span/start-span)
+- [set_context](/sdk/api/span/set-context)
+- [clear_context](/sdk/api/span/clear-context)
+
+### Direct API Methods
+- [Create Span](/sdk/api/span/create)
+- [Create Span Batch](/sdk/api/span/create-batch)
+- [List Spans](/sdk/api/span/list)
+- [Get Span](/sdk/api/span/get)
+- [Delete Span](/sdk/api/span/delete)
+
+## Related
+
+<SpanCard />

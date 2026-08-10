@@ -19,13 +19,13 @@ product_id: str = create_test_product(
 version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
 version_id: str = version.id
 
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     product_id=product_id,
     name=f"create-eval-tutorial-test-{run_identifier}",
     type="ACCURACY",
-    test_file_path="path/to/accuracy_test.csv",
+    dataset_file_path="path/to/accuracy_dataset.csv",
 )
-test_id: str = test.id
+dataset_id: str = dataset.id
 
 # --- Configuration ---
 METRICS_TO_EVALUATE = [
@@ -47,8 +47,8 @@ def your_product_function(input_prompt: str, context: str = None) -> str:
 
 # @start create_evaluations
 # 1. Fetch the test cases for the specified test
-test_cases = galtea.test_cases.list(test_id=test_id)
-print(f"Found {len(test_cases)} test cases for Test ID: {test_id}")
+test_cases = galtea.test_cases.list(dataset_id=dataset_id)
+print(f"Found {len(test_cases)} test cases for Test ID: {dataset_id}")
 
 # 2. Loop through each test case and run an evaluation
 for test_case in test_cases:
@@ -57,7 +57,7 @@ for test_case in test_cases:
 
     # Create a session and evaluate
     session = galtea.sessions.create(version_id=version_id, test_case_id=test_case.id)
-    galtea.inference_results.create_and_evaluate(
+    galtea.traces.create_and_evaluate(
         session_id=session.id,
         output=actual_output,
         metrics=METRICS_TO_EVALUATE,
@@ -85,9 +85,9 @@ specifications = galtea.specifications.list(product_id=product_id)
 spec_ids = [spec.id for spec in specifications]
 print(f"Found {len(spec_ids)} specifications for product {product_id}")
 
-# 2. Create a session and record an inference result
+# 2. Create a session and record a trace
 session = galtea.sessions.create(version_id=version_id, test_case_id=test_cases[0].id)
-inference_result = galtea.inference_results.create(
+trace = galtea.traces.create(
     session_id=session.id,
     input=test_cases[0].input,
     output=your_product_function(test_cases[0].input),
@@ -95,7 +95,7 @@ inference_result = galtea.inference_results.create(
 
 # 3. Evaluate using specifications — the API resolves linked metrics automatically
 evaluations = galtea.evaluations.create(
-    inference_result_id=inference_result.id,
+    trace_id=trace.id,
     specification_ids=spec_ids,
 )
 print(f"Created {len(evaluations)} evaluations from specifications")

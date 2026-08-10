@@ -24,29 +24,31 @@ AI Metric Generation lets you automatically create evaluation metrics from your 
 ## Requirements
 
 - A [product](/concepts/product) with a description
-- At least one [specification](/concepts/product/specification) of type **POLICY** with a test type assigned (Accuracy, Security, or Behavior)
+- At least one [specification](/concepts/product/specification) of type **POLICY** or **CAPABILITY** with a test type assigned (Accuracy, Security, or Behavior)
 
 <Warning>
-  CAPABILITY and INABILITY specifications cannot be used for AI metric generation because they do not have a test type.
+  INABILITY specifications cannot be used for AI metric generation. They are the only type with no test type, and a
+  metric is generated from that test type. POLICY and CAPABILITY specifications can both be linked to metrics
+  (a CAPABILITY always carries the `BEHAVIOR` test type).
 </Warning>
 
 ## How to Generate Metrics
 
 There are two ways to trigger AI metric generation from the dashboard:
 
-### From the Specifications Page
+### From the Specifications Section (Single Specification)
 
-1. Navigate to your product's **Specifications** tab
+1. Open your product and pick **Specifications** in the sidebar
 2. Open the dropdown menu on the specification you want to generate metrics for
 3. Click **Generate Metrics** — this takes you to the generation page with that specification pre-selected
 4. Click **Generate** and wait for the AI to process
 5. Review the generated candidates — edit, save, or discard each one
 
-### From the Metrics Page
+### From the Specifications Section (Multiple Specifications)
 
-1. Navigate to your product's **Metrics** tab
-2. Click **Generate Metrics with AI**
-3. Select the specifications you want to generate metrics for
+1. Open your product and pick **Specifications** in the sidebar
+2. Select the checkboxes for the specifications you want to generate metrics for
+3. Open the bulk actions menu and click **Generate Metrics**
 4. Click **Generate** and wait for the AI to process
 5. Review the generated candidates — edit, save, or discard each one
 
@@ -58,7 +60,7 @@ When you already know **what** you want to measure but don't want to write the j
 
 This is available in two places:
 
-- **The manual metric form** — when creating a metric from scratch (**Metrics** tab → **New Metric** → blank), fill in the name, description, and evaluation type, then click **Complete with AI**.
+- **The manual metric form** — when creating a metric from scratch (**Metric library** in the sidebar → **New Metric** → blank), fill in the name, description, and evaluation type, then click **Complete with AI**.
 - **The AI generation review step** — when editing a generated candidate, click **Complete with AI** to regenerate its judge prompt and evaluation parameters from the candidate's current name, description, and tags.
 
 <Info>

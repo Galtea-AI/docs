@@ -1,6 +1,6 @@
 """
 SDK API: Evaluation Create
-Demonstrates how to create evaluations for all inference results within a session.
+Demonstrates how to create evaluations for all traces within a session.
 """
 
 from datetime import datetime
@@ -19,7 +19,6 @@ product_id = create_test_product(
     description="Demo product for evaluation create API",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(
@@ -33,9 +32,9 @@ version_id = version.id
 
 
 # @start usage_example_using_the_metricinput_1
-# First, create a session and log inference results
+# First, create a session and log traces
 session = galtea.sessions.create(version_id=version_id, is_production=True)
-galtea.inference_results.create_batch(
+galtea.traces.create_batch(
     session_id=session.id,
     conversation_turns=[
         {"role": "user", "content": "Hi"},

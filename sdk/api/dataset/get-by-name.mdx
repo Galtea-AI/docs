@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Dataset By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific dataset by its name."
+---
+
+## Returns
+Returns a [Dataset](/concepts/product/dataset) object for the given product and dataset name.
+
+## Example
+```python
+dataset = galtea.datasets.get_by_name(product_id=product_id, dataset_name=dataset_name)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product for which you want to retrieve the dataset.
+</ResponseField>
+<ResponseField name="dataset_name" type="string" required>
+  The name of the dataset you want to retrieve.
+
+  <Note>Deprecated alias: `test_name`.</Note>
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  The type of the dataset (e.g., `ACCURACY`, `SECURITY`). This is needed if multiple datasets share the same name but have different types.
+</ResponseField>

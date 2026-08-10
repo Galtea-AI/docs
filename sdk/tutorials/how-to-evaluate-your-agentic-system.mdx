@@ -1,10 +1,10 @@
 ---
 title: 'How to evaluate your agentic system?'
-description: "A practical guide for evaluating your agentic system: use Galtea's tracing feature to capture your agent's traces and then define your specific scope of interest by creating a custom metric."
+description: "A practical guide for evaluating your agentic system: use Galtea's tracing feature to capture your agent's spans and then define your specific scope of interest by creating a custom metric."
 icon: "lightbulb"
 ---
 
-Use the [`@trace` decorator](/sdk/tutorials/tracing-agent-operations) to capture every operation your agent performs. Once captured, traces become an evaluation parameter called `traces` — the full execution path from user input to system output.
+Use the [`@traced` decorator](/sdk/tutorials/tracing-agent-operations) to capture every operation your agent performs. Once captured, spans become an evaluation parameter called `traces` — the full execution path from user input to system output.
 
 Galtea provides built-in metrics like [Tool Correctness](/concepts/metric/tool-correctness), but agentic systems are often highly specific. We recommend creating [custom judge metrics](/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt) that check the exact behaviors you care about. Below are practical examples to get you started.
 
@@ -91,7 +91,7 @@ Score 0 (Bad): Tool outputs are ignored, unused, or contradicted.
 
 <CardGroup cols={2}>
   <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
-    Capture traces from your agent — required for these metrics to work.
+    Capture spans from your agent — required for these metrics to work.
   </Card>
   <Card title="Create Your Own Judge Prompt" icon="wand-magic-sparkles" href="/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt">
     Write and refine custom judge prompts for any evaluation criteria.

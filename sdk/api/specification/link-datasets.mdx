@@ -1,0 +1,25 @@
+---
+title: "Link Datasets"
+sidebarTitle: "Link Datasets"
+description: "Link datasets to a specification."
+---
+
+## Example
+```python
+galtea.specifications.link_datasets(
+    specification_id=accuracy_specification.id,
+    dataset_ids=[dataset_id],
+)
+```
+
+## Parameters
+<ResponseField name="specification_id" type="string" required>
+  The ID of the specification to link datasets to.
+</ResponseField>
+<ResponseField name="dataset_ids" type="list[string]" required>
+  List of dataset IDs to link to the specification.
+
+  Every dataset must belong to the same product as the specification, and its type must match the
+  specification's dataset type. A dataset of another type is rejected, the same way creating one from
+  a specification rejects a type that disagrees.
+</ResponseField>
