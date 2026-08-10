@@ -1,20 +1,22 @@
 ---
 title: 'Listing Test Cases'
 sidebarTitle: "List"
-description: "List all test cases associated with a specific test."
+description: "List all test cases associated with a specific dataset."
 ---
 
 ## Returns
-Returns a list of [TestCase](/concepts/product/test/case) objects for the given test.
+Returns a list of [TestCase](/concepts/product/dataset/test-case) objects for the given dataset.
 
 ## Example
 ```python
-test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
+test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
 ```
 
 ## Parameters
-<ResponseField name="test_id" type="string | list[string]" optional>
-  The ID or IDs of the test you want to get the test cases from.
+<ResponseField name="dataset_id" type="string | list[string]" optional>
+  The ID or IDs of the dataset you want to get the test cases from.
+
+  <Note>Deprecated alias: `test_id`.</Note>
 </ResponseField>
 <ResponseField name="languages" type="list[string]" optional>
   Languages to filter test cases by. Accepts [BCP-47 language tags](https://en.wikipedia.org/wiki/IETF_language_tag) — a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`).
@@ -67,5 +69,5 @@ test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
   Case-insensitive substring filter applied across the test case input JSON values. Only test cases whose input contains this substring (when cast to text) are returned.
 </ResponseField>
 <Note>
-  At least one of the 2 filter parameters (`test_id`, `id`) described above must be passed to the method
+  At least one of the 2 filter parameters (`dataset_id`, `id`) described above must be passed to the method
 </Note>

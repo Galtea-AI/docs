@@ -8,7 +8,7 @@ import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 
 ## What is a Phone Connection?
 
-A Phone Connection tells Galtea how to reach your AI agent over the phone. Instead of calling an HTTP API, Galtea **dials your agent's phone number** and runs the conversation as a real voice call — this is **Direct Inference over the phone**. You configure the phone number once, and Galtea uses it to drive voice evaluations against your telephony agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-caller-s-language-is-chosen)), so one connection serves test cases in different languages.
+A Phone Connection tells Galtea how to reach your AI agent over the phone. Instead of calling an HTTP API, Galtea **dials your agent's phone number** and runs the conversation as a real voice call — this is **Direct Inference over the phone**. You configure the phone number once, and Galtea uses it to drive voice evaluations against your telephony agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-callers-language-is-chosen)), so one connection serves test cases in different languages.
 
 ## Use Cases
 
@@ -23,7 +23,7 @@ A Phone Connection tells Galtea how to reach your AI agent over the phone. Inste
 To create a Phone Connection:
 
 1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
-2. Go to the "Phone Connections" section
+2. In **Development** view mode, open the **Connections** section in the sidebar (under **Product**), then the **Phone** tab
 3. Click "New Phone Connection"
 4. Configure the connection properties as described below
 
@@ -43,23 +43,23 @@ To create a Phone Connection:
 
 ## How the caller's language is chosen
 
-The simulated caller's spoken language is **not** set on the phone connection — it comes from each [test case](/concepts/product/test/case)'s language. Because a phone connection is attached to a [Version](/concepts/product/version) and a version runs many test cases, this lets one connection cover test cases in different languages.
+The simulated caller's spoken language is **not** set on the phone connection — it comes from each [test case](/concepts/product/dataset/test-case)'s language. Because a phone connection is attached to a [Version](/concepts/product/version) and a version runs many test cases, this lets one connection cover test cases in different languages.
 
 With a multilingual text-to-speech provider, the test case's language drives the synthesis language and the voice is selected automatically (e.g. a Spanish test case → the caller speaks Spanish with a natively-accented voice). When a test case has no language set, the provider falls back to its configured default voice.
 
 ## Adding background noise to a call
 
-Like language, background noise is **not** set on the phone connection — it comes from each [test](/concepts/product/test) or [test case](/concepts/product/test/case). Two optional fields control it:
+Like language, background noise is **not** set on the phone connection — it comes from each [dataset](/concepts/product/dataset) or [test case](/concepts/product/dataset/test-case). Two optional fields control it:
 
 - **Background Noise Profile** — the kind of noise: clip-backed (`office`, `street`, `car`) or synthetic (`white`, `pink`). Leave unset for a clean recording.
 - **Background Noise Level** — how loud the noise is relative to the caller's speech: `light`, `medium`, or `heavy`.
 
 Both must be set together; setting only one is rejected. Galtea mixes the noise into the simulated caller's audio during the call, so it tests how your agent behaves under noisy conditions (e.g. a caller phoning from a busy street). The saved [call recording](/concepts/product/version/session) contains the noise, so what you hear on playback in the dashboard is what your agent heard.
 
-A test carries a default background noise setting, and each test case can override it. A test case created without its own setting inherits the test's setting at creation time; setting a test case's noise explicitly (including clearing it) overrides that default for that case alone.
+A dataset carries a default background noise setting, and each test case can override it. A test case created without its own setting inherits the dataset's setting at creation time; setting a test case's noise explicitly (including clearing it) overrides that default for that case alone.
 
 <Note>
-  Background noise only applies to voice tests run over a phone connection. It has no effect on tests run over an [Endpoint Connection](/concepts/product/endpoint-connection).
+  Background noise only applies to voice datasets run over a phone connection. It has no effect on datasets run over an [Endpoint Connection](/concepts/product/endpoint-connection).
 </Note>
 
 ## Relation to Versions
@@ -72,13 +72,13 @@ A version's conversation target is **mutually exclusive** — a version connects
 
 Phone Connections power **voice evaluation**: because Galtea drives a real phone call, the conversation, transcription, and resulting inferences reflect how your agent behaves over the telephony channel. This makes phone connections the entry point for evaluating voice agents end-to-end.
 
-Phone connections run **any** test type — no additional configuration is required beyond attaching the phone connection to the version:
+Phone connections run **any** dataset type — no additional configuration is required beyond attaching the phone connection to the version:
 
 - **Behavior** test cases run multi-turn: the conversation simulator drives each user turn from the test case's persona, goal, and scenario.
 - **Accuracy** and **Security** test cases run single-turn: Galtea speaks the test case's input line into the call and evaluates the agent's reply.
 
 <Note>
-  For single-turn (Accuracy/Security) tests scored by **deterministic metrics**, leave **Agent Speaks First** unchecked (the default). When the agent speaks first, the call has two turns (the agent's greeting plus the scripted line), which deterministic metrics — designed for a single turn — cannot score correctly. Multi-turn (Behavior) tests are unaffected.
+  For single-turn (Accuracy/Security) datasets scored by **deterministic metrics**, leave **Agent Speaks First** unchecked (the default). When the agent speaks first, the call has two turns (the agent's greeting plus the scripted line), which deterministic metrics — designed for a single turn — cannot score correctly. Multi-turn (Behavior) datasets are unaffected.
 </Note>
 
 The API automatically transcribes the agent's audio responses using speech-to-text, so no manual transcript preparation is required. Each recorded agent turn is transcribed before evaluation runs, and the written transcript is what metrics score — your agent's voice output is evaluated as accurately as any text-based agent.
@@ -105,8 +105,8 @@ This means the full phone conversation — both the synthetic user side and the 
     Set each test case's language to the language your agent operates in. With a multilingual text-to-speech provider the simulated caller then speaks that language with a natively-accented voice (e.g. Spanish), with no per-connection configuration needed.
   </Accordion>
 
-  <Accordion title="Set a default background noise on the test">
-    Set the background noise profile and level on the test so every generated or CSV-uploaded test case inherits realistic ambient noise automatically. Override it on individual test cases only when you need a specific case to be quieter, louder, or silent.
+  <Accordion title="Set a default background noise on the dataset">
+    Set the background noise profile and level on the dataset so every generated or CSV-uploaded test case inherits realistic ambient noise automatically. Override it on individual test cases only when you need a specific case to be quieter, louder, or silent.
   </Accordion>
 
   <Accordion title="Set who speaks first">

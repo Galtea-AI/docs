@@ -27,7 +27,7 @@ The `update()` method allows you to modify an existing inference result after it
 <ParamField path="retrieval_context" type="string">
   The context retrieved by a RAG system, if applicable.
 
-  <Note>When you set `retrieval_context`, Galtea also records it as a `RETRIEVER` trace on this inference result. Sending `null` (or an empty string) clears the value and removes that trace.</Note>
+  <Note>When you set `retrieval_context`, Galtea also records it as a `RETRIEVER` span on this inference result. Sending `null` (or an empty string) clears the value and removes that span.</Note>
 </ParamField>
 
 ### Performance Fields
@@ -135,5 +135,5 @@ galtea.inference_results.update(
 ## Related Methods
 
 - [Create Inference Result](/sdk/api/inference-result/create) - Create a new inference result
-- [Generate Inference Result](/sdk/api/inference-result/generate) - Create with automatic trace collection
+- [Generate Inference Result](/sdk/api/inference-result/generate) - Create with automatic span collection
 - [Get Inference Result](/sdk/api/inference-result/get) - Retrieve an inference result

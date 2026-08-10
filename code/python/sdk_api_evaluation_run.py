@@ -30,7 +30,7 @@ _spec = galtea.specifications.create(
     name="Helpful financial information",
     description="The assistant provides helpful financial information.",
     type="POLICY",
-    test_type="BEHAVIOR",
+    dataset_type="BEHAVIOR",
 )
 galtea.specifications.link_metrics(
     specification_id=_spec.id,
@@ -38,7 +38,7 @@ galtea.specifications.link_metrics(
 )
 
 # Create a behavior test linked to the specification, then wait for test cases
-_test = galtea.tests.create(
+_dataset = galtea.datasets.create(
     product_id=product_id,
     name=f"eval-run-test-{run_identifier}",
     type="BEHAVIOR",
@@ -48,17 +48,21 @@ _test = galtea.tests.create(
     specification_id=_spec.id,
 )
 for _ in range(120):
-    _t = galtea.tests.get(test_id=_test.id)
+    _t = galtea.datasets.get(dataset_id=_dataset.id)
     if _t.uri:
         break
     print("Waiting for test file to be ready...")
     time.sleep(1)
+else:
+    raise ValueError("Test file URI is still None after waiting. Test id: " + _dataset.id)
 for _ in range(120):
-    _test_cases = galtea.test_cases.list(test_id=_test.id)
+    _test_cases = galtea.test_cases.list(dataset_id=_dataset.id)
     if len(_test_cases) > 0:
         break
     print("Waiting for test cases to be generated...")
     time.sleep(1)
+else:
+    raise ValueError("Test cases were not generated in time. Test id: " + _dataset.id)
 
 specification_ids = [_spec.id]
 
@@ -69,7 +73,7 @@ try:
     result = galtea.evaluations.run(version_id=version_id)
     print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
     for spec in result["specifications"]:
-        print(f"  Spec {spec['specificationId']}: {spec['testCount']} tests, {spec['metricCount']} metrics")
+        print(f"  Spec {spec['specificationId']}: {spec['testCount']} datasets, {spec['metricCount']} metrics")
     # @end run_endpoint_connection
 except requests.exceptions.HTTPError as e:
     if e.response.status_code == 400 and "version does not have a conversation target" in e.response.text.lower():
@@ -107,6 +111,12 @@ result = galtea.evaluations.run(
 print(f"Processed {result['testCaseCount']} test cases")
 print(f"Created {len(result['evaluations'])} evaluations")
 # @end run_with_agent
+
+# Guard the gate itself: `run()` returns testCaseCount 0 and raises nothing when the
+# specification resolves no datasets, so without this the snippet would stay green while
+# documenting a run() call that evaluated nothing.
+if result["testCaseCount"] == 0:
+    raise ValueError("evaluations.run() resolved no test cases — specification linking is broken")
 
 # Cleanup
 galtea.products.delete(product_id=product_id)

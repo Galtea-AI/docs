@@ -12,8 +12,8 @@ import MetricCard from '/snippets/cards/metric-card.mdx';
 import ModelCard from '/snippets/cards/model-card.mdx';
 import ProductCard from '/snippets/cards/product-card.mdx';
 import SessionCard from '/snippets/cards/session-card.mdx';
-import TestCard from '/snippets/cards/test-card.mdx';
-import TraceCard from '/snippets/cards/trace-card.mdx';
+import DatasetCard from '/snippets/cards/dataset-card.mdx';
+import SpanCard from '/snippets/cards/span-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
 
 This quickstart walks you through running your first evaluation in Galtea for a conversational product using the Python SDK. It is intended for a technical audience and covers RAG pipelines, conversational scenarios, and security or safety checks.
@@ -36,9 +36,9 @@ This quickstart walks you through running your first evaluation in Galtea for a 
   <Step title="Tell Us About Your Product">Provide details about your product so our models can create tailored testing content.</Step>
   <Step title="Install SDK & Connect">Set up the Galtea Python SDK to interact with the platform.</Step>
   <Step title="Version Your Product">Track different implementations to compare improvements over time.</Step>
-  <Step title="Create Your Tests">Create a test dataset to generate the test cases you’ll evaluate.</Step>
+  <Step title="Create Your Datasets">Create a Dataset to generate the test cases you’ll evaluate.</Step>
   <Step title="Choose Your Metrics">Select from our metrics library or bring your own custom metrics.</Step>
-  <Step title="Run Evaluations">Test your product version with the selected test and metrics.</Step>
+  <Step title="Run Evaluations">Test your product version with the selected dataset and metrics.</Step>
   <Step title="See Your Results">Explore detailed insights and compare versions on the dashboard.</Step>
 </Steps>
 
@@ -46,7 +46,7 @@ This quickstart walks you through running your first evaluation in Galtea for a 
 
 If you’re new to Galtea, start by creating an account and registering your first product in the dashboard: [Go to the dashboard](https://platform.galtea.ai/).
 
-Follow the **Onboarding** checklist on the product page (this is the guided setup shown inside your product). It will prompt you for product details and help you generate an API key. The product details you provide there are used to tailor generated tests and evaluations.
+Follow the **Onboarding** checklist on the product page (this is the guided setup shown inside your product). It will prompt you for product details and help you generate an API key. The product details you provide there are used to tailor generated datasets and evaluations.
 
 <Frame>
   <img src="/images/ai-product-form.png" alt="AI-assisted product registration form" />
@@ -111,34 +111,34 @@ product_id = product.id
 version_id = version.id
 ```
 
-## 4. Create Your Tests
+## 4. Create Your Datasets
 
 <Tip>
-  **Prefer to generate tests automatically?** If you've defined [Specifications](/concepts/product/specification) for your product, Galtea can generate tests and metrics for you — see the [Specification-Driven Evaluations](/sdk/tutorials/specification-driven-evaluations) tutorial.
+  **Prefer to generate datasets automatically?** If you've defined [Specifications](/concepts/product/specification) for your product, Galtea can generate datasets and metrics for you — see the [Specification-Driven Evaluations](/sdk/tutorials/specification-driven-evaluations) tutorial.
 </Tip>
 
-A single conversational product typically includes multiple components. In Galtea, you evaluate each component by creating a different [test](/concepts/product/test) type, think of each test as a lens on the same system:
+A single conversational product typically includes multiple components. In Galtea, you evaluate each component by creating a different [dataset](/concepts/product/dataset) type, think of each dataset as a lens on the same system:
 
-- **RAG pipelines** → create an **Accuracy** test (`type="ACCURACY"`)
-- **Security or safety aspects** → create a **Security & Safety** test (`type="SECURITY"`)
-- **Conversational scenarios** → create a **Behavior** test (`type="BEHAVIOR"`)
+- **RAG pipelines** → create an **Accuracy** dataset (`type="ACCURACY"`)
+- **Security or safety aspects** → create a **Security & Safety** dataset (`type="SECURITY"`)
+- **Conversational scenarios** → create a **Behavior** dataset (`type="BEHAVIOR"`)
 
-You can create one or multiple test types for the same product, depending on which components you want to evaluate.
+You can create one or multiple dataset types for the same product, depending on which components you want to evaluate.
 
 <Note>
-  After creating a test, give it a moment to finish generating test cases. You can track progress in the dashboard.
+  After creating a dataset, give it a moment to finish generating test cases. You can track progress in the dashboard.
 </Note>
 
 <Info>
-  If you already created a test during onboarding, you can reuse it here—skip the `tests.create(...)` step and just list its test cases using the test ID from the dashboard.
+  If you already created a dataset during onboarding, you can reuse it here—skip the `datasets.create(...)` step and just list its test cases using the dataset ID from the dashboard.
 </Info>
 
 <Tabs>
   <Tab title="RAG">
-    Accuracy tests are used to evaluate RAG pipelines and QA-style components within a conversational product. Galtea generates single-turn test cases (input and expected output) from a knowledge base to assess response quality and factual correctness.
+    Accuracy datasets are used to evaluate RAG pipelines and QA-style components within a conversational product. Galtea generates single-turn test cases (input and expected output) from a knowledge base to assess response quality and factual correctness.
 
 ```python
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     name="rag-accuracy-test",
     type="ACCURACY",
     product_id=product_id,
@@ -151,18 +151,18 @@ test = galtea.tests.create(
 After a brief wait for test case generation, list the test cases:
 
 ```python
-test_cases = galtea.test_cases.list(test_id=test.id)
-print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
+test_cases = galtea.test_cases.list(dataset_id=dataset.id)
+print(f"Using dataset '{dataset.name}' with {len(test_cases)} test cases.")
 ```
 
-Learn more about [Accuracy Tests](/concepts/product/test/accuracy-tests) and their configuration options.
+Learn more about [Accuracy Datasets](/concepts/product/dataset/accuracy-datasets) and their configuration options.
   </Tab>
 
   <Tab title="Security">
-    Security & Safety tests probe safety and security boundaries (e.g., misuse, toxicity, data leakage). For this quickstart, we’ll create a small **Misuse** test.
+    Security & Safety datasets probe safety and security boundaries (e.g., misuse, toxicity, data leakage). For this quickstart, we’ll create a small **Misuse** dataset.
 
 ```python
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     name="misuse-security-test",
     type="SECURITY",
     product_id=product_id,
@@ -175,18 +175,18 @@ test = galtea.tests.create(
 After a brief wait for test case generation, list the test cases:
 
 ```python
-test_cases = galtea.test_cases.list(test_id=test.id)
-print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
+test_cases = galtea.test_cases.list(dataset_id=dataset.id)
+print(f"Using dataset '{dataset.name}' with {len(test_cases)} test cases.")
 ```
 
-Learn more about [Security & Safety Tests](/concepts/product/test/security-tests), [threats](/concepts/product/test/security-threats), and [strategies](/concepts/product/test/security-strategies).
+Learn more about [Security & Safety Datasets](/concepts/product/dataset/security-datasets), [threats](/concepts/product/dataset/security-threats), and [strategies](/concepts/product/dataset/security-strategies).
   </Tab>
 
   <Tab title="Conversational">
-    Behavior tests evaluate multi-turn conversations. Each test case defines a goal/persona/scenario and is meant to be run with the [Conversation Simulator](/concepts/product/test/case/conversation-simulator).
+    Behavior datasets evaluate multi-turn conversations. Each test case defines a goal/persona/scenario and is meant to be run with the [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator).
 
 ```python
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     name="conversation-behavior-test",
     type="BEHAVIOR",
     product_id=product_id,
@@ -199,11 +199,11 @@ test = galtea.tests.create(
 After a brief wait for test case generation, list the test cases:
 
 ```python
-test_cases = galtea.test_cases.list(test_id=test.id)
-print(f"Using test '{test.name}' with {len(test_cases)} test cases.")
+test_cases = galtea.test_cases.list(dataset_id=dataset.id)
+print(f"Using dataset '{dataset.name}' with {len(test_cases)} test cases.")
 ```
 
-Learn more about [Behavior Tests](/concepts/product/test/behavior-tests) and [Conversation Simulation](/concepts/product/test/case/conversation-simulator).
+Learn more about [Behavior Datasets](/concepts/product/dataset/behavior-datasets) and [Conversation Simulation](/concepts/product/dataset/test-case/conversation-simulator).
   </Tab>
 </Tabs>
 
@@ -213,7 +213,7 @@ Metrics define how evaluation outputs are scored. Galtea provides built-in metri
 
 <Tabs>
   <Tab title="RAG">
-    For a RAG-style Accuracy test, a good default is **[Factual Accuracy](/concepts/metric/factual-accuracy)**.
+    For a RAG-style Accuracy dataset, a good default is **[Factual Accuracy](/concepts/metric/factual-accuracy)**.
 
 ```python
 metric = galtea.metrics.get_by_name(name="Factual Accuracy")
@@ -221,7 +221,7 @@ metric = galtea.metrics.get_by_name(name="Factual Accuracy")
   </Tab>
 
   <Tab title="Security">
-    For Misuse Security & Safety tests, we’ll use **[Misuse Resilience](/concepts/metric/misuse-resilience)**.
+    For Misuse Security & Safety datasets, we’ll use **[Misuse Resilience](/concepts/metric/misuse-resilience)**.
 
 ```python
 metric = galtea.metrics.get_by_name(name="Misuse Resilience")
@@ -245,10 +245,10 @@ The SDK supports three agent function signatures — pick the one that matches h
 
 <AgentCallables />
 
-`galtea.evaluations.run()` does the rest in one call: it finds the [specifications](/concepts/product/specification) linked to your version, resolves their tests and metrics, runs your agent on every test case, and submits the results for [scoring](/concepts/product/version/session/evaluation).
+`galtea.evaluations.run()` does the rest in one call: it finds the [specifications](/concepts/product/specification) linked to your version, resolves their datasets and metrics, runs your agent on every test case, and submits the results for [scoring](/concepts/product/version/session/evaluation).
 
 ```python
-# One call resolves your specifications, their tests and metrics, runs your agent
+# One call resolves your specifications, their datasets and metrics, runs your agent
 # on every test case, and submits the results for scoring.
 result = galtea.evaluations.run(
     version_id=version_id,
@@ -258,7 +258,7 @@ print(f"Launched {result['testCaseCount']} test cases across {len(result['specif
 ```
 
 <Note>
-  Prefer to drive each test case yourself? The [Run Test-Based Evaluations](/sdk/tutorials/run-test-based-evaluations) tutorial shows the manual per-test-case loop for full control.
+  Prefer to drive each test case yourself? The [Run Dataset-Based Evaluations](/sdk/tutorials/run-dataset-based-evaluations) tutorial shows the manual per-test-case loop for full control.
 </Note>
 
 ## 7. See Your Results
@@ -296,7 +296,7 @@ print(f"View full results at: https://platform.galtea.ai/product/{product_id}")
 ></video>
 --> */}
 
-For the full picture, open your product in the [Galtea platform](https://platform.galtea.ai/) and head to **Analytics**. Start with the aggregate scores to get a quick baseline, then slice by **version**, **test**, and **metric** to see where performance shifts.
+For the full picture, open your product in the [Galtea platform](https://platform.galtea.ai/) and head to **Analytics**. Start with the aggregate scores to get a quick baseline, then slice by **version**, **dataset**, and **metric** to see where performance shifts.
 
 The most useful part is drilling into individual test cases: you can inspect the exact prompt/output pair (or the full conversation for scenarios) and understand which specific inputs move the score up or down. This makes it easier to identify failure patterns, validate fixes in new versions, and iterate with confidence as you move toward production.
 
@@ -314,20 +314,20 @@ You can now explore more advanced features like:
   Learn how to log and evaluate user queries from your production environment.
 </Card>
 <Card title="Specification-Driven Evaluations" icon="bullseye" href="/sdk/tutorials/specification-driven-evaluations">
-  Use specifications to automate test type selection and metric generation.
+  Use specifications to automate dataset type selection and metric generation.
 </Card>
 
 </CardGroup>
 
 ## Dive Deeper
 
-Explore these concepts to tailor tests, metrics, and workflows to your product. The [Concepts overview](/concepts/overview) shows how they all connect at a glance.
+Explore these concepts to tailor datasets, metrics, and workflows to your product. The [Concepts overview](/concepts/overview) shows how they all connect at a glance.
 
 <CardGroup cols={3}>
   <ConceptsOverviewCard />
   <ProductCard />
   <VersionCard />
-  <TestCard />
+  <DatasetCard />
   <SessionCard />
   <InferenceResultCard />
   <EvaluationCard />

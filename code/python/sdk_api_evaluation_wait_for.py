@@ -2,7 +2,7 @@ from datetime import datetime
 
 import requests
 from _test_helpers import create_test_product
-from galtea import Galtea, SpecificationType, TestType
+from galtea import Galtea, SpecificationType, DatasetType
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
@@ -61,7 +61,7 @@ specification = galtea.specifications.create(
     "Greets before answering",
     "The user should always salute the user with a greeting before providing an answer.",
     SpecificationType.POLICY,
-    TestType.BEHAVIOR,
+    DatasetType.BEHAVIOR,
 )
 
 if specification is None:
@@ -85,19 +85,19 @@ galtea.specifications.link_metrics(
     metric_ids=[metric_id],
 )
 
-behavior_test = galtea.tests.create(
+behavior_dataset = galtea.datasets.create(
     product_id=product_id,
     name="behavior-test-from-file-docs-" + run_identifier,
     type="BEHAVIOR",
-    test_file_path="path/to/behavior_test.csv",
+    dataset_file_path="path/to/behavior_dataset.csv",
 )
 
-if behavior_test is None:
-    raise ValueError("behavior_test is None")
+if behavior_dataset is None:
+    raise ValueError("behavior_dataset is None")
 
-galtea.specifications.link_tests(
+galtea.specifications.link_datasets(
     specification_id=specification.id,
-    test_ids=[behavior_test.id],
+    dataset_ids=[behavior_dataset.id],
 )
 
 

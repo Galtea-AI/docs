@@ -7,7 +7,6 @@ from datetime import datetime
 
 from _test_helpers import create_test_product
 from galtea import Galtea
-from requests.exceptions import HTTPError
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
@@ -20,7 +19,6 @@ product_id = create_test_product(
     description="Demo product for production monitoring tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(
@@ -269,9 +267,4 @@ print(f"Logged and evaluated production session {session.id}")
 
 # === Cleanup ===
 # Deleting the product cascades to the sessions and specification created above.
-try:
-    galtea.products.delete(product_id=product_id)
-except HTTPError as e:
-    # Known API issue: cascade soft-delete may hit unique constraint on specifications
-    if e.response.status_code != 500:
-        raise
+galtea.products.delete(product_id=product_id)
