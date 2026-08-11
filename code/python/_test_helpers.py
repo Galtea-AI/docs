@@ -22,7 +22,6 @@ def create_test_product(
     name: str,
     description: str = "Test product created for documentation examples",
     *,
-    security_boundaries: str = "none",
     capabilities: str = "answer questions",
     inabilities: str = "none",
     policies: str = "",
@@ -39,7 +38,6 @@ def create_test_product(
         json={
             "name": name,
             "description": description,
-            "securityBoundaries": security_boundaries,
             "capabilities": capabilities,
             "inabilities": inabilities,
             "policies": policies,

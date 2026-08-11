@@ -99,8 +99,8 @@
               "sdk/tutorials/specification-driven-evaluations",
               "sdk/tutorials/simulating-conversations",
               "sdk/tutorials/evaluating-conversations",
-              "sdk/tutorials/create-test",
-              "sdk/tutorials/run-test-based-evaluations",
+              "sdk/tutorials/create-dataset",
+              "sdk/tutorials/run-dataset-based-evaluations",
               "sdk/tutorials/direct-inferences-and-evaluations-from-platform"
             ]
           },
@@ -237,9 +237,9 @@
                       "sdk/api/specification/link-metrics",
                       "sdk/api/specification/unlink-metrics",
                       "sdk/api/specification/get-metrics",
-                      "sdk/api/specification/link-tests",
-                      "sdk/api/specification/unlink-tests",
-                      "sdk/api/specification/get-tests"
+                      "sdk/api/specification/link-datasets",
+                      "sdk/api/specification/unlink-datasets",
+                      "sdk/api/specification/get-datasets"
                     ]
                   }
                 ]
@@ -347,47 +347,47 @@
                 ]
               },
               {
-                "group": "Test",
+                "group": "Dataset",
                 "icon": "vial-circle-check",
                 "pages": [
-                  "concepts/product/test",
-                  "concepts/product/test/data-augmentation",
-                  "concepts/product/test/extend-test-cases",
+                  "concepts/product/dataset",
+                  "concepts/product/dataset/data-augmentation",
+                  "concepts/product/dataset/extend-test-cases",
                   {
                     "group": "Accuracy",
                     "icon": "certificate",
                     "pages": [
-                      "concepts/product/test/accuracy-tests"
+                      "concepts/product/dataset/accuracy-datasets"
                     ]
                   },
                   {
                     "group": "Security & Safety",
                     "icon": "shield-check",
                     "pages": [
-                      "concepts/product/test/security-tests",
-                      "concepts/product/test/security-threats",
-                      "concepts/product/test/security-strategies"
+                      "concepts/product/dataset/security-datasets",
+                      "concepts/product/dataset/security-threats",
+                      "concepts/product/dataset/security-strategies"
                     ]
                   },
                   {
                     "group": "Behavior",
                     "icon": "person-walking",
                     "pages": [
-                      "concepts/product/test/behavior-tests"
+                      "concepts/product/dataset/behavior-datasets"
                     ]
                   },
                   {
                     "group": "SDK",
                     "icon": "code",
                     "pages": [
-                      "sdk/api/test/service",
-                      "sdk/api/test/create",
-                      "sdk/api/test/list",
-                      "sdk/api/test/get",
-                      "sdk/api/test/get-by-name",
-                      "sdk/api/test/update",
-                      "sdk/api/test/delete",
-                      "sdk/api/test/download"
+                      "sdk/api/dataset/service",
+                      "sdk/api/dataset/create",
+                      "sdk/api/dataset/list",
+                      "sdk/api/dataset/get",
+                      "sdk/api/dataset/get-by-name",
+                      "sdk/api/dataset/update",
+                      "sdk/api/dataset/delete",
+                      "sdk/api/dataset/download"
                     ]
                   }
                 ]
@@ -396,7 +396,7 @@
                 "group": "Test Case",
                 "icon": "list",
                 "pages": [
-                  "concepts/product/test/case",
+                  "concepts/product/dataset/test-case",
                   {
                     "group": "SDK",
                     "icon": "code",
@@ -414,7 +414,7 @@
                 "group": "Conversation Simulator",
                 "icon": "comments",
                 "pages": [
-                  "concepts/product/test/case/conversation-simulator",
+                  "concepts/product/dataset/test-case/conversation-simulator",
                   {
                     "group": "SDK",
                     "icon": "code",
@@ -455,30 +455,8 @@
                 ]
               },
               {
-                "group": "Inference Result",
-                "icon": "arrow-right-from-bracket",
-                "pages": [
-                  "concepts/product/version/session/inference-result",
-                  {
-                    "group": "SDK",
-                    "icon": "code",
-                    "pages": [
-                      "sdk/api/inference-result/service",
-                      "sdk/api/inference-result/generate",
-                      "sdk/api/inference-result/create",
-                      "sdk/api/inference-result/create-and-evaluate",
-                      "sdk/api/inference-result/create-batch",
-                      "sdk/api/inference-result/update",
-                      "sdk/api/inference-result/list",
-                      "sdk/api/inference-result/get",
-                      "sdk/api/inference-result/delete"
-                    ]
-                  }
-                ]
-              },
-              {
                 "group": "Trace",
-                "icon": "sitemap",
+                "icon": "arrow-right-from-bracket",
                 "pages": [
                   "concepts/product/version/session/trace",
                   {
@@ -486,15 +464,37 @@
                     "icon": "code",
                     "pages": [
                       "sdk/api/trace/service",
-                      "sdk/api/trace/start-trace",
-                      "sdk/api/trace/set-context",
-                      "sdk/api/trace/clear-context",
+                      "sdk/api/trace/generate",
                       "sdk/api/trace/create",
+                      "sdk/api/trace/create-and-evaluate",
                       "sdk/api/trace/create-batch",
+                      "sdk/api/trace/update",
                       "sdk/api/trace/list",
                       "sdk/api/trace/get",
-                      "sdk/api/trace/delete",
-                      "sdk/api/trace/trace-decorator"
+                      "sdk/api/trace/delete"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Span",
+                "icon": "sitemap",
+                "pages": [
+                  "concepts/product/version/session/span",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/span/service",
+                      "sdk/api/span/start-span",
+                      "sdk/api/span/set-context",
+                      "sdk/api/span/clear-context",
+                      "sdk/api/span/create",
+                      "sdk/api/span/create-batch",
+                      "sdk/api/span/list",
+                      "sdk/api/span/get",
+                      "sdk/api/span/delete",
+                      "sdk/api/span/traced-decorator"
                     ]
                   }
                 ]
@@ -673,6 +673,62 @@
   },
   "redirects": [
     {
+      "source": "/concepts/product/version/session/inference-result",
+      "destination": "/concepts/product/version/session/trace"
+    },
+    {
+      "source": "/sdk/api/inference-result/service",
+      "destination": "/sdk/api/trace/service"
+    },
+    {
+      "source": "/sdk/api/inference-result/generate",
+      "destination": "/sdk/api/trace/generate"
+    },
+    {
+      "source": "/sdk/api/inference-result/create",
+      "destination": "/sdk/api/trace/create"
+    },
+    {
+      "source": "/sdk/api/inference-result/create-and-evaluate",
+      "destination": "/sdk/api/trace/create-and-evaluate"
+    },
+    {
+      "source": "/sdk/api/inference-result/create-batch",
+      "destination": "/sdk/api/trace/create-batch"
+    },
+    {
+      "source": "/sdk/api/inference-result/update",
+      "destination": "/sdk/api/trace/update"
+    },
+    {
+      "source": "/sdk/api/inference-result/list",
+      "destination": "/sdk/api/trace/list"
+    },
+    {
+      "source": "/sdk/api/inference-result/get",
+      "destination": "/sdk/api/trace/get"
+    },
+    {
+      "source": "/sdk/api/inference-result/delete",
+      "destination": "/sdk/api/trace/delete"
+    },
+    {
+      "source": "/sdk/api/trace/start-trace",
+      "destination": "/sdk/api/span/start-span"
+    },
+    {
+      "source": "/sdk/api/trace/set-context",
+      "destination": "/sdk/api/span/set-context"
+    },
+    {
+      "source": "/sdk/api/trace/clear-context",
+      "destination": "/sdk/api/span/clear-context"
+    },
+    {
+      "source": "/sdk/api/trace/trace-decorator",
+      "destination": "/sdk/api/span/traced-decorator"
+    },
+    {
       "source": "/sdk/tutorials/monitor-production-with-opentelemetry",
       "destination": "/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry"
     },
@@ -682,23 +738,115 @@
     },
     {
       "source": "/concepts/product/test/quality-tests",
-      "destination": "/concepts/product/test/accuracy-tests"
+      "destination": "/concepts/product/dataset/accuracy-datasets"
     },
     {
       "source": "/concepts/product/test/red-teaming-tests",
-      "destination": "/concepts/product/test/security-tests"
+      "destination": "/concepts/product/dataset/security-datasets"
     },
     {
       "source": "/concepts/product/test/red-teaming-threats",
-      "destination": "/concepts/product/test/security-threats"
+      "destination": "/concepts/product/dataset/security-threats"
     },
     {
       "source": "/concepts/product/test/red-teaming-strategies",
-      "destination": "/concepts/product/test/security-strategies"
+      "destination": "/concepts/product/dataset/security-strategies"
     },
     {
       "source": "/concepts/product/test/scenario-tests",
-      "destination": "/concepts/product/test/behavior-tests"
+      "destination": "/concepts/product/dataset/behavior-datasets"
+    },
+    {
+      "source": "/concepts/product/test",
+      "destination": "/concepts/product/dataset"
+    },
+    {
+      "source": "/concepts/product/test/data-augmentation",
+      "destination": "/concepts/product/dataset/data-augmentation"
+    },
+    {
+      "source": "/concepts/product/test/extend-test-cases",
+      "destination": "/concepts/product/dataset/extend-test-cases"
+    },
+    {
+      "source": "/concepts/product/test/accuracy-tests",
+      "destination": "/concepts/product/dataset/accuracy-datasets"
+    },
+    {
+      "source": "/concepts/product/test/security-tests",
+      "destination": "/concepts/product/dataset/security-datasets"
+    },
+    {
+      "source": "/concepts/product/test/security-threats",
+      "destination": "/concepts/product/dataset/security-threats"
+    },
+    {
+      "source": "/concepts/product/test/security-strategies",
+      "destination": "/concepts/product/dataset/security-strategies"
+    },
+    {
+      "source": "/concepts/product/test/behavior-tests",
+      "destination": "/concepts/product/dataset/behavior-datasets"
+    },
+    {
+      "source": "/concepts/product/test/case",
+      "destination": "/concepts/product/dataset/test-case"
+    },
+    {
+      "source": "/concepts/product/test/case/conversation-simulator",
+      "destination": "/concepts/product/dataset/test-case/conversation-simulator"
+    },
+    {
+      "source": "/sdk/api/test/service",
+      "destination": "/sdk/api/dataset/service"
+    },
+    {
+      "source": "/sdk/api/test/create",
+      "destination": "/sdk/api/dataset/create"
+    },
+    {
+      "source": "/sdk/api/test/list",
+      "destination": "/sdk/api/dataset/list"
+    },
+    {
+      "source": "/sdk/api/test/get",
+      "destination": "/sdk/api/dataset/get"
+    },
+    {
+      "source": "/sdk/api/test/get-by-name",
+      "destination": "/sdk/api/dataset/get-by-name"
+    },
+    {
+      "source": "/sdk/api/test/update",
+      "destination": "/sdk/api/dataset/update"
+    },
+    {
+      "source": "/sdk/api/test/delete",
+      "destination": "/sdk/api/dataset/delete"
+    },
+    {
+      "source": "/sdk/api/test/download",
+      "destination": "/sdk/api/dataset/download"
+    },
+    {
+      "source": "/sdk/tutorials/create-test",
+      "destination": "/sdk/tutorials/create-dataset"
+    },
+    {
+      "source": "/sdk/tutorials/run-test-based-evaluations",
+      "destination": "/sdk/tutorials/run-dataset-based-evaluations"
+    },
+    {
+      "source": "/sdk/api/specification/get-tests",
+      "destination": "/sdk/api/specification/get-datasets"
+    },
+    {
+      "source": "/sdk/api/specification/link-tests",
+      "destination": "/sdk/api/specification/link-datasets"
+    },
+    {
+      "source": "/sdk/api/specification/unlink-tests",
+      "destination": "/sdk/api/specification/unlink-datasets"
     },
     {
       "source": "/sdk/api/version/evaluate",
@@ -898,7 +1046,7 @@
     },
     {
       "source": "/sdk/tutorials/create-evaluation",
-      "destination": "/sdk/tutorials/run-test-based-evaluations"
+      "destination": "/sdk/tutorials/run-dataset-based-evaluations"
     },
     {
       "source": "/sdk/tutorials/create-evaluation-with-custom-scores",

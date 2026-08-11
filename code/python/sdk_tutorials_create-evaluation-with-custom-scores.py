@@ -19,7 +19,6 @@ product_id = create_test_product(
     description="Demo product for custom metrics tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(
@@ -31,16 +30,16 @@ if version is None:
     raise ValueError("version is None")
 version_id = version.id
 
-test = galtea.tests.create(
+dataset = galtea.datasets.create(
     name="test-custom-metrics-" + run_identifier,
     type="ACCURACY",
     product_id=product_id,
-    test_file_path="path/to/accuracy_test.csv",
+    dataset_file_path="path/to/accuracy_dataset.csv",
 )
-if test is None:
-    raise ValueError("test is None")
+if dataset is None:
+    raise ValueError("dataset is None")
 
-test_cases = galtea.test_cases.list(test_id=test.id, limit=1)
+test_cases = galtea.test_cases.list(dataset_id=dataset.id, limit=1)
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("test_cases is None or empty")
 test_case_id = test_cases[0].id
@@ -70,7 +69,7 @@ galtea.metrics.create(
 
 # Run evaluation with your pre-computed score
 session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id)
-galtea.inference_results.create_and_evaluate(
+galtea.traces.create_and_evaluate(
     session_id=session.id,
     output=actual_output,
     metrics=[
@@ -118,7 +117,7 @@ actual_output_2 = "This response is relevant and helpful."
 # Run evaluation with your custom metric class
 # Important: Do NOT provide 'id' or 'name' in the dict when using CustomScoreEvaluationMetric
 session_2 = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id)
-galtea.inference_results.create_and_evaluate(
+galtea.traces.create_and_evaluate(
     session_id=session_2.id,
     output=actual_output_2,
     metrics=[
@@ -130,7 +129,7 @@ galtea.inference_results.create_and_evaluate(
 
 
 # @start multi_turn_custom_metric
-from galtea import InferenceResult
+from galtea import Trace
 
 
 class AllOutputsContainKeyword(CustomScoreEvaluationMetric):
@@ -140,20 +139,18 @@ class AllOutputsContainKeyword(CustomScoreEvaluationMetric):
         self.keyword = keyword.lower()
         super().__init__(name=f"all-outputs-contain-{self.keyword}")
 
-    def measure(
-        self, *args, actual_output: str | None = None, inference_results: list[InferenceResult] | None = None, **kwargs
-    ) -> float:
+    def measure(self, *args, actual_output: str | None = None, traces: list[Trace] | None = None, **kwargs) -> float:
         """
-        Uses inference_results to check every turn in the conversation.
-        Falls back to actual_output when inference_results is not available.
+        Uses traces to check every turn in the conversation.
+        Falls back to actual_output when traces is not available.
         """
-        if inference_results:
-            outputs = [ir.actual_output for ir in inference_results if ir.actual_output]
+        if traces:
+            outputs = [trace.actual_output for trace in traces if trace.actual_output]
             if not outputs:
                 return 0.0
             matches = sum(1 for output in outputs if self.keyword in output.lower())
             return matches / len(outputs)
-        # Fallback for when inference_results is not provided
+        # Fallback for when traces is not provided
         if not actual_output:
             return 0.0
         return 1.0 if self.keyword in actual_output.lower() else 0.0

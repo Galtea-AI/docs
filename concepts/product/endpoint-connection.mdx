@@ -21,7 +21,7 @@ An Endpoint Connection tells Galtea how to call your AI system's API. You config
 To create an Endpoint Connection:
 
 1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
-2. Go to the "Endpoint Connections" section
+2. In **Development** view mode, open the **Connections** section in the sidebar (under **Product**), then the **Endpoints** tab
 3. Click "New Endpoint Connection" and choose how to start:
    - **From cURL** — paste a cURL command and Galtea pre-fills the form (URL, method, headers, authentication, request body, and a suggested connection name) for you. Deterministic fields show an "Auto-filled" badge. For **Conversation** endpoints, when the request body is valid JSON, Galtea also uses AI to produce a richer input template (with conversation history, context fields, and the correct placeholder vocabulary) and to suggest a more descriptive connection name — both of those fields show an "AI Generated" badge instead. For **Initialization** and **Finalization** endpoints, the request body is used verbatim as the input template and the name is derived from the host URL (no AI enrichment for either field). Anything Galtea cannot parse is left for you to complete. You can also open this importer from the **Import from cURL** button inside the form.
    - **Blank** — start from an empty form.
@@ -87,7 +87,7 @@ sequenceDiagram
     loop For Each Turn
         Galtea->>Conv: Send Message (with session_id + metadata)
         Conv-->>Galtea: Return Response
-        Galtea->>Galtea: Store Inference Result
+        Galtea->>Galtea: Store Trace
     end
     opt If Finalization Configured
         Galtea->>Final: Finalize Session (always runs)
