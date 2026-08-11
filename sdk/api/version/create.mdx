@@ -30,7 +30,7 @@ version = galtea.versions.create(
   The system prompt used with the model for this version.
 </ResponseField>
 <ResponseField name="model_id" type="string" optional>
-  Reference to a [model](/concepts/model) configured in the Galtea Platform, used for cost tracking on this version's traces.
+  Reference to a [model](/concepts/model) configured in the Galtea Platform, used for cost tracking on this version's inference results.
 
   <Accordion title="Example: linking a version to a model">
     Use the [Model service](/sdk/api/model/service) to look up an existing model by name and pass its `id` to `versions.create`:
@@ -40,7 +40,7 @@ version = galtea.versions.create(
     selected_model = galtea.models.get_by_name(name=model_name)
 
     # Pass its id to versions.create so Galtea can track cost for this version's
-    # traces using the model's per-token pricing.
+    # inference results using the model's per-token pricing.
     version = galtea.versions.create(
         name="v1.0-with-model-" + run_identifier,
         product_id=_demo_product_id,

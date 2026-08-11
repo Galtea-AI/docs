@@ -1,7 +1,7 @@
 ---
 title: 'start_as_current_observation'
 sidebarTitle: "start_as_current_observation"
-description: "Drop-in replacement for Langfuse's start_as_current_observation context manager with Galtea span linking."
+description: "Drop-in replacement for Langfuse's start_as_current_observation context manager with Galtea trace linking."
 ---
 
 ## Example
@@ -18,7 +18,7 @@ with start_as_current_observation(name="process-query", as_type="span") as span:
 with start_as_current_observation(
     name="process-query",
     as_type="span",
-    trace_id="trace_abc123",
+    inference_result_id="inferenceResult_abc123",
 ) as span:
     result = run_agent("user query")
     span.update(output=result)
@@ -30,14 +30,14 @@ with start_as_current_observation(
 
 ## Parameters
 
-<ResponseField name="trace_id" type="str" optional>
-  Galtea trace ID to link spans to. When provided, the wrapper manages the Galtea span context automatically for the duration of the block.
+<ResponseField name="inference_result_id" type="str" optional>
+  Galtea inference result ID to link traces to. When provided, the wrapper manages the Galtea trace context automatically for the duration of the block.
 </ResponseField>
 <ResponseField name="name" type="str" required>
   Span name for the observation.
 </ResponseField>
 <ResponseField name="as_type" type="str" optional>
-  Langfuse observation type: `span` (default), `generation`, `agent`, `tool`, `retriever`, `chain`, `evaluator`, `embedding`, `guardrail`. Mapped to Galtea's `SpanType` automatically. See [observation types](/sdk/integrations/langfuse/overview#observation-types).
+  Langfuse observation type: `span` (default), `generation`, `agent`, `tool`, `retriever`, `chain`, `evaluator`, `embedding`, `guardrail`. Mapped to Galtea's `TraceType` automatically. See [observation types](/sdk/integrations/langfuse/overview#observation-types).
 </ResponseField>
 
 All other keyword arguments are forwarded to Langfuse's `start_as_current_observation`.
@@ -68,7 +68,7 @@ from galtea.integrations.langfuse import start_as_current_observation
 with start_as_current_observation(
     name="pipeline",
     as_type="span",
-    trace_id="trace_abc123",
+    inference_result_id="inferenceResult_abc123",
 ) as root:
     with root.start_as_current_observation(name="retrieve", as_type="retriever") as ret:
         docs = ["doc1", "doc2"]

@@ -1,7 +1,7 @@
 ---
 title: 'CallbackHandler'
 sidebarTitle: "CallbackHandler"
-description: "Drop-in replacement for Langfuse's langchain.CallbackHandler with Galtea span linking."
+description: "Drop-in replacement for Langfuse's langchain.CallbackHandler with Galtea trace linking."
 ---
 
 ## Example
@@ -9,15 +9,15 @@ description: "Drop-in replacement for Langfuse's langchain.CallbackHandler with 
 ```python
 from galtea.integrations.langfuse import CallbackHandler
 
-handler = CallbackHandler()  # at app init — no trace_id yet
+handler = CallbackHandler()  # at app init — no inference_result_id yet
 
 # Per request:
-handler.set_trace_id("trace_abc123")
+handler.set_inference_result_id("inferenceResult_abc123")
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 # Context is automatically cleared when the chain finishes.
 ```
 
-You can also pass `trace_id` directly in the constructor:
+You can also pass `inference_result_id` directly in the constructor:
 
 ```python
 from galtea.integrations.langfuse import CallbackHandler
@@ -27,22 +27,22 @@ handler = CallbackHandler()
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 
 # With Galtea correlation (traces go to both Langfuse and Galtea):
-handler = CallbackHandler(trace_id="trace_abc123")
+handler = CallbackHandler(inference_result_id="inferenceResult_abc123")
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 ```
 
 ## Constructor Parameters
 
-<ResponseField name="trace_id" type="str" optional>
-  Galtea trace ID to link spans to. When provided, the handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles. All spans created during the invocation are stamped with this ID. Can also be set or changed later via `set_trace_id()`.
+<ResponseField name="inference_result_id" type="str" optional>
+  Galtea inference result ID to link traces to. When provided, the handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles. All spans created during the invocation are stamped with this ID. Can also be set or changed later via `set_inference_result_id()`.
 </ResponseField>
 
 All other keyword arguments are forwarded to Langfuse's `langchain.CallbackHandler`.
 
 ## Methods
 
-<ResponseField name="set_trace_id(trace_id)" type="method">
-  Set or update the trace ID for subsequent invocations. Use this when reusing a single handler across multiple requests (singleton pattern). Pass `None` to disable Galtea correlation.
+<ResponseField name="set_inference_result_id(inference_result_id)" type="method">
+  Set or update the inference result ID for subsequent invocations. Use this when reusing a single handler across multiple requests (singleton pattern). Pass `None` to disable Galtea correlation.
 </ResponseField>
 
 ```python
@@ -50,16 +50,16 @@ All other keyword arguments are forwarded to Langfuse's `langchain.CallbackHandl
 handler = CallbackHandler()  # at app init
 
 # Per request:
-handler.set_trace_id("trace_abc123")
+handler.set_inference_result_id("inferenceResult_abc123")
 chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 # Context is automatically cleared when the chain finishes.
 ```
 
 ## Behavior
 
-The handler automatically manages Galtea span context using depth tracking across LangChain callbacks:
+The handler automatically manages Galtea trace context using depth tracking across LangChain callbacks:
 
-- On the first `on_*_start` callback (root depth), `set_context(trace_id)` is called
+- On the first `on_*_start` callback (root depth), `set_context(inference_result_id)` is called
 - On the last `on_*_end` or `on_*_error` callback (back to root depth), `clear_context()` is called
 - Nested callbacks (tool calls, LLM calls inside a chain) increment/decrement the depth counter without affecting context
 

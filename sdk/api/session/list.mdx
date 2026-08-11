@@ -22,10 +22,8 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
 <ResponseField name="custom_id" type="string | list[string]" optional>
   The custom ID or IDs to filter sessions by.
 </ResponseField>
-<ResponseField name="dataset_id" type="string | list[string]" optional>
-  The ID or IDs of the dataset(s) to filter sessions by.
-
-  <Note>Deprecated alias: `test_id`.</Note>
+<ResponseField name="test_id" type="string | list[string]" optional>
+  The ID or IDs of the test(s) to filter sessions by.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
   Filter sessions created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
@@ -54,5 +52,5 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
   Filter sessions by status. Valid values are `PENDING`, `COMPLETED`, and `FAILED`. Accepts a single value or a list of values (results are OR-combined). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <Note>
-  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `dataset_id`, `id`) described above must be passed to the method. `status` is an additional filter and does **not** satisfy this requirement on its own.
+  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `test_id`, `id`) described above must be passed to the method. `status` is an additional filter and does **not** satisfy this requirement on its own.
 </Note>
