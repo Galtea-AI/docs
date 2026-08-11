@@ -172,6 +172,13 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Migration Guides",
+            "icon": "arrow-right-arrow-left",
+            "pages": [
+              "sdk/migration-guides/entity-renames"
+            ]
           }
         ]
       },

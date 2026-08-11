@@ -13,6 +13,13 @@ A trace is a single turn in a conversation — one user input paired with one AI
 
 You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/sdk/api/trace/service).
 
+<Note>
+  **This entity was called Inference Result before SDK 5.0.0**, and `galtea.traces` used to mean what
+  is now a [Span](/concepts/product/version/session/span). See
+  [Dataset, Trace, and Span Renames](/sdk/migration-guides/entity-renames) for what to change in
+  your code.
+</Note>
+
 <Info>
   **Two things are called "trace" here.** A Galtea Trace is the turn described on this page, and its
   own id is `id`. An OpenTelemetry trace is a distributed-tracing correlation id, the API field

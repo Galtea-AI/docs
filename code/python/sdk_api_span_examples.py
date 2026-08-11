@@ -10,6 +10,7 @@ from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
+    SpanBase,
     SpanType,
     clear_context,
     set_context,
@@ -254,6 +255,47 @@ try:
 finally:
     clear_context(token)
 # @end span_decorator_context_propagation
+
+
+# =============================================================================
+# MIGRATION EXAMPLE
+# The four renamed accessors, for the Dataset/Trace/Span migration guide
+# =============================================================================
+
+# @start migration_after_renames
+# `galtea.datasets` replaces `galtea.tests`.
+datasets = galtea.datasets.list(product_id=product_id)
+
+# `galtea.traces` is one input paired with one output.
+migrated_trace = galtea.traces.create(
+    session_id=session_context.id,
+    input="What is the refund window?",
+    output="You can request a refund within 30 days.",
+)
+if migrated_trace is None:
+    raise ValueError("migrated_trace is None")
+
+# `galtea.spans` replaces the span-level `galtea.traces`.
+migrated_span = galtea.spans.create(
+    trace_id=migrated_trace.id,
+    name="retrieve_policy_docs",
+    type=SpanType.RETRIEVER,
+    input_data={"query": "refund window"},
+    output_data=["Refunds are accepted within 30 days."],
+)
+
+# `galtea.spans.create_batch(spans=...)` replaces `galtea.traces.create_batch(traces=...)`.
+# The trace id moves onto each item; the method itself takes no id.
+migrated_spans = galtea.spans.create_batch(
+    spans=[
+        SpanBase(trace_id=migrated_trace.id, name="rerank_documents", type=SpanType.TOOL),
+        SpanBase(trace_id=migrated_trace.id, name="compose_answer", type=SpanType.GENERATION),
+    ]
+)
+
+# `galtea.spans.list(trace_id=...)` replaces `galtea.traces.list(inference_result_id=...)`.
+spans_of_trace = galtea.spans.list(trace_id=migrated_trace.id)
+# @end migration_after_renames
 
 
 # =============================================================================

@@ -209,7 +209,7 @@ Galtea will assess each trace using the selected metrics and provide scores and 
 There are three ways to collect [spans](/concepts/product/version/session/span) during Direct Inference:
 
 1. **Output Mapping (no code)** — Extract spans from the API response using a `traces` key in your output mapping.
-2. **SDK `set_context` (in your handler)** — Pass `{{ inference_result_id }}` to your endpoint and use the SDK to create spans from within the handler.
+2. **SDK `set_context` (in your handler)** — Pass `{{ trace_id }}` to your endpoint and use the SDK to create spans from within the handler.
 3. **W3C Trace Context Propagation (zero code)** — Enable the `traceparent` header to automatically correlate your OTEL spans with Galtea traces.
 
 ### Option 1: Extract Spans via Output Mapping
@@ -271,7 +271,7 @@ Galtea extracts the `traces` array and creates `Span` entities linked to the tra
 
 When running evaluations via Direct Inference, you can collect spans from your endpoint handler by linking the `trace_id` to your span context. Galtea automatically sends the `X-Galtea-Inference-Id` HTTP header with every Direct Inference request, so your endpoint can read it directly — no template changes needed.
 
-Alternatively, you can pass `{{ inference_result_id }}` in the input template if you prefer to receive it in the request body.
+Alternatively, you can pass `{{ trace_id }}` in the input template if you prefer to receive it in the request body.
 
 #### 1. Get the `trace_id`
 
@@ -290,7 +290,7 @@ trace_id = request.headers.get("X-Galtea-Inference-Id")
     {"role": "user", "content": "{{ input.user_message }}"}
   ],
   "metadata": {
-    "trace_id": "{{ inference_result_id }}"
+    "trace_id": "{{ trace_id }}"
   }
 }
 ```
@@ -385,7 +385,7 @@ Once configured, spans from your service will be automatically linked to the cor
 </Warning>
 
 <Info>
-  To control how span content maps to Span records (the `galtea.trace.*` attributes and the automatically mapped OTel fields), see [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records). To create production sessions from OTel traffic without Direct Inference, see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+  To control how span content maps to Span records (the `galtea.span.*` attributes and the automatically mapped OTel fields), see [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records). To create production sessions from OTel traffic without Direct Inference, see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 </Info>
 
 ## Learn More

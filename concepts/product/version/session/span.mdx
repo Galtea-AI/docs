@@ -21,6 +21,12 @@ Spans are **always linked to a [trace](/concepts/product/version/session/trace)*
 
 Spans can also be ingested directly from OpenTelemetry spans; see [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea).
 
+<Note>
+  **This entity was called Trace before SDK 5.0.0.** The name `galtea.traces` now belongs to the
+  [Trace](/concepts/product/version/session/trace), so span code must move to `galtea.spans`. See
+  [Dataset, Trace, and Span Renames](/sdk/migration-guides/entity-renames).
+</Note>
+
 ## Why Use Spans?
 
 <CardGroup cols={2}>
