@@ -15,7 +15,7 @@ run_identifier: str = datetime.now().strftime("%Y%m%d%H%M%S%f")
 galtea_client = Galtea(api_key="YOUR_API_KEY")
 
 # Setup: create a product, version, test, test case (with structured input),
-# session, and trace so the snippets below can call get() against
+# session, and inference result so the snippets below can call get() against
 # real IDs.
 product_id: str = create_test_product(
     galtea_client,
@@ -31,7 +31,7 @@ version = galtea_client.versions.create(
 if version is None:
     raise ValueError("version is None")
 
-dataset = galtea_client.datasets.create(
+test = galtea_client.tests.create(
     name=f"agent-input-test-{run_identifier}",
     type="ACCURACY",
     product_id=product_id,
@@ -39,11 +39,11 @@ dataset = galtea_client.datasets.create(
     language="english",
     max_test_cases=1,
 )
-if dataset is None:
-    raise ValueError("dataset is None")
+if test is None:
+    raise ValueError("test is None")
 
 test_case = galtea_client.test_cases.create(
-    dataset_id=dataset.id,
+    test_id=test.id,
     input={"user_message": "hello", "chat_type": "support"},
     expected_output="Hi there!",
 )
@@ -55,14 +55,14 @@ session = galtea_client.sessions.create(version_id=version.id, test_case_id=test
 if session is None:
     raise ValueError("session is None")
 
-trace = galtea_client.traces.create(
+inference_result = galtea_client.inference_results.create(
     session_id=session.id,
     input={"user_message": "hello", "chat_type": "support"},
     output="Hi there!",
 )
-if trace is None:
-    raise ValueError("trace is None")
-trace_id: str = trace.id
+if inference_result is None:
+    raise ValueError("inference_result is None")
+inference_result_id: str = inference_result.id
 
 
 # @start basic_usage
@@ -138,14 +138,16 @@ print(test_case.input)  # "hello"
 # .input_data gives the full structured dict
 print(test_case.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
-# Same pattern for traces (input side):
-trace = galtea_client.traces.get(trace_id=trace_id)
-print(trace.input)  # "hello"
-print(trace.input_data)  # {"user_message": "hello", "chat_type": "support"}
+# Same pattern for inference results (input side):
+inference_result = galtea_client.inference_results.get(inference_result_id=inference_result_id)
+print(inference_result.input)  # "hello"
+print(inference_result.input_data)  # {"user_message": "hello", "chat_type": "support"}
 
 # Output side — symmetric pair:
-print(trace.actual_output)  # "the answer is 42" (plain string for text; transcript for voice)
-print(trace.actual_output_data)  # None for plain text; {"assistant_message": "...", "content": [...]} for voice
+print(inference_result.actual_output)  # "the answer is 42" (plain string for text; transcript for voice)
+print(
+    inference_result.actual_output_data
+)  # None for plain text; {"assistant_message": "...", "content": [...]} for voice
 # @end test_case_input_data
 
 # Cleanup

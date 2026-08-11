@@ -17,7 +17,7 @@ To compute the `Tool Correctness` metric, the following parameters are required:
 Conceptually, Tool Correctness is computed as:
 
 1. **Parse Inputs**  
-   Read `tools_used` (the tools the agent actually called) and `expected_tools` (the tools required by the test case). Typically, `expected_tools` is specified by the user when creating the test case, while `tools_used` is populated automatically from execution spans captured via Galtea’s [@traced](/sdk/tutorials/tracing-agent-operations) decorator.
+   Read `tools_used` (the tools the agent actually called) and `expected_tools` (the tools required by the test case). Typically, `expected_tools` is specified by the user when creating the test case, while `tools_used` is populated automatically from execution traces captured via Galtea’s [@trace](/sdk/tutorials/tracing-agent-operations) decorator.
 
 2. **Normalize and Dedupe Tool Names**  
    Normalize tool identifiers (e.g., sanitize formatting and strip equivalent prefixes) and deduplicate by canonical name so repeated calls do not affect the result.

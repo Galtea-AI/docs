@@ -16,17 +16,17 @@ The Galtea integration is **transparent to Langfuse**. It does not inject trace 
 
 ## When Does Galtea Export Data?
 
-Galtea **only** exports span data when a `trace_id` is linked. Without it, Galtea does nothing — no data is sent, no spans are modified.
+Galtea **only** exports trace data when an `inference_result_id` is linked. Without it, Galtea does nothing — no data is sent, no spans are modified.
 
 | Scenario | Galtea exports? |
 |---|---|
-| `CallbackHandler` without `trace_id` | **No** |
-| `CallbackHandler` with `trace_id` (constructor or `set_trace_id`) | **Yes** |
+| `CallbackHandler` without `inference_result_id` | **No** |
+| `CallbackHandler` with `inference_result_id` (constructor or `set_inference_result_id`) | **Yes** |
 | SDK `generate()` / `simulate()` | **Yes** (SDK manages context internally) |
 
 ## How Your Endpoint Is Called
 
-Galtea calls your endpoint and injects the `X-Galtea-Inference-Id` HTTP header on every request. This header carries the `trace_id` that links the execution to a Galtea trace.
+Galtea calls your endpoint and injects the `X-Galtea-Inference-Id` HTTP header on every request. This header carries the `inference_result_id` that links the execution to a Galtea inference result.
 
 ```
 POST /your-endpoint HTTP/1.1
@@ -56,7 +56,7 @@ client = galtea.Galtea(api_key="gsk_...")
 
 Initialization order with Langfuse doesn't matter — both libraries detect each other automatically.
 
-### Step 2: Swap the import and pass the trace ID
+### Step 2: Swap the import and pass the inference result ID
 
 One import change and one line to read the header. Your existing handler initialization stays the same.
 
@@ -80,21 +80,21 @@ langfuse = get_client()
 langfuse_handler = CallbackHandler()  # unchanged
 
 # Per request — read the header, set the ID and call your agent:
-trace_id = request.headers.get("X-Galtea-Inference-Id")
-langfuse_handler.set_trace_id(trace_id)
+inference_result_id = request.headers.get("X-Galtea-Inference-Id")
+langfuse_handler.set_inference_result_id(inference_result_id)
 result = chain.invoke({"input": "Hello"}, config={"callbacks": [langfuse_handler]})
 # Context is automatically cleared when the chain finishes.
 ```
 
-That's it. Three lines changed: the import, reading the header, and one `set_trace_id` call per request.
+That's it. Three lines changed: the import, reading the header, and one `set_inference_result_id` call per request.
 
 ### How it works under the hood
 
-The Galtea `CallbackHandler` wraps the Langfuse `CallbackHandler` and automatically manages Galtea span context around LangChain callback lifecycles:
+The Galtea `CallbackHandler` wraps the Langfuse `CallbackHandler` and automatically manages trace context around LangChain callback lifecycles:
 
-1. On the first `on_*_start` callback (chain, LLM, tool, etc.), Galtea calls `set_context(trace_id)`.
+1. On the first `on_*_start` callback (chain, LLM, tool, etc.), Galtea calls `set_context(inference_result_id)`.
 2. Nested callbacks (tool calls, LLM calls inside a chain) are tracked via a depth counter — context stays active.
-3. On the last `on_*_end` or `on_*_error` callback, Galtea calls `clear_context()` and flushes spans to the Galtea API.
+3. On the last `on_*_end` or `on_*_error` callback, Galtea calls `clear_context()` and flushes traces to the Galtea API.
 
 No context managers or manual cleanup needed.
 
@@ -106,8 +106,8 @@ If you prefer to create a new handler per request instead of reusing a singleton
 from galtea.integrations.langfuse import CallbackHandler
 
 # Per request:
-trace_id = request.headers.get("X-Galtea-Inference-Id")
-handler = CallbackHandler(trace_id=trace_id)
+inference_result_id = request.headers.get("X-Galtea-Inference-Id")
+handler = CallbackHandler(inference_result_id=inference_result_id)
 result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
 ```
 
@@ -128,11 +128,11 @@ result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
 
 **Q: Will adding Galtea slow down my LangChain chains?**
 
-No. Galtea only batches and exports spans when `trace_id` is set — otherwise it's a no-op.
+No. Galtea only batches and exports spans when `inference_result_id` is set — otherwise it's a no-op.
 
 **Q: Can I remove Galtea later without affecting Langfuse?**
 
-Yes. Swap the import back (`from langfuse.langchain import CallbackHandler`), remove the `set_trace_id` call, and remove the `galtea.Galtea(api_key=...)` initialization. Langfuse continues working exactly as before.
+Yes. Swap the import back (`from langfuse.langchain import CallbackHandler`), remove the `set_inference_result_id` call, and remove the `galtea.Galtea(api_key=...)` initialization. Langfuse continues working exactly as before.
 
 **Q: Is the CallbackHandler thread-safe?**
 
@@ -140,4 +140,4 @@ Langfuse's underlying `CallbackHandler` is not thread-safe — it stores per-run
 
 **Q: Can I mix CallbackHandler with @observe?**
 
-Yes. All three Galtea wrappers (`@observe`, `start_as_current_observation`, `CallbackHandler`) can be used together. For example, an `@observe`-decorated function can pass a `CallbackHandler` to LangChain inside it — the parent-child span hierarchy is preserved automatically.
+Yes. All three Galtea wrappers (`@observe`, `start_as_current_observation`, `CallbackHandler`) can be used together. For example, an `@observe`-decorated function can pass a `CallbackHandler` to LangChain inside it — the parent-child trace hierarchy is preserved automatically.

@@ -72,6 +72,7 @@ Open **Organization Settings** and scroll to the **Advanced Options** section. T
 | **Public Certificate** | The X.509 signing certificate from your IdP, in PEM format (starts with `-----BEGIN CERTIFICATE-----`). |
 | **Signed Response** | Require the IdP to sign the full SAML response. Enabled by default. Most enterprise IdPs support this. |
 | **Signed Assertions** | Require the IdP to sign the assertions inside the SAML response. These two toggles must match **what your IdP actually signs**. If you are unsure, enable both — most modern IdPs (Azure AD, Okta, Google Workspace) support signing both. If sign-in fails with an *Invalid signature* error, your IdP is likely signing only one of the two: turn the other off so the settings match (for example, disable **Signed Assertions** when the IdP signs only the response). |
+| **Force password authentication** | Disabled by default: the IdP decides how to authenticate the user. That is what lets an IdP such as ADFS sign in a user who already has an active Windows session, with no password prompt. Enable it only when your policy requires Galtea to ask for a password form on every sign-in. |
 
 ## How users sign in
 
@@ -126,3 +127,4 @@ Most identity providers offer a "Download Certificate (Base64)" or "PEM" option.
 | `saml_auth_failed` / `Invalid signature` | The certificate is wrong, **or** the **Signed Response** / **Signed Assertions** toggles don't match what the IdP signs | Re-download the IdP certificate and paste it again. If the certificate is correct, make **Signed Response** / **Signed Assertions** match exactly what your IdP signs (see [Configuration fields](#configuration-fields)) — e.g. disable **Signed Assertions** if the IdP signs only the response |
 | `saml_disabled` | SAML SSO is not enabled for your account | Contact [support@galtea.ai](mailto:support@galtea.ai) |
 | Assertion expired | Clock difference between IdP and Galtea servers | Ensure the IdP server clock is accurate (up to 90 seconds of skew is accepted) |
+| Users are asked for a password even though they have an active Windows session on the corporate network | **Force password authentication** is enabled, so Galtea asks the IdP for a password form instead of letting it choose the method | Turn off **Force password authentication** in Organization Settings (see [Configuration fields](#configuration-fields)) so the IdP can sign the user in silently |

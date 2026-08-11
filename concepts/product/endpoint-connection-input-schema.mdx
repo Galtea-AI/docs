@@ -204,9 +204,9 @@ In a multi-turn conversation, Galtea generates the session-wide fields once and 
 | 2 | "Do you have a room with an ocean view?" | "Maria Lopez" | "deluxe" |
 | 3 | "Can I add breakfast to my stay?" | "Maria Lopez" | "deluxe" |
 
-## How It Works with Dataset Generation
+## How It Works with Test Generation
 
-When you generate datasets (accuracy, behavior, or security) for a product that has an Input Schema:
+When you generate tests (accuracy, behavior, or security) for a product that has an Input Schema:
 
 1. **Galtea reads the schema** from the endpoint connection attached to the version being tested
 2. **The generator produces structured inputs** that conform to the schema -- respecting types, enums, constraints, and descriptions
@@ -265,10 +265,10 @@ For conversation history, access previous turns using `{{ turn.input }}` and `{{
   <Card title="Endpoint Connection" icon="plug" href="/concepts/product/endpoint-connection">
     Overview of endpoint connections and how to create one.
   </Card>
-  <Card title="Test Case Inputs" icon="list" href="/concepts/product/dataset/test-case">
+  <Card title="Test Case Inputs" icon="list" href="/concepts/product/test/case">
     How test case inputs work, including structured JSON inputs.
   </Card>
-  <Card title="Behavior Datasets" icon="user-group" href="/concepts/product/dataset/behavior-datasets">
-    Multi-turn behavior datasets with scenarios and personas.
+  <Card title="Behavior Tests" icon="user-group" href="/concepts/product/test/behavior-tests">
+    Multi-turn behavior tests with scenarios and personas.
   </Card>
 </CardGroup>

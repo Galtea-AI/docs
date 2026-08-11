@@ -1,19 +1,19 @@
 ---
 title: "Evaluation"
 sidebarTitle: "Overview"
-description: "An evaluation that assesses traces from a session using a metric"
+description: "An evaluation that assesses inference results from a session using a metric"
 ---
 
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import MetricCard from '/snippets/cards/metric-card.mdx';
 import SDKEvaluationServiceCard from '/snippets/cards/sdk-evaluation-service-card.mdx';
 import SessionCard from '/snippets/cards/session-card.mdx';
-import DatasetCard from '/snippets/cards/dataset-card.mdx';
+import TestCard from '/snippets/cards/test-card.mdx';
 import TestCaseCard from '/snippets/cards/test-case-card.mdx';
 
 ## What is an Evaluation?
 
-An evaluation in Galtea represents the assessment of traces from a [session](/concepts/product/version/session) using the evaluation criteria of a [metric](/concepts/metric). Evaluations are now directly linked to sessions, allowing for comprehensive evaluation of full sessions containing multiple traces for multi-turn dialogues.
+An evaluation in Galtea represents the assessment of inference results from a [session](/concepts/product/version/session) using the evaluation criteria of a [metric](/concepts/metric). Evaluations are now directly linked to sessions, allowing for comprehensive evaluation of full sessions containing multiple inference results for multi-turn dialogues.
 
 <Note>Evaluations do not call your AI product — they score outputs that have already been generated. Run your product first to produce outputs, then trigger the evaluation to score them.</Note>
 
@@ -24,7 +24,7 @@ You can create evaluations from the [Galtea dashboard](https://platform.galtea.a
 Evaluations follow a specific lifecycle:
 
 <Steps>
-  <Step title="Creation">[Trigger an evaluation](/sdk/tutorials/run-dataset-based-evaluations). It will appear in the session's details page with the status "pending"</Step>
+  <Step title="Creation">[Trigger an evaluation](/sdk/tutorials/run-test-based-evaluations). It will appear in the session's details page with the status "pending"</Step>
   <Step title="Processing">Galtea's evaluation system processes the evaluation using the evaluation criteria of the selected [metric](/concepts/metric)</Step>
   <Step title="Completion">Once processed, the status changes to "completed" and the [results](/concepts/product/version/session/evaluation#evaluation-properties) are available</Step>
 </Steps>
@@ -100,7 +100,7 @@ Once an evaluation completes, the following fields are available:
 
 <CardGroup cols={2}>
   <ConceptsOverviewCard />
-  <DatasetCard />
+  <TestCard />
   <TestCaseCard />
   <SessionCard />
   <MetricCard />

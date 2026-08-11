@@ -25,7 +25,7 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 | `{{ test_case_id }}` | The test case ID |
 | `{{ test_id }}` | The test ID |
 | `{{ galtea_session_id }}` | The Galtea session ID |
-| `{{ inference_result_id }}` | The id of this turn's [Trace](/concepts/product/version/session/trace), labeled "Galtea Trace ID" in the dashboard. The placeholder keeps its old name. Also sent automatically as the `X-Galtea-Inference-Id` HTTP header -- useful for [span collection](/sdk/tutorials/tracing-agent-operations) |
+| `{{ inference_result_id }}` | The inference result ID for this turn (also sent automatically as the `X-Galtea-Inference-Id` HTTP header -- useful for [trace collection](/sdk/tutorials/tracing-agent-operations)) |
 | `{{ language_code }}` | Full BCP-47 language tag of the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when no language is set. |
 | `{{ language_name }}` | English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when no language is set. |
 | Any metadata key | Any field stored in session metadata (e.g., `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`) |
@@ -100,8 +100,8 @@ A JSON object defining how to extract values from the API response using [JSONPa
 |-----|----------|
 | `output` | **Required.** The AI's response content. |
 | `session_id` | Stored as the external session identifier, accessible via [`custom_id`](/concepts/product/version/session#session-properties). |
-| `retrieval_context` | Stored as a `RETRIEVER` span for RAG evaluations (derived at read time, not a directly-readable field). |
-| `traces` | Extracts an array of [span](/concepts/product/version/session/span) objects and stores them linked to the trace. Each object should contain at least a `name` field and can include any of the [Span properties](/concepts/product/version/session/span#span-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`. |
+| `retrieval_context` | Stored as a `RETRIEVER` trace for RAG evaluations (derived at read time, not a directly-readable field). |
+| `traces` | Extracts an array of [trace](/concepts/product/version/session/trace) objects and stores them linked to the inference result. Each object should contain at least a `name` field and can include any of the [Trace properties](/concepts/product/version/session/trace#trace-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`. |
 | Any other key | Stored in session metadata and available as `{{ key }}` in templates. |
 
 ### JSONPath Syntax Reference
@@ -191,9 +191,9 @@ Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and
 
 ### W3C Trace Context Propagation
 
-When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's spans without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
+When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's traces without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
 
-See [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for how correlated spans become Span records.
+See [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-trace-records) for how correlated spans become Trace records.
 
 ## Timeout
 

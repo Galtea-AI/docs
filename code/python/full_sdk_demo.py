@@ -8,12 +8,12 @@ from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
-    SpanBase,
-    SpanType,
+    TraceBase,
+    TraceType,
     clear_context,
     set_context,
-    start_span,
-    traced,
+    start_trace,
+    trace,
 )
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -28,6 +28,7 @@ _demo_product_id = create_test_product(
     galtea,
     name="Financial Assistant " + run_identifier,
     description="A conversational AI assistant designed to provide financial guidance to individuals with limited financial literacy. It empowers users to make informed investment decisions and manage their wealth effectively through accessible, easy-to-understand information.",
+    security_boundaries="* Must refuse to provide specific stock picks or investment strategies tailored to an individual\n* Should not ask for or store personally identifiable financial information (e.g., account numbers, social security numbers)\n* Must reject requests for illegal financial activities\n* Cannot offer advice that could be construed as fiduciary responsibility\n* Must refuse to share information about other users or general market data that is not publicly available\n",
     capabilities="* Explain basic investment concepts (e.g., stocks, bonds, mutual funds)\n* Provide information on different types of savings and investment accounts\n* Guide users on creating a simple personal budget\n* Offer general strategies for wealth management\n* Define financial terms and jargon\n",
     inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
 )
@@ -101,11 +102,11 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=versio
 if version is None:
     raise ValueError("version from get_by_name is None")
 
-dataset_name = "accuracy-test-docs-" + run_identifier
+test_name = "accuracy-test-docs-" + run_identifier
 
 # @start test_create
-dataset = galtea.datasets.create(
-    name=dataset_name,
+test = galtea.tests.create(
+    name=test_name,
     type="ACCURACY",
     product_id=product_id,
     ground_truth_file_path="path/to/knowledge.md",
@@ -113,33 +114,33 @@ dataset = galtea.datasets.create(
     max_test_cases=5,
 )
 # @end test_create
-if dataset is None:
-    raise ValueError("dataset from create is None")
+if test is None:
+    raise ValueError("test from create is None")
 
-dataset_id = dataset.id
+test_id = test.id
 
 # @start test_list
-datasets = galtea.datasets.list(product_id=product_id, limit=10)
+tests = galtea.tests.list(product_id=product_id, limit=10)
 # @end test_list
-if datasets is None or len(datasets) == 0:
-    raise ValueError("datasets from list is None or empty")
+if tests is None or len(tests) == 0:
+    raise ValueError("tests from list is None or empty")
 
 # @start test_get
-dataset = galtea.datasets.get(dataset_id=dataset_id)
+test = galtea.tests.get(test_id=test_id)
 # @end test_get
-if dataset is None:
-    raise ValueError("dataset from get is None")
+if test is None:
+    raise ValueError("test from get is None")
 
 # @start test_get_by_name
-dataset = galtea.datasets.get_by_name(product_id=product_id, dataset_name=dataset_name)
+test = galtea.tests.get_by_name(product_id=product_id, test_name=test_name)
 # @end test_get_by_name
-if dataset is None:
-    raise ValueError("dataset from get_by_name is None")
+if test is None:
+    raise ValueError("test from get_by_name is None")
 
 
 # @start test_case_create
 test_case = galtea.test_cases.create(
-    dataset_id=dataset_id,
+    test_id=test_id,
     input="What is the capital of France?",
     expected_output="Paris",
     context="Geography facts",
@@ -152,7 +153,7 @@ if test_case is None:
 test_case_id = test_case.id
 
 # @start test_case_list
-test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
+test_cases = galtea.test_cases.list(test_id=test_id, limit=20)
 # @end test_case_list
 if test_cases is None or len(test_cases) == 0:
     raise ValueError("test_cases from list is None or empty")
@@ -199,10 +200,6 @@ metric = galtea.metrics.get_by_name(name=metric_name)
 if metric is None:
     raise ValueError("metric from get_by_name is None")
 
-
-# This file keeps the manual session / trace / evaluation calls on purpose: it is the
-# per-method reference the SDK API pages embed, so each call has to appear on its own. Product code
-# should prefer `galtea.evaluations.run()`, which does the whole loop in one call.
 
 # @start session_create
 session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_id, is_production=False)
@@ -252,65 +249,65 @@ updated_session = galtea.sessions.update(
 if updated_session is None:
     raise ValueError("session from update is None")
 
-# @start trace_create
-trace = galtea.traces.create(
+# @start inference_result_create
+inference_result = galtea.inference_results.create(
     session_id=session_id,
     input="What is the capital of France?",
     output="Paris",
     latency=150.5,
 )
-# @end trace_create
-if trace is None:
-    raise ValueError("trace from create is None")
+# @end inference_result_create
+if inference_result is None:
+    raise ValueError("inference_result from create is None")
 
-trace_id = trace.id
+inference_result_id = inference_result.id
 
-# @start trace_create_batch
-trace = galtea.traces.create_batch(
+# @start inference_result_create_batch
+inference_result = galtea.inference_results.create_batch(
     session_id=session_id,
     conversation_turns=[
         {"role": "user", "content": "Hi"},
         {"role": "assistant", "content": "Hello!"},
     ],
 )
-# @end trace_create_batch
-if trace is None or len(trace) == 0:
-    raise ValueError("traces from create_batch is None or empty")
+# @end inference_result_create_batch
+if inference_result is None or len(inference_result) == 0:
+    raise ValueError("inference_results from create_batch is None or empty")
 
-# @start trace_update
-trace = galtea.traces.update(
-    trace_id=trace_id,
+# @start inference_result_update
+inference_result = galtea.inference_results.update(
+    inference_result_id=inference_result_id,
     output="Paris is the capital.",
     cost=0.0001,
 )
-# @end trace_update
-if trace is None:
-    raise ValueError("trace from update is None")
+# @end inference_result_update
+if inference_result is None:
+    raise ValueError("inference_result from update is None")
 
-# @start trace_list
-trace = galtea.traces.list(session_id=session_id)
-# @end trace_list
-if trace is None or len(trace) == 0:
-    raise ValueError("traces from list is None or empty")
+# @start inference_result_list
+inference_result = galtea.inference_results.list(session_id=session_id)
+# @end inference_result_list
+if inference_result is None or len(inference_result) == 0:
+    raise ValueError("inference_results from list is None or empty")
 
-# @start trace_get
-trace = galtea.traces.get(trace_id=trace_id)
-# @end trace_get
-if trace is None:
-    raise ValueError("trace from get is None")
+# @start inference_result_get
+inference_result = galtea.inference_results.get(inference_result_id=inference_result_id)
+# @end inference_result_get
+if inference_result is None:
+    raise ValueError("inference_result from get is None")
 
 
-# @start trace_create_and_evaluate_basic
-# Create trace and evaluate in a single call
-trace, evaluations = galtea.traces.create_and_evaluate(
+# @start inference_result_create_and_evaluate_basic
+# Create inference result and evaluate in a single call
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
     session_id=session_id,
     input="What is the capital of France?",
     output="The capital of France is Paris.",
     metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
-# @end trace_create_and_evaluate_basic
-if trace is None:
-    raise ValueError("trace from create_and_evaluate is None")
+# @end inference_result_create_and_evaluate_basic
+if inference_result is None:
+    raise ValueError("inference_result from create_and_evaluate is None")
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create_and_evaluate is None or empty")
 
@@ -321,42 +318,42 @@ specification = galtea.specifications.create(
     name="Accurate and relevant answers",
     description="The assistant must provide accurate and relevant answers to user questions.",
     type="POLICY",
-    dataset_type="BEHAVIOR",
+    test_type="BEHAVIOR",
 )
 galtea.specifications.link_metrics(
     specification_id=specification.id,
     metric_ids=[metric_id],
 )
 
-# @start trace_create_and_evaluate_specification_ids
+# @start inference_result_create_and_evaluate_specification_ids
 # Evaluate using metrics linked to specifications (no need to list metrics manually)
-trace, evaluations = galtea.traces.create_and_evaluate(
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
     session_id=session_id,
     input="What is the capital of France?",
     output="The capital of France is Paris.",
     specification_ids=[specification.id],
 )
-# @end trace_create_and_evaluate_specification_ids
-if trace is None:
-    raise ValueError("trace from create_and_evaluate with spec_ids is None")
+# @end inference_result_create_and_evaluate_specification_ids
+if inference_result is None:
+    raise ValueError("inference_result from create_and_evaluate with spec_ids is None")
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create_and_evaluate with spec_ids is None or empty")
 
 
-# @start trace_generate
+# @start inference_result_generate
 # Define your agent function
 def my_agent(user_message: str) -> str:
     return f"Response to: {user_message}"
 
 
-trace = galtea.traces.generate(agent=my_agent, session=session, input="Generate something")
-# @end trace_generate
-if trace is None:
-    raise ValueError("trace from generate is None")
+inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="Generate something")
+# @end inference_result_generate
+if inference_result is None:
+    raise ValueError("inference_result from generate is None")
 
 
-# @start span_decorator
-@traced(type=SpanType.TOOL, name="calculate_sum")
+# @start trace_decorator
+@trace(type=TraceType.TOOL, name="calculate_sum")
 def calculate(a, b):
     return a + b
 
@@ -367,90 +364,90 @@ def my_maths_agent(input_data: AgentInput) -> AgentResponse:
     return AgentResponse(content=f"Result: {calculate(a, b)}")
 
 
-trace = galtea.traces.generate(
+inference_result = galtea.inference_results.generate(
     agent=my_maths_agent,
     session=session,
     input="5,3",
 )
-# @end span_decorator
+# @end trace_decorator
 
-# @start span_set_context
-span_context = set_context(trace_id=trace_id)
-# @end span_set_context
+# @start trace_set_context
+trace_context = set_context(inference_result_id=inference_result_id)
+# @end trace_set_context
 
-# @start span_clear_context
-clear_context(span_context)
-# @end span_clear_context
+# @start trace_clear_context
+clear_context(trace_context)
+# @end trace_clear_context
 
-# @start span_start_span
-with start_span("manual_span", type="SPAN") as span:
+# @start trace_start_trace
+with start_trace("manual_span", type="SPAN") as span:
     # Do work
     span.update(metadata={"status": "done"})
-# @end span_start_span
+# @end trace_start_trace
 
 
-# @start span_create
-manual_span = galtea.spans.create(
-    trace_id=trace_id,
+# @start trace_create
+manual_trace = galtea.traces.create(
+    inference_result_id=inference_result_id,
     name="manual_db_call",
-    type=SpanType.TOOL,
+    type=TraceType.TOOL,
     start_time="2023-01-01T12:00:00Z",
     end_time="2023-01-01T12:00:01Z",
 )
-# @end span_create
+# @end trace_create
 
-span_id = manual_span.id if manual_span else "YOUR_SPAN_ID"
+trace_id = manual_trace.id if manual_trace else "YOUR_TRACE_ID"
 
-# @start span_create_batch
-galtea.spans.create_batch(
+# @start trace_create_batch
+galtea.traces.create_batch(
     [
-        SpanBase(
-            trace_id=trace_id,
-            name="batch_span_1",
-            type=SpanType.SPAN,
+        TraceBase(
+            inference_result_id=inference_result_id,
+            name="batch_trace_1",
+            type=TraceType.SPAN,
         )
     ]
 )
-# @end span_create_batch
+# @end trace_create_batch
 
-# @start span_list
-spans = galtea.spans.list(trace_id=trace_id)
-# @end span_list
-if spans is None or len(spans) == 0:
-    raise ValueError("spans from list is None or empty")
+# @start trace_list
+traces = galtea.traces.list(inference_result_id=inference_result_id)
+# @end trace_list
+if traces is None or len(traces) == 0:
+    raise ValueError("traces from list is None or empty")
 
-span_id = spans[0].id
-if span_id is None:
-    raise ValueError("span_id is None")
+trace_id = traces[0].id
+if trace_id is None:
+    raise ValueError("trace_id is None")
 
-# @start span_get
-span = galtea.spans.get(span_id=span_id)
-# @end span_get
-if span is None:
-    raise ValueError("span from get is None")
+# @start trace_get
+trace = galtea.traces.get(trace_id=trace_id)
+# @end trace_get
+if trace is None:
+    raise ValueError("trace from get is None")
 
-behavior_dataset = galtea.datasets.create(
+behavior_test = galtea.tests.create(
     product_id=product_id,
     name="behavior-test-from-file-docs-" + run_identifier,
     type="BEHAVIOR",
-    dataset_file_path="path/to/behavior_dataset.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
 
-security_dataset = galtea.datasets.create(
+security_test = galtea.tests.create(
     product_id=product_id,
     name="security-test-from-file-docs-" + run_identifier,
     type="SECURITY",
-    dataset_file_path="path/to/security_dataset.csv",
+    test_file_path="path/to/security_test.csv",
 )
 
-accuracy_dataset = galtea.datasets.create(
+accuracy_test = galtea.tests.create(
     product_id=product_id,
     name="accuracy-test-from-file-docs-" + run_identifier,
     type="ACCURACY",
-    dataset_file_path="path/to/accuracy_dataset.csv",
+    test_file_path="path/to/accuracy_test.csv",
 )
 
-behavior_test_case = galtea.test_cases.list(dataset_id=behavior_dataset.id, limit=1)[0]
+behavior_test_case = galtea.test_cases.list(test_id=behavior_test.id, limit=1)[0]
 
 behavior_session = galtea.sessions.create(
     version_id=version_id,
@@ -511,9 +508,9 @@ evaluations = galtea.evaluations.create_single_turn(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create_single_turn is None or empty")
 
-# @start trace_create_and_evaluate_precomputed
+# @start inference_result_create_and_evaluate_precomputed
 # With pre-computed scores for self-hosted metrics
-trace, evaluations = galtea.traces.create_and_evaluate(
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
     session_id=session_id,
     output="Model response...",
     metrics=[
@@ -521,11 +518,11 @@ trace, evaluations = galtea.traces.create_and_evaluate(
         {"name": self_hosted_metric.name, "score": 0.95},  # Pre-computed score
     ],
 )
-# @end trace_create_and_evaluate_precomputed
-if trace is None or evaluations is None:
-    raise ValueError("trace or evaluations from create_and_evaluate is None")
+# @end inference_result_create_and_evaluate_precomputed
+if inference_result is None or evaluations is None:
+    raise ValueError("inference_result or evaluations from create_and_evaluate is None")
 
-# @start trace_create_and_evaluate_custom
+# @start inference_result_create_and_evaluate_custom
 # With dynamic score calculation using CustomScoreEvaluationMetric
 from galtea import CustomScoreEvaluationMetric
 
@@ -538,7 +535,7 @@ class MyMetric(CustomScoreEvaluationMetric):
 
 custom_metric = MyMetric(name=self_hosted_metric.name)
 
-trace, evaluations = galtea.traces.create_and_evaluate(
+inference_result, evaluations = galtea.inference_results.create_and_evaluate(
     session_id=session_id,
     output="Model response...",
     metrics=[
@@ -546,9 +543,9 @@ trace, evaluations = galtea.traces.create_and_evaluate(
         {"score": custom_metric},  # Dynamic score calculation
     ],
 )
-# @end trace_create_and_evaluate_custom
-if trace is None or evaluations is None:
-    raise ValueError("trace or evaluations from create_and_evaluate is None")
+# @end inference_result_create_and_evaluate_custom
+if inference_result is None or evaluations is None:
+    raise ValueError("inference_result or evaluations from create_and_evaluate is None")
 
 # @start evaluation_create_single_turn_production
 evaluations = galtea.evaluations.create_single_turn(
@@ -588,31 +585,31 @@ evaluations = galtea.evaluations.create(
 if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
-# @start evaluation_create_from_trace
-# Evaluate a specific trace by providing its ID
+# @start evaluation_create_from_inference_result
+# Evaluate a specific inference result by providing its ID
 evaluations = galtea.evaluations.create(
-    trace_id=trace_id,
+    inference_result_id=inference_result_id,
     metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
-# @end evaluation_create_from_trace
+# @end evaluation_create_from_inference_result
 if evaluations is None or len(evaluations) == 0:
-    raise ValueError("evaluations from create with trace_id is None or empty")
+    raise ValueError("evaluations from create with inference_result_id is None or empty")
 
-# @start evaluation_create_from_trace_with_specification_ids
-# Evaluate the trace by resolving metrics from linked specifications
+# @start evaluation_create_from_inference_result_with_specification_ids
+# Evaluate the inference result by resolving metrics from linked specifications
 evaluations = galtea.evaluations.create(
-    trace_id=trace_id,
+    inference_result_id=inference_result_id,
     specification_ids=[specification.id],
 )
-# @end evaluation_create_from_trace_with_specification_ids
+# @end evaluation_create_from_inference_result_with_specification_ids
 if evaluations is None or len(evaluations) == 0:
-    raise ValueError("evaluations from create with trace_id + specification_ids is None or empty")
+    raise ValueError("evaluations from create with inference_result_id + specification_ids is None or empty")
 
 # @start evaluation_create_production
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-# Create a trace for the production session first
-production_trace = galtea.traces.create(
+# Create an inference result for the production session first
+production_inference_result = galtea.inference_results.create(
     session_id=production_session.id,
     input="Production user query",
     output="Production response",
@@ -627,11 +624,11 @@ if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
 # @start evaluation_create_production_with_specification_ids
-# Create a production session and a trace, then evaluate it by
+# Create a production session and an inference result, then evaluate it by
 # resolving metrics from linked specifications (no need to list metrics)
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-galtea.traces.create(
+galtea.inference_results.create(
     session_id=production_session.id,
     input="Production user query",
     output="Production response",
@@ -692,16 +689,16 @@ if evaluation is None:
 
 max_wait_iterations = 120  # e.g., wait up to 2 minutes
 for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=dataset.id)
-    if dataset.uri:
+    test = galtea.tests.get(test_id=test.id)
+    if test.uri:
         break
     print("Waiting for test file to be ready...")
     time.sleep(1)
 else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+    raise ValueError("Test file URI is still None after waiting. Test id: " + test.id)
 
 # @start test_download
-downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")
+downloaded_path = galtea.tests.download(test=test, output_directory="./.temp")
 # @end test_download
 if downloaded_path is None:
     raise ValueError("downloaded_path from download is None")
@@ -714,13 +711,13 @@ if downloaded_path is None:
 galtea.evaluations.delete(evaluation_id=evaluation_id)
 # @end evaluation_delete
 
-# @start span_delete
-galtea.spans.delete(span_id=span_id)
-# @end span_delete
-
 # @start trace_delete
 galtea.traces.delete(trace_id=trace_id)
 # @end trace_delete
+
+# @start inference_result_delete
+galtea.inference_results.delete(inference_result_id=inference_result_id)
+# @end inference_result_delete
 
 # @start session_delete
 galtea.sessions.delete(session_id=session_id)
@@ -735,13 +732,18 @@ galtea.test_cases.delete(test_case_id=test_case_id)
 # @end test_case_delete
 
 # @start test_delete
-galtea.datasets.delete(dataset_id=dataset_id)
+galtea.tests.delete(test_id=test_id)
 # @end test_delete
 
 # Deleting the product ensures complete cleanup of all associated resources
-# @start product_delete
-galtea.products.delete(product_id=product_id)
-# @end product_delete
+try:
+    # @start product_delete
+    galtea.products.delete(product_id=product_id)
+    # @end product_delete
+except HTTPError as e:
+    # Known API issue: cascade soft-delete may hit unique constraint on specifications
+    if e.response.status_code != 500:
+        raise
 
 # Since metrics are organization-level, we delete the created metric as well
 # @start metric_delete
