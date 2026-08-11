@@ -86,12 +86,12 @@ Galtea uses role-based access control. Every member of your organization has one
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
 
-**Test**
+**Dataset**
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If parent product in own org | If parent product in own org | ❌ | ❌ |
-| Read | If parent product in own org, or test is global | If parent product in own org, or test is global | If parent product in own org, or test is global | If parent product in own org, or test is global |
+| Read | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global |
 | Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
@@ -100,11 +100,11 @@ Galtea uses role-based access control. Every member of your organization has one
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
-| Create | If parent test in own org | If parent test in own org | ❌ | ❌ |
-| Read | If parent test in own org, or test is global | If parent test in own org, or test is global | If parent test in own org, or test is global | If parent test in own org, or test is global |
-| Update | If parent test in own org | If parent test in own org | ❌ | ❌ |
+| Create | If parent dataset in own org | If parent dataset in own org | ❌ | ❌ |
+| Read | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global |
+| Update | If parent dataset in own org | If parent dataset in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
-| Soft delete | If parent test in own org | If parent test in own org | ❌ | ❌ |
+| Soft delete | If parent dataset in own org | If parent dataset in own org | ❌ | ❌ |
 
 **Specification**
 
@@ -174,16 +174,6 @@ Galtea uses role-based access control. Every member of your organization has one
 
 *Annotating or submitting human evaluations also requires membership in the relevant User Group; the table shows the role-level gate only.*
 
-**Inference Result**
-
-| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
-| --- | --- | --- | --- | --- |
-| Create | If result's product in own org | If result's product in own org | ❌ | ❌ |
-| Read | If result's product in own org | If result's product in own org | If result's product in own org | If result's product in own org |
-| Update | If result's product in own org | If result's product in own org | ❌ | ❌ |
-| Delete | ❌ | ❌ | ❌ | ❌ |
-| Soft delete | If result's product in own org | If result's product in own org | ❌ | ❌ |
-
 **Trace**
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
@@ -194,6 +184,16 @@ Galtea uses role-based access control. Every member of your organization has one
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
 
+**Span**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Create | If span's product in own org | If span's product in own org | ❌ | ❌ |
+| Read | If span's product in own org | If span's product in own org | If span's product in own org | If span's product in own org |
+| Update | If span's product in own org | If span's product in own org | ❌ | ❌ |
+| Delete | ❌ | ❌ | ❌ | ❌ |
+| Soft delete | If span's product in own org | If span's product in own org | ❌ | ❌ |
+
 **Comment**
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
@@ -202,7 +202,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Read | ✅ | ✅ | ✅ | ✅ |
 | Delete | ✅ | If the comment's author | ❌ | ❌ |
 
-*Free-form reviewer text on an inference result. Access also requires the parent inference result to be in your organization. Deleting is a soft delete; you may delete your own comments, and organization owners may delete any.*
+*Free-form reviewer text on a trace. Access also requires the parent trace to be in your organization. Deleting is a soft delete; you may delete your own comments, and organization owners may delete any.*
 
 **Monitor**
 
@@ -248,6 +248,6 @@ Galtea uses role-based access control. Every member of your organization has one
 
 - **Read-only roles**: READER and HUMAN_EVALUATOR can read exactly what a MEMBER can read (the same organization scope). They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
-- **Parent scope**: For nested records (Version, Test, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
-- **Global records**: Some records (Metric, Model, and a Test with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
+- **Parent scope**: For nested records (Version, Dataset, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
+- **Global records**: Some records (Metric, Model, and a Dataset with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
 - **Hard delete**: Each entity table has two delete rows. **Soft delete** hides a record without removing it. **Delete** is a permanent removal, shown as allowed only for Session and User Group (OWNER and MEMBER, within their own organization); for every other entity it is denied to all roles listed here.

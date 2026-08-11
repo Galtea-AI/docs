@@ -1,0 +1,143 @@
+---
+title: 'Generate Trace'
+sidebarTitle: "Generate"
+description: "Execute an agent and automatically capture spans, latency, and metadata"
+---
+
+import AgentCallables from '/snippets/agent-callables.mdx';
+
+## Overview
+
+The `generate()` method is the recommended way to execute your agent when you want automatic span collection, timing, and trace creation. It handles the complete lifecycle:
+
+1. Initializes span collection
+2. Executes your agent with timing measurement
+3. Creates/updates the trace with all metadata
+4. Saves collected spans to the platform
+5. Cleans up span context (prevents memory leaks)
+
+<Info>
+  This is the recommended method for production use as it handles all span lifecycle management automatically.
+</Info>
+
+## Agent Options
+
+<AgentCallables />
+
+## Parameters
+
+<ParamField path="agent" type="AgentType" required>
+  The agent function to execute. Supported signatures:
+  - **Simple:** `(user_message: str) -> str` — receives last user message
+  - **Chat History:** `(messages: list[dict]) -> str` — receives full chat history (OpenAI format)
+  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output. See the [AgentInput reference](/sdk/api/agent/input) for all available fields including structured input access via message metadata.
+
+  Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`.
+</ParamField>
+
+<ParamField path="session" type="Session" required>
+  The session object to associate the trace with. Obtain via `galtea.sessions.create()` or `galtea.sessions.get()`.
+</ParamField>
+
+<ParamField path="input" type="str | dict" optional>
+  The input to send to the agent. Accepts a plain string or a dict with structured fields (e.g. `{"user_message": "hello", "chat_type": "support"}`). Stored directly in the trace. If not provided and the session is test-based, the test case input is used automatically. Required for production/monitoring sessions. See [Input Schema](/concepts/product/endpoint-connection-input-schema) for how to define the expected field structure on your endpoint connection.
+</ParamField>
+
+<ParamField path="throw_if_empty_agent_response" type="bool" optional>
+  If `True`, raises a `ValueError` when the agent returns an empty response. Defaults to `False`.
+</ParamField>
+
+<Info>
+  `context_data` is automatically fetched from the session's test case and passed to the agent via `AgentInput.context_data`. No need to provide it explicitly.
+</Info>
+
+## Returns
+
+Returns a `Trace` object with all captured data.
+
+## Example
+
+```python
+# Define your agent function
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
+
+
+trace = galtea.traces.generate(agent=my_agent, session=session, input="Generate something")
+```
+
+## What Gets Captured
+
+The `generate()` method automatically captures and saves:
+
+| Data | Source | Description |
+|------|--------|-------------|
+| **Input** | `input` parameter | The user's input (string or structured dict) |
+| **Output** | `AgentResponse.content` | The agent's response |
+| **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG). Stored as a `RETRIEVER` span, not a readable field on the returned trace. |
+| **Latency** | Measured | End-to-end execution time in ms |
+| **Usage Info** | `AgentResponse.usage_info` | Token counts (if provided) |
+| **Cost Info** | `AgentResponse.cost_info` | Cost data (if provided) |
+| **Spans** | `@traced` decorators | All traced operations |
+
+## Providing Usage and Cost Information
+
+Your agent can return usage and cost information in the `AgentResponse`:
+
+```python
+@galtea.traced(name="main", type=SpanType.AGENT)
+def my_agent_with_usage(input_data: AgentInput) -> AgentResponse:
+    # Your agent logic...
+
+    return AgentResponse(
+        content="Response content",
+        usage_info={
+            "input_tokens": 150,
+            "output_tokens": 75,
+            "cache_read_input_tokens": 50,
+        },
+        cost_info={
+            "cost_per_input_token": 0.00001,
+            "cost_per_output_token": 0.00003,
+            "cost_per_cache_read_input_token": 0.000001,
+        },
+    )
+```
+
+## Comparison with Manual Approach
+
+| Feature | `generate()` | Manual with `set_context()` |
+|---------|-------------|-----------------------------|
+| Context initialization | Automatic | `set_context()` |
+| Agent execution | Automatic | Manual call |
+| Timing measurement | Automatic | Manual |
+| Trace | Auto-created | `traces.create()` |
+| Span export | Automatic | Automatic on `clear_context()` |
+| Memory cleanup | Automatic | `clear_context()` |
+| Error handling | Built-in | Manual try/finally |
+
+<Tip>
+  Use `generate()` for most use cases. Use manual `set_context()`/`clear_context()` only when you need to manage trace creation separately or have complex multi-step workflows.
+</Tip>
+
+## Error Handling
+
+If the agent raises an exception, `generate()` ensures span context is cleaned up:
+
+```python
+def failing_agent(input_data: AgentInput) -> AgentResponse:
+    raise ValueError("Agent failed intentionally")
+
+
+try:
+    result = galtea_client.traces.generate(agent=failing_agent, session=session_error, input="test")
+except Exception as e:
+    # Galtea context is automatically cleaned up
+    print(f"Agent failed: {e}")
+```
+
+## Related Methods
+
+- [Create Trace](/sdk/api/trace/create) - Manual creation
+- [Span Service](/sdk/api/span/service) - Manual span management
+- [Simulating Conversations](/sdk/tutorials/simulating-conversations) - Multi-turn simulations

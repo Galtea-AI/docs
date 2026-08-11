@@ -8,9 +8,9 @@ import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import ProductCard from '/snippets/cards/product-card.mdx';
 import SpecificationCard from '/snippets/cards/specification-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
-import TestCard from '/snippets/cards/test-card.mdx';
+import DatasetCard from '/snippets/cards/dataset-card.mdx';
 import SessionCard from '/snippets/cards/session-card.mdx';
-import InferenceResultCard from '/snippets/cards/inference-result-card.mdx';
+import TraceCard from '/snippets/cards/trace-card.mdx';
 import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
 import MetricCard from '/snippets/cards/metric-card.mdx';
 import ModelCard from '/snippets/cards/model-card.mdx';
@@ -36,7 +36,7 @@ Galtea is the evaluation platform for AI products. Test accuracy, safety, and be
     Quickstart: register a product, run tests, and view results.
   </Card>
   <Card title="Understand the platform" icon="cube" href="/concepts/product">
-    Products, specs, tests, metrics, and evaluations — the full model.
+    Products, specs, datasets, metrics, and evaluations — the full model.
   </Card>
 </CardGroup>
 
@@ -47,9 +47,9 @@ Galtea helps you evaluate AI products through a repeatable test-measure-iterate 
 <Steps>
   <Step title="Register Product">Register a [Product](/concepts/product) to represent your AI functionality.</Step>
   <Step title="Define Specifications">Define [Specifications](/concepts/product/specification) — testable behavioral expectations for your product (capabilities, inabilities, policies).</Step>
-  <Step title="Generate Metrics & Tests">Galtea [generates metrics](/concepts/metric/ai-generation) and [tests](/concepts/product/test) from your specifications, or you create them manually.</Step>
+  <Step title="Generate Metrics & Datasets">Galtea [generates metrics](/concepts/metric/ai-generation) and [datasets](/concepts/product/dataset) from your specifications, or you create them manually.</Step>
   <Step title="Create Version">Define a new [Version](/concepts/product/version) of your product to track changes over time.</Step>
-  <Step title="Run Evaluations">Run [Evaluations](/concepts/product/version/session/evaluation) — `evaluations.run()` resolves specs, tests, and metrics automatically.</Step>
+  <Step title="Run Evaluations">Run [Evaluations](/concepts/product/version/session/evaluation) — `evaluations.run()` resolves specs, datasets, and metrics automatically.</Step>
   <Step title="Analyze & Iterate">Review results in the Analytics dashboard, then iterate with new versions to track improvements.</Step>
 </Steps>
 
@@ -85,9 +85,9 @@ Galtea is built around several key concepts that work together to provide compre
   <ProductCard />
   <SpecificationCard />
   <VersionCard />
-  <TestCard />
+  <DatasetCard />
   <SessionCard />
-  <InferenceResultCard />
+  <TraceCard />
   <EvaluationCard />
   <MetricCard />
   <ModelCard />

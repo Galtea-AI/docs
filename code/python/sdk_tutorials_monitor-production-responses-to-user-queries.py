@@ -7,7 +7,6 @@ from datetime import datetime
 
 from _test_helpers import create_test_product
 from galtea import Galtea
-from requests.exceptions import HTTPError
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
@@ -20,7 +19,6 @@ product_id = create_test_product(
     description="Demo product for production monitoring tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 version = galtea.versions.create(
@@ -46,7 +44,7 @@ def handle_user_query(user_query: str, retrieval_context: str | None = None) -> 
 
     # Log and evaluate the interaction in Galtea
     session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
-    galtea.inference_results.create_and_evaluate(
+    galtea.traces.create_and_evaluate(
         session_id=session.id,
         input=user_query,
         output=model_response,
@@ -92,7 +90,7 @@ def handle_user_query_with_specifications(user_query: str, retrieval_context: st
 
     # Log and evaluate the interaction, resolving metrics from your specifications
     session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
-    galtea.inference_results.create_and_evaluate(
+    galtea.traces.create_and_evaluate(
         session_id=session.id,
         input=user_query,
         output=model_response,
@@ -124,7 +122,7 @@ def handle_user_query_with_custom_id(conversation_id: str, user_query: str) -> s
 
     # Log and evaluate in one call, using YOUR conversation id as the handle.
     # Galtea finds the existing session by that id and appends the turn to it.
-    galtea.inference_results.create_and_evaluate(
+    galtea.traces.create_and_evaluate(
         session_custom_id=conversation_id,  # the id you created the session with
         version_id=VERSION_ID,  # or product_id=product_id to find it under the product
         input=user_query,
@@ -159,7 +157,7 @@ def handle_conversation_turn(conversation_id: str, user_input: str) -> str:
 
     # Log each turn under your own conversation id. Galtea finds the existing
     # session by that id and appends the turn to it.
-    galtea.inference_results.create(
+    galtea.traces.create(
         session_custom_id=conversation_id,
         version_id=VERSION_ID,  # or product_id=product_id
         input=user_input,
@@ -214,7 +212,7 @@ user_questions = [
 for question in user_questions:
     model_response = get_model_response(question)
     # Log the turn to Galtea right after it happens
-    inference_result = galtea.inference_results.create(session_id=session.id, input=question, output=model_response)
+    trace = galtea.traces.create(session_id=session.id, input=question, output=model_response)
 # @end log_turns_individually
 
 
@@ -244,7 +242,7 @@ conversation_turns = [
     {"role": "assistant", "content": "You're welcome!"},
 ]
 
-galtea.inference_results.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
+galtea.traces.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
 # @end log_turns_batch
 
 
@@ -269,9 +267,4 @@ print(f"Logged and evaluated production session {session.id}")
 
 # === Cleanup ===
 # Deleting the product cascades to the sessions and specification created above.
-try:
-    galtea.products.delete(product_id=product_id)
-except HTTPError as e:
-    # Known API issue: cascade soft-delete may hit unique constraint on specifications
-    if e.response.status_code != 500:
-        raise
+galtea.products.delete(product_id=product_id)

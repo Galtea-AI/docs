@@ -2,7 +2,7 @@
 
 In order to evaluate your AI agent, Galtea can take advantage of the rich information that comes from traces. If you already have Langfuse setup, Galtea has a very simple way of gathering those traces, in a non-intrusive way with minor changes to your application. Here we explain, how to send your Langfuse traces to Galtea.
 
-The integration requires two things: Galtea passes an `inference_result_id` to your endpoint on every call within the header, and you forward that ID to the Galtea SDK wrapper in your code. That link is all Galtea needs to collect your traces and associate them with the right inference made for the evaluation in question.
+The integration requires two things: Galtea passes a `trace_id` to your endpoint on every call within the header, and you forward that ID to the Galtea SDK wrapper in your code. That link is all Galtea needs to collect your spans and associate them with the right inference made for the evaluation in question.
 
 The changes to your code are minimal: one import swap and one line to read the ID from the request header.
 
@@ -21,20 +21,20 @@ The Galtea integration is **transparent to Langfuse**. It does not inject trace 
 
 ## When Does Galtea Export Data?
 
-Galtea **only** exports trace data when an `inference_result_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified, no logs are written.
+Galtea **only** exports span data when a `trace_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified, no logs are written.
 
 | Scenario | Galtea exports? |
 |---|---|
-| Normal `@observe` call (no `inference_result_id`) | **No** |
-| `@observe` called with `inference_result_id` kwarg | **Yes** |
-| `CallbackHandler` with `inference_result_id` | **Yes** |
-| `CallbackHandler` without `inference_result_id` | **No** |
+| Normal `@observe` call (no `trace_id`) | **No** |
+| `@observe` called with `trace_id` kwarg | **Yes** |
+| `CallbackHandler` with `trace_id` | **Yes** |
+| `CallbackHandler` without `trace_id` | **No** |
 | SDK `generate()` / `simulate()` | **Yes** (SDK manages context internally) |
-| Manual `set_context(inference_result_id=...)` | **Yes** (while context is active) |
+| Manual `set_context(trace_id=...)` | **Yes** (while context is active) |
 
 ## How Your Endpoint Is Called
 
-Galtea calls your endpoint and injects the `X-Galtea-Inference-Id` HTTP header on every request. This header carries the `inference_result_id` that links the execution to a Galtea inference result.
+Galtea calls your endpoint and injects the `X-Galtea-Inference-Id` HTTP header on every request. This header carries the `trace_id` that links the execution to a Galtea trace.
 
 ```
 POST /your-endpoint HTTP/1.1
@@ -46,7 +46,7 @@ Content-Type: application/json
 
 Your request body is untouched — nothing is added to it. If the header is absent (non-Galtea traffic), the SDK wrapper is a no-op: no data is sent, nothing breaks.
 
-> **Note:** Galtea uses inference results as the unit of evaluation — each one represents a single input/output pair that can be scored by metrics. By linking traces to an inference result, Galtea knows which execution traces belong to which response, enabling trace-aware evaluations and hence full visibility into how your agent arrived at each answer.
+> **Note:** Galtea uses traces as the unit of evaluation — each one represents a single input/output pair that can be scored by metrics. By linking spans to a trace, Galtea knows which execution spans belong to which response, enabling span-aware evaluations and hence full visibility into how your agent arrived at each answer.
 
 ## What You Change in Your Code
 
@@ -91,11 +91,11 @@ def my_agent(user_input: str) -> str:
     context = retrieve(user_input)
     return generate(user_input, context)
 
-inference_result_id = request.headers.get("X-Galtea-Inference-Id")  # read header
-result = my_agent("Hello", inference_result_id=inference_result_id)  # pass the ID
+trace_id = request.headers.get("X-Galtea-Inference-Id")  # read header
+result = my_agent("Hello", trace_id=trace_id)  # pass the ID
 ```
 
-The `inference_result_id` kwarg is consumed by the wrapper — it does not reach your function's parameters. The wrapper sets up the Galtea trace context before the function runs and flushes it when it returns.
+The `trace_id` kwarg is consumed by the wrapper — it does not reach your function's parameters. The wrapper sets up the Galtea span context before the function runs and flushes it when it returns.
 
 **start_as_current_observation (context manager)**
 
@@ -113,12 +113,12 @@ with langfuse.start_as_current_observation(name="my-op", as_type="span") as root
 # After:
 from galtea.integrations.langfuse import start_as_current_observation  # swap import
 
-inference_result_id = request.headers.get("X-Galtea-Inference-Id")  # read header
+trace_id = request.headers.get("X-Galtea-Inference-Id")  # read header
 
 with start_as_current_observation(
     name="my-op",
     as_type="span",
-    inference_result_id=inference_result_id,  # pass the ID at the root
+    trace_id=trace_id,  # pass the ID at the root
 ) as root:
     with root.start_as_current_observation(name="child", as_type="generation") as gen:  # unchanged
         gen.update(output=result)
@@ -126,11 +126,11 @@ with start_as_current_observation(
 
 The `langfuse.` client prefix is no longer needed for the root call — the wrapper calls `get_client()` internally. But keeping the client does not introduce any issues, since it is singleton and refers to the same object.
 
-> **Tip:** Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that trace type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the span name.
+> **Tip:** Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that span type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the span name.
 
 **CallbackHandler (LangChain)**
 
-Swap the import and call `set_inference_result_id` before each invocation. Your existing handler initialization stays the same:
+Swap the import and call `set_trace_id` before each invocation. Your existing handler initialization stays the same:
 
 ```python
 # Before:
@@ -147,8 +147,8 @@ from galtea.integrations.langfuse import CallbackHandler  # swap import
 handler = CallbackHandler()  # at app init (unchanged)
 
 # Per request:
-inference_result_id = request.headers.get("X-Galtea-Inference-Id")  # read header
-handler.set_inference_result_id(inference_result_id)  # set ID for this request
+trace_id = request.headers.get("X-Galtea-Inference-Id")  # read header
+handler.set_trace_id(trace_id)  # set ID for this request
 result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
 # Context is automatically cleared when the chain finishes.
 ```
@@ -156,12 +156,12 @@ result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
 Alternatively, you can create a handler per request with the ID in the constructor:
 
 ```python
-inference_result_id = request.headers.get("X-Galtea-Inference-Id")
-handler = CallbackHandler(inference_result_id=inference_result_id)
+trace_id = request.headers.get("X-Galtea-Inference-Id")
+handler = CallbackHandler(trace_id=trace_id)
 result = chain.invoke({"input": "Hello"}, config={"callbacks": [handler]})
 ```
 
-> **Note:** When using Galtea's SDK methods (`generate()`, `simulate()`), this step is not needed — the SDK manages `inference_result_id` internally.
+> **Note:** When using Galtea's SDK methods (`generate()`, `simulate()`), this step is not needed — the SDK manages `trace_id` internally.
 
 ### What You Do NOT Need to Change
 
@@ -178,7 +178,7 @@ Requires **Langfuse v3.0.0 or later** (capped at `<5.0.0`). v2.x is not supporte
 
 **Q: Will adding Galtea slow down my Langfuse traces?**
 
-No. Galtea only batches and exports spans when `inference_result_id` is set — otherwise it's a no-op.
+No. Galtea only batches and exports spans when `trace_id` is set — otherwise it's a no-op.
 
 **Q: Can I remove Galtea later without affecting Langfuse?**
 
@@ -186,8 +186,8 @@ Yes. Swap the imports back (`from langfuse import observe`) and remove the `galt
 
 **Q: Does Galtea see my Langfuse API keys?**
 
-No. Galtea only receives trace data (name, type, input, output, timing, hierarchy). It does not access your Langfuse credentials or cloud configuration.
+No. Galtea only receives span data (name, type, input, output, timing, hierarchy). It does not access your Langfuse credentials or cloud configuration.
 
 **Q: What if Langfuse adds new observation types?**
 
-Unknown types are automatically mapped to `SPAN` in Galtea. Your traces are never dropped.
+Unknown types are automatically mapped to `SPAN` in Galtea. Your spans are never dropped.

@@ -1,0 +1,23 @@
+---
+title: 'Downloading Dataset'
+sidebarTitle: "Download"
+description: "Download the file associated with a specific dataset."
+---
+
+## Returns
+Returns the local file path to the downloaded dataset file.
+
+## Example
+```python
+downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")
+```
+
+## Parameters
+<ResponseField name="dataset" type="Dataset object" required>
+  The Dataset object (retrieved via `get` or `get_by_name`) for which you want to download the associated file. The dataset must have a `uri` attribute.
+
+  <Note>Deprecated alias: `test`.</Note>
+</ResponseField>
+<ResponseField name="output_directory" type="string" required>
+  The local directory path where the dataset file will be saved.
+</ResponseField>
