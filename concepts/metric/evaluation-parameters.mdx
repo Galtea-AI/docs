@@ -48,7 +48,7 @@ When creating or configuring a metric, you select which parameters are relevant 
     </tr>
     <tr>
       <td>**retrieval_context**</td>
-      <td>The context retrieved by your RAG system before sending the user query to your LLM. Derived from your `RETRIEVER` trace spans; you can also supply it directly and it is stored as a `RETRIEVER` trace, not a directly-readable field.</td>
+      <td>The context retrieved by your RAG system before sending the user query to your LLM. Derived from your `RETRIEVER` spans; you can also supply it directly and it is stored as a `RETRIEVER` span, not a directly-readable field.</td>
       <td>Accuracy, Security & Safety, and Behavior</td>
     </tr>
     <tr>
@@ -129,9 +129,9 @@ Missing from product settings:
 Missing from test case:
   • expected_output - Provide an "Expected Output" value on your test cases.
 
-Missing trace data:
-  • retrieval_context - "retrieval_context" is derived from RETRIEVER trace spans. Configure tracing so your product emits retrieval steps — see the tracing setup docs.
-  • traces - This metric needs tracing data. Configure your product to send traces — see the tracing setup docs.
+Missing span data:
+  • retrieval_context - "retrieval_context" is derived from RETRIEVER spans. Configure tracing so your product emits retrieval steps — see the tracing setup docs.
+  • traces - This metric needs span data. Configure your product to send spans — see the tracing setup docs.
 
 Learn more: https://docs.galtea.ai/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations
 ```
@@ -160,11 +160,11 @@ Each section points to a different place to look:
     </tr>
     <tr>
       <td>**Missing trace data**</td>
-      <td>The metric needs trace-derived data (`traces`, `tools_used`, or `retrieval_context`). Configure your product to send traces — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Trace concept page](/concepts/product/version/session/trace) for what gets captured. `tools_used` (from `TOOL` spans) and `retrieval_context` (from `RETRIEVER` spans) are automatically extracted from your trace data; you do not provide them directly.</td>
+      <td>The session has no conversation turns yet. Run the metric against a session that contains at least one turn.</td>
     </tr>
     <tr>
-      <td>**Missing inference data**</td>
-      <td>The session has no inference results yet. Run the metric against a session that contains at least one conversation turn.</td>
+      <td>**Missing span data**</td>
+      <td>The metric needs span-derived data (`traces`, `tools_used`, or `retrieval_context`). Configure your product to send span data — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Span concept page](/concepts/product/version/session/span) for what gets captured. `tools_used` (from `TOOL` spans) and `retrieval_context` (from `RETRIEVER` spans) are automatically extracted from your span data; you do not provide them directly.</td>
     </tr>
   </tbody>
 </table>

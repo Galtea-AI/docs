@@ -1,0 +1,148 @@
+---
+title: 'Create and Evaluate Trace'
+sidebarTitle: "Create and Evaluate"
+description: "Create a trace and immediately evaluate it against specified metrics in a single call."
+---
+
+## Returns
+Returns a tuple containing:
+1. A [Trace](/concepts/product/version/session/trace) object
+2. A list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric evaluated
+
+## Usage
+This method combines creating a trace with its evaluation in a single convenient call. It's the recommended approach for single-turn evaluations, replacing the deprecated `galtea.evaluations.create_single_turn()` method.
+
+### Basic Example
+
+Evaluate by passing [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or by listing metric names explicitly.
+
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Evaluate using metrics linked to specifications (no need to list metrics manually)
+trace, evaluations = galtea.traces.create_and_evaluate(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="The capital of France is Paris.",
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
+```python
+# Create trace and evaluate in a single call
+trace, evaluations = galtea.traces.create_and_evaluate(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="The capital of France is Paris.",
+    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
+)
+```
+  </Tab>
+</Tabs>
+
+### With Pre-computed Scores
+```python
+# With pre-computed scores for self-hosted metrics
+trace, evaluations = galtea.traces.create_and_evaluate(
+    session_id=session_id,
+    output="Model response...",
+    metrics=[
+        {"name": "Factual Accuracy"},
+        {"name": self_hosted_metric.name, "score": 0.95},  # Pre-computed score
+    ],
+)
+```
+
+### With Custom Score Calculation
+```python
+# With dynamic score calculation using CustomScoreEvaluationMetric
+from galtea import CustomScoreEvaluationMetric
+
+
+class MyMetric(CustomScoreEvaluationMetric):
+    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
+        # Your custom scoring logic
+        return 0.95
+
+
+custom_metric = MyMetric(name=self_hosted_metric.name)
+
+trace, evaluations = galtea.traces.create_and_evaluate(
+    session_id=session_id,
+    output="Model response...",
+    metrics=[
+        {"name": "Factual Accuracy"},
+        {"score": custom_metric},  # Dynamic score calculation
+    ],
+)
+```
+
+## Parameters
+<ResponseField name="session_id" type="string" optional>
+  The session ID to log the trace to.
+
+  <Note>Instead of a `session_id`, you can reference an existing session by its own conversation id (see the section below). Provide exactly one of the two.</Note>
+</ResponseField>
+
+<Accordion title="Log to an existing session by your own conversation ID">
+  If you already created the session via the [sessions API](/sdk/api/session/service) with your own `custom_id`, reference it here with `session_custom_id` plus a `version_id` or `product_id` to log and evaluate a turn in one call. If no matching session exists, the call returns a `400` error — create it first via the sessions API.
+
+  <ResponseField name="session_custom_id" type="string" optional>
+    Your own conversation id, as an alternative to `session_id`. Galtea finds an existing session with this id (per version); the session is not created here. Requires `version_id` or `product_id`.
+  </ResponseField>
+  <ResponseField name="version_id" type="string" optional>
+    The version the session is anchored to when using `session_custom_id`. If both anchors are given, `version_id` wins and `product_id` is ignored.
+  </ResponseField>
+  <ResponseField name="product_id" type="string" optional>
+    Product anchor used when no `version_id` is given with `session_custom_id`: Galtea finds the session with this custom id under the product (across its versions).
+  </ResponseField>
+
+  <Note>If no session matches the `session_custom_id` and anchor, the call returns a `400` error. Create the session first via the [sessions API](/sdk/api/session/service).</Note>
+</Accordion>
+<ResponseField name="output" type="string" required>
+  The generated output/response from the AI model.
+</ResponseField>
+<ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" optional>
+  A list of metrics to evaluate against. Supports multiple formats:
+  - Strings: Metric names (e.g., `["accuracy", "relevance"]`)
+  - CustomScoreEvaluationMetric: Objects with dynamic score calculation. Must be initialized with either 'name' or 'id' parameter.
+  - MetricInput dicts: Format with optional id, name, and score.
+    - If `score` is a `float`: Pre-calculated score (requires 'id' or 'name' in the dict).
+    - If `score` is a `CustomScoreEvaluationMetric`: Dynamic score calculation.
+
+  Optional when `specification_ids` is provided (in which case metrics are resolved from the specifications).
+</ResponseField>
+<ResponseField name="specification_ids" type="List[str]" optional>
+  A list of [Specification](/concepts/product/specification) IDs. When provided, the evaluation uses the metrics linked to these specifications.
+
+  Can be combined with `metrics` — the API merges and deduplicates by metric ID.
+
+  <Note>
+    This parameter allows you to evaluate against specific product specifications without manually listing all their associated metrics. At least one of `metrics` or `specification_ids` must be provided.
+  </Note>
+</ResponseField>
+<ResponseField name="input" type="string" optional>
+  The input text/prompt. If not provided, will be inferred from the test case linked to the session.
+</ResponseField>
+<ResponseField name="retrieval_context" type="string" optional>
+  Context retrieved by a RAG system, if applicable.
+</ResponseField>
+<ResponseField name="latency" type="float" optional>
+  Latency in milliseconds from model invocation to response.
+</ResponseField>
+<ResponseField name="usage_info" type="dict[str, int]" optional>
+  Token usage information from the model call.
+  Supported keys: `input_tokens`, `output_tokens`, `cache_read_input_tokens`.
+</ResponseField>
+<ResponseField name="cost_info" type="dict[str, float]" optional>
+  Cost breakdown for the model call.
+  Supported keys: `cost_per_input_token`, `cost_per_output_token`, `cost_per_cache_read_input_token`.
+</ResponseField>
+<ResponseField name="conversation_simulator_version" type="string" optional>
+  Version of Galtea's conversation simulator used to generate the input.
+</ResponseField>
+
+## Related
+- [Create Evaluation](/sdk/api/evaluation/create) - Evaluate an existing session or trace
+- [Create Trace](/sdk/api/trace/create) - Create a trace without immediate evaluation

@@ -6,82 +6,58 @@ description: "Trace Service API methods in the Galtea SDK"
 
 import TraceCard from '/snippets/cards/trace-card.mdx';
 
-The Trace Service in the Galtea SDK allows you to collect, manage, and persist [traces](/concepts/product/version/session/trace) that capture the internal operations of your AI agents during inference.
-
+The Trace Service in the Galtea SDK allows you to manage [traces](/concepts/product/version/session/trace) for evaluating your products.
 This Service is exposed by the `galtea.traces` object.
 
 <Info>
   Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
 </Info>
 
-## Two Approaches to Trace Collection
+## Quick Example
 
-The SDK provides two ways to collect traces:
-
-### 1. Automatic Collection with with `generate()`
-
-When using `galtea.inference_results.generate()`, trace collection is handled automatically:
-
+First, initialize the Galtea SDK:
 ```python
-@trace(type=TraceType.TOOL)
-def fetch_user_data(user_id: str) -> dict:
-    return {"name": "John Doe", "email": "john@example.com"}
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Generate a trace using an Agent (recommended):
+```python
+# Define your agent function
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
 
 
-@trace(type=TraceType.GENERATION)
-def generate_response(prompt: str) -> str:
-    return "Generated response..."
+trace = galtea.traces.generate(agent=my_agent, session=session, input="Generate something")
+```
 
-
-def my_overview_agent(input_data: AgentInput) -> AgentResponse:
-    user = fetch_user_data("user_123")
-    response = generate_response("Hello")
-    return AgentResponse(content=response)
-
-
-# Use generate() for automatic trace context management
-inference_result = galtea.inference_results.generate(
-    agent=my_overview_agent,
-    session=session,
-    input="Show me user data",
+Manually create a trace:
+```python
+trace = galtea.traces.create(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="Paris",
+    latency=150.5,
 )
 ```
 
-### 2. Manual Collection with Context Management
-
-For full control over the trace lifecycle, use `set_context()` and `clear_context()`:
-
-Set context before running traced functions:
+Update a trace:
 ```python
-trace_context = set_context(inference_result_id=inference_result_id)
+trace = galtea.traces.update(
+    trace_id=trace_id,
+    output="Paris is the capital.",
+    cost=0.0001,
+)
 ```
-
-Then run your traced functions within this context set/open.
-
-Once done, clear the context to [flush](sdk/api/trace/clear-context#param-flush) and detach:
-```python
-clear_context(trace_context)
-```
-
-<Tip>
-  Use `galtea.inference_results.generate()` for automatic trace collection instead of manual collection.
-</Tip>
 
 ## Service Methods
-
-### Context Management
-- [@trace Decorator](/sdk/api/trace/trace-decorator)
-- [start_trace](/sdk/api/trace/start-trace)
-- [set_context](/sdk/api/trace/set-context)
-- [clear_context](/sdk/api/trace/clear-context)
-
-### Direct API Methods
+- [Generate Trace](/sdk/api/trace/generate) - **Recommended** for automatic span collection
 - [Create Trace](/sdk/api/trace/create)
+- [Create and Evaluate](/sdk/api/trace/create-and-evaluate) - Create a trace and evaluate it in one call
 - [Create Trace Batch](/sdk/api/trace/create-batch)
+- [Update Trace](/sdk/api/trace/update)
 - [List Traces](/sdk/api/trace/list)
 - [Get Trace](/sdk/api/trace/get)
 - [Delete Trace](/sdk/api/trace/delete)
 
 ## Related
-
 <TraceCard />
