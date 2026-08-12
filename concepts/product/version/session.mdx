@@ -1,7 +1,7 @@
 ---
 title: "Session"
 sidebarTitle: "Overview"
-description: "A group of traces that make up a full conversation"
+description: "A group of inference results that make up a full conversation"
 ---
 
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
@@ -9,9 +9,9 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 ## What is a Session?
 
-A session groups the turns of a single conversation between a user and your AI product. It contains one or more [traces](/concepts/product/version/session/trace) (input/output pairs) and can be evaluated as a whole using conversational metrics.
+A session groups the turns of a single conversation between a user and your AI product. It contains one or more [inference results](/concepts/product/version/session/inference-result) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating a trace](/sdk/api/trace/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating an inference result](/sdk/api/inference-result/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 
 You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 
@@ -24,7 +24,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 <ResponseField name="Custom ID" type="Text" required>
   The custom ID associated with the session.
   This is usually a client-side generated ID that identifies the conversation session between a user and a LLM app.
-  It is unique per version: logging a trace with a `session_custom_id` finds the existing session with that custom ID and appends to it (see [Create Trace](/sdk/api/trace/create)).
+  It is unique per version: logging an inference result with a `session_custom_id` finds the existing session with that custom ID and appends to it (see [Create Inference Result](/sdk/api/inference-result/create)).
 </ResponseField>
 
 <ResponseField name="Version" type="Version" required>
@@ -80,13 +80,13 @@ A session is either **open** or **closed**, and its `Status` is the single sourc
 A session becomes closed in one of two ways:
 
 - **Explicit finish.** You end the session on purpose, and it closes right away. Call [`sessions.finish()`](/sdk/api/session/finish) from the SDK: it records a `Stopping Reason` and sets the status to `COMPLETED`. The endpoint behind it (`PATCH /sessions/{id}/finish`) also accepts an `error` instead, which closes the session as `FAILED`.
-- **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent trace is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
+- **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent inference result is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
 
 You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `PRODUCTION`, so production sessions auto-close after the window while development (test) sessions stay open until you finish them.
 
 ### Turns that arrive after a session closes
 
-When a new trace arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
+When a new inference result arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
 
 - `IGNORE` (the default): the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
 - `REJECT`: the API refuses the call and returns an error.
@@ -98,9 +98,9 @@ If your users sometimes reply after a long gap and you do not want those late tu
 <CardGroup cols={3}>
   <ConceptsOverviewCard />
   <Card title="Evaluation" icon="clipboard-check" href="/concepts/product/version/session/evaluation">
-    Learn how evaluations score traces within a session.
+    Learn how evaluations score inference results within a session.
   </Card>
-  <Card title="Trace" icon="message-bot" href="/concepts/product/version/session/trace">
+  <Card title="Inference Result" icon="message-bot" href="/concepts/product/version/session/inference-result">
     Understand the input/output pairs that make up a session.
   </Card>
   <Card title="Simulating Conversations" icon="comments" href="/sdk/tutorials/simulating-conversations">

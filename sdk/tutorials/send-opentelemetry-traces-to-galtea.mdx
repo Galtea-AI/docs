@@ -1,13 +1,13 @@
 ---
 title: 'Send OpenTelemetry Traces to Galtea'
-description: "Configure an OpenTelemetry exporter or Collector to reach Galtea's public OTel endpoint: endpoint, authentication, and how spans map to Span records."
+description: "Configure an OpenTelemetry exporter or Collector to reach Galtea's public OTel endpoint: endpoint, authentication, and how spans map to Trace records."
 icon: "tower-cell"
 ---
 
 Galtea exposes a public [OpenTelemetry](https://opentelemetry.io/) (OTel) endpoint. OTel is the open standard for emitting traces. The endpoint is an OTLP collector, where OTLP is the OTel export protocol. Send your traces there to enable two use cases:
 
 - **Create production sessions from real traffic.** Uncorrelated spans become production [Sessions](/concepts/product/version/session) that [Monitors](/concepts/product/monitor) evaluate automatically. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
-- **Enrich existing Galtea Traces.** Spans correlated to a [Trace](/concepts/product/version/session/trace) become [Span](/concepts/product/version/session/span) records on it. Correlation uses the shared trace ID from the `traceparent` header Galtea propagates during Direct Inference, or the explicit `galtea.trace.id` span attribute. See [W3C Trace Context Propagation](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation).
+- **Enrich existing inference results.** Spans correlated to an inference result become [Trace](/concepts/product/version/session/trace) records on it. Correlation uses the shared trace ID from the `traceparent` header Galtea propagates during Direct Inference, or the explicit `galtea.inference_result.id` span attribute. See [W3C Trace Context Propagation](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation).
 
 The endpoint, authentication, and exporter configuration on this page are the same for both.
 
@@ -243,36 +243,30 @@ curl -sS -w 'HTTP %{http_code}\n' -X POST \
 # Without the Authorization header: HTTP 401 — "Provide a valid galtea API key token"
 ```
 
-## How span content maps to Span records
+## How span content maps to Trace records
 
-When a span becomes a [Span](/concepts/product/version/session/span) record — whether it **enriches an existing trace** or is **assembled into a production conversation** — its input and output are filled **per field**, using the first source that provides a value:
+When a span becomes a [Trace](/concepts/product/version/session/trace) record — whether it **enriches an existing inference result** or is **assembled into a production conversation** — its input and output are filled **per field**, using the first source that provides a value:
 
-1. **`galtea.span.*` explicit attributes** — full control, always wins.
+1. **`galtea.trace.*` explicit attributes** — full control, always wins.
 2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
 3. **Recognized managed-platform span shapes** — platform-specific formats Galtea knows.
 
 If you set no attributes, spans are still ingested.
 
-<Note>
-  These keys had different names before version 5.0.0, and Galtea still reads the old ones. See
-  [Dataset, Trace, and Span Renames](/sdk/migration-guides/entity-renames) if your collector already
-  sends them.
-</Note>
-
 <Tabs>
   <Tab title="Galtea span attributes">
     | Attribute Key | Type | Maps To | Description |
     |---|---|---|---|
-    | `galtea.span.type` | `string` | `type` | Span type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. |
-    | `galtea.span.description` | `string` | `description` | Human-readable description of the operation. Max 1MB. |
-    | `galtea.span.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10MB. |
-    | `galtea.span.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10MB. |
-    | `galtea.span.error` | `string` | `error` | Error message. Takes precedence over OTel span status error. |
-    | `galtea.span.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 10MB. |
-    | `galtea.trace.id` | `string` | `inferenceResultId` | Explicitly links the span to a trace. Only needed if the automatic `traceId` correlation does not apply (e.g., spans not originating from a Galtea direct inference call). A span that names a trace which does not exist, or is not visible to your API key, is rejected; it does not fall back to conversation assembly. |
+    | `galtea.trace.type` | `string` | `type` | Trace type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. |
+    | `galtea.trace.description` | `string` | `description` | Human-readable description of the operation. Max 1MB. |
+    | `galtea.trace.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10MB. |
+    | `galtea.trace.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10MB. |
+    | `galtea.trace.error` | `string` | `error` | Error message. Takes precedence over OTel span status error. |
+    | `galtea.trace.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 10MB. |
+    | `galtea.inference_result.id` | `string` | `inferenceResultId` | Explicitly links the span to an inference result. Only needed if the automatic `traceId` correlation does not apply (e.g., spans not originating from a Galtea direct inference call). A span that names an inference result which does not exist, or is not visible to your API key, is rejected; it does not fall back to conversation assembly. |
   </Tab>
   <Tab title="OTel GenAI conventions">
-    No Galtea attributes needed. When `galtea.span.input` / `galtea.span.output` are not set, input and output are filled from the OpenTelemetry [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) in any of these forms:
+    No Galtea attributes needed. When `galtea.trace.input` / `galtea.trace.output` are not set, input and output are filled from the OpenTelemetry [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) in any of these forms:
 
     - `gen_ai.input.messages` / `gen_ai.output.messages` (the current conventions)
     - the legacy `gen_ai.prompt` / `gen_ai.completion` attributes
@@ -291,17 +285,17 @@ These OTel fields are mapped **automatically for every span**, whichever source 
 
 - **`span.name`** → `name`
 - **`startTimeUnixNano` / `endTimeUnixNano`** → `startTime` / `endTime` + `latencyMs` (computed)
-- **`span.status`** → `error` (fallback when `galtea.span.error` is not set; only for `STATUS_CODE_ERROR`)
+- **`span.status`** → `error` (fallback when `galtea.trace.error` is not set; only for `STATUS_CODE_ERROR`)
 - **`parentSpanId`** → `parentTraceId` (parent-child hierarchy)
 
 All remaining unmapped span attributes are collected into the `metadata` field, so no data is lost.
 
 <Note>
-  **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.
+  **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.trace.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.
 </Note>
 
 <Warning>
-  Some common instrumentation styles do **not** populate input/output yet: Traceloop / OpenLLMetry (`gen_ai.prompt.0.content`-style flattened attributes) and OpenInference (`input.value`). Their data is still stored in the span's `metadata` field, so nothing is lost, but evaluations that read the span input and output will not see it.
+  Some common instrumentation styles do **not** populate input/output yet: Traceloop / OpenLLMetry (`gen_ai.prompt.0.content`-style flattened attributes) and OpenInference (`input.value`). Their data is still stored in the trace's `metadata` field, so nothing is lost, but evaluations that read the trace input and output will not see it.
 </Warning>
 
 ## Learn More

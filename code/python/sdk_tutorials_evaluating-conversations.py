@@ -6,6 +6,7 @@ Demonstrates how to evaluate multi-turn conversations using Galtea's session-bas
 from datetime import datetime
 
 from galtea import Galtea
+from requests.exceptions import HTTPError
 
 from _test_helpers import create_test_product
 
@@ -20,6 +21,7 @@ product_id = create_test_product(
     description="Demo product for conversation evaluation tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
+    security_boundaries="Demo security boundaries",
 )
 
 version = galtea_client.versions.create(
@@ -32,14 +34,14 @@ if version is None:
 version_id = version.id
 
 # Create a behavior test for test-based evaluation
-behavior_dataset = galtea_client.datasets.create(
+behavior_test = galtea_client.tests.create(
     product_id=product_id,
     name="behavior-test-" + run_identifier,
     type="BEHAVIOR",
-    dataset_file_path="path/to/behavior_dataset.csv",
+    test_file_path="path/to/behavior_test.csv",
 )
-if behavior_dataset is None:
-    raise ValueError("behavior_dataset is None")
+if behavior_test is None:
+    raise ValueError("behavior_test is None")
 
 
 # Create a specification with linked metrics so the specification-based evaluation
@@ -67,8 +69,8 @@ def my_agent(user_message: str) -> str:
 
 
 # @start capture_test_based
-# Fetch your test cases (created from a CSV of behavior test cases)
-test_cases = galtea_client.test_cases.list(dataset_id=behavior_dataset.id)
+# Fetch your test cases (created from a CSV of behavior tests)
+test_cases = galtea_client.test_cases.list(test_id=behavior_test.id)
 if not test_cases:
     raise ValueError("No test cases found")
 
@@ -110,7 +112,7 @@ conversation_turns = [
 ]
 
 # Log all turns at once
-galtea_client.traces.create_batch(session_id=session.id, conversation_turns=conversation_turns)
+galtea_client.inference_results.create_batch(session_id=session.id, conversation_turns=conversation_turns)
 # @end capture_past_conversations
 
 
@@ -125,7 +127,7 @@ def your_product(user_input: str) -> str:
 
 def handle_turn(user_input: str) -> str:
     model_output = your_product(user_input)
-    galtea_client.traces.create(session_id=session.id, input=user_input, output=model_output)
+    galtea_client.inference_results.create(session_id=session.id, input=user_input, output=model_output)
     return model_output
 
 
@@ -147,7 +149,7 @@ conversation_turns = [
     },
 ]
 
-galtea_client.traces.create_batch(session_id=session.id, conversation_turns=conversation_turns)
+galtea_client.inference_results.create_batch(session_id=session.id, conversation_turns=conversation_turns)
 # @end capture_monitoring_batch
 
 
@@ -196,7 +198,7 @@ print(f"Custom metric created: {metric_created}")
 
 
 # @start custom_metric_multi_turn
-from galtea import CustomScoreEvaluationMetric, Trace
+from galtea import CustomScoreEvaluationMetric, InferenceResult
 
 
 class ConversationConsistency(CustomScoreEvaluationMetric):
@@ -205,11 +207,11 @@ class ConversationConsistency(CustomScoreEvaluationMetric):
     def __init__(self):
         super().__init__(name=metric_name)
 
-    def measure(self, *args, traces: list[Trace] | None = None, **kwargs) -> float:
-        if not traces:
+    def measure(self, *args, inference_results: list[InferenceResult] | None = None, **kwargs) -> float:
+        if not inference_results:
             return 0.0
         # Access the full conversation for cross-turn analysis
-        assistant_outputs = [trace.actual_output for trace in traces if trace.actual_output]
+        assistant_outputs = [ir.actual_output for ir in inference_results if ir.actual_output]
         if len(assistant_outputs) < 2:
             return 1.0
         # Your custom logic here (e.g., check for contradictions across turns)
@@ -227,6 +229,11 @@ galtea_client.evaluations.create(
 
 
 # === Cleanup ===
-galtea_client.products.delete(product_id=product_id)
+try:
+    galtea_client.products.delete(product_id=product_id)
+except HTTPError as e:
+    # Known API issue: cascade soft-delete may hit unique constraint on specifications
+    if e.response.status_code != 500:
+        raise
 if metric_created:
     galtea_client.metrics.delete(metric_id=metric_created.id)

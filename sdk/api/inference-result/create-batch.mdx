@@ -1,0 +1,60 @@
+---
+title: 'Create Inference Result Batch'
+sidebarTitle: "Create Batch"
+description: "Create a batch of inference results in a session."
+---
+
+## Returns
+Returns a list of [InferenceResult](/concepts/product/version/session/inference-result) objects.
+
+## Example
+```python
+inference_result = galtea.inference_results.create_batch(
+    session_id=session_id,
+    conversation_turns=[
+        {"role": "user", "content": "Hi"},
+        {"role": "assistant", "content": "Hello!"},
+    ],
+)
+```
+
+## Parameters
+<ResponseField name="session_id" type="string" optional>
+  The session ID to log the inference results to.
+
+  <Note>Instead of a `session_id`, you can reference an existing session by its own conversation id (see the section below). Provide exactly one of the two.</Note>
+</ResponseField>
+
+<Accordion title="Log to an existing session by your own conversation ID">
+  If you already created the session via the [sessions API](/sdk/api/session/service) with your own `custom_id`, reference it here with `session_custom_id` plus a `version_id` or `product_id` to append inference results to it. If no matching session exists, the call returns a `400` error — create it first via the sessions API.
+
+  <ResponseField name="session_custom_id" type="string" optional>
+    Your own conversation id, as an alternative to `session_id`. Galtea finds an existing session with this id (per version); the session is not created here. Requires `version_id` or `product_id`.
+  </ResponseField>
+  <ResponseField name="version_id" type="string" optional>
+    The version the session is anchored to when using `session_custom_id`. If both anchors are given, `version_id` wins and `product_id` is ignored.
+  </ResponseField>
+  <ResponseField name="product_id" type="string" optional>
+    Product anchor used when no `version_id` is given with `session_custom_id`: Galtea finds the session with this custom id under the product (across its versions).
+  </ResponseField>
+
+  <Note>If no session matches the `session_custom_id` and anchor, the call returns a `400` error. Create the session first via the [sessions API](/sdk/api/session/service).</Note>
+</Accordion>
+<ResponseField name="conversation_turns" type="list[dict]" required>
+  A list of dictionaries, where each dictionary represents a **conversation turn** with `role` and `content` keys as mandatory and an optional `retrieval_context` key.
+  The `role` key can only have these values: `user` or `assistant`.
+  <Note>
+    The `retrieval_context` key is optional and can be sent to our platform if you have used it when calling your AI product.
+    For this reason, it only makes sense to send it when we have a message with role `assistant`.
+    When set, Galtea also records it as a `RETRIEVER` trace on that turn's inference result.
+  </Note>
+
+    <Warning>
+    Maximum batch size recommended: **100 turns**. For longer conversations, split into 
+    multiple batches or use the individual `create()` method.
+  </Warning>
+</ResponseField>
+
+<ResponseField name="conversation_simulator_version" type="string" optional>
+  The version of Galtea's conversation simulator used to generate the user messages. This should only be provided when logging a conversation that was generated using the simulator. This parameter helps with traceability and analytics for conversations created through Galtea's simulation capabilities.
+</ResponseField>
