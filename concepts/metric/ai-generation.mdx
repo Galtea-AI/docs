@@ -74,9 +74,19 @@ Complete with AI is available for **AI Evaluation** and **Human Evaluation** met
 
 **Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/concepts/metric/evaluation-types) for the differences between these scoring methods.
 
+## Update a Metric with AI
+
+Once a metric already has a judge prompt, **Update with AI** revises it from one line of written feedback instead of you editing the prompt by hand. You give it the metric's current name, description, evaluation type, judge prompt, and evaluation parameters, plus a short instruction describing what to change (for example, "it should not penalise a short answer"). The AI returns a revised judge prompt, evaluation parameters, and description.
+
+The endpoint **persists nothing** — you review the revision and decide whether to apply it.
+
+<Info>
+  Update with AI is not in the dashboard yet. For now you can call it from the [REST API](/api-reference) or the CLI (`galtea metrics update-config`).
+</Info>
+
 ## Evaluation Parameter Selection
 
-In both spec-driven generation and completion mode, the AI automatically selects the evaluation parameters each metric needs. In spec mode these are inferred from the specification description; in completion mode they are inferred from the metric description you provided. For example:
+In both spec-driven generation and completion mode, the AI automatically selects the evaluation parameters each metric needs. In spec mode these are inferred from the specification description; in completion mode they are inferred from the metric description you provided. With Update with AI, the AI starts from the parameters you send and revises them only if your feedback calls for it. For example:
 
 - A specification about **citation accuracy** or **knowledge-grounded answers** will include `retrieval_context` so the judge can verify answers against retrieved source material.
 - A specification about **internal processes, workflows, or tool orchestration** will include `traces` (and often `tools_used`) so the judge can inspect the execution path — not just the final output.
