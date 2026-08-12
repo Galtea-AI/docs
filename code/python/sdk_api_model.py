@@ -18,7 +18,6 @@ _demo_product_id = create_test_product(
     galtea,
     name="Model Linking Demo " + run_identifier,
     description="Demo product used to showcase how to link a Model to a Version for cost tracking.",
-    security_boundaries="* Must not store personally identifiable information",
     capabilities="* Demonstrates the models -> versions linking pattern",
     inabilities="* Anything outside the model-linking demo",
 )
@@ -69,7 +68,7 @@ model = galtea.models.update(
 selected_model = galtea.models.get_by_name(name=model_name)
 
 # Pass its id to versions.create so Galtea can track cost for this version's
-# inference results using the model's per-token pricing.
+# traces using the model's per-token pricing.
 version = galtea.versions.create(
     name="v1.0-with-model-" + run_identifier,
     product_id=_demo_product_id,

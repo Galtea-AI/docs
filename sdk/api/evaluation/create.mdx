@@ -1,21 +1,21 @@
 ---
 title: 'Create Evaluations'
 sidebarTitle: "Create"
-description: "Create evaluations for all inference results within a session, or evaluate a single inference result using specified metrics."
+description: "Create evaluations for all traces within a session, or evaluate a single trace using specified metrics."
 ---
 
 This method evaluates either:
-1. An entire conversation stored in a [Session](/concepts/product/version/session) by creating evaluations for each of its [Inference Results](/concepts/product/version/session/inference-result)
-2. A single [Inference Result](/concepts/product/version/session/inference-result) by providing its ID
+1. An entire conversation stored in a [Session](/concepts/product/version/session) by creating evaluations for each of its [Traces](/concepts/product/version/session/trace)
+2. A single [Trace](/concepts/product/version/session/trace) by providing its ID
 
 ## Returns
 Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric provided.
 
 ## Usage
-This method evaluates inference results using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
+This method evaluates traces using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
 
 <Note>
-  You must provide **either** `session_id` **or** `inference_result_id`, but not both. For single-turn evaluations, you can also use `galtea.inference_results.create_and_evaluate()` which combines creating an inference result and evaluating it in one call.
+  You must provide **either** `session_id` **or** `trace_id`, but not both. For single-turn evaluations, you can also use `galtea.traces.create_and_evaluate()` which combines creating a trace and evaluating it in one call.
 </Note>
 
 ### Development Testing
@@ -50,23 +50,23 @@ evaluations = galtea.evaluations.create(
 )
 ```
 
-### Evaluating a Single Inference Result
-You can evaluate a specific inference result by providing its ID instead of a session ID. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+### Evaluating a Single Trace
+You can evaluate a specific trace by providing its ID instead of a session ID. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
 <Tabs>
   <Tab title="Using specification IDs">
 ```python
-# Evaluate the inference result by resolving metrics from linked specifications
+# Evaluate the trace by resolving metrics from linked specifications
 evaluations = galtea.evaluations.create(
-    inference_result_id=inference_result_id,
+    trace_id=trace_id,
     specification_ids=[specification.id],
 )
 ```
   </Tab>
   <Tab title="Using metrics">
 ```python
-# Evaluate a specific inference result by providing its ID
+# Evaluate a specific trace by providing its ID
 evaluations = galtea.evaluations.create(
-    inference_result_id=inference_result_id,
+    trace_id=trace_id,
     metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
 )
 ```
@@ -78,11 +78,11 @@ In order to monitor your product in a production environment, you can create eva
 <Tabs>
   <Tab title="Using specification IDs">
 ```python
-# Create a production session and an inference result, then evaluate it by
+# Create a production session and a trace, then evaluate it by
 # resolving metrics from linked specifications (no need to list metrics)
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-galtea.inference_results.create(
+galtea.traces.create(
     session_id=production_session.id,
     input="Production user query",
     output="Production response",
@@ -98,8 +98,8 @@ evaluations = galtea.evaluations.create(
 ```python
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-# Create an inference result for the production session first
-production_inference_result = galtea.inference_results.create(
+# Create a trace for the production session first
+production_trace = galtea.traces.create(
     session_id=production_session.id,
     input="Production user query",
     output="Production response",
@@ -119,8 +119,8 @@ You can also create evaluations using self-hosted metrics with dynamically calcu
 # First, create a session, in this case it is a production session, so we do not need a test case
 session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-# Then, add some inference results to the session
-galtea.inference_results.create_batch(
+# Then, add some traces to the session
+galtea.traces.create_batch(
     session_id=session.id,
     conversation_turns=[
         {"role": "user", "content": "Hi"},
@@ -172,19 +172,19 @@ evaluations = galtea.evaluations.create(
 </Note>
 
 <Info>
-  When using `CustomScoreEvaluationMetric`, your `measure()` method receives an `inference_results` parameter containing `InferenceResult` objects — all turns for session evaluations, or a single-element list for single inference result evaluations. This enables conversation-level custom scoring. See [Evaluate with Custom Metrics](/sdk/tutorials/evaluate-with-custom-metrics#multi-turn-custom-metrics) for examples.
+  When using `CustomScoreEvaluationMetric`, your `measure()` method receives a `traces` parameter containing `Trace` objects — all turns for session evaluations, or a single-element list for single trace evaluations. This enables conversation-level custom scoring. See [Evaluate with Custom Metrics](/sdk/tutorials/evaluate-with-custom-metrics#multi-turn-custom-metrics) for examples.
 </Info>
 
 ## Parameters
 <ResponseField name="session_id" type="string" optional>
-  The ID of the session containing the inference results to be evaluated.
+  The ID of the session containing the traces to be evaluated.
   
-  <Note>Either `session_id` or `inference_result_id` must be provided, but not both.</Note>
+  <Note>Either `session_id` or `trace_id` must be provided, but not both.</Note>
 </ResponseField>
-<ResponseField name="inference_result_id" type="string" optional>
-  The ID of a specific inference result to evaluate.
+<ResponseField name="trace_id" type="string" optional>
+  The ID of a specific trace to evaluate.
   
-  <Note>Either `session_id` or `inference_result_id` must be provided, but not both.</Note>
+  <Note>Either `session_id` or `trace_id` must be provided, but not both.</Note>
 </ResponseField>
 <ResponseField name="specification_ids" type="List[str]" optional>
   A list of [Specification](/concepts/product/specification) IDs. When provided, the evaluation uses the metrics linked to these specifications.

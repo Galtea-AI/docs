@@ -79,8 +79,8 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 ## What You Get
 
 - **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
-- **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When one span is the root of the turn (for example, an agent span that wraps child LLM and tool spans, the usual shape from MLflow autolog or an agent framework), the turn takes the root span's input and output: the user message and the agent's final answer. This applies per field. The input always comes from the root when the root carries it. The output comes from the root only when the root's output is a plain answer (a text reply, or a chat-completion or `assistant_message` envelope that reduces to text); when the root's output is a wrapper object that is not the answer (for example a status or tool-decision blob), the turn keeps the child span's real reply instead. A field the root does not carry, or a turn with no single root (for example, several sibling LLM calls), falls back to the first prompt as the turn input and the last completion as the turn output. If the chosen output is a raw OpenAI chat-completion object, the turn shows its message text; the trace record keeps the full object. See [How span content maps to Trace records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-trace-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
-- **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or traces. Later turns append to the same session.
+- **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When one span is the root of the turn (for example, an agent span that wraps child LLM and tool spans, the usual shape from MLflow autolog or an agent framework), the turn takes the root span's input and output: the user message and the agent's final answer. This applies per field. The input always comes from the root when the root carries it. The output comes from the root only when the root's output is a plain answer (a text reply, or a chat-completion or `assistant_message` envelope that reduces to text); when the root's output is a wrapper object that is not the answer (for example a status or tool-decision blob), the turn keeps the child span's real reply instead. A field the root does not carry, or a turn with no single root (for example, several sibling LLM calls), falls back to the first prompt as the turn input and the last completion as the turn output. If the chosen output is a raw OpenAI chat-completion object, the turn shows its message text; the span record keeps the full object. See [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
+- **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or spans. Later turns append to the same session.
 - **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
 
 <Note>
@@ -117,7 +117,7 @@ Here is a complete rule:
 Read it step by step. The assistant's reply is saved on the `ExecuteActivity:save_reply` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the reply text inside that array. The predicate keeps user messages out: the same span also carries the user's message with role `"user"`, so the predicate makes the rule fire only for role `"assistant"`.
 
 <Note>
-  This rule is a last resort. It fills only the turn output, and only when the turn has no LLM output. Galtea first tries the normal per-field sources (`galtea.trace.*`, then `gen_ai.*`, then recognized managed-platform span shapes). The rule applies only if none of those produced an output. Within one turn, the turn's single root span wins when its output is a plain answer; otherwise the latest span with output by start time wins. So the rule recovers the reply when the reply-bearing span is emitted after the LLM or classifier span. This is the common classify-then-reply order.
+  This rule is a last resort. It fills only the turn output, and only when the turn has no LLM output. Galtea first tries the normal per-field sources (`galtea.span.*`, then `gen_ai.*`, then recognized managed-platform span shapes). The rule applies only if none of those produced an output. Within one turn, the turn's single root span wins when its output is a plain answer; otherwise the latest span with output by start time wins. So the rule recovers the reply when the reply-bearing span is emitted after the LLM or classifier span. This is the common classify-then-reply order.
 </Note>
 
 Set `otelOutputSourceRule` on a product or a version. In the Python SDK you can set it when you create a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products or on version updates. To set it on a product, or to change it on an existing version, use the API or the dashboard. The version value wins over the product value.
@@ -126,15 +126,15 @@ Set `otelOutputSourceRule` on a product or a version. In the Python SDK you can 
 
 <CardGroup cols={2}>
   <Card title="Send OpenTelemetry Traces to Galtea" icon="tower-cell" href="/sdk/tutorials/send-opentelemetry-traces-to-galtea">
-    Endpoint, authentication, exporter and Collector setup, and the span-to-Trace mapping reference.
+    Endpoint, authentication, exporter and Collector setup, and the span mapping reference.
   </Card>
   <Card title="Monitor" icon="gauge-high" href="/concepts/product/monitor">
     The always-on rule that evaluates your production sessions automatically.
   </Card>
-  <Card title="Trace" icon="timeline" href="/concepts/product/version/session/trace">
-    What a Trace record is and which properties it holds.
+  <Card title="Span" icon="timeline" href="/concepts/product/version/session/span">
+    What a Span record is and which properties it holds.
   </Card>
   <Card title="Tracing Agent Operations" icon="sitemap" href="/sdk/tutorials/tracing-agent-operations">
-    Collect traces with the Galtea SDK's `@trace` decorator.
+    Collect spans with the Galtea SDK's `@traced` decorator.
   </Card>
 </CardGroup>

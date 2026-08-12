@@ -9,11 +9,11 @@ from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
-    TraceType,
+    SpanType,
     clear_context,
     set_context,
-    start_trace,
-    trace,
+    start_span,
+    traced,
 )
 
 from _test_helpers import create_test_product
@@ -29,7 +29,6 @@ product_id = create_test_product(
     description="Demo product for tracing tutorial",
     capabilities="Demo capabilities",
     inabilities="Demo inabilities",
-    security_boundaries="Demo security boundaries",
 )
 
 # Create version
@@ -39,11 +38,11 @@ version = galtea.versions.create(
 )
 
 # Create a behavior test for simulation
-behavior_test = galtea.tests.create(
+behavior_dataset = galtea.datasets.create(
     name="tracing-behavior-" + run_identifier,
     type="BEHAVIOR",
     product_id=product_id,
-    test_file_path="path/to/behavior_test.csv",
+    dataset_file_path="path/to/behavior_dataset.csv",
 )
 
 
@@ -57,7 +56,7 @@ db = MockDB()
 
 
 # @start 1_the_decorator
-@trace(name="db_call", type=TraceType.TOOL)
+@traced(name="db_call", type=SpanType.TOOL)
 def my_function(query: str) -> str:
     result = db.query(query)
     return result
@@ -68,7 +67,7 @@ def my_function(query: str) -> str:
 
 # @start 2_the_context_manager
 def get_user(user_id: str) -> str:
-    with start_trace("database_query", type=TraceType.TOOL, input={"user_id": user_id}) as span:
+    with start_span("database_query", type=SpanType.TOOL, input={"user_id": user_id}) as span:
         query = f"SELECT * FROM users WHERE id = {user_id}"
         result = db.query(query)
         span.update(output=result, metadata={"query": query})
@@ -79,17 +78,17 @@ def get_user(user_id: str) -> str:
 
 
 # @start automatic_collection_agent_setup
-@trace(type=TraceType.RETRIEVER)
+@traced(type=SpanType.RETRIEVER)
 def search(query: str) -> list[dict]:
     return [{"id": "doc_1", "content": "..."}]
 
 
-@trace(type=TraceType.GENERATION)
+@traced(type=SpanType.GENERATION)
 def generate_response(context: list, query: str) -> str:
     return "Based on the context..."
 
 
-@trace(type=TraceType.AGENT)
+@traced(type=SpanType.AGENT)
 def my_agent(input_data: AgentInput) -> AgentResponse:
     query = input_data.last_user_message_str()
 
@@ -107,35 +106,35 @@ session = galtea.sessions.create(version_id=version.id, is_production=True)
 # @end automatic_collection_agent_setup
 
 # @start automatic_collection_single_turn_with
-inference_result = galtea.inference_results.generate(agent=my_agent, session=session, input="What's the price?")
-# Traces are collected, associated with inference_result.id, and flushed automatically
+trace = galtea.traces.generate(agent=my_agent, session=session, input="What's the price?")
+# Spans are collected, associated with trace.id, and flushed automatically
 # @end automatic_collection_single_turn_with
 
 
 # Create a session for multi-turn simulation (requires test case)
-test_cases = galtea.test_cases.list(test_id=behavior_test.id, limit=1)
+test_cases = galtea.test_cases.list(dataset_id=behavior_dataset.id, limit=1)
 if test_cases:
     simulation_session = galtea.sessions.create(version_id=version.id, test_case_id=test_cases[0].id)
 
     # @start automatic_collection_multi_turn_with
     result = galtea.simulator.simulate(session_id=simulation_session.id, agent=my_agent, max_turns=5)
-    # Traces are saved automatically for each turn
+    # Spans are saved automatically for each turn
     # @end automatic_collection_multi_turn_with
 
 
 # @start 3_collect_and_send_traces_to_galtea
 # Define traced functions
-@trace(type=TraceType.RETRIEVER)
+@traced(type=SpanType.RETRIEVER)
 def search(query: str) -> list[dict]:
     return [{"id": "doc_1", "content": "..."}]
 
 
-@trace(type=TraceType.GENERATION)
+@traced(type=SpanType.GENERATION)
 def generate(context: list, query: str) -> str:
     return "Based on the context..."
 
 
-@trace(type=TraceType.AGENT)
+@traced(type=SpanType.AGENT)
 def run_agent(query: str) -> str:
     docs = search(query)
     return generate(docs, query)
@@ -145,44 +144,44 @@ def run_agent(query: str) -> str:
 manual_session = galtea.sessions.create(version_id=version.id, is_production=True)
 user_input = "What's the price?"
 
-# 1. Create inference result first (to get the ID)
-manual_inference_result = galtea.inference_results.create(
+# 1. Create trace first (to get the ID)
+manual_trace = galtea.traces.create(
     session_id=manual_session.id,
     input=user_input,
     output=None,  # Will update later
 )
 
-# 2. Set trace context with the inference result ID
-token = set_context(inference_result_id=manual_inference_result.id)
+# 2. Set Galtea context with the trace ID
+token = set_context(trace_id=manual_trace.id)
 
 try:
-    # 3. Run your logic - all @trace calls will be associated with this inference result
+    # 3. Run your logic - all @traced calls will be associated with this trace
     response = run_agent(user_input)
 
-    # 4. Update inference result with the output
-    galtea.inference_results.update(inference_result_id=manual_inference_result.id, output=response)
+    # 4. Update trace with the output
+    galtea.traces.update(trace_id=manual_trace.id, output=response)
 finally:
-    # 5. Clear context and flush traces to Galtea
+    # 5. Clear context and flush spans to Galtea
     clear_context(token)  # flush=True by default
 # @end 3_collect_and_send_traces_to_galtea
 
 # @start remote_agent_tracing
 import httpx
 
-from galtea import AgentInput, AgentResponse, trace, TraceType
+from galtea import AgentInput, AgentResponse, traced, SpanType
 
 REMOTE_URL = "https://my-remote-agent.example.com/invoke"
 
 
-@trace(type=TraceType.AGENT)
+@traced(type=SpanType.AGENT)
 def remote_agent(input_data: AgentInput) -> AgentResponse:
-    """Forward execution to a remote server, passing the inference_result_id for trace correlation."""
+    """Forward execution to a remote server, passing the trace_id for span correlation."""
     response = httpx.post(
         REMOTE_URL,
         json={
             "message": input_data.last_user_message_str(),
             "session_id": input_data.session_id,
-            "inference_result_id": input_data.inference_result_id,
+            "trace_id": input_data.trace_id,
         },
     )
     return AgentResponse(content=response.json()["content"])
@@ -196,11 +195,11 @@ def remote_agent(input_data: AgentInput) -> AgentResponse:
 from galtea import set_context, clear_context
 
 
-def handle_request(message: str, session_id: str, inference_result_id: str) -> str:
-    # Attach traces to the same inference result
-    token = set_context(inference_result_id=inference_result_id)
+def handle_request(message: str, session_id: str, trace_id: str) -> str:
+    # Attach spans to the same trace
+    token = set_context(trace_id=trace_id)
     try:
-        # All @trace calls here will be associated with the inference result
+        # All @traced calls here will be associated with the trace
         response = run_agent_logic(message)
         return response
     finally:

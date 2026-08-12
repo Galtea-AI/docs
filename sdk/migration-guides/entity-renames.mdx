@@ -1,0 +1,238 @@
+---
+title: "Dataset, Trace, and Span Renames"
+description: "How to update your SDK and CLI code for the new entity names in version 5.0.0"
+icon: "arrow-right-arrow-left"
+---
+
+Version 5.0.0 renames three things you use every day. This page lists each old name, what to write instead, and the one case that needs a careful look.
+
+## The new names
+
+| Old name | New name | What it is |
+| --- | --- | --- |
+| Test | [Dataset](/concepts/product/dataset) | The collection of test cases you evaluate a version against |
+| Trace | [Span](/concepts/product/version/session/span) | One step your product took while answering: a tool call, a retrieval, a model call |
+| Inference Result | [Trace](/concepts/product/version/session/trace) | One input and the output your product returned |
+
+Every level now has one word: a [session](/concepts/product/version/session) holds **traces**, and a trace holds **spans**.
+
+[Test Case](/concepts/product/dataset/test-case) keeps its name. Only the collection around it is now a dataset, so `galtea.test_cases` is unchanged.
+
+## Check your `traces` calls
+
+<Warning>
+  `galtea.traces` used to mean what is now a [span](/concepts/product/version/session/span). It now
+  means a [trace](/concepts/product/version/session/trace). It is the one name that kept its
+  spelling and changed what it points to.
+</Warning>
+
+If you used `galtea.traces` for steps, use `galtea.spans` instead:
+
+| You wrote | Now write |
+| --- | --- |
+| `galtea.traces.create(inference_result_id=..., name=...)` | `galtea.spans.create(trace_id=..., name=...)` |
+| `galtea.traces.create_batch(traces=[TraceBase(inference_result_id=..., name=...)])` | `galtea.spans.create_batch(spans=[SpanBase(trace_id=..., name=...)])` |
+| `galtea.traces.list(inference_result_id=...)` | `galtea.spans.list(trace_id=...)` |
+| `galtea.traces.list(session_id=...)` | `galtea.spans.list(session_id=...)` |
+| `galtea.traces.list(id=...)` | `galtea.spans.list(id=...)` |
+| `galtea.traces.get(...)` | `galtea.spans.get(...)` |
+| `galtea.traces.delete(...)` | `galtea.spans.delete(...)` |
+
+Only one of those calls stays quiet when you leave it unchanged. This is what each one does:
+
+- **`create` and `create_batch` raise an error naming `galtea.spans`.** Nothing is written.
+- **`create_batch(traces=[...])` and `list(inference_result_id=...)` raise a plain `TypeError`** about an unexpected keyword argument. The error is correct but says nothing about spans.
+- **`list(session_id=...)` is the one silent case.** It returns the session's traces where it used to return its spans, and reports no error. Search your code for it.
+- **`list(id=...)`, `get(...)` and `delete(...)` given the id of a span return a not-found error.** Nothing is deleted. `inference_result_id=` is a supported alias on `get` and `delete`, so passing it does not fail either; the id is what fails.
+
+## What the new code looks like
+
+A dataset list, a trace, a span inside that trace, and the spans of that trace:
+
+```python
+# `galtea.datasets` replaces `galtea.tests`.
+datasets = galtea.datasets.list(product_id=product_id)
+
+# `galtea.traces` is one input paired with one output.
+migrated_trace = galtea.traces.create(
+    session_id=session_context.id,
+    input="What is the refund window?",
+    output="You can request a refund within 30 days.",
+)
+if migrated_trace is None:
+    raise ValueError("migrated_trace is None")
+
+# `galtea.spans` replaces the span-level `galtea.traces`.
+migrated_span = galtea.spans.create(
+    trace_id=migrated_trace.id,
+    name="retrieve_policy_docs",
+    type=SpanType.RETRIEVER,
+    input_data={"query": "refund window"},
+    output_data=["Refunds are accepted within 30 days."],
+)
+
+# `galtea.spans.create_batch(spans=...)` replaces `galtea.traces.create_batch(traces=...)`.
+# The trace id moves onto each item; the method itself takes no id.
+migrated_spans = galtea.spans.create_batch(
+    spans=[
+        SpanBase(trace_id=migrated_trace.id, name="rerank_documents", type=SpanType.TOOL),
+        SpanBase(trace_id=migrated_trace.id, name="compose_answer", type=SpanType.GENERATION),
+    ]
+)
+
+# `galtea.spans.list(trace_id=...)` replaces `galtea.traces.list(inference_result_id=...)`.
+spans_of_trace = galtea.spans.list(trace_id=migrated_trace.id)
+```
+
+## Names that keep working
+
+These still work in 5.0.0. Each one prints a warning with the new name and the line to change. They are removed in a later release, so update them when you can.
+
+**Accessors**
+
+| Old | New |
+| --- | --- |
+| `galtea.tests` | `galtea.datasets` |
+| `galtea.inference_results` | `galtea.traces` |
+| `galtea.specifications.link_tests`, `unlink_tests`, `get_tests` | `link_datasets`, `unlink_datasets`, `get_datasets` |
+
+**Classes you import**
+
+| Old | New |
+| --- | --- |
+| `Test`, `TestStatus`, `TestType` | `Dataset`, `DatasetStatus`, `DatasetType` |
+| `InferenceResult`, `InferenceResultStatus`, `InferenceResultUpdate` | `Trace`, `TraceStatus`, `TraceUpdate` |
+
+**Tracing helpers**
+
+| Old | New |
+| --- | --- |
+| `start_trace(...)` | `start_span(...)` |
+| `@trace(...)` | `@traced(...)` |
+| `get_inference_result_id()` | `get_trace_id()` |
+| `flush_inference(...)` | `flush_trace(...)` |
+
+Your instrumented code keeps recording the same data through the old helpers, so you can rename them at your own pace.
+
+All of these are imported from `galtea` (`from galtea import start_span`) except the flush helpers, which live in `galtea.infrastructure.telemetry.provider` under both names.
+
+**Arguments and fields**
+
+| Old | New |
+| --- | --- |
+| `inference_result_id=` | `trace_id=` |
+| `inference_results=` | `traces=` |
+| `test_id=` | `dataset_id=` |
+| `test_name=` | `dataset_name=` |
+| `test=` | `dataset=` |
+| `test_file_path=` | `dataset_file_path=` |
+| `test_type=`, `test_variant=` on `galtea.specifications` | `dataset_type=`, `dataset_variant=` |
+| `.inference_result_id` | `.trace_id` |
+| `.test_id` | `.dataset_id` |
+| `.parent_trace_id` | `.parent_span_id` |
+
+Two of those rows need a second look:
+
+- **`inference_results=` is also in code you wrote yourself.** A [`CustomScoreEvaluationMetric`](/sdk/tutorials/evaluate-with-custom-metrics) subclass declares it as a parameter of its own `measure()` method. Rename it in your subclass signature as well as at the call site. The SDK reads your signature and warns you if it still says `inference_results`.
+- **`galtea.metrics.create(test_type=...)` is the exception to the `test_type=` row.** There, the parameter was retired rather than renamed: it is no longer used to create a metric and there is no `dataset_type=` to move to. Delete the argument instead of renaming it.
+
+## Names that stop working
+
+| Old | New |
+| --- | --- |
+| `galtea.traces` for span operations | `galtea.spans`, see [above](#check-your-traces-calls) |
+| `galtea.traces.start_trace(...)`, `galtea.traces.trace(...)` | `galtea.spans.start_span(...)`, `galtea.spans.traced(...)` |
+| `traces=` on `create_batch` | `spans=`, holding `SpanBase` items instead of `TraceBase` items |
+| `TraceType` | `SpanType` |
+| `TraceBase` | `SpanBase` |
+
+## Names outside your Python code
+
+Two more places carry the old names, and neither is Python. Both have a new spelling, and both still accept the old one.
+
+**Endpoint Connection input templates.** The placeholders you write in the template Galtea sends to your product:
+
+| Old | New |
+| --- | --- |
+| `{{ inference_result_id }}` | `{{ trace_id }}` |
+| `{{ test_id }}` | `{{ dataset_id }}` |
+
+`{{ test_case_id }}` is unchanged, because Test Case keeps its name.
+
+**OpenTelemetry span attributes.** The attribute keys your own instrumentation sets when you export spans to Galtea:
+
+| Old | New |
+| --- | --- |
+| `galtea.inference_result.id` | `galtea.trace.id` |
+| `galtea.trace.type`, `.description`, `.input`, `.output`, `.error`, `.metadata` | `galtea.span.type`, `.description`, `.input`, `.output`, `.error`, `.metadata` |
+
+If a span carries both names for the same field, the new name wins, unless it was sent with no value at all.
+
+You do not need to change anything for spans the SDK sends for you, through `@traced`, `start_span`, or `set_context`. The SDK still sends the old keys, and Galtea reads them.
+
+<Warning>
+  **Check your Galtea version before you change either of these.** Both names are read by the Galtea
+  API, not by the SDK, so a new name only works against an API that already knows it. Galtea Cloud
+  already does. On a private or on-premise deployment, ask your account team first. Against an older
+  API the new names fail quietly, in three different ways:
+
+  - `galtea.span.*` fields are not recognised, so they land in the span's metadata instead of in the
+    fields they name.
+  - `galtea.trace.id` does not link the span to its trace. The span is then treated as uncorrelated,
+    so it is either assembled into a new production session or rejected.
+  - `{{ trace_id }}` and `{{ dataset_id }}` are not known placeholders. Saving the connection fails
+    validation, and a template that slips through renders an empty value.
+
+  The old names work on every version, so leaving them exactly as they are is always safe. If you are
+  not sure which API version you are on, do not change them.
+</Warning>
+
+## CLI commands
+
+The CLI has no aliases. An old command fails with `unknown command`.
+
+| Old command | New command |
+| --- | --- |
+| `galtea inference-results <verb>` | `galtea traces <verb>` |
+| `galtea tests <verb>` | `galtea datasets <verb>` |
+| `galtea traces <verb>`, for spans | `galtea spans <verb>` |
+| `galtea traces ingest-otel` | `galtea otel ingest` |
+| `galtea traces otel-auth` | `galtea otel auth` |
+| `galtea evaluations create-from-inference-result` | `galtea evaluations create-from-trace` |
+| `galtea specifications link-tests`, `unlink-tests`, `list-tests` | `link-datasets`, `unlink-datasets`, `list-datasets` |
+
+Run `galtea sync` after upgrading, then `galtea <noun> --help` to see the verbs.
+
+## Staying on 4.x
+
+Not ready to migrate the SDK? Pin it to the last version with the old names:
+
+```bash
+pip install "galtea<5"
+```
+
+Put that in `requirements.txt` or `pyproject.toml`, not only in one shell, because `pip install -U galtea` ignores a pin you never wrote down.
+
+<Warning>
+  **Pinning does not buy you time on the CLI.** The CLI does not carry its command names in the
+  binary. It reads them from the Galtea API's own specification and refreshes that copy by itself,
+  roughly once a day, without being asked. So `galtea inference-results` and `galtea tests` start
+  failing once the API ships the renames, whatever CLI version you installed. Update your CLI call
+  sites before you upgrade the SDK, and do not wait for a broken script to tell you. See
+  [CLI usage](/cli/usage).
+</Warning>
+
+## Checklist
+
+1. Search for `galtea.traces`. Every hit is either a trace call that is already correct or a span call to move to `galtea.spans`. Check `list`, `get` and `delete` by hand, because those run either way.
+2. Search for `inference_result`, `test_` except `test_case`, `galtea.tests`, and the `Test` and `InferenceResult` class names. These keep working with a warning, so rename them when convenient.
+3. Run your code once and read the warnings. Each one names the new spelling and the line to change.
+4. On the CLI, swap `galtea inference-results` for `galtea traces`, `galtea tests` for `galtea datasets`, and any span usage of `galtea traces` for `galtea spans`.
+5. Last, and only after checking your Galtea version, update the two names [outside your Python code](#names-outside-your-python-code): the template placeholders and the OpenTelemetry attribute keys.
+
+<Warning>
+  **`test_cases` never changes.** [Test Case](/concepts/product/dataset/test-case) keeps its name, so
+  leave `galtea.test_cases`, every `test_case_id` argument, and `{{ test_case_id }}` alone. Only the
+  collection around a test case became a dataset. A search-and-replace of `test` across your code is
+  the one thing on this page that can break something the SDK will not warn you about.
+</Warning>
