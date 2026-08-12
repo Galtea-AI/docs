@@ -34,16 +34,16 @@ The SDK allows you to list existing products, retrieve specific products by thei
 </ResponseField>
 
 <ResponseField name="Product Description" type="Text" required>
-  Describe what your AI product does, who it serves, and its main use case. Focus on user experience, not technical details.
+  Write what the product must do and what you want to test or evaluate: what it must get right, what it must refuse, and where it must be accurate.
   <Info>
     <ul>
-      <li><strong>What to include:</strong> What the product does, who uses it, and its primary purpose.</li>
-      <li><strong>What to avoid:</strong> Technical implementation details or internal jargon.</li>
+      <li><strong>What to include:</strong> The behaviors that must hold, the limits the product must respect, and the results that must be correct.</li>
+      <li><strong>What to avoid:</strong> A marketing summary. Concrete behavior produces specific specifications; a summary produces generic ones that would fit any AI product.</li>
     </ul>
     <br/>
     Learn how to write effective product descriptions in our <a href="/sdk/tutorials/writing-specifications">detailed guide</a>.
   </Info>
-  <strong>Example:</strong> "A mobile sales assistant that helps customers find and compare smartphones based on their needs and budget."
+  <strong>Example:</strong> "A mobile sales assistant for smartphones. It must recommend only phones that are in stock, never quote a price it cannot find in the catalog, and hand over to a human when the customer asks about an existing order."
 </ResponseField>
 
 <ResponseField name="Capabilities" type="Text" required>
