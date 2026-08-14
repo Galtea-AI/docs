@@ -239,7 +239,7 @@ galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
 </Step>
 
 <Step title="4. Finish the Session">
-When the user's conversation ends, finish the session with [`finish()`](/sdk/api/session/finish). This closes the session and makes it ready for evaluation.
+When the user's conversation ends, finish the session with [`finish()`](/sdk/api/session/finish). This closes the session, so it accepts no more turns.
 
 ```python
 # When the user's conversation ends, finish the session. This closes it, so a monitor
@@ -247,7 +247,7 @@ When the user's conversation ends, finish the session with [`finish()`](/sdk/api
 galtea.sessions.finish(session.id)
 ```
 
-Finishing matters most when you use a [Monitor](/concepts/product/monitor) to score production sessions automatically: a monitor scores only closed sessions. An explicit finish makes the session eligible on the next scan, instead of waiting for the product's inactivity auto-close window (30 minutes by default). Call `finish()` only once the conversation is truly over. A turn that arrives later follows the product's closed-session policy: by default the session opens again and the monitor scores it again, but the policy can also drop or reject the turn.
+Finishing matters most when you use a [Monitor](/concepts/product/monitor) to score production sessions automatically: a monitor scores only closed sessions. An explicit finish makes the session eligible on the next scan, instead of waiting for the product's inactivity auto-close window (30 minutes by default). Only call `finish()` once the conversation is truly over: appending a turn to a closed session follows the product's closed-session policy, so the turn is either rejected or silently discarded.
 </Step>
 </Steps>
 
@@ -257,19 +257,16 @@ For more details on evaluating multi-turn conversations, see the [Evaluating Con
 
 ## Late Turns on a Closed Session
 
-A production session does not stay open forever. Galtea's auto-close sweep closes a session once it has been quiet for the product's **auto-close inactivity window** (default 30 minutes), and an explicit finish closes it at once. A [session](/concepts/product/version/session#session-lifecycle) is then closed (`COMPLETED` or `FAILED`).
+A production session does not stay open forever. Galtea's auto-close sweep closes a session once it has been quiet for the product's **auto-close inactivity window** (default 30 minutes), and an explicit finish closes it at once. A [session](/concepts/product/version/session#session-lifecycle) that is closed (`COMPLETED` or `FAILED`) accepts no new turns.
 
 <Note>The product's auto-close window is the only inactivity window: it closes the session (its `Status` changes). A [Monitor](/concepts/product/monitor) has no window of its own; it scores a session once the session is closed, whether by an explicit finish or by the auto-close sweep.</Note>
 
 So a turn that arrives after the session closes (for example, a user who replies an hour later) is handled by the product's **Closed Session Inference Creation Policy**:
 
-- `REOPEN_AND_REEVALUATE` (the default): the turn is **stored** and the session opens again with status `PENDING`. Its existing monitor evaluations move to the `OUTDATED` status, and the monitor scores the session again once it closes. Nothing is lost. Only production sessions reopen; a development (test) session behaves as with `IGNORE`.
-- `IGNORE`: the log call returns success, but the turn is **not stored**. The late reply is silently dropped.
+- `IGNORE` (the default): the log call returns success, but the turn is **not stored**. The late reply is silently dropped.
 - `REJECT`: the log call **fails with an error**. Your code must handle it (for example, start a new session for the reply).
 
-<Note>Each re-score spends evaluation credits again. The outdated evaluation keeps the credits it already used, so a session that reopens many times costs more and uses more of the monitor's monthly credit cap.</Note>
-
-The default keeps late replies. If you set the policy to `IGNORE` or `REJECT`, a late reply is lost or raises an error. Two settings help in that case. Both are set per product from the API or the dashboard (the SDK reads these fields but does not set them):
+Both are safe defaults, but they mean a late reply can be lost or can raise an error. If your users often reply after long gaps, you have two mitigations. Both are set per product from the API or the dashboard (the SDK reads these fields but does not set them):
 
 - **Raise the inactivity window.** Increase **Auto Close Inactivity Minutes** so sessions stay open longer before the sweep closes them.
 - **Turn off auto-close for these sessions.** Set **Auto Close Scope** to `NONE` (or a scope that excludes production) so the sweep never closes them; they then close only on an explicit finish.

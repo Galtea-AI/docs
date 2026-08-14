@@ -1,12 +1,12 @@
 ---
 title: 'Finish Session'
 sidebarTitle: "Finish"
-description: "Mark a session as finished (closed) so it becomes eligible for evaluation"
+description: "Mark a session as finished (closed) so it accepts no more turns and becomes eligible for evaluation"
 ---
 
 ## Overview
 
-The `finish()` method marks a session as finished when its conversation is over. Finishing sets the session status to `COMPLETED` and closes it.
+The `finish()` method marks a session as finished when its conversation is over. Finishing sets the session status to `COMPLETED` and closes it: the session accepts no more turns.
 
 Finishing also makes the session eligible for evaluation right away. A [Monitor](/concepts/product/monitor) scores only closed sessions, so an explicit finish gets the session picked up on the next scan instead of waiting for the product's inactivity auto-close window.
 
@@ -28,7 +28,7 @@ Returns the finished `Session` object, with status `COMPLETED`.
 
 ```python
 # Call finish when the conversation is over. This closes the session (status COMPLETED)
-# and makes it eligible for monitor evaluation on the next scan.
+# so it accepts no more turns and becomes eligible for monitor evaluation on the next scan.
 galtea.sessions.finish(session_id=session.id, stopping_reason="GOAL_ACHIEVED")
 ```
 
@@ -43,7 +43,7 @@ galtea.sessions.finish(session_id=session.id)
 ## Notes
 
 <Warning>
-  Only call `finish()` when the conversation is truly over. A finished session is closed, so a later attempt to append a trace follows the product's closed-session policy. By default the trace is kept and the session reopens for a fresh score; the policy can also be set to drop the trace silently, or to reject it with an error. See [Session](/concepts/product/version/session).
+  Only call `finish()` when the conversation is truly over. A finished session is closed, so a later attempt to append a trace follows the product's closed-session policy: it is either rejected with an error or silently discarded (the default). See [Session](/concepts/product/version/session).
 </Warning>
 
 <Note>

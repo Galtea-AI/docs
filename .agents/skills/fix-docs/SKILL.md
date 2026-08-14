@@ -171,7 +171,7 @@ For each code snippet file in scope, check:
 **Enum and Constant Values:**
 - `DatasetType`: `"ACCURACY"`, `"SECURITY"`, `"BEHAVIOR"` (or legacy: `"QUALITY"`, `"RED_TEAMING"`, `"SCENARIOS"`)
 - `SpanType`: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
-- `EvaluationStatus`: `PENDING`, `PENDING_HUMAN`, `SUCCESS`, `FAILED`, `SKIPPED`, `CANCELLED`, `OUTDATED`
+- `EvaluationStatus`: `PENDING`, `PENDING_HUMAN`, `SUCCESS`, `FAILED`, `SKIPPED`, `CANCELLED`
 - `SpecificationType`: `CAPABILITY`, `INABILITY`, `POLICY`
 - Metric `source`: `"self_hosted"`, `"partial_prompt"`, `"full_prompt"`, `"human_evaluation"`
 

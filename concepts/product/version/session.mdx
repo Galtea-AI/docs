@@ -50,10 +50,10 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 <ResponseField name="Status" type="Enum">
   The lifecycle state of the session, and the single signal for whether it is open or closed.
   - `PENDING` (**open**): the session accepts new turns. Every session starts here.
-  - `COMPLETED` (**closed**): the session finished successfully.
-  - `FAILED` (**closed**): the session ended with an error.
+  - `COMPLETED` (**closed**): the session finished successfully and accepts no new turns.
+  - `FAILED` (**closed**): the session ended with an error and accepts no new turns.
 
-  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session. A closed production session goes back to `PENDING` when a new turn arrives, unless you change the product's closed-session policy. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
+  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
 </ResponseField>
 
 <ResponseField name="Stopping Reason" type="Text" optional>
@@ -73,7 +73,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 A session is either **open** or **closed**, and its `Status` is the single source of truth for which one it is:
 
 - **Open** (`PENDING`): the session accepts new turns. Every new session starts open by default.
-- **Closed** (`COMPLETED` or `FAILED`): the session is finished. What a later turn does to it depends on the product's closed-session policy, described below.
+- **Closed** (`COMPLETED` or `FAILED`): the session accepts no new turns.
 
 ### How a session closes
 
@@ -88,11 +88,10 @@ You configure auto-close per product with three fields: **Auto Close Scope** (wh
 
 When a new trace arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
 
-- `REOPEN_AND_REEVALUATE` (the default): the API stores the turn and opens the session again. The status goes back to `PENDING`, so the auto-close sweep closes the session again later. The session's existing monitor evaluations move to the `OUTDATED` status, so their scores stop counting as current, and a [Monitor](/concepts/product/monitor) scores the session again once it closes. Only production sessions reopen. A development (test) session behaves as with `IGNORE`, because a monitor scores only production sessions.
-- `IGNORE`: the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
+- `IGNORE` (the default): the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
 - `REJECT`: the API refuses the call and returns an error.
 
-The default keeps every late turn, so a user who replies after a long gap does not lose that turn. If you set the policy to `IGNORE` or `REJECT` and still want late turns kept, raise the inactivity window or set the scope so those sessions are not auto-closed. The [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries#late-turns-on-a-closed-session) tutorial walks through this trade-off.
+If your users sometimes reply after a long gap and you do not want those late turns dropped or rejected, raise the inactivity window or set the scope so those sessions are not auto-closed. The [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries#late-turns-on-a-closed-session) tutorial walks through this trade-off.
 
 ## Related
 

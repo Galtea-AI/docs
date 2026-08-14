@@ -7,7 +7,7 @@ description: "Poll evaluations until they leave PENDING status, then return the 
 After creating evaluations (via [`create()`](/sdk/api/evaluation/create) or [`run()`](/sdk/api/evaluation/run)), they start in `PENDING` status while the evaluation engine processes them. Use `wait_for()` to block until all evaluations have completed.
 
 An evaluation is considered **complete** when its status is anything other than `PENDING`:
-`SUCCESS`, `FAILED`, `SKIPPED`, `PENDING_HUMAN`, `CANCELLED`, or `OUTDATED`.
+`SUCCESS`, `FAILED`, `SKIPPED`, `PENDING_HUMAN`, or `CANCELLED`.
 
 ## Usage
 
