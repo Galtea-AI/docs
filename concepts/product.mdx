@@ -107,9 +107,10 @@ The SDK allows you to list existing products, retrieve specific products by thei
 <ResponseField name="Closed Session Inference Creation Policy" type="Enum" optional>
   What happens when you try to add an inference to a session that is already closed.
   Possible values:
+  - `Reopen And Reevaluate` (the default): keep the inference and open the session again. The session's monitor evaluations move to the `Outdated` status, so a [Monitor](/concepts/product/monitor) scores the session again once it closes for good. Only production sessions reopen; a development (test) session is dropped as with `Ignore`.
   - `Reject`: refuse the inference and return an error.
   - `Ignore`: silently drop the inference.
-  <Info>The API default is `Ignore`.</Info>
+  <Info>The API default is `Reopen And Reevaluate`.</Info>
 </ResponseField>
 
 ## How Everything Connects

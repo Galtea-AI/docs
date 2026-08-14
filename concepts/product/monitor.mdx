@@ -52,6 +52,8 @@ A Monitor scores a production session once the session is closed. A session clos
 
 This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
 
+A closed session can still gain a turn. When it does, the session reopens and the Monitor scores it again once it closes for good. The earlier scores move to the `Outdated` status, so they drop out of charts and averages while staying readable. The product's [Closed Session Inference Creation Policy](/concepts/product#product-properties) controls this.
+
 ## Credit cap
 
 `monthly_credit_cap` is an optional ceiling on how many credits the Monitor spends per month:

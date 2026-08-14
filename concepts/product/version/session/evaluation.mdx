@@ -54,6 +54,7 @@ Once an evaluation completes, the following fields are available:
   - **Success**: The evaluation was processed successfully.
   - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried.
   - **Skipped**: The evaluation was skipped because the metric validation failed (e.g., missing required parameters) or due to insufficient credits. The error message contains details about what was missing. Check the `canRetry` field to determine if this evaluation can be retried.
+  - **Outdated**: The evaluation was produced by a [Monitor](/concepts/product/monitor), and the session then reopened and gained a new turn. The score describes an older version of the conversation, so it no longer counts as current: charts and averages leave it out, and the monitor scores the session again once it closes. The row keeps its score and its reason, so you can still read what it found.
 </ResponseField>
 
 <ResponseField name="Score" type="Number">

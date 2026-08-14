@@ -76,13 +76,19 @@ Complete with AI is available for **AI Evaluation** and **Human Evaluation** met
 
 ## Update a Metric with AI
 
-Once a metric already has a judge prompt, **Update with AI** revises it from one line of written feedback instead of you editing the prompt by hand. You give it the metric's current name, description, evaluation type, judge prompt, and evaluation parameters, plus a short instruction describing what to change (for example, "it should not penalise a short answer"). The AI returns a revised judge prompt, evaluation parameters, and description.
+Once a metric already has a judge prompt, **Update with AI** (**Revise with AI** in the dashboard) revises it from one line of written feedback instead of you editing the prompt by hand. You give it the metric's current name, description, evaluation type, judge prompt, and evaluation parameters, plus a short instruction describing what to change (for example, "it should not penalise a short answer"). The AI returns a revised judge prompt, evaluation parameters, and description.
 
 The endpoint **persists nothing** — you review the revision and decide whether to apply it.
 
+In the dashboard it is available only from the **New Revision** form (open a metric → **New Revision**), not from a blank or template create form. It is a panel beside the form fields, on screen for as long as the form is: you write the instruction in it and the revised values land in the fields next to it.
+
 <Info>
-  Update with AI is not in the dashboard yet. For now you can call it from the [REST API](/api-reference) or the CLI (`galtea metrics update-config`).
+  Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable.
 </Info>
+
+Applying a revision only fills in the form: the judge prompt, evaluation parameters, and description each get an "AI Generated" badge, but nothing is saved until you submit the **New Revision** form.
+
+The endpoint is also available directly via the [REST API](/api-reference) and the CLI (`galtea metrics update-config`).
 
 ## Evaluation Parameter Selection
 
