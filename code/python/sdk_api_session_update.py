@@ -63,7 +63,7 @@ if session is None:
 
 # @start session_finish
 # Call finish when the conversation is over. This closes the session (status COMPLETED)
-# so it accepts no more turns and becomes eligible for monitor evaluation on the next scan.
+# and makes it eligible for monitor evaluation on the next scan.
 galtea.sessions.finish(session_id=session.id, stopping_reason="GOAL_ACHIEVED")
 # @end session_finish
 
