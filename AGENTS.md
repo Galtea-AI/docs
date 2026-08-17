@@ -67,3 +67,9 @@ Docs-specific ADRs live in `docs/adr/`. Consult them before making structural ch
 ## Local Development
 
 Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`npm run dev`, then `python scripts/run.py` to validate and `python scripts/run.py --build` to build).
+
+**`.build/docs.json` is environment-rewritten, so never read it as the source of truth for a URL.** `run.py` calls `load_env_files()`, which loads `docs/.env` **only when `python-dotenv` is installed**, and then `override_docs_json_urls()` rewrites the built copy's `openapi` tab from `$GALTEA_API_URL` and its navbar href from `$DASHBOARD_URL`. `docs/.env` points both at the **dev** hosts. So the same command produces different output on two machines depending on what is installed, with no warning, and a container without dotenv silently gets the committed values instead.
+
+Consumers must read the **committed `docs.json`** for URLs and use `.build/` only for MDX bodies, which is what it exists for (its `navigation` is otherwise identical). `platform-assistant/scripts/generate_corpus.py` is the live example: reading the built copy put `dev.api.galtea.ai` into 176 api-reference pages of the assistant's corpus, invisible to every page-count and key check because the URL appears only in body text.
+
+**Unsetting the variable does not help.** `load_dotenv(..., override=False)` fills in variables that are *absent*, so `env -u GALTEA_API_URL` is precisely the condition under which `docs/.env` wins. Only a variable that is already **set** outranks the file.
