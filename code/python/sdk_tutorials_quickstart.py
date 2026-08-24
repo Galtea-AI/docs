@@ -1,7 +1,6 @@
-import time
 from datetime import datetime
 
-from _test_helpers import create_test_product
+from _test_helpers import create_test_product, wait_for_dataset_ready
 from requests.exceptions import HTTPError
 
 from galtea import (
@@ -102,36 +101,9 @@ if dataset is None:
     raise ValueError("Failed to create behavior test")
 behavior_dataset = dataset
 
-max_wait_iterations = 120  # e.g., wait up to 2 minutes
-for _ in range(max_wait_iterations):
-    # Pick the first test that has a URI
-    dataset = galtea.datasets.get(dataset_id=accuracy_dataset.id)
-    if dataset.uri:
-        break
-    print("Waiting for accuracy test file to be ready...")
-    time.sleep(1)
-else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
-
-max_wait_iterations = 120  # e.g., wait up to 2 minutes
-for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=security_dataset.id)
-    if dataset.uri:
-        break
-    print("Waiting for security test file to be ready...")
-    time.sleep(1)
-else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
-
-max_wait_iterations = 120  # e.g., wait up to 2 minutes
-for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=behavior_dataset.id)
-    if dataset.uri:
-        break
-    print("Waiting for behavior test file to be ready...")
-    time.sleep(1)
-else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+wait_for_dataset_ready(galtea, accuracy_dataset.id, label="accuracy test")
+wait_for_dataset_ready(galtea, security_dataset.id, label="security test")
+dataset = wait_for_dataset_ready(galtea, behavior_dataset.id, label="behavior test")
 
 # Ensure it works with all test types, then do the actual demo code
 test_cases = galtea.test_cases.list(dataset_id=accuracy_dataset.id)

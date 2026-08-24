@@ -130,6 +130,10 @@ The Galtea SDK allows you to create, view, and manage datasets programmatically.
   - `CANCELLED`: Dataset generation was cancelled
 </ResponseField>
 
+<ResponseField name="Error" type="Text">
+  Why generation failed. Set only when the status is `FAILED`.
+</ResponseField>
+
 <ResponseField name="Type" type="Enum" required>
   The type of the dataset.
   Possible values:

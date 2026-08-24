@@ -1,7 +1,6 @@
-import time
 from datetime import datetime
 
-from _test_helpers import create_test_product
+from _test_helpers import create_test_product, wait_for_dataset_ready
 from requests.exceptions import HTTPError
 
 from galtea import (
@@ -690,15 +689,7 @@ if evaluation is None:
 
 # Check if test has finished generating before downloading, if not, await
 
-max_wait_iterations = 120  # e.g., wait up to 2 minutes
-for _ in range(max_wait_iterations):
-    dataset = galtea.datasets.get(dataset_id=dataset.id)
-    if dataset.uri:
-        break
-    print("Waiting for test file to be ready...")
-    time.sleep(1)
-else:
-    raise ValueError("Test file URI is still None after waiting. Test id: " + dataset.id)
+dataset = wait_for_dataset_ready(galtea, dataset.id)
 
 # @start test_download
 downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")

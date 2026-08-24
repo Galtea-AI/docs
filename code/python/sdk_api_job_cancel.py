@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 
 import requests
-from _test_helpers import create_test_product
+from _test_helpers import create_test_product, wait_for_dataset_ready
 from galtea import EndpointConnectionType, Galtea
 from galtea.domain.exceptions.job_already_terminal_exception import JobAlreadyTerminalException
 
@@ -69,14 +69,7 @@ try:
         strategies=["written"],
         specification_id=_spec.id,
     )
-    for _ in range(120):
-        _t = galtea.datasets.get(dataset_id=_dataset.id)
-        if _t.uri:
-            break
-        print("Waiting for test file to be ready...")
-        time.sleep(1)
-    else:
-        raise ValueError("Test file URI is still None after waiting. Test id: " + _dataset.id)
+    wait_for_dataset_ready(galtea, _dataset.id)
     for _ in range(120):
         _test_cases = galtea.test_cases.list(dataset_id=_dataset.id)
         if len(_test_cases) > 0:
