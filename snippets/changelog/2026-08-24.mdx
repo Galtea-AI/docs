@@ -1,0 +1,80 @@
+<Update label="2026-08-24" description="A Redesigned Dashboard and the Dataset, Trace, and Span Renames">
+
+## Version 5.0.0: A Redesigned Dashboard
+
+This release reworks how you navigate and use the dashboard: the sidebar, specification setup, evaluation flow, and onboarding all change, and three core entities get clearer names. Here is what moved and why.
+
+## New Names: Dataset, Trace, and Span
+
+Three entities you use every day change their name, so each level of the platform now has one clear word:
+
+- **Test** is now [**Dataset**](/concepts/product/dataset): the collection of test cases you evaluate a version against.
+- **Trace** is now [**Span**](/concepts/product/version/session/span): one step your product took while answering, like a tool call or a retrieval.
+- **Inference Result** is now [**Trace**](/concepts/product/version/session/trace): one input and the output your product returned.
+
+A [session](/concepts/product/version/session) now holds traces, and a trace holds spans. `Test Case` keeps its name; only the collection around it becomes a dataset.
+
+The API, CLI, SDK, and dashboard all use the new names. If you call the platform through the SDK or CLI, read the [migration guide](/sdk/migration-guides/entity-renames) before you upgrade. In the SDK, most old names keep working with a warning, and you can pin `galtea<5` to delay the change. Two things need your attention: `galtea.traces` now returns traces instead of spans, so it changes meaning without an error, and the CLI has no aliases. Pinning does not help the CLI either, because it reads its command names from the API and refreshes them on its own. Update your CLI calls before the release.
+
+## Redesigned Sidebar Navigation
+
+The sidebar now carries most of what used to live in page tabs.
+
+- **A product selector and environment switch sit at the top**, so you pick your product and switch between Development and Production without leaving the sidebar.
+- **A product's sections list directly in the sidebar**, replacing the product hub's top tab strip. Analytics, Specifications, and Versions are always there; Datasets, Sessions, Evaluations, and Tutorial appear once you turn on **Show all tabs** in your settings. The configuration sections, Product, Connections, and Monitors, sit inside a collapsible **Configuration** folder, marked with a caret so you know it expands rather than opens a page.
+- **The organization hub is now the landing page** after login, with Products as its first tab and a product count next to Users and Groups. The product matching your sidebar selection is outlined in that list, so you can tell them apart at a glance.
+- **Organization-level entries** (organization settings, Human Evaluations, Metric library) **now group at the sidebar's bottom**, under your organization's own name.
+- **Your account menu moved into a floating card** at the sidebar's bottom, instead of a page of its own.
+
+## Starting an Evaluation
+
+"Run Evaluation" used to appear in twelve places, and not all of them meant the same thing. It now starts from the units you actually evaluate: a [version](/concepts/product/version), a [specification](/concepts/product/specification), a [session](/concepts/product/version/session), or a single [trace](/concepts/product/version/session/trace), each from its own page or its Evaluations tab. The Analytics page, the dataset and test case detail pages, and the version's "Evaluate All" button no longer offer it, since the evaluation dialog already covers what those did in one extra click. Launching a run against a product's latest configured version automatically is no longer available in the dashboard; the SDK's [`evaluations.run(product_id=...)`](/sdk/api/evaluation/run) still supports it. A capability can now be an evaluation target from the dashboard too, matching what the API already allowed.
+
+Launching an evaluation now also takes you straight to the tab where it shows up, instead of leaving you where you clicked.
+
+## Streamlined Specification Setup
+
+Getting a specification ready for its first evaluation used to take several disconnected screens. Now:
+
+- **One "Setup for evaluation" dialog** asks how many test cases to generate, plus a knowledge base file for an accuracy specification. It creates the dataset and proposes up to three metrics, which you then review and save on the metric page.
+- **A new specification offers this dialog right after you save it**, instead of leaving you on an empty page with no dataset and no metric. Inabilities are never evaluated, so they are not offered it.
+- **The Specifications table shows real dataset status**: a count, `Generating`, `Failed`, or `Missing dataset`. Run Evaluation stays blocked until a dataset is ready, so a generation that failed needs a retry from the same dialog.
+- **Linking and unlinking a dataset or metric works the same way everywhere**: the specification field on the dataset and metric forms now matches the picker already on the specification hub.
+- **A warning flags datasets linked to no specification**, so they no longer sit invisible.
+- **Capabilities can generate datasets now**, matching policies, and accuracy specifications can generate datasets too, from a chosen test case count.
+- **Specifications separate into two scopes**: capabilities and policies under a product's Specifications tab, inabilities under Settings.
+- A specification's **Sessions and Evaluations tabs now show a total**, counting a session or evaluation reached through the specification's datasets or its metrics, so production traffic a monitor scores now shows up instead of an empty tab.
+
+## Smarter Onboarding
+
+- **Onboarding classifies your product's kind before generating specifications** and names the generated specifications after your product instead of its category, so a document-processing product and a conversational one no longer get the same generic catalog.
+- **A document-processing product can ask for a Knowledge Base file** during onboarding when you pick an accuracy specification, instead of that specification silently staying hidden.
+- **Onboarding confirms what it generated**, listing every specification by name before moving to the tutorial.
+- **The tutorial's review step reorganizes into three ideas**: What we will check, How we will judge it, and Example challenges, each with its own loading and retry state.
+
+## Analytics: One View, Filtered
+
+Analytics now shows every specification in a single view instead of separate Overview, Accuracy, Security & Safety, and Behavior tabs. A Dataset type filter (Development only) replaces the tabs, and the metric/specification switches that used to differ per tab are now one toggle for the whole page. The filter persists in the URL, so a filtered view is shareable and survives a refresh.
+
+## AI-Assisted Metric Revision, Inline
+
+Revising a [metric](/concepts/metric) with AI now happens inside the form instead of a separate dialog. Describe the change in a panel beside the fields, and the description, evaluation parameters, and judge prompt rewrite in place. Undo restores a single field to its last saved value, so one bad field no longer costs the other two.
+
+## Product Settings, One Card Per Setting
+
+The product Settings page is now one column of full-width cards, one setting per card, matching the user Settings page: Metadata, Session Auto-close, Inabilities, Product Properties, and, when configured, the OTel Output Source Rule. Monitors and Connections moved to their own sidebar entries.
+
+## A Late Message Reopens a Closed Session
+
+A message that arrives after a production session closes now reopens it instead of being dropped. Any monitor evaluations already on the session are marked outdated, so the monitor scores it again once it closes for good. A session that keeps reopening is re-scored up to five times; after that it still accepts the late message, but its existing scores stay as they are.
+
+This is the new default for every product, set under **Session Auto-close** on the product's Settings page. You can still choose to ignore a late message or refuse it with an error. Development sessions never reopen, because monitors only score production traffic.
+
+## Platform Improvements
+
+- **A row's actions menu stays usable when a related read fails**: opening the three-dot menu on a session's Evaluations tab no longer opens empty.
+- **A deep link now opens the section it names**: "View evaluations" from Analytics used to leave you on Analytics; it opens Evaluations now.
+- **A session can be evaluated even when its version has no conversation target.**
+- **Deleting an item that is still in use now returns a clear error instead of a server error.**
+
+</Update>
