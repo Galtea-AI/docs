@@ -1,0 +1,50 @@
+---
+title: 'List Spans'
+sidebarTitle: "List"
+description: "Retrieve spans for a trace."
+---
+
+## Returns
+Returns a list of [Span](/concepts/product/version/session/span) objects.
+
+## Example
+
+```python
+spans = galtea.spans.list(trace_id=trace_id)
+```
+
+## Parameters
+<ResponseField name="trace_id" type="string | list[string]" optional>
+  Filter spans by trace ID(s).
+</ResponseField>
+<ResponseField name="session_id" type="string | list[string]" optional>
+  Filter spans by session ID(s).
+</ResponseField>
+<ResponseField name="types" type="list[string | SpanType]" optional>
+  Filter spans by type. Options: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="names" type="list[string]" optional>
+  Filter spans by name.
+</ResponseField>
+<ResponseField name="from_start_time" type="str | int" default="None">
+  Filter spans started at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_start_time`.
+</ResponseField>
+<ResponseField name="to_start_time" type="str | int" default="None">
+  Filter spans started at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_start_time`.
+</ResponseField>
+<ResponseField name="sort_by_start_time" type="string" optional>
+  Sort spans by start_time. Valid values: `asc`, `desc`.
+</ResponseField>
+<ResponseField name="offset" type="int" optional>
+  Number of spans to skip for pagination. Default: `0`.
+</ResponseField>
+<ResponseField name="limit" type="int" optional>
+  Maximum number of spans to return. Default: `10000`.
+</ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the span(s) to retrieve.
+</ResponseField>
+
+<Note>
+  At least one of `trace_id`, `session_id`, or `id` must be provided.
+</Note>

@@ -20,12 +20,12 @@ from galtea.integrations.langfuse import start_as_current_observation
 
 ### Decorator API
 
-- [observe](/sdk/api/langfuse/observe) — Drop-in replacement for `langfuse.observe`. Wraps a function with Langfuse's `@observe` and adds optional `inference_result_id` linking.
+- [observe](/sdk/api/langfuse/observe) — Drop-in replacement for `langfuse.observe`. Wraps a function with Langfuse's `@observe` and adds optional `trace_id` linking.
 
 ### Context Manager API
 
-- [start_as_current_observation](/sdk/api/langfuse/start-as-current-observation) — Drop-in replacement for `langfuse.Langfuse.start_as_current_observation`. Creates a root observation with optional `inference_result_id` linking.
+- [start_as_current_observation](/sdk/api/langfuse/start-as-current-observation) — Drop-in replacement for `langfuse.Langfuse.start_as_current_observation`. Creates a root observation with optional `trace_id` linking.
 
 ### LangChain Callback API
 
-- [CallbackHandler](/sdk/api/langfuse/callback-handler) — Drop-in replacement for `langfuse.langchain.CallbackHandler`. Automatically manages `inference_result_id` context around LangChain callback lifecycles.
+- [CallbackHandler](/sdk/api/langfuse/callback-handler) — Drop-in replacement for `langfuse.langchain.CallbackHandler`. Automatically manages `trace_id` context around LangChain callback lifecycles.

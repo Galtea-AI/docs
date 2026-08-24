@@ -40,12 +40,18 @@ For example, `{{ context.topic }}`, `{{ context.system_prompt }}`, or `{{ contex
 | `{{ session_id }}` | The external session ID (if available) |
 | `{{ galtea_session_id }}` | Galtea's internal session identifier |
 | `{{ test_case_id }}` | The current test case ID |
-| `{{ test_id }}` | The current test ID |
-| `{{ inference_result_id }}` | The inference result ID for this turn (also sent as the `X-Galtea-Inference-Id` header for [trace collection](/sdk/tutorials/tracing-agent-operations)) |
+| `{{ dataset_id }}` | The id of the current [Dataset](/concepts/product/dataset) |
+| `{{ trace_id }}` | The id of this turn's [Trace](/concepts/product/version/session/trace), labeled "Galtea Trace ID" in the dashboard. Also sent as the `X-Galtea-Inference-Id` header for [span collection](/sdk/tutorials/tracing-agent-operations) |
 | `{{ language_code }}` | Full BCP-47 language tag from the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when the test case has no language set. |
 | `{{ language_name }}` | Full English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when the test case has no language set. |
 | `past_turns` | Conversation history loop collection. Use with `{% for turn in past_turns %}`. See [Conversation History](#conversation-history). |
 | Any metadata key | Fields extracted via [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) and stored in session metadata (e.g., `{{ tenant_id }}`) |
+
+<Note>
+  `{{ trace_id }}` and `{{ dataset_id }}` were named `{{ inference_result_id }}` and
+  `{{ test_id }}` before version 5.0.0, and the old names still resolve. See
+  [Dataset, Trace, and Span Renames](/sdk/migration-guides/entity-renames).
+</Note>
 
 ## Examples
 
@@ -191,8 +197,8 @@ When editing an input template in the Galtea dashboard, a **placeholder toolbar*
 | **Basic** | `{{ input.user_message }}`, `{{ context.value }}` |
 | **History** | `past_turns` loop, `{{ turn.input }}`, `{{ turn.output }}` |
 | **Session** | `{{ session_id }}`, `{{ galtea_session_id }}` |
-| **Inference** | `{{ inference_result_id }}` |
-| **Test** | `{{ test_case_id }}`, `{{ test_id }}` |
+| **Trace** | `{{ trace_id }}` |
+| **Dataset** | `{{ test_case_id }}`, `{{ dataset_id }}` |
 | **Language** | `{{ language_code }}`, `{{ language_name }}` |
 
 Clicking a pill inserts the corresponding syntax at the cursor position in the editor.
@@ -223,7 +229,7 @@ Renders to:
 }
 ```
 
-When a missing field produces structurally invalid JSON (e.g., a numeric field rendering as empty), the endpoint typically rejects the malformed request (e.g., returns a 400 error), causing the inference result status to be marked as **FAILED**.
+When a missing field produces structurally invalid JSON (e.g., a numeric field rendering as empty), the endpoint typically rejects the malformed request (e.g., returns a 400 error), causing the trace status to be marked as **FAILED**.
 
 <Warning>
   Ensure that all placeholders in your template correspond to fields that exist in your test case input and context schemas. Undefined fields silently render as empty strings.
@@ -238,7 +244,7 @@ When a missing field produces structurally invalid JSON (e.g., a numeric field r
   <Card title="Endpoint Connection Overview" icon="plug" href="/concepts/product/endpoint-connection">
     What endpoint connections are and how to create one.
   </Card>
-  <Card title="Test Cases" icon="list" href="/concepts/product/test/case">
+  <Card title="Test Cases" icon="list" href="/concepts/product/dataset/test-case">
     Understand the structure of test case inputs and context.
   </Card>
   <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">

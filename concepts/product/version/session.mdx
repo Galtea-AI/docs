@@ -1,7 +1,7 @@
 ---
 title: "Session"
 sidebarTitle: "Overview"
-description: "A group of inference results that make up a full conversation"
+description: "A group of traces that make up a full conversation"
 ---
 
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
@@ -9,9 +9,9 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 ## What is a Session?
 
-A session groups the turns of a single conversation between a user and your AI product. It contains one or more [inference results](/concepts/product/version/session/inference-result) (input/output pairs) and can be evaluated as a whole using conversational metrics.
+A session groups the turns of a single conversation between a user and your AI product. It contains one or more [traces](/concepts/product/version/session/trace) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating an inference result](/sdk/api/inference-result/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating a trace](/sdk/api/trace/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 
 You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 
@@ -24,7 +24,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 <ResponseField name="Custom ID" type="Text" required>
   The custom ID associated with the session.
   This is usually a client-side generated ID that identifies the conversation session between a user and a LLM app.
-  It is unique per version: logging an inference result with a `session_custom_id` finds the existing session with that custom ID and appends to it (see [Create Inference Result](/sdk/api/inference-result/create)).
+  It is unique per version: logging a trace with a `session_custom_id` finds the existing session with that custom ID and appends to it (see [Create Trace](/sdk/api/trace/create)).
 </ResponseField>
 
 <ResponseField name="Version" type="Version" required>
@@ -50,10 +50,10 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 <ResponseField name="Status" type="Enum">
   The lifecycle state of the session, and the single signal for whether it is open or closed.
   - `PENDING` (**open**): the session accepts new turns. Every session starts here.
-  - `COMPLETED` (**closed**): the session finished successfully and accepts no new turns.
-  - `FAILED` (**closed**): the session ended with an error and accepts no new turns.
+  - `COMPLETED` (**closed**): the session finished successfully.
+  - `FAILED` (**closed**): the session ended with an error.
 
-  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
+  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session. A closed production session goes back to `PENDING` when a new turn arrives, unless you change the product's closed-session policy. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
 </ResponseField>
 
 <ResponseField name="Stopping Reason" type="Text" optional>
@@ -73,34 +73,35 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 A session is either **open** or **closed**, and its `Status` is the single source of truth for which one it is:
 
 - **Open** (`PENDING`): the session accepts new turns. Every new session starts open by default.
-- **Closed** (`COMPLETED` or `FAILED`): the session accepts no new turns.
+- **Closed** (`COMPLETED` or `FAILED`): the session is finished. What a later turn does to it depends on the product's closed-session policy, described below.
 
 ### How a session closes
 
 A session becomes closed in one of two ways:
 
 - **Explicit finish.** You end the session on purpose, and it closes right away. Call [`sessions.finish()`](/sdk/api/session/finish) from the SDK: it records a `Stopping Reason` and sets the status to `COMPLETED`. The endpoint behind it (`PATCH /sessions/{id}/finish`) also accepts an `error` instead, which closes the session as `FAILED`.
-- **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent inference result is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
+- **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent trace is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
 
 You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `PRODUCTION`, so production sessions auto-close after the window while development (test) sessions stay open until you finish them.
 
 ### Turns that arrive after a session closes
 
-When a new inference result arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
+When a new trace arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
 
-- `IGNORE` (the default): the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
+- `REOPEN_AND_REEVALUATE` (the default): the API stores the turn and opens the session again. The status goes back to `PENDING`, so the auto-close sweep closes the session again later. The session's existing monitor evaluations move to the `OUTDATED` status, so their scores stop counting as current, and a [Monitor](/concepts/product/monitor) scores the session again once it closes. Only production sessions reopen. A development (test) session behaves as with `IGNORE`, because a monitor scores only production sessions.
+- `IGNORE`: the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
 - `REJECT`: the API refuses the call and returns an error.
 
-If your users sometimes reply after a long gap and you do not want those late turns dropped or rejected, raise the inactivity window or set the scope so those sessions are not auto-closed. The [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries#late-turns-on-a-closed-session) tutorial walks through this trade-off.
+The default keeps every late turn, so a user who replies after a long gap does not lose that turn. If you set the policy to `IGNORE` or `REJECT` and still want late turns kept, raise the inactivity window or set the scope so those sessions are not auto-closed. The [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries#late-turns-on-a-closed-session) tutorial walks through this trade-off.
 
 ## Related
 
 <CardGroup cols={3}>
   <ConceptsOverviewCard />
   <Card title="Evaluation" icon="clipboard-check" href="/concepts/product/version/session/evaluation">
-    Learn how evaluations score inference results within a session.
+    Learn how evaluations score traces within a session.
   </Card>
-  <Card title="Inference Result" icon="message-bot" href="/concepts/product/version/session/inference-result">
+  <Card title="Trace" icon="message-bot" href="/concepts/product/version/session/trace">
     Understand the input/output pairs that make up a session.
   </Card>
   <Card title="Simulating Conversations" icon="comments" href="/sdk/tutorials/simulating-conversations">

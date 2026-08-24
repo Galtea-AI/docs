@@ -20,7 +20,7 @@ If you already instrument your LLM app with [Langfuse](https://langfuse.com) —
     Initialize Galtea or Langfuse first — both orders work. The libraries detect each other automatically.
   </Card>
   <Card title="Selective Export" icon="filter">
-    Galtea only exports traces when you explicitly link an `inference_result_id`. Otherwise, it does nothing.
+    Galtea only exports spans when you explicitly link a `trace_id`. Otherwise, it does nothing.
   </Card>
 </CardGroup>
 
@@ -74,7 +74,7 @@ from galtea.integrations.langfuse import observe
 
 ## Instrumenting Your Agent
 
-Decorate your agent functions with `@observe`, exactly as you would with Langfuse. Nested decorators create a parent-child trace hierarchy automatically.
+Decorate your agent functions with `@observe`, exactly as you would with Langfuse. Nested decorators create a parent-child span hierarchy automatically.
 
 ```python
 from galtea.integrations.langfuse import observe
@@ -98,7 +98,7 @@ def my_agent(user_input: str) -> str:
     return generate(user_input, context)
 ```
 
-When `my_agent("Hello", inference_result_id=ir_id)` runs, Galtea receives a 3-level trace:
+When `my_agent("Hello", trace_id="trace_abc123")` runs, Galtea receives a 3-level span hierarchy:
 
 ```
 my-agent (root)
@@ -108,7 +108,7 @@ my-agent (root)
 
 ### Observation types
 
-Use the `as_type` parameter on `@observe` to set the [observation type](https://langfuse.com/docs/observability/features/observation-types). Each type maps to a Galtea trace type automatically:
+Use the `as_type` parameter on `@observe` to set the [observation type](https://langfuse.com/docs/observability/features/observation-types). Each type maps to a Galtea span type automatically:
 
 ```python
 from galtea.integrations.langfuse import observe
@@ -136,7 +136,7 @@ def agent(user_input: str) -> str:
     return call_llm(f"Context: {docs}, API: {api_result}, Question: {user_input}")
 ```
 
-| Langfuse `as_type` | Galtea trace type | Description |
+| Langfuse `as_type` | Galtea span type | Description |
 |---|---|---|
 | `span` (default) | `SPAN` | Generic unit of work |
 | `generation` | `GENERATION` | LLM call with token usage |
@@ -150,7 +150,7 @@ def agent(user_input: str) -> str:
 | `guardrail` | `GUARDRAIL` | Content safety check |
 
 <Info>
-  Unknown Langfuse observation types are automatically mapped to `SPAN` in Galtea. Your traces are never dropped.
+  Unknown Langfuse observation types are automatically mapped to `SPAN` in Galtea. Your spans are never dropped.
 </Info>
 
 ### Context manager API
@@ -164,7 +164,7 @@ from galtea.integrations.langfuse import start_as_current_observation
 with start_as_current_observation(
     name="process-query",
     as_type="span",
-    inference_result_id="inferenceResult_abc123",
+    trace_id="trace_abc123",
 ) as root_span:
     # All child spans (decorator or context manager) are children of root_span
     docs = search_docs("user query")
@@ -194,53 +194,53 @@ If you use Langfuse's `CallbackHandler` for LangChain tracing, Galtea provides a
 from galtea.integrations.langfuse import CallbackHandler
 ```
 
-Your handler initialization stays the same — create it once at app startup and pass it to any LangChain `.invoke()`, `.batch()`, or `.stream()` call. To link traces to Galtea, call `set_inference_result_id` before each invocation:
+Your handler initialization stays the same — create it once at app startup and pass it to any LangChain `.invoke()`, `.batch()`, or `.stream()` call. To link spans to Galtea, call `set_trace_id` before each invocation:
 
 ```python
 from galtea.integrations.langfuse import CallbackHandler
 
-handler = CallbackHandler()  # at app init — no inference_result_id yet
+handler = CallbackHandler()  # at app init — no trace_id yet
 
 # Per request:
-handler.set_inference_result_id("inferenceResult_abc123")
+handler.set_trace_id("trace_abc123")
 # chain.invoke({"input": "query"}, config={"callbacks": [handler]})
 # Context is automatically cleared when the chain finishes.
 ```
 
-The handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles — no context managers or manual cleanup needed. You can also pass `inference_result_id` directly in the constructor if you prefer to create a handler per request.
+The handler automatically manages `set_context` / `clear_context` around LangChain callback lifecycles — no context managers or manual cleanup needed. You can also pass `trace_id` directly in the constructor if you prefer to create a handler per request.
 
 <Note>
   The `CallbackHandler` requires `langchain` to be installed. Install it with: `pip install langchain`
 </Note>
 
-All three APIs can be mixed freely — for example, an `@observe`-decorated function can pass a `CallbackHandler` to a LangChain chain inside it, and the parent-child trace hierarchy is preserved.
+All three APIs can be mixed freely — for example, an `@observe`-decorated function can pass a `CallbackHandler` to a LangChain chain inside it, and the parent-child span hierarchy is preserved.
 
-## Linking Traces to an Inference Result
+## Linking Spans to a Trace
 
-Galtea **only** exports trace data when an `inference_result_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified. There are three ways to link traces:
+Galtea **only** exports span data when a `trace_id` is explicitly linked. Without it, Galtea does nothing — no data is sent, no spans are modified. There are three ways to link spans:
 
 ### Using SDK methods (recommended)
 
-When using `generate()` or `simulate()`, the SDK manages `inference_result_id` automatically — zero extra code:
+When using `generate()` or `simulate()`, the SDK manages `trace_id` automatically — zero extra code:
 
 ```python
 # With generate() — zero extra lines, SDK manages context internally:
-result = client.inference_results.generate(agent=my_agent, session=session)
+result = client.traces.generate(agent=my_agent, session=session)
 
-# With simulate() — same, each turn gets its own IR and traces:
+# With simulate() — same, each turn gets its own trace and spans:
 result = client.simulator.simulate(session_id=session.id, agent=my_agent)
 ```
 
-### Passing `inference_result_id` as a kwarg
+### Passing `trace_id` as a kwarg
 
-Pass `inference_result_id` to the outermost `@observe`-decorated function. The wrapper manages the trace context automatically:
+Pass `trace_id` to the outermost `@observe`-decorated function. The wrapper manages the span context automatically:
 
 ```python
 # The wrapper handles set_context/clear_context automatically:
-result = my_agent("What is gestational diabetes?", inference_result_id="inferenceResult_abc123")
+result = my_agent("What is gestational diabetes?", trace_id="trace_abc123")
 ```
 
-The `inference_result_id` kwarg is consumed by the wrapper — it does not reach your function's parameters.
+The `trace_id` kwarg is consumed by the wrapper — it does not reach your function's parameters.
 
 ### Manual `set_context` / `clear_context`
 
@@ -249,7 +249,7 @@ For full control, manage the context lifecycle yourself:
 ```python
 from galtea.utils.tracing import clear_context, set_context
 
-token = set_context(inference_result_id="inferenceResult_abc123")
+token = set_context(trace_id="trace_abc123")
 try:
     result = my_agent("What is gestational diabetes?")
 finally:
@@ -262,4 +262,4 @@ finally:
 
 ## How It Works
 
-Both Galtea and Langfuse use OpenTelemetry internally. When both are initialized, they share the same tracing infrastructure — each span created by `@observe` flows to both Langfuse cloud and the Galtea API. The Galtea SDK exporter only sends spans that have an `inference_result_id` linked (it posts them to the Galtea REST Trace API); everything else is skipped client-side. Langfuse observation attributes (type, input, output, metadata) are automatically mapped to their Galtea equivalents. (Spans exported directly to the Galtea public OTel endpoint follow different rules; see [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea).)
+Both Galtea and Langfuse use OpenTelemetry internally. When both are initialized, they share the same tracing infrastructure — each span created by `@observe` flows to both Langfuse cloud and the Galtea API. The Galtea SDK exporter only sends spans that have a `trace_id` linked (it posts them to the Galtea REST `/traces` endpoint, which ingests spans); everything else is skipped client-side. Langfuse observation attributes (type, input, output, metadata) are automatically mapped to their Galtea equivalents. (Spans exported directly to the Galtea public OTel endpoint follow different rules; see [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea).)

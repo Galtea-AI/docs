@@ -1,11 +1,11 @@
 ---
 title: 'Writing Effective Specifications'
 sidebarTitle: "Writing Specifications"
-description: "Learn how to write clear specification descriptions that power AI-generated tests and metrics."
+description: "Learn how to write clear specification descriptions that power AI-generated datasets and metrics."
 icon: "pen-to-square"
 ---
 
-[Specifications](/concepts/product/specification) are the foundation of Galtea's AI-powered evaluation workflow. Each specification is a single, testable behavioral expectation — and the quality of your specification descriptions directly impacts the quality of the tests and metrics generated from them.
+[Specifications](/concepts/product/specification) are the foundation of Galtea's AI-powered evaluation workflow. Each specification is a single, testable behavioral expectation — and the quality of your specification descriptions directly impacts the quality of the datasets and metrics generated from them.
 
 This guide shows you how to write clear, effective specification descriptions for each type: **Capability**, **Inability**, and **Policy**.
 
@@ -26,10 +26,10 @@ Your specification descriptions are used by Galtea to:
 
 - **Generate test cases** that target the specific behavior described
 - **Generate metrics** with tailored judge prompts via [AI Metric Generation](/concepts/metric/ai-generation)
-- **Auto-derive test types** — the system chooses Accuracy, Security, or Behavior based on your description
+- **Auto-derive dataset types** — the system chooses Accuracy, Security, or Behavior based on your description
 - Provide context to **LLM-as-a-judge** evaluators when scoring
 
-A vague description produces generic tests. A precise description produces targeted, meaningful evaluations.
+A vague description produces generic datasets. A precise description produces targeted, meaningful evaluations.
 
 ## General Writing Principles
 
@@ -67,7 +67,7 @@ Each specification should describe exactly one testable claim. If your descripti
 ## Writing by Specification Type
 
 We'll use this example product throughout:
-> "A personal finance assistant that provides investment guidance, portfolio analysis, and financial planning for individual investors."
+> "A personal finance assistant for individual investors. It can explain investment concepts, analyze portfolios, and plan for retirement; it must never give personalized recommendations, and it must add a risk disclaimer when a question could be read as advice."
 
 ### Capability Specifications
 
@@ -82,6 +82,10 @@ Describe what the product **can do** — its core functions and the information 
 - "Can provide market insights and explain financial concepts in simple terms"
 - "Can calculate retirement planning scenarios and savings goals based on user-provided data"
 - "Can compare investment products (stocks, bonds, ETFs, mutual funds) side by side"
+
+<Note>
+  Capability specifications always get the `BEHAVIOR` dataset type, assigned automatically — you never choose it. This means every capability is eligible for AI dataset generation, the same as a Behavior policy.
+</Note>
 
 ### Inability Specifications
 
@@ -99,18 +103,18 @@ Describe what the product **cannot do** due to hard technical limits — tools i
 
 ### Policy Specifications
 
-Describe rules the product **must follow** — refusal rules, mandatory disclaimers, interaction patterns, and behavioral guardrails. Policies are the most powerful specification type because they drive both Security and Behavior test generation.
+Describe rules the product **must follow** — refusal rules, mandatory disclaimers, interaction patterns, and behavioral guardrails. Policies can drive either Security or Behavior dataset generation, depending on their dataset type (Capabilities, by contrast, always drive Behavior dataset generation).
 
 <Tip>
   Use **"Must..."**, **"Always..."**, **"If asked about X, respond with Y"** patterns. Be specific about the trigger and the expected behavior.
 </Tip>
 
-**Security policy examples** (drives Security test generation):
+**Security policy examples** (drives Security dataset generation):
 - "Must refuse requests for market manipulation strategies or insider information"
 - "Must not provide advice on illegal tax avoidance schemes"
 - "Must decline to share proprietary trading algorithms"
 
-**Behavior policy examples** (drives Behavior test generation):
+**Behavior policy examples** (drives Behavior dataset generation):
 - "If asked for guaranteed returns, must respond that all investments carry risk"
 - "Always ends investment advice with a 'consult a licensed professional' disclaimer"
 - "Always includes a risk warning when discussing aggressive or speculative investments"
@@ -123,7 +127,7 @@ A good specification description should allow someone unfamiliar with your produ
 3. Predict **what a failing response** looks like
 4. Know **when this rule applies** (for policies)
 
-If your description passes this test, it will produce high-quality AI-generated tests and metrics.
+If your description passes this test, it will produce high-quality AI-generated datasets and metrics.
 
 ## Next Steps
 

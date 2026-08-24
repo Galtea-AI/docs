@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 
 import requests
-from _test_helpers import create_test_product
+from _test_helpers import create_test_product, wait_for_dataset_ready
 from galtea import EndpointConnectionType, Galtea
 
 galtea = Galtea(api_key="YOUR_API_KEY")
@@ -51,7 +51,7 @@ try:
         name="Helpful financial information",
         description="The assistant provides helpful financial information.",
         type="POLICY",
-        test_type="BEHAVIOR",
+        dataset_type="BEHAVIOR",
     )
     galtea.specifications.link_metrics(
         specification_id=_spec.id,
@@ -59,7 +59,7 @@ try:
     )
 
     # Create a behavior test linked to the specification, then wait for test cases
-    _test = galtea.tests.create(
+    _dataset = galtea.datasets.create(
         product_id=product_id,
         name=f"job-status-test-{run_identifier}",
         type="BEHAVIOR",
@@ -68,18 +68,15 @@ try:
         strategies=["written"],
         specification_id=_spec.id,
     )
+    wait_for_dataset_ready(galtea, _dataset.id)
     for _ in range(120):
-        _t = galtea.tests.get(test_id=_test.id)
-        if _t.uri:
-            break
-        print("Waiting for test file to be ready...")
-        time.sleep(1)
-    for _ in range(120):
-        _test_cases = galtea.test_cases.list(test_id=_test.id)
+        _test_cases = galtea.test_cases.list(dataset_id=_dataset.id)
         if len(_test_cases) > 0:
             break
         print("Waiting for test cases to be generated...")
         time.sleep(1)
+    else:
+        raise ValueError("Test cases were not generated in time. Test id: " + _dataset.id)
 
     # job_id is the value returned as result["jobId"] from evaluations.run()
     job_id = galtea.evaluations.run(version_id=version_id)["jobId"]
