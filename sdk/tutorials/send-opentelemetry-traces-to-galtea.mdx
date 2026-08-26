@@ -177,7 +177,6 @@ provider.add_span_processor(BatchSpanProcessor(exporter))
             traces_endpoint: https://otel.platform.prod-main.galtea.ai:4318/otel/traces
             headers:
               Authorization: "Bearer ${env:GALTEA_API_KEY}"
-            encoding: json
             compression: gzip
 
         service:
