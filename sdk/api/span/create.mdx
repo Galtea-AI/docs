@@ -27,7 +27,7 @@ manual_span = galtea.spans.create(
   The name of the tool or function that was called.
 </ResponseField>
 <ResponseField name="type" type="string" optional>
-  SpanType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Span Types](/concepts/product/version/session/span#span-types) for details. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+  SpanType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Span Types](/concepts/product/version/session/span#span-types) for details. Other string values are sent to the API unchanged. The API never drops a span for an unrecognized type. It normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 </ResponseField>
 <ResponseField name="description" type="string" optional>
   Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1MB.

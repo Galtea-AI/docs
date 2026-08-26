@@ -150,7 +150,7 @@ def agent(user_input: str) -> str:
 | `guardrail` | `GUARDRAIL` | Content safety check |
 
 <Info>
-  Unknown Langfuse observation types are automatically mapped to `SPAN` in Galtea. Your spans are never dropped.
+  An observation type Galtea does not recognize is sent as `SPAN`. Your spans are never dropped.
 </Info>
 
 ### Context manager API

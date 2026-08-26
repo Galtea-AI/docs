@@ -251,7 +251,7 @@ When a span becomes a [Span](/concepts/product/version/session/span) record — 
 2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
 3. **Recognized managed-platform span shapes** — platform-specific formats Galtea knows.
 
-If you set no attributes, spans are still ingested.
+If you set no attributes, spans are still ingested. A span type Galtea does not recognize is also ingested: Galtea normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 
 <Note>
   These keys had different names before version 5.0.0, and Galtea still reads the old ones. See
@@ -263,7 +263,7 @@ If you set no attributes, spans are still ingested.
   <Tab title="Galtea span attributes">
     | Attribute Key | Type | Maps To | Description |
     |---|---|---|---|
-    | `galtea.span.type` | `string` | `type` | Span type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. |
+    | `galtea.span.type` | `string` | `type` | Span type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. Any other value is normalized to one of these types instead of being rejected, and your original label is kept in `metadata` under `galtea.span.original_type`. |
     | `galtea.span.description` | `string` | `description` | Human-readable description of the operation. Max 1MB. |
     | `galtea.span.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10MB. |
     | `galtea.span.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10MB. |

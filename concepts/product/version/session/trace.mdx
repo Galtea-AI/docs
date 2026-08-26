@@ -69,6 +69,10 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
   Cost information for the trace.
 </ResponseField>
 
+<ResponseField name="Dropped Span Count" type="int" optional>
+  How many spans sent with this trace were not stored. Empty when none were. A span is dropped when its data is invalid, for example an empty name or a negative latency, and each drop adds to this count as more spans arrive. An unrecognized span **type** never causes a drop; Galtea [normalizes it](/concepts/product/version/session/span#span-types) instead. The dashboard shows the count on the trace so you do not have to read a log to learn a span is missing.
+</ResponseField>
+
 <ResponseField name="OpenTelemetry Trace ID" type="string" optional>
   The W3C trace ID for the root span created during [Direct Inference](/concepts/product/endpoint-connection). This is the OpenTelemetry trace id, not the id of this Trace, which is `id`. It is the same trace ID propagated to your endpoint via the `traceparent` header, enabling correlation with your OTEL-instrumented service. Only present when the inference was generated via Direct Inference with W3C trace context propagation enabled.
 </ResponseField>

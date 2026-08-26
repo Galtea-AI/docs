@@ -81,6 +81,12 @@ Spans are classified by type to help you understand the nature of each operation
 | **EMBEDDING** | Embedding model calls. | Vector embedding operations for semantic search or similarity. |
 | **GUARDRAIL** | Components that protect against malicious content. | Safety checks that filter or validate inputs/outputs. |
 
+Send the type your own system uses. Galtea never drops a span for a type it does not recognize. It normalizes the value to one of the types above, and keeps your original label in the span's `metadata` under the key `galtea.span.original_type`.
+
+Galtea reads the type you sent and never the span name, so a step you called `search_tool` is only a **TOOL** if you typed it as one. A label that names a handoff or a transfer to an agent becomes **AGENT**. A label that ends in `tool` becomes **TOOL**. Everything else becomes **SPAN**, including a span you send with no type at all.
+
+A span is dropped only when its **data** is invalid, for example an empty name or a negative latency. One dropped span never costs the others sent with it, and the count appears on the [trace](/concepts/product/version/session/trace) so you can see it without reading a log.
+
 ### Retrieval context in RETRIEVER spans
 
 If your product uses RAG (retrieval-augmented generation, where the model reads retrieved documents before answering), the convention for recording what was retrieved is a **RETRIEVER** span:
@@ -128,7 +134,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Type" type="SpanType" optional>
-  The type of operation: SPAN, GENERATION, EVENT, AGENT, TOOL, CHAIN, RETRIEVER, EVALUATOR, EMBEDDING, or GUARDRAIL.
+  The type of operation: SPAN, GENERATION, EVENT, AGENT, TOOL, CHAIN, RETRIEVER, EVALUATOR, EMBEDDING, or GUARDRAIL. A stored span always carries one of these, because Galtea normalizes any other value you send. See [Span Types](#span-types).
 </ResponseField>
 
 <ResponseField name="Description" type="string" optional>

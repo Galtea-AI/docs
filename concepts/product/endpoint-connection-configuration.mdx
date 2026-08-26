@@ -107,7 +107,7 @@ A JSON object defining how to extract values from the API response using [JSONPa
 | `output` | **Required.** The AI's response content. |
 | `session_id` | Stored as the external session identifier, accessible via [`custom_id`](/concepts/product/version/session#session-properties). |
 | `retrieval_context` | Stored as a `RETRIEVER` span for RAG evaluations (derived at read time, not a directly-readable field). |
-| `traces` | Extracts an array of [span](/concepts/product/version/session/span) objects and stores them linked to the trace. Each object should contain at least a `name` field and can include any of the [Span properties](/concepts/product/version/session/span#span-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`. |
+| `traces` | Extracts an array of [span](/concepts/product/version/session/span) objects and stores them linked to the trace. Each object should contain at least a `name` field and can include any of the [Span properties](/concepts/product/version/session/span#span-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`. A `type` Galtea does not recognize is normalized to a known span type, and your original label is kept in that span's `metadata` under `galtea.span.original_type`. Galtea stores every valid span and drops only the invalid ones, and shows the [dropped count](/concepts/product/version/session/trace) on the trace. |
 | Any other key | Stored in session metadata and available as `{{ key }}` in templates. |
 
 ### JSONPath Syntax Reference

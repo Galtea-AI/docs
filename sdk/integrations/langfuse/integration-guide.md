@@ -126,7 +126,7 @@ with start_as_current_observation(
 
 The `langfuse.` client prefix is no longer needed for the root call — the wrapper calls `get_client()` internally. But keeping the client does not introduce any issues, since it is singleton and refers to the same object.
 
-> **Tip:** Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that span type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the span name.
+> **Tip:** Set `as_type` to the step's real type. If you log a custom retriever, tool, or agent step as a plain span, set `as_type="retriever"` (or the matching type). Galtea then imports it as that span type instead of a generic `SPAN`. Galtea reads the exported observation's `type` field, which Langfuse sets from `as_type`. It never guesses the type from the observation name.
 
 **CallbackHandler (LangChain)**
 
@@ -190,4 +190,4 @@ No. Galtea only receives span data (name, type, input, output, timing, hierarchy
 
 **Q: What if Langfuse adds new observation types?**
 
-Unknown types are automatically mapped to `SPAN` in Galtea. Your spans are never dropped.
+An observation type Galtea does not recognize is sent as `SPAN`. Your spans are never dropped.
