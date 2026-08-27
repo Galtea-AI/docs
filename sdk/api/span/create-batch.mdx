@@ -5,7 +5,11 @@ description: "Create multiple spans in a single API call."
 ---
 
 ## Returns
-Returns a list of [Span](/concepts/product/version/session/span) objects.
+Returns a list of the created [Span](/concepts/product/version/session/span) objects.
+
+The call is a partial success, not all-or-nothing. The API creates every valid span and drops only the ones with a data problem, such as an empty name, a negative latency, an oversize payload, or an unknown trace. So the returned list can be shorter than the list you sent. The SDK logs one warning that names each dropped span by its position in your list, with the reason. Each drop is also counted on the span's [trace](/concepts/product/version/session/trace), so the dashboard shows it too. If the API drops every span in the call, it returns a 400 error instead.
+
+One case is not a partial success: a span belonging to a trace you are not allowed to write returns a 403 and creates nothing at all.
 
 ## Example
 
@@ -44,5 +48,5 @@ galtea.spans.create_batch(
 | `metadata` | `dict` | No | Additional custom metadata |
 
 <Note>
-  For `type`, other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+  For `type`, other string values are sent to the API unchanged. The API never drops a span for an unrecognized type. It normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 </Note>

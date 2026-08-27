@@ -31,7 +31,7 @@ trace = galtea.traces.generate(
   Custom span name. Defaults to the function name.
 </ResponseField>
 <ResponseField name="type" type="string" optional>
-  SpanType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Span Types](/concepts/product/version/session/span#span-types) for details. An unrecognized value emits a `UserWarning` and is still sent as-is, so values added in newer API versions can be used without upgrading the SDK.
+  SpanType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Span Types](/concepts/product/version/session/span#span-types) for details. An unrecognized value emits a `UserWarning` and is sent as `SPAN`, so your original label is not stored. Pass the label to [`spans.create`](/sdk/api/span/create) instead when you need Galtea to keep it.
 </ResponseField>
 <ResponseField name="log_args" type="bool" optional>
   Whether to log function arguments as input data. Default: `True`.
