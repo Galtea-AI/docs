@@ -1,0 +1,33 @@
+<Update label="2026-08-27" description="Faster Organization Page, Analytics Fixes, and Better Trace Imports">
+
+## Organization Pages Open Faster
+
+Opening an organization used to take around 4 seconds while eight analytics queries competed for database capacity. That work is now done far more efficiently, so the page and its product cards render noticeably faster.
+
+- The heaviest analytics queries were rewritten to stop re-reading the same rows multiple times per request.
+- Two new database indexes let the database answer coverage and score queries directly, instead of walking back to the full table for every row.
+- API responses are now compressed. One organization page used to transfer 2.4 MB of JSON in the clear.
+- Every product card's last-evaluation date now loads in a single request for the whole page, instead of one request per card.
+
+## Analytics Improvements
+
+- **Group by opens where the data is:** Analytics used to default to grouping by **Specification**, which could leave the page showing an empty **Scores** panel even when a product had evaluated metrics. It now opens on whichever dimension, **Specification** or **Metric**, actually has scored data.
+- **Accurate test case counts:** A product's **Total** and **Not Evaluated** counts no longer include platform-wide test cases the product never actually ran. This previously inflated **Not Evaluated** for the vast majority of products platform-wide.
+- **"Performance by Dataset Type" removed:** This section, which grouped scores by how a dataset was generated, is gone. The merged Analytics view with its filters already covers the same ground.
+
+## Trace and Span Import Improvements
+
+- **Unrecognized spans no longer vanish:** If your agent labels a [trace](/concepts/product/version/session/trace) span with a type Galtea doesn't recognize, that span (and its whole turn) used to be silently dropped. It's now mapped to a sensible type instead, and a span dropped for a data-quality reason shows up as a warning on the turn.
+- **Original span names are kept:** When Galtea replaces a span's name with one derived from its attributes, for example a GenAI `execute_tool` span whose name is taken from `gen_ai.tool.name`, the name your producer sent is now kept in the span's metadata.
+- **Broader import support:** Traces imported through MLflow, the OpenTelemetry GenAI semantic conventions, or Mistral now get a real span type instead of falling back to a generic one. MLflow and the GenAI conventions are read from the span kind the producer already declares; a Mistral LLM call is recognized from its own attributes. This improves `tools_used` and `retrieval_context` detection for those integrations. See [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) for the span conventions Galtea reads.
+
+## API Key Limits and Emails
+
+- **API key limit, visible everywhere:** The dashboard now shows your subscription's API key limit on every screen that already shows a plan limit, and clarifies that it's counted **per user**, not per organization.
+- **Accurate API key emails:** The email you get when an API key is created, regenerated, or revoked now states only what actually changed for you, instead of a generic warning that all your previous keys stopped working.
+
+## Platform Improvements
+
+- **Organization link goes to Products:** The sidebar's **Organization** entry now opens the organization hub on the **Products** tab, matching where the sidebar logo and post-login landing already take you, instead of opening on **Users**.
+
+</Update>
