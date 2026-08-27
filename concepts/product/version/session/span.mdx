@@ -83,7 +83,15 @@ Spans are classified by type to help you understand the nature of each operation
 
 Send the type your own system uses. Galtea never drops a span for a type it does not recognize. It normalizes the value to one of the types above, and keeps your original label in the span's `metadata` under the key `galtea.span.original_type`.
 
-Galtea reads the type you sent and never the span name, so a step you called `search_tool` is only a **TOOL** if you typed it as one. A label that names a handoff or a transfer to an agent becomes **AGENT**. A label that ends in `tool` becomes **TOOL**. Everything else becomes **SPAN**, including a span you send with no type at all.
+Galtea reads the type you sent and never the span name, so a step you called `search_tool` is only a **TOOL** if you typed it as one. The rules, in order:
+
+- A value matching one of the types above is kept as it is, in any capitalization.
+- A word for a type Galtea spells differently maps to it: `LLM`, `CHAT_MODEL`, `chat`, `text_completion` and `generate_content` become **GENERATION**, `embeddings` becomes **EMBEDDING**, and `create_agent` and `invoke_agent` become **AGENT**.
+- A label that names a handoff or a transfer to an agent becomes **AGENT**.
+- A label that ends in `tool` becomes **TOOL**.
+- Everything else becomes **SPAN**.
+
+A span you send with no type at all becomes **SPAN** too. The one exception is an OpenTelemetry span, where Galtea falls back to the span kind your own platform declares. See [Send OpenTelemetry traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) for that order.
 
 A span is dropped only when its **data** is invalid, for example an empty name or a negative latency. One dropped span never costs the others sent with it, and the count appears on the [trace](/concepts/product/version/session/trace) so you can see it without reading a log.
 

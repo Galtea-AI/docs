@@ -252,6 +252,15 @@ When a span becomes a [Span](/concepts/product/version/session/span) record — 
 
 If you set no attributes, spans are still ingested. A span type Galtea does not recognize is also ingested: Galtea normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 
+The **span type** follows its own order, because only `galtea.span.type` is a Galtea attribute:
+
+1. **`galtea.span.type`** — always wins.
+2. **The span kind your platform already declares** — MLflow's `mlflow.spanType`, or a span shape that names the kind by itself.
+3. **`gen_ai.operation.name`** — the OpenTelemetry GenAI operation, such as `chat` or `embeddings`.
+4. **`SPAN`** — when nothing above names a kind.
+
+So a span imported from an instrumented platform is typed without any Galtea attribute: an MLflow `RETRIEVER` span becomes a `RETRIEVER` span, which is what Galtea reads retrieval context from. A vendor word Galtea spells differently still maps, so MLflow's `LLM` becomes `GENERATION`.
+
 <Note>
   These keys had different names before version 5.0.0, and Galtea still reads the old ones. See
   [Dataset, Trace, and Span Renames](/sdk/migration-guides/entity-renames) if your collector already
@@ -277,12 +286,18 @@ If you set no attributes, spans are still ingested. A span type Galtea does not 
     - the legacy `gen_ai.prompt` / `gen_ai.completion` attributes
     - the GenAI content span events
 
+    `gen_ai.operation.name` sets the span type when you send no `galtea.span.type`: `chat`, `text_completion` and `generate_content` become `GENERATION`, `embeddings` becomes `EMBEDDING`, `execute_tool` becomes `TOOL`, and `create_agent` / `invoke_agent` become `AGENT`.
+
+    On an `execute_tool` span, send `gen_ai.tool.name` as well. The conventions name that span `execute_tool get_weather`, and Galtea stores the span name as the tool name. So without the attribute the tool reads as `execute_tool get_weather`, and a `tool_correctness` metric never matches it against `get_weather`.
+
     <Tip>
-      If your system is already instrumented with plain OpenTelemetry GenAI conventions, input and output map with **zero** Galtea-specific attributes.
+      If your system is already instrumented with plain OpenTelemetry GenAI conventions, input, output and span type map with **zero** Galtea-specific attributes.
     </Tip>
   </Tab>
   <Tab title="Managed platforms">
     For managed platforms, Galtea recognizes some span shapes automatically, with no configuration needed: platforms whose telemetry carries the abraxas span-event format (such as Mistral's agent platform), and platforms instrumented with [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) (recognized from MLflow's own `mlflow.*` span attributes).
+
+    These shapes also set the **span type**. MLflow's `mlflow.spanType` maps onto the Galtea span type (`RETRIEVER`, `TOOL`, `CHAIN`, `AGENT` and `EMBEDDING` map directly; `LLM` and `CHAT_MODEL` become `GENERATION`), and an abraxas LLM-call span becomes a `GENERATION`. MLflow's `UNKNOWN` names no kind, so a span carrying it falls through to the next source in the order above.
   </Tab>
 </Tabs>
 
