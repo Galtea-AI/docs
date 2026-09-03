@@ -148,7 +148,7 @@ Each section points to a different place to look:
   <tbody>
     <tr>
       <td>**Cannot be read by the judge**</td>
-      <td>The value is there, but the judge cannot use it. Today this means one thing: the test case input attaches a file. Evaluators cannot read input files yet, so every metric that reads `input` or `conversation_turns` is skipped, whether or not the input also carries text. A file on a trace you logged yourself does not trigger this: the judge scores the text beside it. Score these test cases with a metric that does not read the input, such as a JSON Field Match metric or a self-hosted metric, or remove the file. Nine of the eleven predefined Galtea metrics declare `input`, so expect most of them to skip.</td>
+      <td>The value is there, but the judge cannot use it. Today this means one thing: the test case input attaches a file. Evaluators cannot read input files yet, so every metric that reads `input` or `conversation_turns` is skipped, whether or not the input also carries text. A file on a trace you logged yourself does not trigger this: the judge scores the text beside it. Score these test cases with a metric that does not read the input, such as a JSON Field Match metric or a self-hosted metric, or remove the file. Nine of the eleven predefined Galtea metrics declare `input`, so expect most of them to skip. The Run Evaluation dialog greys these metrics out before the run, with the same reason under the name.</td>
     </tr>
     <tr>
       <td>**Missing from product settings**</td>
