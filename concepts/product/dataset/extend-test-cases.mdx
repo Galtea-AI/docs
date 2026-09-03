@@ -20,7 +20,7 @@ This is the right way to grow a generated dataset — for example an onboarding 
 Both add more cases to a dataset, but they work differently:
 
 - **Extend** re-runs the dataset's **original generator** (for [Behavior](/concepts/product/dataset/behavior-datasets), [Security & Safety](/concepts/product/dataset/security-datasets), or [Accuracy](/concepts/product/dataset/accuracy-datasets)). It is available only for datasets Galtea generated.
-- **[Data Augmentation](/concepts/product/dataset/data-augmentation)** creates new cases by learning from the dataset's **existing cases**. It works on any dataset that has cases, including ones you uploaded.
+- **[Data Augmentation](/concepts/product/dataset/data-augmentation)** creates new cases by learning from the dataset's **existing cases**. It works on any dataset that has text-only cases, including ones you uploaded, but not one whose cases carry audio or file inputs.
 
 In the dashboard you will see one button or the other, depending on the dataset: **Extend Test Cases** for a generated dataset, **Augment Test Cases** for a dataset that cannot be extended (for example one you uploaded from a file).
 
