@@ -1,0 +1,3 @@
+input,expected_output,input_file_paths
+Summarize this lease,A 12-month lease at 900 EUR per month,path/to/contrato-arrendamiento.pdf
+,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/contrato-arrendamiento.pdf

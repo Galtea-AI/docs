@@ -39,7 +39,77 @@ The Galtea SDK allows you to create, view, and manage test cases programmaticall
   The input data used for inference on the LLM product's version. This is the question or prompt that will be sent to your AI model. **Example**: "What is the operating system of the Samsung Galaxy A8?"
 
   When an [Input Schema](/concepts/product/endpoint-connection-input-schema) is defined on the endpoint connection, inputs become structured JSON objects with multiple typed fields instead of a single string.
+
+  An input can also carry uploaded files, for products that read documents. See [File inputs](#file-inputs) below.
 </ResponseField>
+
+### File inputs
+
+A test case input can attach one or more files beside the text, or carry only files and no text at all. Use this when the thing you are testing is a document: a scanned contract, an invoice, a report.
+
+With the SDK, name the local files and it uploads them for you:
+
+```python
+test_case = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    input="Summarize this contract",
+    input_file_paths=["path/to/contrato-arrendamiento.pdf"],
+)
+```
+
+Leave `input` out to create a test case that is only a document:
+
+```python
+document_only = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    input_file_paths=["path/to/contrato-arrendamiento.pdf"],
+)
+```
+
+Read the files back from `test_case.input_files`.
+
+To attach files to many test cases at once, add an `input_file_paths` column to your dataset CSV. Separate several paths with `;` or `|`. The SDK uploads each file and rewrites the row before the file is sent, so the column never reaches the platform and the paths stay private:
+
+```csv
+input,expected_output,input_file_paths
+Summarize this contract,A 12-month lease at 900 EUR,contrato-arrendamiento.pdf
+,Total due 1450 EUR,factura.pdf;anexo.pdf
+```
+
+A cell may also hold a storage URI from an earlier upload instead of a local path. That file is attached as it is, so one document can serve several datasets without being uploaded again.
+
+```python
+dataset = galtea.datasets.create(
+    name=f"document-dataset-{run_identifier}",
+    type="ACCURACY",
+    product_id=product_id,
+    dataset_file_path="path/to/document_dataset.csv",
+)
+```
+
+Through the API instead, upload each file first and send the storage URI the upload returned. The files ride the input as a `content` array:
+
+```json
+{
+  "user_message": "Summarize this contract",
+  "content": [
+    { "type": "file", "uri": "s3://bucket/files/org_123/2f6c….pdf" }
+  ]
+}
+```
+
+`mimeType` is filled from the stored file. `filename` is filled too on Galtea Cloud, so the download offers the name you uploaded rather than a random id. A self-hosted deployment on Azure Blob Storage cannot keep that name, so send `filename` yourself there. Your own values always override the filled ones. The SDK sends both, read from the local file, so they are right on every deployment.
+
+These limits apply, and each one is refused with a clear error rather than failing later:
+
+- **20 MB in total, and at most 20 files, per test case input.** There is no per-file size limit.
+- **These file types only**: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. The type is read from the file name. Audio belongs on a voice test case instead.
+- **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
+- **Galtea cannot run the inference for you.** Send the document to your own pipeline and upload the output as an inference result.
+
+**Every metric that reads the input is skipped**, with or without text alongside the file, because evaluators cannot read files yet. Conversation-level metrics skip a session on such a test case too. Score these test cases with a metric that does not read the input, such as a JSON Field Match metric comparing your output field by field. The rule applies to the test case only: a trace you log yourself is scored on whatever text its input carries, and any file or audio part on it is stored as sent and ignored by the judge. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
+
+Editing a test case that has files follows the usual [revision](/concepts/product/dataset/test-case#revisions) behaviour: a revision may add or replace files, and the superseded revision keeps its own. Send `input` as the whole object, including the files you want to keep. **The edit must leave at least one file.** Plain text is refused, and so is an object with an empty `content`, because either one would turn a document test case into a text one and every metric that skipped it would start scoring it. To get the text-only test case, create it and delete this one.
 
 <ResponseField name="Expected Output" type="Text">
   The expected output for the evaluation. This represents the ideal response you want your AI model to provide. **Example**: "The operating system of the Samsung Galaxy A8 is Android 8.1."

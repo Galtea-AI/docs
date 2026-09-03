@@ -410,6 +410,7 @@
                     "pages": [
                       "sdk/api/test-case/service",
                       "sdk/api/test-case/create",
+                      "sdk/api/test-case/upload-input-file",
                       "sdk/api/test-case/list",
                       "sdk/api/test-case/get",
                       "sdk/api/test-case/delete"

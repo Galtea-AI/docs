@@ -1,0 +1,37 @@
+---
+title: 'Upload Input File'
+sidebarTitle: "Upload Input File"
+description: "Upload a local file so it can be attached to a test case input."
+---
+
+Use this when you build the test case input yourself. To attach files while creating a test case, pass `input_file_paths` to [Create Test Case](/sdk/api/test-case/create) instead: it is shorter and does the same upload.
+
+The one thing this method gives you that `input_file_paths` does not is reuse. Upload a document once and attach the same `InputFile` to many test cases, rather than uploading it per test case.
+
+## Returns
+
+Returns an `InputFile` with `uri`, `filename` and `mime_type`. Place it in the input's `content` list.
+
+The `uri` still carries the upload's signature and expires. Galtea replaces it with the canonical, signature-free reference when the test case is written, and that is the one `test_case.input_files` reads back. Store that one, not this one.
+
+## Example
+
+```python
+lease = galtea.test_cases.upload_input_file("path/to/contrato-arrendamiento.pdf")
+
+for question in ["Which clauses limit the cover?", "What is the excess?"]:
+    galtea.test_cases.create(
+        dataset_id=dataset.id,
+        input={"user_message": question, "content": [lease.model_dump(by_alias=True)]},
+    )
+```
+
+## Parameters
+
+<ResponseField name="file_path" type="string" required>
+  Path to the file on the machine running the SDK. One file may be up to 20 MB, and must be one of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. A storage URI is refused: there is nothing on this machine to upload, so attach it directly instead.
+</ResponseField>
+
+<Warning>
+  A test case carrying files is **skipped** by every metric that reads the input, because evaluators cannot read files yet. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
+</Warning>

@@ -27,6 +27,15 @@ test_case = galtea.test_cases.create(
 <ResponseField name="input" type="string" optional>
   The input for the test case. For Accuracy and Safety datasets, this is the question or prompt you want to send to your model for evaluation. For Behavior datasets, this is the first user message to use in the conversation (bypassing the simulator for the first turn).
 </ResponseField>
+<ResponseField name="input_file_paths" type="list[string]" optional>
+  Files to attach to the input, for a product that reads documents. Each entry is a local path the SDK uploads, or a storage URI from an earlier upload, which is attached without uploading the file again. `input` stays optional, so a test case may hold files and no text at all.
+
+  At most 20 files totalling 20 MB, of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. To attach one already-uploaded file to several test cases, use [Upload Input File](/sdk/api/test-case/upload-input-file) instead.
+
+  <Warning>
+    Every metric that reads the input is **skipped** on such a test case, with or without text alongside the file, because evaluators cannot read files yet. Score it with a metric that does not read the input. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
+  </Warning>
+</ResponseField>
 <ResponseField name="expected_output" type="string" optional>
   The expected output for the input given. This is the correct answer or response you want to evaluate against.
 </ResponseField>
