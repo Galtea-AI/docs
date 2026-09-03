@@ -98,7 +98,9 @@ Through the API instead, upload each file first and send the storage URI the upl
 }
 ```
 
-`mimeType` is filled from the stored file. `filename` is filled too on Galtea Cloud, so the download offers the name you uploaded rather than a random id. A self-hosted deployment on Azure Blob Storage cannot keep that name, so send `filename` yourself there. Your own values always override the filled ones. The SDK sends both, read from the local file, so they are right on every deployment.
+`mimeType` is filled from the stored file. `filename` is filled too on Galtea Cloud, so the download offers the name you uploaded rather than a random id. A self-hosted deployment on Azure Blob Storage cannot keep that name, so send `filename` yourself there. Your own values override the filled ones, with one exception: `sizeBytes` comes back measured from the stored file, and a value you send for it is ignored. The 20 MB limit below is read from that measurement. The SDK sends `filename` and `mimeType`, read from the local file, so they are right on every deployment.
+
+You can also attach a file from the dashboard, on the test case create and update forms. An attached image shows a thumbnail; click it to view the image at full size.
 
 These limits apply, and each one is refused with a clear error rather than failing later:
 

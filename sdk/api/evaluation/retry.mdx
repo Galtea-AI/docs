@@ -19,7 +19,7 @@ Returns a dictionary containing retry results:
 
 ## Parameters
 <ResponseField name="id" type="str | list[str]" required>
-  Single evaluation ID or list of evaluation IDs to retry. Only evaluations with status `FAILED` can be retried.
+  Single evaluation ID or list of evaluation IDs to retry. Only evaluations whose `canRetry` field is `true` can be retried, which covers both `FAILED` and `SKIPPED` ones. A retry re-scores the output already stored on the session, so it cannot fix a skip whose cause is that output.
 </ResponseField>
 
 ## Retry Limits
