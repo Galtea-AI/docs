@@ -148,7 +148,7 @@ Each section points to a different place to look:
   <tbody>
     <tr>
       <td>**Cannot be read by the judge**</td>
-      <td>The value is there, but the judge cannot use it. Today this means one thing: the test case input attaches a file. Evaluators cannot read input files yet, so every metric that reads `input` or `conversation_turns` is skipped, whether or not the input also carries text. A file on a trace you logged yourself does not trigger this: the judge scores the text beside it. Score these test cases with a metric that does not read the input, such as a JSON Field Match metric or a self-hosted metric, or remove the file. Nine of the eleven predefined Galtea metrics declare `input`, so expect most of them to skip. The Run Evaluation dialog greys these metrics out before the run, with the same reason under the name.</td>
+      <td>The value is there, but the judge cannot use it. The judge is sent the conversation turns, so the turns decide this: a metric that reads `input` is skipped when no turn is left with text of its own, counting neither a prompt sent beside a file nor an audio part with no transcript. One turn carrying text of its own is enough, so an attachment on one turn of a long session does not skip the rest. Score those sessions with a metric that does not read the input, such as a JSON Field Match metric or a self-hosted metric. A metric that reads `conversation_turns` is never skipped for this: the turns are scored as you logged them. Nine of the eleven predefined Galtea metrics declare `input`, so expect most of them to skip on a session carrying a document. The Run Evaluation dialog greys these metrics out before the run, with the same reason under the name.</td>
     </tr>
     <tr>
       <td>**Missing from product settings**</td>
@@ -175,7 +175,7 @@ Each section points to a different place to look:
 
 A skipped evaluation consumes no credits, and it is never dispatched to the evaluator.
 
-Once you have provided the missing data, re-run the evaluation against the same session. A **Cannot be read by the judge** section is the exception: no data is missing, so re-running changes nothing until you pick a different metric or remove the file.
+Once you have provided the missing data, re-run the evaluation against the same session. A **Cannot be read by the judge** section is the exception: no data is missing, so re-running changes nothing until you pick a different metric or log the turn with the text you want scored, without the file.
 
 ## Related
 

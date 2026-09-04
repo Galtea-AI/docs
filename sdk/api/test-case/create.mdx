@@ -33,7 +33,7 @@ test_case = galtea.test_cases.create(
   At most 20 files totalling 20 MB, of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. To attach one already-uploaded file to several test cases, use [Upload Input File](/sdk/api/test-case/upload-input-file) instead.
 
   <Warning>
-    Every metric that reads the input is **skipped** on such a test case, with or without text alongside the file, because evaluators cannot read files yet. Score it with a metric that does not read the input. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
+    Evaluators cannot read files yet, so the judge is given the text of your conversation turns with the files stripped out. A metric that reads the input is **skipped** when no turn is left with text of its own, which is what a single-turn document run always looks like. Log the text your pipeline extracted as the turn input, without the file, to have it scored, or use a metric that reads only the output. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
   </Warning>
 </ResponseField>
 <ResponseField name="expected_output" type="string" optional>

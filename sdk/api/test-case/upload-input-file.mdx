@@ -33,5 +33,5 @@ for question in ["Which clauses limit the cover?", "What is the excess?"]:
 </ResponseField>
 
 <Warning>
-  A test case carrying files is **skipped** by every metric that reads the input, because evaluators cannot read files yet. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
+  Evaluators cannot read files yet. A metric that reads the input is **skipped** when no turn is left with text of its own; log the text your pipeline extracted as the turn input, without the file, to have it scored. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
 </Warning>
