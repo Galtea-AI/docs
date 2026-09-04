@@ -66,7 +66,7 @@ Docs-specific ADRs live in `docs/adr/`. Consult them before making structural ch
 
 ## Local Development
 
-Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`npm run dev`, then `python scripts/run.py` to validate and `python scripts/run.py --build` to build).
+Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`python scripts/run.py` to preview, `--build` to validate). It also covers the Node version Mint needs and why the preview port is fixed.
 
 **After editing any MDX file, run `mint validate` from `docs/` (Node 22).** It is the fast local stand-in for the CI docs build and the only check that reports MDX parse errors. `mint broken-links` does **not**: it reports 0 parse errors on a file the build rejects, so a green run there proves nothing about syntax.
 

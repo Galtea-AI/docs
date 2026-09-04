@@ -53,7 +53,7 @@ With the SDK, name the local files and it uploads them for you:
 test_case = galtea.test_cases.create(
     dataset_id=dataset.id,
     input="Summarize this contract",
-    input_file_paths=["path/to/contrato-arrendamiento.pdf"],
+    input_file_paths=["path/to/lease-agreement.pdf"],
 )
 ```
 
@@ -62,18 +62,18 @@ Leave `input` out to create a test case that is only a document:
 ```python
 document_only = galtea.test_cases.create(
     dataset_id=dataset.id,
-    input_file_paths=["path/to/contrato-arrendamiento.pdf"],
+    input_file_paths=["path/to/lease-agreement.pdf"],
 )
 ```
 
-Read the files back from `test_case.input_files`.
+Read the files back from `test_case.input_files`. To run your own pipeline over an attached file, fetch its bytes with [`galtea.storage.download()`](/sdk/api/storage/download), passing the `InputFile` straight from `test_case.input_files`. [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs) walks that whole round trip, from the CSV to a scored answer.
 
 To attach files to many test cases at once, add an `input_file_paths` column to your dataset CSV. Separate several paths with `;` or `|`. The SDK uploads each file and rewrites the row before the file is sent, so the column never reaches the platform and the paths stay private:
 
 ```csv
 input,expected_output,input_file_paths
-Summarize this contract,A 12-month lease at 900 EUR,contrato-arrendamiento.pdf
-,Total due 1450 EUR,factura.pdf;anexo.pdf
+Summarize this contract,A 12-month lease at 900 EUR,lease-agreement.pdf
+,Total due 1450 EUR,invoice.pdf;annex.pdf
 ```
 
 A cell may also hold a storage URI from an earlier upload instead of a local path. That file is attached as it is, so one document can serve several datasets without being uploaded again.

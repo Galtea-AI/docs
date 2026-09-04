@@ -1,0 +1,42 @@
+---
+title: 'Upload File'
+sidebarTitle: "Upload"
+description: "Upload a local file to the platform's object storage."
+---
+
+Attaching a file to a test case? Use [`test_cases.upload_input_file()`](/sdk/api/test-case/upload-input-file) or pass `input_file_paths` to [`test_cases.create()`](/sdk/api/test-case/create) instead: both call this method for you and return the reference in the shape a test case expects.
+
+Reach for this method directly to store a file for another purpose, or when you need the raw URI rather than an `InputFile`.
+
+## Returns
+
+Returns the URI the file is stored under. It still carries the upload's signature and expires; the API replaces it with the canonical, signature-free reference wherever it is persisted.
+
+## Example
+
+```python
+uri = galtea.storage.upload("path/to/lease-agreement.pdf")
+```
+
+## Parameters
+
+<ResponseField name="file_path" type="string" required>
+  Path to the file on the machine running the SDK.
+</ResponseField>
+<ResponseField name="file_type" type="string" default="file" optional>
+  What the file is for, which decides the folder it is stored under and who may read it. The default, `"file"`, is a test case input attachment. The platform also accepts `"groundTruth"`, `"testFile"`, `"testCaseExport"`, `"dataCatalog"` and `"audio"`.
+</ResponseField>
+<ResponseField name="key" type="string" optional>
+  The name the platform records the object under. Defaults to the file's own name.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `Exception` | The platform returned no upload link, the transfer to storage failed, or storage accepted the file but returned no reference to it. |
+
+<Note>
+  A failed upload raises an error naming the file and the cause. The message never contains
+  the presigned link, which grants write access to that object for 24 hours.
+</Note>

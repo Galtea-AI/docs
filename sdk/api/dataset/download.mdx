@@ -18,6 +18,18 @@ downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./
 
   <Note>Deprecated alias: `test`.</Note>
 </ResponseField>
-<ResponseField name="output_directory" type="string" required>
+<ResponseField name="output_directory" type="string" default="the current directory" optional>
   The local directory path where the dataset file will be saved.
 </ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `ValueError` | No dataset was given, or it has no associated file. |
+| `Exception` | The download link expired, or the transfer from storage failed. |
+
+<Note>
+  A failed download raises instead of returning `None`, and the message never contains the
+  presigned link.
+</Note>

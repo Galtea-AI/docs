@@ -17,7 +17,7 @@ The `uri` still carries the upload's signature and expires. Galtea replaces it w
 ## Example
 
 ```python
-lease = galtea.test_cases.upload_input_file("path/to/contrato-arrendamiento.pdf")
+lease = galtea.test_cases.upload_input_file("path/to/lease-agreement.pdf")
 
 for question in ["Which clauses limit the cover?", "What is the excess?"]:
     galtea.test_cases.create(

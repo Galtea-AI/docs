@@ -694,8 +694,6 @@ dataset = wait_for_dataset_ready(galtea, dataset.id)
 # @start test_download
 downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")
 # @end test_download
-if downloaded_path is None:
-    raise ValueError("downloaded_path from download is None")
 
 # =============================================================================
 # CLEANUP RESOURCES in reverse order

@@ -31,7 +31,7 @@ if dataset is None:
 test_case = galtea.test_cases.create(
     dataset_id=dataset.id,
     input="Summarize this contract",
-    input_file_paths=["path/to/contrato-arrendamiento.pdf"],
+    input_file_paths=["path/to/lease-agreement.pdf"],
 )
 # @end test_case_with_input_file
 if not test_case.input_files:
@@ -41,14 +41,14 @@ print(f"Attached {test_case.input_files[0].filename} ({test_case.input_files[0].
 # @start test_case_file_only
 document_only = galtea.test_cases.create(
     dataset_id=dataset.id,
-    input_file_paths=["path/to/contrato-arrendamiento.pdf"],
+    input_file_paths=["path/to/lease-agreement.pdf"],
 )
 # @end test_case_file_only
 if document_only.input is not None:
     raise ValueError("a document-only test case should have no input text")
 
 # @start upload_input_file
-lease = galtea.test_cases.upload_input_file("path/to/contrato-arrendamiento.pdf")
+lease = galtea.test_cases.upload_input_file("path/to/lease-agreement.pdf")
 
 for question in ["Which clauses limit the cover?", "What is the excess?"]:
     galtea.test_cases.create(
