@@ -53,7 +53,13 @@ Once an evaluation completes, the following fields are available:
   - **Pending Human**: The evaluation is waiting for a human annotator to review and score it. This status is used for metrics with `source: "human_evaluation"`.
   - **Success**: The evaluation was processed successfully.
   - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried.
-  - **Skipped**: The evaluation was skipped because the metric validation failed (e.g., missing required parameters) or due to insufficient credits. The error message contains details about what was missing. Check the `canRetry` field to determine if this evaluation can be retried.
+  - **Skipped**: The evaluation could not produce a score. The error message names the cause. Common causes are:
+    - Metric validation failed, for example a required parameter is missing.
+    - The organization ran out of credits.
+    - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object.
+    - The judge model was unavailable.
+
+    Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
   - **Outdated**: The evaluation was produced by a [Monitor](/concepts/product/monitor), and the session then reopened and gained a new turn. The score describes an older version of the conversation, so it no longer counts as current: charts and averages leave it out, and the monitor scores the session again once it closes. The row keeps its score and its reason, so you can still read what it found.
 </ResponseField>
 
@@ -74,7 +80,7 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Can Retry" type="Boolean" default="false">
-  Indicates whether the evaluation can be retried. When `true`, the evaluation failed or was skipped due to a temporary condition (e.g., evaluation processing error, insufficient credits) and can be retried later. When `false`, the evaluation cannot be retried. Only evaluations with `canRetry=true` are eligible for the retry operation. Defaults to `false`.
+  Indicates whether the evaluation is eligible for the retry operation. When `false`, it cannot be retried at all. When `true`, it can, but a retry does not always help: `canRetry` is a permission, not a promise. A retry re-scores the output already stored on the session, so it succeeds for a temporary cause (an evaluation processing error, insufficient credits, a judge model that was unavailable) and skips again when the cause is the stored output itself. Defaults to `false`.
 </ResponseField>
   
 <ResponseField name="Human Evaluator ID" type="Text" optional>

@@ -88,6 +88,12 @@ simulation_result = galtea.simulator.simulate(
 <ResponseField name="enable_last_inference" type="bool">
   Whether to call your agent one final time after the simulated user sends their last message. Default: True.
   When enabled, your agent will have the opportunity to respond to the conversation's final user message, ensuring complete dialogue coverage for evaluation purposes.
+
+  <Warning>
+    Setting this to `False` needs Galtea SDK 5.2.0 or later. A turn stays pending until something answers it, and the platform skips every evaluation on a session that holds a pending turn. From 5.2.0 the SDK closes that unanswered last turn for you. An earlier release leaves it pending, so the session gets no scores.
+
+    Closing it is best effort. If that call fails, the simulation still returns normally and the session stays unscored, so check `result.metadata["last_turn_finalize_error"]` in any script or CI job.
+  </Warning>
 </ResponseField>
 
 <ResponseField name="include_metadata" type="bool">
@@ -100,6 +106,7 @@ simulation_result = galtea.simulator.simulate(
     When `agent_goes_first` is set to `True`:
     - Any `input` (first user message) defined on the associated `TestCase` will be ignored.
     - The first call to your agent will have an empty `messages` list in the `AgentInput`. Ensure your agent function can handle cases where `input_data.last_user_message_str()` returns `None` (or the messages list is empty).
+    - The opening turn is recorded as pending and only your agent's reply completes it. If the run stops during that first call, the turn stays pending and the session is not evaluated.
   </Note>
 </ResponseField>
 

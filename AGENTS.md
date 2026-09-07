@@ -66,7 +66,11 @@ Docs-specific ADRs live in `docs/adr/`. Consult them before making structural ch
 
 ## Local Development
 
-Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`npm run dev`, then `python scripts/run.py` to validate and `python scripts/run.py --build` to build).
+Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`python scripts/run.py` to preview, `--build` to validate). It also covers the Node version Mint needs and why the preview port is fixed.
+
+**After editing any MDX file, run `mint validate` from `docs/` (Node 22).** It is the fast local stand-in for the CI docs build and the only check that reports MDX parse errors. `mint broken-links` does **not**: it reports 0 parse errors on a file the build rejects, so a green run there proves nothing about syntax.
+
+**Write a component tag as a block, never with body text on the opening-tag line.** `<Warning>text` followed by a blank line makes MDX close the paragraph and fail with `Expected a closing tag for <Warning> ... before the end of paragraph`. Put the tag on its own line, indent the body, and close on its own line, as the `<Note>` blocks already do.
 
 **`.build/docs.json` is environment-rewritten, so never read it as the source of truth for a URL.** `run.py` calls `load_env_files()`, which loads `docs/.env` **only when `python-dotenv` is installed**, and then `override_docs_json_urls()` rewrites the built copy's `openapi` tab from `$GALTEA_API_URL` and its navbar href from `$DASHBOARD_URL`. `docs/.env` points both at the **dev** hosts. So the same command produces different output on two machines depending on what is installed, with no warning, and a container without dotenv silently gets the committed values instead.
 

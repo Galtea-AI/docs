@@ -43,7 +43,7 @@ trace = galtea.traces.create(
 </Accordion>
 
 <ResponseField name="input" type="string" optional>
-  The input text/prompt.
+  The input text/prompt. A dict is stored as sent, including any `content` array of file or audio parts; the judge reads only the text beside the parts.
 </ResponseField>
 <ResponseField name="output" type="string" optional>
   The generated output/response.

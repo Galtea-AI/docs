@@ -1,0 +1,122 @@
+---
+title: 'Evaluate Document Inputs'
+description: "Attach documents to test cases, fetch them back with the SDK, and score what your pipeline answers."
+icon: "file-lines"
+---
+
+Some products read documents: a scanned contract, an invoice, a report. You attach the document to the [test case](/concepts/product/dataset/test-case#file-inputs), and Galtea stores it.
+
+**Galtea does not read the document for you.** Reading it is your pipeline's job, so the SDK hands the file back on request. This page walks that round trip end to end: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+
+<Info>
+  A test case that carries a file is **skipped** by every metric that reads the input, because evaluators cannot read files yet. Score the output instead, with a metric such as [JSON Field Match](/concepts/metric/json-field-match).
+</Info>
+
+### Workflow
+
+<Steps>
+  <Step title="Attach the documents">
+    Add an `input_file_paths` column to your dataset CSV. The SDK uploads each file and attaches it to that row's input.
+  </Step>
+  <Step title="Read the test cases back">
+    `galtea.test_cases.list()` returns the text in `input` and the attachments in `input_files`.
+  </Step>
+  <Step title="Download each attached file">
+    `galtea.storage.download()` saves a file locally and returns the path it wrote.
+  </Step>
+  <Step title="Answer and score">
+    Run your own pipeline over the local files, then log the answer and evaluate it.
+  </Step>
+</Steps>
+
+## 1. Attach the documents
+
+Name the local files in an `input_file_paths` column. Separate several paths with `;` or `|`. A row may attach files and leave `input` empty, which is how you write a test case that is only a document:
+
+```csv
+input,expected_output,input_file_paths
+Extract the tenant and the monthly rent,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/lease-agreement.pdf
+,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/lease-agreement.pdf
+```
+
+Each `expected_output` here is a JSON object, because the metric below compares it field by field. CSV escapes a quote by doubling it, which is why every `"` inside those cells appears as `""`.
+
+```python
+dataset = galtea.datasets.create(
+    name=f"lease-documents-{run_identifier}",
+    type="ACCURACY",
+    product_id=product_id,
+    dataset_file_path="path/to/lease_dataset.csv",
+)
+```
+
+The SDK uploads each file and rewrites the row before it sends anything, so the column never reaches the platform and your local paths stay private. A file named by several rows is uploaded once.
+
+<Tip>
+  To attach a document to one test case instead of a whole dataset, pass `input_file_paths` to [`test_cases.create()`](/sdk/api/test-case/create).
+</Tip>
+
+## 2. Write your pipeline
+
+This is the step Galtea cannot do. It takes the question and the local file paths, and returns whatever your product would answer:
+
+```python
+def answer_from_documents(question: Optional[str], document_paths: list[str]) -> str:
+    """Read the documents and answer. This step is yours: Galtea stores the files, it does not read them."""
+    # Replace this with the call to your own model, parser or agent.
+    return '{"tenant": "A. Garcia", "monthly_rent": 900}'
+```
+
+## 3. Read, download, answer, score
+
+```python
+test_cases = galtea.test_cases.list(dataset_id=dataset.id, include_legacy=False)
+
+for test_case in test_cases:
+    # None when the test case carries a document and no text of its own.
+    question = test_case.input
+
+    # Each file is saved under the name it was uploaded with, not its storage key.
+    document_paths = [
+        galtea.storage.download(attached, output_directory="./.temp/lease-documents")
+        for attached in test_case.input_files
+    ]
+    print(f"Test case {test_case.id}: {question or '(document only)'} + {len(document_paths)} file(s)")
+
+    answer = answer_from_documents(question, document_paths)
+
+    session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
+    galtea.traces.create_and_evaluate(
+        session_id=session.id,
+        output=answer,
+        metrics=[{"name": "JSON Field Match"}],
+    )
+```
+
+Four details in that loop are worth knowing:
+
+- **`test_case.input` is `None` for a document-only test case.** The document is the whole input, so there is no text to read. Use `test_case.input_data` when you need the full structured input, including the file parts.
+- **`include_legacy=False` returns only the current revision** of each test case. Leave it at its default and an edited test case comes back once per revision, so you download the same document again for each one.
+- **The file is saved under the name you uploaded it with.** Storage keys are random ids, so without `filename` you would get `9f3c1a.pdf` on disk. [`download()`](/sdk/api/storage/download) reads the name from the `InputFile`.
+- **A failed download raises.** The message names the file and the cause, never the presigned link. Wrap the loop in `try`/`except` if one unreadable document should not stop the rest.
+
+<Note>
+  `galtea.storage.download()` also takes a plain URI, so it fetches any file your organization uploaded, not only test case attachments. See [Download File](/sdk/api/storage/download).
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="File inputs" icon="paperclip" href="/concepts/product/dataset/test-case#file-inputs">
+    The limits, the accepted file types, and how editing a document test case works.
+  </Card>
+  <Card title="Storage Service" icon="box" href="/sdk/api/storage/service">
+    Upload and download files directly, for any purpose.
+  </Card>
+  <Card title="Run Dataset-Based Evaluations" icon="clipboard-check" href="/sdk/tutorials/run-dataset-based-evaluations">
+    The same loop for test cases that are plain text.
+  </Card>
+  <Card title="JSON Field Match" icon="brackets-curly" href="/concepts/metric/json-field-match">
+    Score a structured answer field by field, without reading the input.
+  </Card>
+</CardGroup>

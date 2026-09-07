@@ -18,7 +18,12 @@ To compute the iou metric, the following parameters must be provided:
   - **JSON array**: `"[10, 10, 50, 50]"`
   - **JSON object with "bbox" key** (singular): `'{"bbox": [10, 10, 50, 50]}'`
 
-**Important**: Both `actual_output` and `expected_output` must be valid JSON. Truncated or malformed JSON will cause evaluation failures.
+**Important**: Both `actual_output` and `expected_output` must be raw JSON. Unlike [JSON Field Match](/concepts/metric/json-field-match), these metrics do not strip markdown code fences, so a fenced block is not read as JSON. The two sides then behave differently:
+
+- **`actual_output` is not a list of boxes** (malformed JSON, no `bboxes` field, the wrong number of coordinates, or a coordinate that is not a finite number): the evaluation is **skipped**, and its error message says what could not be read. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result. An empty box list is not an error: it scores 0.
+- **`expected_output` is not a valid box**: the evaluation **fails**, because a reference box comes from your dataset and you are the one who can fix it. Unparseable JSON, a missing `bbox` field, and a coordinate that is not a finite number all fail. One case still scores: a box with the wrong number of coordinates (`[10, 10, 50]`) scores 0 instead of failing, so check your reference box before reading a 0 as a real mismatch.
+
+A coordinate may be a number or a string that spells one, so `"10"` and `10` score the same. `NaN` and `Infinity` are not readable coordinates on either side.
 
 ## How Is It Calculated?
 

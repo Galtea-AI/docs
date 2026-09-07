@@ -12,6 +12,8 @@ It is especially useful when you already have a baseline set of test cases and w
 
 <Info>
   Data Augmentation works with all dataset types — [Accuracy](/concepts/product/dataset/accuracy-datasets), [Security & Safety](/concepts/product/dataset/security-datasets), and [Behavior](/concepts/product/dataset/behavior-datasets). When triggered, your [dataset](/concepts/product/dataset) enters the `AUGMENTING` status while new cases are being generated.
+
+  One limit: a dataset whose test cases carry audio or file inputs cannot be augmented. The engine cannot create a new attachment, so every generated test case would point at the same one.
 </Info>
 
 <video
@@ -30,7 +32,7 @@ The result is a larger, high-quality dataset in minutes instead of days, with fu
 
 ## How to Use Data Augmentation
 
-You can augment any existing dataset directly from the [Galtea dashboard](https://platform.galtea.ai/):
+You can augment any existing dataset without audio or file inputs directly from the [Galtea dashboard](https://platform.galtea.ai/):
 
 <Steps>
   <Step title="Navigate to your dataset">

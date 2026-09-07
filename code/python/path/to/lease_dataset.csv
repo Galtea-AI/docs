@@ -1,0 +1,3 @@
+input,expected_output,input_file_paths
+Extract the tenant and the monthly rent,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/lease-agreement.pdf
+,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/lease-agreement.pdf

@@ -196,6 +196,8 @@ csv_dataset = galtea.datasets.create(
 
   See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for detailed Behavior dataset CSV format examples.
 
+  An optional `input_file_paths` column attaches files to a row's input, for a product that reads documents. Separate several entries with `;` or `|`. Each entry is a local path the SDK uploads, or a storage URI from an earlier upload, which is attached without uploading the file again. The SDK rewrites the row before the CSV is sent, so the column itself never reaches Galtea. A row may attach files and leave `input` empty. A CSV using this column must be UTF-8 encoded. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
+
   <Note>Deprecated alias: `test_file_path`.</Note>
 </ResponseField>
 <ResponseField name="metadata" type="Any" optional>

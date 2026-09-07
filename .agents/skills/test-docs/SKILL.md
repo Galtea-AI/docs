@@ -9,9 +9,23 @@ Run these from the repo root after editing anything under `docs/`.
 
 ## Local preview
 
+Start the **docs** entry in the Claude Code server list (`.claude/launch.json`), or run it yourself:
+
 ```bash
-cd docs && npm install && npm run dev   # http://localhost:3000
+python docs/scripts/run.py   # http://localhost:3000
 ```
+
+`run.py` finds the docs root from its own path, so it does not care which directory you run it from.
+
+**Mint needs Node 20.17 or higher.** Below that it refuses to start, with `mintlify requires node 20.17 or higher`. Check with `node -v` and make a new enough Node the active one, however you install Node.
+
+If you manage Node with a version manager (nvm, fnm, asdf, Volta), **an up-to-date `node -v` in your terminal does not mean the same version reaches this command.** Those tools load from your shell rc file, which Bash reads only for interactive shells, so a non-interactive shell (anything a script or an app spawns) falls back to the system Node. Select the version explicitly in that shell, for example `nvm use default`. If Node is installed system-wide instead, there is nothing to do.
+
+The `docs` launch entry handles this on its own: it sources nvm when nvm is present, and otherwise runs whatever Node is on `PATH`.
+
+**Mint serves on port 3000 and that is not configurable.** `mint dev` has no `--port` flag and ignores `$PORT`, so the `docs` launch entry must keep `autoPort` off: with it on, the app would assign a free port and point the preview tab there while Mint bound 3000 anyway. When 3000 is taken, free it rather than reaching for `autoPort`. This is the opposite of `dashboard-mock`, which correctly sets `autoPort` because `dashboard/vite.config.ts` reads `process.env.PORT`.
+
+There is no `npm run dev` here: `docs/package.json` is empty and there is no `node_modules`. `run.py` invokes Mint through `npx --yes mint`.
 
 ## Validate
 

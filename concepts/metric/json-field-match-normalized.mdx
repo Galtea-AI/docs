@@ -17,7 +17,12 @@ To compute the `JSON Field Match (Normalized)` metric, the following parameters 
 The metric compares top-level fields between the expected and actual JSON outputs:
 
 1. **Parse Inputs**
-   `expected_output` is parsed as a strict JSON object. `actual_output` is parsed leniently — the metric will attempt to extract a JSON object from markdown code fences (e.g., `` ```json ... ``` ``) or surrounding text before parsing. If either cannot be resolved to a valid JSON object, the evaluation raises an error.
+   `expected_output` is parsed as a strict JSON object. `actual_output` is parsed leniently — the metric will attempt to extract a JSON object from markdown code fences (e.g., `` ```json ... ``` ``) or surrounding text before parsing.
+
+   The two sides behave differently when parsing fails:
+
+   - **`actual_output` is not a JSON object** (for example, your pipeline answered in plain text, or returned nothing): the evaluation is **skipped**, and its error message says the output could not be read. Nothing broke, so there is no score to report. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result.
+   - **`expected_output` is not a JSON object**: the evaluation **fails**. This is an error in your test case, and you have to fix the dataset.
 
 2. **Normalize and Compare Fields**
    For each top-level key in the expected output, check whether the same key exists in the actual output with a matching value. String values are **normalized** before comparison:
@@ -41,7 +46,7 @@ The metric compares top-level fields between the expected and actual JSON output
 
 ## Interpretation of Scores
 
-- **1.0** — All expected fields are present in the actual output with matching values (after normalization). Also returned when the expected output is an empty JSON object `{}`.
+- **1.0** — All expected fields are present in the actual output with matching values (after normalization). Also returned when the expected output is an empty JSON object `{}`, provided the actual output is readable JSON.
 - **0.5** — Half of the expected fields match.
 - **0.0** — No fields match.
 

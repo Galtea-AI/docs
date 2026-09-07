@@ -1,0 +1,43 @@
+---
+title: 'Download File'
+sidebarTitle: "Download"
+description: "Save a file from the platform's object storage to this machine."
+---
+
+Use this to fetch the bytes behind a stored reference: a document attached to a test case, or any other URI this organization uploaded. [`datasets.download()`](/sdk/api/dataset/download) calls this method for its own dataset file.
+
+To see it inside a whole workflow, see [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs).
+
+## Returns
+
+Returns the path the file was saved to.
+
+## Example
+
+```python
+downloaded_path = galtea.storage.download(test_case.input_files[0], output_directory="./.temp")
+```
+
+## Parameters
+
+<ResponseField name="file" type="string | InputFile" required>
+  The file to fetch: an [`InputFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files`, or the URI of any file this organization uploaded.
+</ResponseField>
+<ResponseField name="output_directory" type="string" default="the current directory" optional>
+  Directory to write into, created when it does not exist. Defaults to the current directory.
+</ResponseField>
+<ResponseField name="filename" type="string" optional>
+  Name to save the file under. Defaults to the `InputFile`'s own `filename`, and otherwise to the name the object is stored at, which is a random id rather than the name the file was uploaded with.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `ValueError` | No URI was given. |
+| `Exception` | The link expired, the file belongs to another organization, the platform returned no link, or the transfer failed. |
+
+<Note>
+  A failed download raises instead of returning `None`, and the message never contains the
+  presigned link.
+</Note>

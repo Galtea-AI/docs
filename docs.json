@@ -101,6 +101,7 @@
               "sdk/tutorials/evaluating-conversations",
               "sdk/tutorials/create-dataset",
               "sdk/tutorials/run-dataset-based-evaluations",
+              "sdk/tutorials/evaluate-document-inputs",
               "sdk/tutorials/direct-inferences-and-evaluations-from-platform"
             ]
           },
@@ -410,6 +411,7 @@
                     "pages": [
                       "sdk/api/test-case/service",
                       "sdk/api/test-case/create",
+                      "sdk/api/test-case/upload-input-file",
                       "sdk/api/test-case/list",
                       "sdk/api/test-case/get",
                       "sdk/api/test-case/delete"
@@ -614,6 +616,21 @@
                       "sdk/api/job/service",
                       "sdk/api/job/get-status",
                       "sdk/api/job/cancel"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Storage",
+                "icon": "box",
+                "pages": [
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/storage/service",
+                      "sdk/api/storage/upload",
+                      "sdk/api/storage/download"
                     ]
                   }
                 ]

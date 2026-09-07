@@ -1,0 +1,33 @@
+<Update label="2026-09-04" description="Attach Files to Test Cases, More Natural Simulated Conversations, and Platform Fixes">
+
+## Attach Files to Test Cases
+
+A test case input can now include an uploaded file, such as a PDF or an image, instead of only text. This lets you evaluate an AI product that reads documents, for example a contract-review agent, without paraphrasing the document yourself first.
+
+- **Python SDK:** pass local file paths to `input_file_paths` when you [create a test case](/sdk/api/test-case/create), or add an `input_file_paths` column to a dataset CSV. Each file can be up to 20 MB, in common document, image, or text formats.
+- **Dashboard:** the test case create and update forms now have an **Attach file** button. An attached image shows a thumbnail you can open at full size.
+- **Getting files back out:** `galtea.storage` is now public. Call `upload()` to send a file to Galtea's storage, and `download()` to save one back to disk, including a file read straight from `test_case.input_files`.
+- A dataset whose test cases already carry a file input can no longer be augmented: the AI-assisted augmentation flow only reads text, so it's refused instead of silently generating rows about the wrong document.
+
+See [Test Cases](/concepts/product/dataset/test-case#file-inputs) for the full input format.
+
+## More Natural Simulated Conversations
+
+Simulated users in the [conversation simulator](/concepts/product/dataset/test-case/conversation-simulator) now write more like real people, with more natural pacing and phrasing instead of stiff, scripted-sounding turns. On Galtea's internal quality benchmark, the same rubric and model scored 11% on this before the change and 69% after.
+
+## More Reliable Trace Assembly
+
+Traces sent through OTLP (the OpenTelemetry protocol most tracing SDKs export with) now assemble correctly when a single conversation turn is split across several export batches, which is the normal case for most SDKs:
+
+- A span whose parent arrived in an earlier batch now keeps its place in the [trace](/concepts/product/version/session/trace) tree, instead of showing up as a separate root next to the turn it belongs to.
+- A turn whose conversation link rides on only one of its batches is now assembled whole, instead of every batch that arrived without that link being rejected.
+
+## Platform Improvements
+
+- **Failed conversation turns retry:** A conversation turn that fails to generate is now retried, instead of being left empty while the session still completes and gets evaluated normally.
+- **Dataset generation no longer stalls:** A malformed response from the underlying LLM used to double the retry wait with no ceiling, stalling generation for over an hour. The wait is now capped at 60 seconds between attempts.
+- **Breadcrumbs on every form:** Every create and update form now shows a breadcrumb back to the record it belongs to, so you can leave the form without using the browser's back button.
+- **Clearer evaluation errors:** An evaluation that can't be scored because the actual output has the wrong shape now shows the specific reason, instead of a generic error.
+- **Generate Metrics button restored:** The specifications list in production view shows a **Generate Metrics** button again, so you don't need the row's menu to reach it.
+
+</Update>
