@@ -3,6 +3,7 @@ AgentInput reference page code examples.
 Demonstrates accessing structured input fields via AgentInput.
 """
 
+import base64
 from datetime import datetime
 
 import galtea
@@ -125,6 +126,43 @@ def my_context_agent(input_data: AgentInput) -> AgentResponse:
 
 
 # @end context_data_access
+
+
+# @start reading_attached_files
+def my_document_agent(input_data: AgentInput) -> AgentResponse:
+    # Each InputFile has the same uri, filename and mime_type as test_case.input_files.
+    document_paths = [
+        galtea_client.storage.download(attached, output_directory="./.temp/agent-inputs")
+        for attached in input_data.input_files
+    ]
+
+    # Empty string for a test case that carries only a document and no text.
+    question = input_data.last_user_message_str() or ""
+
+    return AgentResponse(content=f"Answer to {question!r} from {len(document_paths)} file(s)")
+
+
+# @end reading_attached_files
+
+
+# @start reading_attached_files_bytes
+def my_multimodal_agent(input_data: AgentInput) -> AgentResponse:
+    # read() keeps the bytes in memory, for a model that takes the document inline.
+    parts = [
+        {
+            "type": "document",
+            "media_type": attached.mime_type,
+            "data": base64.b64encode(galtea_client.storage.read(attached)).decode(),
+        }
+        for attached in input_data.input_files
+    ]
+
+    question = input_data.last_user_message_str() or ""
+
+    return AgentResponse(content=f"Answer to {question!r} from {len(parts)} inline document(s)")
+
+
+# @end reading_attached_files_bytes
 
 
 # @start test_case_input_data

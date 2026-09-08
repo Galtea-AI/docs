@@ -103,6 +103,32 @@ Four details in that loop are worth knowing:
 - **The file is saved under the name you uploaded it with.** Storage keys are random ids, so without `filename` you would get `9f3c1a.pdf` on disk. [`download()`](/sdk/api/storage/download) reads the name from the `InputFile`.
 - **A failed download raises.** The message names the file and the cause, never the presigned link. Wrap the loop in `try`/`except` if one unreadable document should not stop the rest.
 
+## 4. The same round trip through `evaluations.run()`
+
+When the dataset is linked to a [specification](/concepts/product/specification), one call replaces the loop above. Give `evaluations.run()` an agent function whose first parameter is annotated `AgentInput`, and the attached files arrive as `input_data.input_files`, the same `InputFile` objects `test_case.input_files` returns:
+
+```python
+def document_agent(input_data: AgentInput) -> AgentResponse:
+    # The same InputFile objects as test_case.input_files: filename and mime_type match.
+    document_paths = [
+        galtea.storage.download(attached, output_directory="./.temp/lease-documents")
+        for attached in input_data.input_files
+    ]
+    # None for a document-only test case, like test_case.input above.
+    question = input_data.last_user_message_str() or None
+    return AgentResponse(content=answer_from_documents(question, document_paths))
+
+
+result = galtea.evaluations.run(
+    version_id=version.id,
+    agent=document_agent,
+    specification_ids=[specification.id],
+)
+print(f"Evaluated {result['testCaseCount']} test cases")
+```
+
+Only this signature receives the files. A `(str) -> str` agent receives the question alone, so the SDK warns once when a test case also attaches files and fails the trace for a document-only test case. See [Reading attached files](/sdk/api/agent/input#reading-attached-files).
+
 <Note>
   `galtea.storage.download()` also takes a plain URI, so it fetches any file your organization uploaded, not only test case attachments. See [Download File](/sdk/api/storage/download).
 </Note>

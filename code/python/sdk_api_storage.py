@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 
 from galtea import Galtea
@@ -47,3 +48,13 @@ with open("path/to/lease-agreement.pdf", "rb") as original, open(downloaded_path
         raise ValueError("downloaded bytes do not match the uploaded file")
 
 print(f"Saved {test_case.input_files[0].filename} to {downloaded_path}")
+
+# @start read
+document_bytes = galtea.storage.read(test_case.input_files[0])
+encoded = base64.b64encode(document_bytes).decode()
+# @end read
+print(f"Read {len(document_bytes)} bytes, {len(encoded)} once encoded")
+
+with open("path/to/lease-agreement.pdf", "rb") as original:
+    if original.read() != document_bytes:
+        raise ValueError("read bytes do not match the uploaded file")

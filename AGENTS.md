@@ -40,6 +40,12 @@ Snippets are validated against the mocked docker-compose stack on every PR and p
 - File naming: `sdk_api_<service>_<method>.py`, `sdk_tutorials_<topic>.py`, `concepts_<topic>.py`
 - Before creating a new code file, check if an existing one covers the topic; add a section to it instead.
 
+### Put a snippet's assertions outside the embedded region
+
+An assertion inside `# @start` / `# @end` ships to readers as part of the sample, and they inherit a check written for this repo's fixture. Keep the region to the code a reader should copy, and assert after `# @end`.
+
+This also decides whether the check can fail at all. A snippet whose agent callback runs through `evaluations.run()` or `simulator.simulate()` must not raise to signal a problem: `simulate()` catches `ValueError`, reports it as an empty agent response and ends the run normally, so the script still exits 0 and the docs gate stays green. Assert on an observable result instead (a file the callback wrote, a returned count), below the region.
+
 ## Verify Prose Claims Against the Code
 
 No hand-written page is the API contract: the wire-level contract is the generated OpenAPI reference (the `openapi` entry in `docs.json`). `concepts/` pages describe product fields as display labels ("Stopping Reason") in SDK vocabulary, so their field names do not track the API's. Two traps follow.

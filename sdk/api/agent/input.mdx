@@ -18,6 +18,7 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   - `content` (`str`): The message text
   - `retrieval_context` (`Optional[str]`): Retrieved context (for RAG agents)
   - `metadata` (`Optional[dict[str, Any]]`): Additional fields. When the test case uses structured JSON input, non-message fields (e.g. `chat_type`, `priority`) appear here on the first user message.
+  - `input_files` (`list[InputFile]`): The files attached to a user message, ready for [`galtea.storage.download()`](/sdk/api/storage/download). Empty for a message that carries only text.
 </ResponseField>
 
 <ResponseField name="session_id" type="str" required>
@@ -32,6 +33,10 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   Additional metadata for the current execution.
 </ResponseField>
 
+<ResponseField name="input_files" type="list[InputFile]">
+  The files attached to the last user message, as `InputFile` objects. Empty when the test case carries no file. See [Reading attached files](#reading-attached-files).
+</ResponseField>
+
 <ResponseField name="trace_id" type="Optional[str]">
   The trace ID for this execution. Forward this to remote agents so they can attach spans to the correct session via `set_context(trace_id=...)`. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
 </ResponseField>
@@ -43,7 +48,7 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
 </ResponseField>
 
 <ResponseField name="last_user_message()" type="Optional[ConversationMessage]">
-  Returns the full `ConversationMessage` object for the last user message (with `role`, `content`, `retrieval_context`, and `metadata`), or `None` if not found. Use this when you need access to the message's `metadata`.
+  Returns the full `ConversationMessage` object for the last user message (with `role`, `content`, `retrieval_context`, `metadata`, and `input_files`), or `None` if not found. Use this when you need access to the message's `metadata`.
 </ResponseField>
 
 ## Basic Usage
@@ -109,12 +114,56 @@ def my_context_agent(input_data: AgentInput) -> AgentResponse:
     return AgentResponse(content=f"[{customer_tier}] Response to: {user_message}")
 ```
 
+## Reading attached files
+
+A test case can [attach files](/concepts/product/dataset/test-case#file-inputs) to its input. When your agent runs through `evaluations.run()`, `simulator.simulate()` or `traces.generate()`, those files reach it as `input_data.input_files`: one `InputFile` per attached file, with the same `uri`, `filename` and `mime_type` as `test_case.input_files`. Pass each one to [`galtea.storage.download()`](/sdk/api/storage/download) to get the bytes:
+
+```python
+def my_document_agent(input_data: AgentInput) -> AgentResponse:
+    # Each InputFile has the same uri, filename and mime_type as test_case.input_files.
+    document_paths = [
+        galtea_client.storage.download(attached, output_directory="./.temp/agent-inputs")
+        for attached in input_data.input_files
+    ]
+
+    # Empty string for a test case that carries only a document and no text.
+    question = input_data.last_user_message_str() or ""
+
+    return AgentResponse(content=f"Answer to {question!r} from {len(document_paths)} file(s)")
+```
+
+When the document goes straight into a request of your own, [`read()`](/sdk/api/storage/read) returns the bytes and never touches the disk:
+
+```python
+def my_multimodal_agent(input_data: AgentInput) -> AgentResponse:
+    # read() keeps the bytes in memory, for a model that takes the document inline.
+    parts = [
+        {
+            "type": "document",
+            "media_type": attached.mime_type,
+            "data": base64.b64encode(galtea_client.storage.read(attached)).decode(),
+        }
+        for attached in input_data.input_files
+    ]
+
+    question = input_data.last_user_message_str() or ""
+
+    return AgentResponse(content=f"Answer to {question!r} from {len(parts)} inline document(s)")
+```
+
+The metadata split is unchanged: `messages[0].metadata["content"]` still holds the raw content parts, files included, exactly as the platform stores them.
+
+<Warning>
+  Only the **Structured** signature receives files. A `(str) -> str` or `(list[dict]) -> str` agent receives the text alone: the SDK logs one warning per agent when a test case also attaches files, and fails the trace with a `galtea.FileOnlyTextAgentException` (a `ValueError` subclass) when the test case attaches files and no text, since that agent would receive nothing. Annotate the first parameter as `galtea.AgentInput` to receive both.
+</Warning>
+
 ## Structured Input on TestCase and Trace
 
-Outside of `AgentInput`, the `TestCase` and `Trace` models provide two fields for accessing input:
+Outside of `AgentInput`, the `TestCase` and `Trace` models provide three fields for accessing input:
 
 - `.input` (`str`): The `user_message` value as a plain string
 - `.input_data` (`dict`): The full structured input object with all fields
+- `.input_files` (`list[InputFile]`): The files attached to the input, empty for text
 
 `Trace` also provides a symmetric pair for the agent output:
 

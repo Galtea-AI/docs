@@ -1,7 +1,8 @@
+import os
 from datetime import datetime
 from typing import Optional
 
-from galtea import Galtea
+from galtea import AgentInput, AgentResponse, Galtea
 
 from _test_helpers import create_test_product
 
@@ -65,5 +66,51 @@ for test_case in test_cases:
 
 if len(test_cases) != 2:
     raise ValueError(f"expected the csv's two rows, got {len(test_cases)}")
+
+# Link the metric and the dataset to a specification so `evaluations.run()` can discover both.
+json_field_match = galtea.metrics.get_by_name(name="JSON Field Match")
+specification = galtea.specifications.create(
+    product_id=product_id,
+    name="Extracts the lease terms",
+    description="The product returns the tenant and the monthly rent of the lease as JSON.",
+    type="POLICY",
+    dataset_type="ACCURACY",
+    dataset_variant="entity_extraction",
+    metric_ids=[json_field_match.id],
+)
+if specification is None:
+    raise ValueError("Failed to create specification")
+galtea.specifications.link_datasets(specification_id=specification.id, dataset_ids=[dataset.id])
+
+
+# @start evaluations_run
+def document_agent(input_data: AgentInput) -> AgentResponse:
+    # The same InputFile objects as test_case.input_files: filename and mime_type match.
+    document_paths = [
+        galtea.storage.download(attached, output_directory="./.temp/lease-documents")
+        for attached in input_data.input_files
+    ]
+    # None for a document-only test case, like test_case.input above.
+    question = input_data.last_user_message_str() or None
+    return AgentResponse(content=answer_from_documents(question, document_paths))
+
+
+result = galtea.evaluations.run(
+    version_id=version.id,
+    agent=document_agent,
+    specification_ids=[specification.id],
+)
+print(f"Evaluated {result['testCaseCount']} test cases")
+# @end evaluations_run
+
+if result["testCaseCount"] != 2:
+    raise ValueError(f"expected evaluations.run() to cover the csv's two rows, got {result['testCaseCount']}")
+
+# Checked out here, where a failure fails this script: raised inside the callback it would
+# reach simulate(), which reports it as an empty agent response and ends the run normally.
+# The callback only writes this file when the attached document reached it.
+delivered = os.path.join("./.temp/lease-documents", "lease-agreement.pdf")
+if not os.path.isfile(delivered) or os.path.getsize(delivered) == 0:
+    raise ValueError(f"the agent never received the attached lease-agreement.pdf at {delivered}")
 
 galtea.products.delete(product_id=product_id)
