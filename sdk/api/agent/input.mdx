@@ -34,7 +34,7 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
 </ResponseField>
 
 <ResponseField name="input_files" type="list[InputFile]">
-  The files attached to the last user message, as `InputFile` objects. Empty when the test case carries no file. See [Reading attached files](#reading-attached-files).
+  The files attached to the **last user message**, as `InputFile` objects, empty when it carries none. Derived from `messages` rather than stored, so an `input_files` keyword passed to the constructor is ignored; attach files through `ConversationMessage(input_files=...)`. For an earlier turn's files, read that message's own `input_files`. See [Reading attached files](#reading-attached-files).
 </ResponseField>
 
 <ResponseField name="trace_id" type="Optional[str]">
@@ -150,6 +150,27 @@ def my_multimodal_agent(input_data: AgentInput) -> AgentResponse:
 
     return AgentResponse(content=f"Answer to {question!r} from {len(parts)} inline document(s)")
 ```
+
+`input_data.input_files` is a shortcut for the current turn. Each `ConversationMessage` keeps its own files, so an earlier turn's document stays reachable through `messages`:
+
+```python
+def my_multi_turn_agent(input_data: AgentInput) -> AgentResponse:
+    # Each user message carries its own files, so an earlier turn's document is still reachable.
+    every_attachment = [
+        attached for message in input_data.messages if message.role == "user" for attached in message.input_files
+    ]
+    # input_data.input_files is the shortcut for the current turn only.
+    this_turn = input_data.input_files
+
+    return AgentResponse(content=f"{len(this_turn)} file(s) on this turn, {len(every_attachment)} in the conversation")
+```
+
+<Note>
+  A history with files on more than one turn only comes from turns you create yourself with
+  [`traces.generate()`](/sdk/api/trace/generate), passing `input={"user_message": "...", "content": [...]}`.
+  The conversation simulator supports attached files on single-turn runs only, so
+  `evaluations.run()` and `simulator.simulate()` put every file on the opening turn.
+</Note>
 
 The metadata split is unchanged: `messages[0].metadata["content"]` still holds the raw content parts, files included, exactly as the platform stores them.
 

@@ -165,6 +165,21 @@ def my_multimodal_agent(input_data: AgentInput) -> AgentResponse:
 # @end reading_attached_files_bytes
 
 
+# @start reading_files_from_earlier_turns
+def my_multi_turn_agent(input_data: AgentInput) -> AgentResponse:
+    # Each user message carries its own files, so an earlier turn's document is still reachable.
+    every_attachment = [
+        attached for message in input_data.messages if message.role == "user" for attached in message.input_files
+    ]
+    # input_data.input_files is the shortcut for the current turn only.
+    this_turn = input_data.input_files
+
+    return AgentResponse(content=f"{len(this_turn)} file(s) on this turn, {len(every_attachment)} in the conversation")
+
+
+# @end reading_files_from_earlier_turns
+
+
 # @start test_case_input_data
 # After running generate() or in a test loop, access the full structured input:
 galtea_client = Galtea(api_key="YOUR_API_KEY")
