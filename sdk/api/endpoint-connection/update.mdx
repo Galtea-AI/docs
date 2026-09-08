@@ -49,7 +49,7 @@ endpoint_connection = galtea.endpoint_connections.update(
   New custom headers. Supports credential placeholders (e.g., `{{ bearer_token }}`, `{{ api_key }}`). See [Custom Headers](/concepts/product/endpoint-connection-configuration#custom-headers).
 </ResponseField>
 <ResponseField name="input_template" type="string" optional>
-  New input template with Jinja2 placeholders. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
+  New input template with Jinja2 placeholders. Keep `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` in the template if your test cases attach files, because a run over those test cases is refused without it. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
 </ResponseField>
 <ResponseField name="output_mapping" type="dict[string, string]" optional>
   New output mapping using JSONPath expressions. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).

@@ -252,6 +252,10 @@ For conversation history, access previous turns using `{{ turn.input }}` and `{{
   `past_turns.input` is always a serialized string -- the full input collapsed to text. Only the current turn supports structured field access (`{{ input.field_name }}`). Use `{{ turn.input }}` for past turn content, not `{{ turn.input.field_name }}`.
 </Note>
 
+<Note>
+  An attached file is not a schema field. The download URL of an attachment is never part of `input`, so name it with [`input_files`](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) instead.
+</Note>
+
 <Tip>
   The `description` field in your schema is important -- Galtea's AI generators use it to understand what kind of values to produce for each field. Write clear, specific descriptions for the best generated test data.
 </Tip>
@@ -260,7 +264,7 @@ For conversation history, access previous turns using `{{ turn.input }}` and `{{
 
 <CardGroup cols={2}>
   <Card title="Template Syntax" icon="code" href="/concepts/product/endpoint-connection-template-syntax">
-    Full placeholder reference: `{{ input.field_name }}`, `{{ context.field_name }}`, `past_turns`, and more.
+    Full placeholder reference: `{{ input.field_name }}`, `{{ context.field_name }}`, `past_turns`, `input_files`, and more.
   </Card>
   <Card title="Endpoint Connection" icon="plug" href="/concepts/product/endpoint-connection">
     Overview of endpoint connections and how to create one.

@@ -66,7 +66,7 @@ document_only = galtea.test_cases.create(
 )
 ```
 
-Read the files back from `test_case.input_files`. To run your own pipeline over an attached file, fetch its bytes with [`galtea.storage.download()`](/sdk/api/storage/download), passing the `InputFile` straight from `test_case.input_files`. [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs) walks that whole round trip, from the CSV to a scored answer.
+To have Galtea run the inference for you, name the files in your [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio). Read the files back from `test_case.input_files` instead when you run your own pipeline, and fetch the bytes with [`galtea.storage.download()`](/sdk/api/storage/download), passing the `InputFile` straight from `test_case.input_files`. [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs) walks that whole round trip, from the CSV to a scored answer.
 
 To attach files to many test cases at once, add an `input_file_paths` column to your dataset CSV. Separate several paths with `;` or `|`. The SDK uploads each file and rewrites the row before the file is sent, so the column never reaches the platform and the paths stay private:
 
@@ -107,7 +107,7 @@ These limits apply, and each one is refused with a clear error rather than faili
 - **20 MB in total, and at most 20 files, per test case input.** There is no per-file size limit.
 - **These file types only**: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. The type is read from the file name. Audio belongs on a voice test case instead.
 - **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
-- **Galtea cannot run the inference for you.** Send the document to your own pipeline and upload the output as an inference result.
+- **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each attachment to your endpoint. Without it, the run is refused rather than sent without the document.
 
 **Evaluators cannot read files yet, so what the judge is given is the text of your conversation turns, with every file stripped out.** A metric that reads the input is skipped when no turn is left with text of its own, and it costs no credits. Text sent beside the file does not count: it is usually a prompt about the document, so scoring it would give you a confident number about a document the judge never read. A file test case runs as a single turn, so a run of one always skips those metrics.
 

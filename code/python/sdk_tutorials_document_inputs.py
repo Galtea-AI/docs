@@ -31,7 +31,8 @@ dataset = galtea.datasets.create(
 
 # @start pipeline
 def answer_from_documents(question: Optional[str], document_paths: list[str]) -> str:
-    """Read the documents and answer. This step is yours: Galtea stores the files, it does not read them."""
+    """Read the documents and answer. Galtea never reads them for you. This step is yours when you
+    drive the run; Galtea can also send the files to your endpoint instead."""
     # Replace this with the call to your own model, parser or agent.
     return '{"tenant": "A. Garcia", "monthly_rent": 900}'
 

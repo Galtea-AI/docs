@@ -64,7 +64,7 @@ endpoint_connection = galtea.endpoint_connections.create(
   Custom headers as key-value pairs. Supports credential placeholders (e.g., `{{ bearer_token }}`, `{{ api_key }}`). See [Custom Headers](/concepts/product/endpoint-connection-configuration#custom-headers).
 </ResponseField>
 <ResponseField name="input_template" type="string" optional>
-  Input template with Jinja2 placeholders. Required for `CONVERSATION` type. Must contain `{{ input.user_message }}`. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template).
+  Input template with Jinja2 placeholders. Required for `CONVERSATION` type. Must name at least one input field, such as `{{ input.user_message }}`. Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to send an attached file to your endpoint. A test case that attaches files is refused without one of them. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template).
 </ResponseField>
 <ResponseField name="output_mapping" type="dict[string, string]" optional>
   Output mapping configuration using JSONPath expressions. Required for `INITIALIZATION` (needs `session_id`) and `CONVERSATION` (needs `output`) types. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).

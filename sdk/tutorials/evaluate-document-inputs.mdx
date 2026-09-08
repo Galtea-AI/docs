@@ -6,7 +6,9 @@ icon: "file-lines"
 
 Some products read documents: a scanned contract, an invoice, a report. You attach the document to the [test case](/concepts/product/dataset/test-case#file-inputs), and Galtea stores it.
 
-**Galtea does not read the document for you.** Reading it is your pipeline's job, so the SDK hands the file back on request. This page walks that round trip end to end: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+**Galtea does not read the document for you.** Reading it is your product's job. This page walks the round trip your own pipeline drives: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+
+Galtea can also deliver the documents to your endpoint and run the inference for you. Name the files in the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) with `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}`, then run the dataset the usual way. Use the pipeline below when your product is not reachable over HTTP.
 
 <Info>
   A test case that carries a file is **skipped** by every metric that reads the input, because evaluators cannot read files yet. Score the output instead, with a metric such as [JSON Field Match](/concepts/metric/json-field-match).
@@ -62,7 +64,8 @@ This is the step Galtea cannot do. It takes the question and the local file path
 
 ```python
 def answer_from_documents(question: Optional[str], document_paths: list[str]) -> str:
-    """Read the documents and answer. This step is yours: Galtea stores the files, it does not read them."""
+    """Read the documents and answer. Galtea never reads them for you. This step is yours when you
+    drive the run; Galtea can also send the files to your endpoint instead."""
     # Replace this with the call to your own model, parser or agent.
     return '{"tenant": "A. Garcia", "monthly_rent": 900}'
 ```

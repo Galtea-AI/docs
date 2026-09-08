@@ -84,8 +84,20 @@ For multi-turn conversations, use `past_turns` to include conversation history:
 }
 ```
 
+When a test case attaches a file, use `input_files` to send it to your endpoint:
+
+```jinja2
+{
+  "question": "{{ input.user_message }}",
+  "document_url": "{{ input_files[0].url }}",
+  "document_name": "{{ input_files[0].filename }}"
+}
+```
+
+Use `{{ input_files[0].base64 }}` instead when your endpoint takes the bytes in the request body. A test case that attaches files is refused when the template names no `input_files` variable.
+
 <Tip>
-  See [Endpoint Connection — Input Template](/concepts/product/endpoint-connection#input-template) for the full list of available placeholders and advanced template examples.
+  See [Structured Input Template Syntax](/concepts/product/endpoint-connection-template-syntax) for the full list of available placeholders and advanced template examples.
 </Tip>
 
 ### Output Mapping

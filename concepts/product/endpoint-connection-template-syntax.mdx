@@ -45,6 +45,7 @@ For example, `{{ context.topic }}`, `{{ context.system_prompt }}`, or `{{ contex
 | `{{ language_code }}` | Full BCP-47 language tag from the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when the test case has no language set. |
 | `{{ language_name }}` | Full English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when the test case has no language set. |
 | `past_turns` | Conversation history loop collection. Use with `{% for turn in past_turns %}`. See [Conversation History](#conversation-history). |
+| `input_files` | Files and audio attached to the test case input, one entry per attachment. Address one by index (`{{ input_files[0].url }}`) or loop over the collection. Each entry exposes `url`, `base64`, `filename` and `mime_type`. See [Attached Files and Audio](#attached-files-and-audio). |
 | Any metadata key | Fields extracted via [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) and stored in session metadata (e.g., `{{ tenant_id }}`) |
 
 <Note>
@@ -154,6 +155,74 @@ Each turn exposes two properties:
   When a loop is the **last item** in a JSON array, use `{% if not loop.last %},{% endif %}` after each iteration to prevent a trailing comma. When there's content **after** the loop (like the final user message above), this pattern is not required.
 </Note>
 
+### Attached Files and Audio
+
+A test case input can carry [attached files](/concepts/product/dataset/test-case#file-inputs). The `input_files` collection is how they reach your endpoint: one entry per attachment, in the order the input lists them. Each entry exposes four properties:
+
+- `url` - a signed download URL your endpoint fetches the file from
+- `base64` - the bytes of the file, base64-encoded
+- `filename` - the name of the file
+- `mime_type` - the content type of the file
+
+These four are the only properties. A template that reads any other property is refused when the connection is saved.
+
+Send the URL and let your endpoint fetch the file:
+
+```jinja2
+{
+  "question": "{{ input.user_message }}",
+  "document_url": "{{ input_files[0].url }}",
+  "document_name": "{{ input_files[0].filename }}"
+}
+```
+
+Send the bytes inline instead, when your endpoint takes a file in the request body:
+
+```jinja2
+{
+  "question": "{{ input.user_message }}",
+  "document": {
+    "content": "{{ input_files[0].base64 }}",
+    "media_type": "{{ input_files[0].mime_type }}"
+  }
+}
+```
+
+Loop over the collection when a test case attaches several files:
+
+```jinja2
+{
+  "question": "{{ input.user_message }}",
+  "documents": [
+    {% for file in input_files %}
+    {"url": "{{ file.url }}", "name": "{{ file.filename }}"}{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+```
+
+An audio attachment on a voice test case appears in `input_files` too. Its transcript still arrives as `{{ input.user_message }}`, so a template that only reads the text keeps working.
+
+<Note>
+  These rules apply to attached files:
+
+  - **The URL is valid for 15 minutes.** Galtea mints a fresh one for every request attempt, so your endpoint has the whole request window to fetch the file. Do not store the URL for later.
+  - **`base64` grows the request body by about a third.** Galtea reads the file only when your template names `base64`, so a template that sends the URL alone costs no download. The total size of the files on one input is capped at 20 MB.
+  - **A failed fetch is your endpoint's error.** If your endpoint cannot download the file, its own error response is what Galtea records for the run.
+  - **The turn fails when Galtea cannot deliver a file.** Galtea never sends the request without the attachment, so a file it cannot sign or read stops that turn with an error.
+  - **The file itself never reaches the template through `{{ input }}`.** That object never carries a download URL, so `input_files` is the only way to read a file. An audio transcript stays readable there.
+  - **A run that sends files skips the pre-run health check.** Galtea normally probes your endpoint with sample values before a run. The probe sends an empty file list, which is what a run carrying no attachment sends, so a text-only run against a file-aware template is probed as any other. A run that does attach a file is not probed: its turns carry a real file the probe cannot stand in for, so a broken endpoint shows up as failed turns instead. The **Test connection** button in the dashboard still sends a placeholder attachment, so a failed download there is expected.
+  - **A test case with no attachment is not refused.** `{{ input_files[0].url }}` renders an empty value for it, and a loop over `input_files` renders nothing.
+</Note>
+
+<Warning>
+  When the template names no `input_files` variable, Galtea cannot send the attachment, and what happens next depends on the test case.
+
+  A test case that attaches files **and carries no other content** is refused, and the whole run stops. There is nothing left to send, so Galtea would ask your endpoint about an empty message. Add `{{ input_files[0].url }}` (or `{{ input_files[0].base64 }}`) to the template, or run those test cases through your own pipeline.
+
+  A test case that also carries text still runs. Galtea sends the text alone and warns you that the files were left behind.
+</Warning>
+
 ### Anthropic Claude Format
 
 ```jinja2
@@ -196,6 +265,7 @@ When editing an input template in the Galtea dashboard, a **placeholder toolbar*
 |----------|-------------|
 | **Basic** | `{{ input.user_message }}`, `{{ context.value }}` |
 | **History** | `past_turns` loop, `{{ turn.input }}`, `{{ turn.output }}` |
+| **Files** | `{{ input_files[0].url }}`, `{{ input_files[0].filename }}`, `{{ input_files[0].mime_type }}`, `{{ input_files[0].base64 }}`, `input_files` loop |
 | **Session** | `{{ session_id }}`, `{{ galtea_session_id }}` |
 | **Trace** | `{{ trace_id }}` |
 | **Dataset** | `{{ test_case_id }}`, `{{ dataset_id }}` |

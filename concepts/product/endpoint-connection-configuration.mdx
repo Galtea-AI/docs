@@ -28,6 +28,7 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 | `{{ trace_id }}` | The id of this turn's [Trace](/concepts/product/version/session/trace), labeled "Galtea Trace ID" in the dashboard. Also sent automatically as the `X-Galtea-Inference-Id` HTTP header -- useful for [span collection](/sdk/tutorials/tracing-agent-operations) |
 | `{{ language_code }}` | Full BCP-47 language tag of the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when no language is set. |
 | `{{ language_name }}` | English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when no language is set. |
+| `input_files` | [Files and audio attached to the test case input](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), one entry per attachment. Each exposes `url`, `base64`, `filename` and `mime_type`, e.g. `{{ input_files[0].url }}` |
 | Any metadata key | Any field stored in session metadata (e.g., `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`) |
 
 <Note>
@@ -41,6 +42,10 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 Use `{% for turn in past_turns %}...{% endfor %}` to loop through previous conversation turns. Each turn exposes:
 - `{{ turn.input }}` — Previous user input
 - `{{ turn.output }}` — Previous assistant response
+
+### Attached Files
+
+Use `{{ input_files[0].url }}` to send an attached file to your endpoint, or `{{ input_files[0].base64 }}` to send its bytes inline. See [Attached Files and Audio](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) for the full rules, including the 15-minute URL lifetime.
 
 ### Examples
 

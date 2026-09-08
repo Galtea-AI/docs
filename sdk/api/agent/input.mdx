@@ -150,7 +150,7 @@ print(trace.actual_output_data)  # None for plain text; {"assistant_message": ".
 
 1. **Test case CSV**: You provide JSON in the `input` column: `{"user_message": "hello", "chat_type": "support"}`
 2. **TestCase model**: `.input` = `"hello"`, `.input_data` = `{"user_message": "hello", "chat_type": "support"}`
-3. **Endpoint templates**: Use `{{ input.user_message }}` or `{{ input.chat_type }}` to access individual fields, or `{{ input }}` for the full message
+3. **Endpoint templates**: Use `{{ input.user_message }}` or `{{ input.chat_type }}` to access individual fields. Bare `{{ input }}` is rejected, because it renders the whole object. The download URL of a file is never part of `input`, so read a file with [`input_files`](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio)
 4. **AgentInput (SDK)**: `messages[0].content` = `"hello"`, `messages[0].metadata` = `{"chat_type": "support"}`
 5. **Trace**: `.input` = `"hello"`, `.input_data` = `{"user_message": "hello", "chat_type": "support"}`
 
