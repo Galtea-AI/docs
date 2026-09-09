@@ -92,11 +92,11 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Human Score" type="Number" optional>
-  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score.
+  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results.
 </ResponseField>
 
 <ResponseField name="Human Reason" type="Text" optional>
-  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason.
+  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Started At" type="Text" optional>
