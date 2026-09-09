@@ -82,6 +82,10 @@ Once an evaluation completes, the following fields are available:
 <ResponseField name="Can Retry" type="Boolean" default="false">
   Indicates whether the evaluation is eligible for the retry operation. When `false`, it cannot be retried at all. When `true`, it can, but a retry does not always help: `canRetry` is a permission, not a promise. A retry re-scores the output already stored on the session, so it succeeds for a temporary cause (an evaluation processing error, insufficient credits, a judge model that was unavailable) and skips again when the cause is the stored output itself. Defaults to `false`.
 </ResponseField>
+
+<ResponseField name="Launched By" type="User" optional>
+  The user who launched this evaluation, read-only and set by the API. For an evaluation launched through the SDK, this is the owner of the API key used. Null for a [Monitor](/concepts/product/monitor)-dispatched evaluation.
+</ResponseField>
   
 <ResponseField name="Human Evaluator ID" type="Text" optional>
   The ID of the human evaluator assigned to this evaluation, if applicable.

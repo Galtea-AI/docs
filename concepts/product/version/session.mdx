@@ -35,6 +35,10 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   The test case associated with the session. This is typically used for non-production evaluations.
 </ResponseField>
 
+<ResponseField name="Launched By" type="User" optional>
+  The user who launched the session, read-only and set by the API. Null for a production session or one ingested via OpenTelemetry: neither has a launching user.
+</ResponseField>
+
 <ResponseField name="Is Production" type="Boolean" optional>
   Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. Externally-ingested sessions (e.g. imported traces) may be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
 </ResponseField>

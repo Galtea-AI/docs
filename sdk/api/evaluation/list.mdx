@@ -59,3 +59,9 @@ evaluations = galtea.evaluations.list(session_id=session_id)
   
   **Default:** `10000`
 </ResponseField>
+<ResponseField name="user_id" type="str | list[str]" default="None">
+  Filter by the ID of the user who launched the evaluation. Null for a monitor-dispatched evaluation. This is an additional filter; it does not satisfy the scoping requirement below.
+</ResponseField>
+<Note>
+  At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`) described above must be passed to the method. `status` and `user_id` are additional filters and do **not** satisfy this requirement on their own.
+</Note>
