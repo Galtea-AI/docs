@@ -113,6 +113,31 @@ The SDK allows you to list existing products, retrieve specific products by thei
   <Info>The API default is `Reopen And Reevaluate`.</Info>
 </ResponseField>
 
+<ResponseField name="Interaction Mode" type="Enum" optional>
+  Who consumes the product's output.
+  Possible values:
+  - `Conversational`: a person exchanges several turns with the product.
+  - `Human Direct`: a person reads the output directly, with no dialogue.
+  - `Programmatic`: another system consumes the output and no person reads it directly.
+  <Info>The onboarding AI pre-fills a suggestion. Change it or clear it at any time in the dashboard or through the API; the SDK only reads it. An unset value means the product is unclassified.</Info>
+</ResponseField>
+
+<ResponseField name="Primary Task" type="Enum" optional>
+  The one dominant task the product performs on its input.
+  Possible values:
+  - `Conversational Assistance`: helps a person through a dialogue.
+  - `Question Answering RAG`: answers questions from retrieved documents.
+  - `Document Extraction`: pulls structured fields out of a document.
+  - `Document Generation`: writes a new document from instructions or data.
+  - `Summarization`: shortens a longer input while keeping its meaning.
+  - `Classification`: assigns the input to one of a fixed set of labels.
+  - `Translation`: renders the input in another language.
+  - `Correction`: fixes errors in the input, such as grammar or code.
+  - `Agentic Workflow`: plans and runs several steps or tools to reach a goal.
+  - `Other`: none of the tasks above.
+  <Info>The onboarding AI pre-fills a suggestion. Change it or clear it at any time in the dashboard or through the API; the SDK only reads it. An unset value means the product is unclassified.</Info>
+</ResponseField>
+
 ## How Everything Connects
 
 The cross-entity diagram now lives on the [Concepts overview](/concepts/overview) — see it there along with reading guidance and per-entity links.
