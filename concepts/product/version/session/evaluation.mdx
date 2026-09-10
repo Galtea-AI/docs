@@ -86,7 +86,11 @@ Once an evaluation completes, the following fields are available:
 <ResponseField name="Launched By" type="User" optional>
   The user who launched this evaluation, read-only and set by the API. For an evaluation launched through the SDK, this is the owner of the API key used. Null for a [Monitor](/concepts/product/monitor)-dispatched evaluation.
 </ResponseField>
-  
+
+<ResponseField name="Product ID" type="Text" optional>
+  The ID of the [product](/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
+</ResponseField>
+
 <ResponseField name="Human Evaluator ID" type="Text" optional>
   The ID of the human evaluator assigned to this evaluation, if applicable.
 </ResponseField>
