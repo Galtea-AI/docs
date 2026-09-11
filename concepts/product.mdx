@@ -119,7 +119,7 @@ The SDK allows you to list existing products, retrieve specific products by thei
   - `Conversational`: a person exchanges several turns with the product.
   - `Human Direct`: a person reads the output directly, with no dialogue.
   - `Programmatic`: another system consumes the output and no person reads it directly.
-  <Info>The onboarding AI pre-fills a suggestion. Change it or clear it at any time in the dashboard or through the API; the SDK only reads it. An unset value means the product is unclassified.</Info>
+  <Info>The onboarding AI pre-fills a suggestion. Change it or clear it at any time in the dashboard or through the API; the SDK only reads it. An unset value means the product is unclassified. The dashboard also lays out a session's turns from this value. `Conversational` and an unclassified product show a User and Assistant dialogue. `Human Direct` and `Programmatic` show an Input panel above an Output panel.</Info>
 </ResponseField>
 
 <ResponseField name="Primary Task" type="Enum" optional>
