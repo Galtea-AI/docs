@@ -11,7 +11,7 @@ Some products read documents: a scanned contract, an invoice, a report. You atta
 Galtea can also deliver the documents to your endpoint and run the inference for you. Name the files in the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) with `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}`, then run the dataset the usual way. Use the pipeline below when your product is not reachable over HTTP.
 
 <Info>
-  A test case that carries a file is **skipped** by every metric that reads the input, because evaluators cannot read files yet. Score the output instead, with a metric such as [JSON Field Match](/concepts/metric/json-field-match).
+  Evaluators cannot read files yet. A metric that reads the input is **skipped** while no turn carries text of its own. A file test case runs as a single turn, so a run of one always skips those metrics. The manual `create_and_evaluate(..., input=...)` loop below can log your pipeline's extracted text as the turn input, and the metric scores that text; `evaluations.run()` cannot override the input at all, so it keeps skipping those metrics for a document-only row. Otherwise score the output only, with a metric such as [JSON Field Match](/concepts/metric/json-field-match). See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 </Info>
 
 ### Workflow
