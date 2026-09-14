@@ -53,6 +53,9 @@ This method can be called in two ways:
 </ResponseField>
 <ResponseField name="input_template" type="string" optional>
   Input template with Jinja2 placeholders. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
+  <Note>
+    The test renders a placeholder attachment for `input_files`. Its URL points at nothing your endpoint can download, so a failed download in this test is expected. See [Attached Files and Audio](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio).
+  </Note>
 </ResponseField>
 <ResponseField name="auth_type" type="string" optional>
   Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Other string values are

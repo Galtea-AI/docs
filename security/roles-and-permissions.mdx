@@ -33,6 +33,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | If target in own org | Only self | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If target in own org, not self, and not an admin | ❌ | ❌ | ❌ |
+| Self delete | Only self | Only self | Only self | Only self |
 
 **Organization**
 
@@ -169,10 +170,10 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | If evaluation's product in own org | If evaluation's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If evaluation's product in own org | If evaluation's product in own org | ❌ | ❌ |
-| Annotate AI metric | ✅ | ✅ | ✅ | ❌ |
-| Human evaluation | ✅ | ✅ | ✅ | ❌ |
+| Annotate AI metric | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
+| Human evaluation | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
 
-*Annotating or submitting human evaluations also requires membership in the relevant User Group; the table shows the role-level gate only.*
+*Human evaluation also requires membership in the relevant User Group; annotating an AI metric does not. The table shows the role-level gate only.*
 
 **Trace**
 

@@ -630,7 +630,8 @@
                     "pages": [
                       "sdk/api/storage/service",
                       "sdk/api/storage/upload",
-                      "sdk/api/storage/download"
+                      "sdk/api/storage/download",
+                      "sdk/api/storage/read"
                     ]
                   }
                 ]

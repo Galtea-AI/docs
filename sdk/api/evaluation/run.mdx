@@ -88,6 +88,8 @@ print(f"Created {len(result['evaluations'])} evaluations")
   - An `Agent` class instance with a `call()` method
   - An agent function (sync or async) with one of three signatures: `(str) -> str`, `(list[dict]) -> str`, or `(AgentInput) -> AgentResponse`. See the [AgentInput reference](/sdk/api/agent/input) for all available fields.
 
+  When a test case attaches files, only the `AgentInput` signature receives them, as `input_data.input_files`; pass each one to `galtea.storage.download()`. The other two signatures receive the text alone and fail the trace for a file-only test case. See [Reading attached files](/sdk/api/agent/input#reading-attached-files).
+
   When omitted, the server-side endpoint connection pipeline is used. When provided, requires `version_id` (not `product_id`).
 </ResponseField>
 <ResponseField name="specification_ids" type="List[str]" optional>

@@ -6,10 +6,12 @@ icon: "file-lines"
 
 Some products read documents: a scanned contract, an invoice, a report. You attach the document to the [test case](/concepts/product/dataset/test-case#file-inputs), and Galtea stores it.
 
-**Galtea does not read the document for you.** Reading it is your pipeline's job, so the SDK hands the file back on request. This page walks that round trip end to end: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+**Galtea does not read the document for you.** Reading it is your product's job. This page walks the round trip your own pipeline drives: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+
+Galtea can also deliver the documents to your endpoint and run the inference for you. Name the files in the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) with `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}`, then run the dataset the usual way. Use the pipeline below when your product is not reachable over HTTP.
 
 <Info>
-  A test case that carries a file is **skipped** by every metric that reads the input, because evaluators cannot read files yet. Score the output instead, with a metric such as [JSON Field Match](/concepts/metric/json-field-match).
+  Evaluators cannot read files yet. A metric that reads the input is **skipped** while no turn carries text of its own. A file test case runs as a single turn, so a run of one always skips those metrics. The manual `create_and_evaluate(..., input=...)` loop below can log your pipeline's extracted text as the turn input, and the metric scores that text; `evaluations.run()` cannot override the input at all, so it keeps skipping those metrics for a document-only row. Otherwise score the output only, with a metric such as [JSON Field Match](/concepts/metric/json-field-match). See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 </Info>
 
 ### Workflow
@@ -62,7 +64,8 @@ This is the step Galtea cannot do. It takes the question and the local file path
 
 ```python
 def answer_from_documents(question: Optional[str], document_paths: list[str]) -> str:
-    """Read the documents and answer. This step is yours: Galtea stores the files, it does not read them."""
+    """Read the documents and answer. Galtea never reads them for you. This step is yours when you
+    drive the run; Galtea can also send the files to your endpoint instead."""
     # Replace this with the call to your own model, parser or agent.
     return '{"tenant": "A. Garcia", "monthly_rent": 900}'
 ```
@@ -99,6 +102,32 @@ Four details in that loop are worth knowing:
 - **`include_legacy=False` returns only the current revision** of each test case. Leave it at its default and an edited test case comes back once per revision, so you download the same document again for each one.
 - **The file is saved under the name you uploaded it with.** Storage keys are random ids, so without `filename` you would get `9f3c1a.pdf` on disk. [`download()`](/sdk/api/storage/download) reads the name from the `InputFile`.
 - **A failed download raises.** The message names the file and the cause, never the presigned link. Wrap the loop in `try`/`except` if one unreadable document should not stop the rest.
+
+## 4. The same round trip through `evaluations.run()`
+
+When the dataset is linked to a [specification](/concepts/product/specification), one call replaces the loop above. Give `evaluations.run()` an agent function whose first parameter is annotated `AgentInput`, and the attached files arrive as `input_data.input_files`, the same `InputFile` objects `test_case.input_files` returns:
+
+```python
+def document_agent(input_data: AgentInput) -> AgentResponse:
+    # The same InputFile objects as test_case.input_files: filename and mime_type match.
+    document_paths = [
+        galtea.storage.download(attached, output_directory="./.temp/lease-documents")
+        for attached in input_data.input_files
+    ]
+    # None for a document-only test case, like test_case.input above.
+    question = input_data.last_user_message_str() or None
+    return AgentResponse(content=answer_from_documents(question, document_paths))
+
+
+result = galtea.evaluations.run(
+    version_id=version.id,
+    agent=document_agent,
+    specification_ids=[specification.id],
+)
+print(f"Evaluated {result['testCaseCount']} test cases")
+```
+
+Only this signature receives the files. A `(str) -> str` agent receives the question alone, so the SDK warns once when a test case also attaches files and fails the trace for a document-only test case. See [Reading attached files](/sdk/api/agent/input#reading-attached-files).
 
 <Note>
   `galtea.storage.download()` also takes a plain URI, so it fetches any file your organization uploaded, not only test case attachments. See [Download File](/sdk/api/storage/download).

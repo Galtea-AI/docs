@@ -1,7 +1,7 @@
 ---
 name: fix-docs
 description: Audit and fix documentation - prose pages, code snippets, or both - against the actual codebase implementation
-argument-hint: [focus-area]
+argument-hint: "[focus-area]"
 model: sonnet
 ---
 

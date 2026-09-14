@@ -1,0 +1,40 @@
+---
+title: 'Read File'
+sidebarTitle: "Read"
+description: "Get the content of a stored file without writing it to this machine."
+---
+
+Use this when the bytes go straight into a request of your own: the base64 image or document part a multimodal model takes, or a parser that reads from memory. Reach for [`download()`](/sdk/api/storage/download) instead when the file is meant to stay on disk, or when a library you call only takes a path.
+
+An input file is capped at 20 MB, so reading one into memory is safe.
+
+## Returns
+
+Returns the file's `bytes`.
+
+## Example
+
+```python
+document_bytes = galtea.storage.read(test_case.input_files[0])
+encoded = base64.b64encode(document_bytes).decode()
+```
+
+Inside an agent callback, the files of the current turn arrive as [`input_data.input_files`](/sdk/api/agent/input#reading-attached-files), so the same call reads the document the test case attached.
+
+## Parameters
+
+<ResponseField name="file" type="string | InputFile" required>
+  The file to fetch: an [`InputFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files` or `input_data.input_files`, or the URI of any file this organization uploaded.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `ValueError` | No URI was given, or the value names a file on this machine. |
+| `Exception` | The link expired, the file belongs to another organization, the platform returned no link, or the transfer failed. |
+
+<Note>
+  A failed read raises instead of returning `None`, and the message never contains the
+  presigned link.
+</Note>

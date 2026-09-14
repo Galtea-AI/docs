@@ -53,6 +53,9 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
 <ResponseField name="status" type="string | list[string]" default="None">
   Filter sessions by status. Valid values are `PENDING`, `COMPLETED`, and `FAILED`. Accepts a single value or a list of values (results are OR-combined). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
+<ResponseField name="user_id" type="string | list[string]" optional>
+  Filter by the ID of the user who launched the session. Production/OTel-ingested sessions have no launcher and never match this filter. This is an additional filter; it does not satisfy the scoping requirement below.
+</ResponseField>
 <Note>
-  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `dataset_id`, `id`) described above must be passed to the method. `status` is an additional filter and does **not** satisfy this requirement on its own.
+  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `dataset_id`, `id`) described above must be passed to the method. `status` and `user_id` are additional filters and do **not** satisfy this requirement on their own.
 </Note>

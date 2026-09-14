@@ -23,7 +23,7 @@ To create an Endpoint Connection:
 1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
 2. In **Development** view mode, open the **Connections** section in the sidebar (under **Product**), then the **Endpoints** tab
 3. Click "New Endpoint Connection" and choose how to start:
-   - **From cURL** — paste a cURL command and Galtea pre-fills the form (URL, method, headers, authentication, request body, and a suggested connection name) for you. Deterministic fields show an "Auto-filled" badge. For **Conversation** endpoints, when the request body is valid JSON, Galtea also uses AI to produce a richer input template (with conversation history, context fields, and the correct placeholder vocabulary) and to suggest a more descriptive connection name — both of those fields show an "AI Generated" badge instead. For **Initialization** and **Finalization** endpoints, the request body is used verbatim as the input template and the name is derived from the host URL (no AI enrichment for either field). Anything Galtea cannot parse is left for you to complete. You can also open this importer from the **Import from cURL** button inside the form.
+   - **From cURL** — paste a cURL command and Galtea pre-fills the form (URL, method, headers, authentication, request body, and a suggested connection name) for you. Deterministic fields show an "Auto-filled" badge. For **Conversation** endpoints, when the request body is valid JSON, Galtea also uses AI to produce a richer input template (with conversation history, context fields, an `input_files` slot for any document, image, or audio payload the body carries, and the correct placeholder vocabulary) and to suggest a more descriptive connection name — both of those fields show an "AI Generated" badge instead. For **Initialization** and **Finalization** endpoints, the request body is used verbatim as the input template and the name is derived from the host URL (no AI enrichment for either field). Anything Galtea cannot parse is left for you to complete. You can also open this importer from the **Import from cURL** button inside the form.
    - **Blank** — start from an empty form.
 4. Configure the connection properties as described below
 
@@ -39,7 +39,7 @@ To create an Endpoint Connection:
 
 Most integrations only need **one Conversation endpoint**. At its simplest, you just need to configure:
 
-- **Input Template** — How to format the request body (using `{{ input.user_message }}` for the simulated user message)
+- **Input Template** — How to format the request body (using `{{ input.user_message }}` for the simulated user message, and [`input_files`](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) for any file or audio attached to the test case input)
 - **Output Mapping** — How to extract your product's AI response (using a JSONPath expression for the `output` key)
 
 <CodeGroup>
@@ -146,7 +146,7 @@ In this setup:
 </ResponseField>
 
 <ResponseField name="Input Template" type="String (Jinja2)" required>
-  A Jinja2 template defining the request body. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#input-template) for the full placeholder reference and examples.
+  A Jinja2 template defining the request body. See [Structured Input Template Syntax](/concepts/product/endpoint-connection-template-syntax) for the full placeholder reference and examples.
 </ResponseField>
 
 <ResponseField name="Output Mapping" type="JSON" required>
