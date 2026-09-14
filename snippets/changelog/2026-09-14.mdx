@@ -1,0 +1,39 @@
+<Update label="2026-09-14" description="Reviewing Evaluations and Correcting Judge Scores, Files and Audio for Your Agent, and Platform Improvements">
+
+## Review Evaluations and Correct a Wrong Judge Score
+
+Finding where your judge disagrees with your reviewers, and fixing it, now happens in one place and counts everywhere.
+
+- **A [metric](/concepts/metric) page is now a hub** with three tabs: **Details**, **Revision History**, which draws every revision of the metric and how they descend from each other, and **Evaluations**, which lists every evaluation the metric produced across every product that used it.
+- **See the disagreement directly.** The **Evaluations** tab shows the judge's score, the reviewer's score, and the **Score gap** between them in points. The [evaluation](/concepts/product/version/session/evaluation) page gained a **Verdict** card that puts both side by side with their reasons, and says when they disagree on pass or fail.
+- **Your correction now counts everywhere:** analytics averages, the score on a product card, scores over time, insight cards, coverage counters, and [monitor](/concepts/product/monitor) series. Before, every total kept using the judge's original score.
+- **It applies to reviews you already made,** so some numbers change as soon as this release is live, without you doing anything.
+- **More evaluations can carry a review:** one that failed, was skipped, or was cancelled now counts once a reviewer scores it. Before, only a successful one did.
+
+## Send Attached Files and Audio to Your Agent
+
+A test case that attaches a document, an image, or audio can now run end to end without leaving Galtea. Creating a product that reads PDFs, scanned receipts, spreadsheets, photographs, or screenshots is supported too, and the product form now says so instead of warning you off.
+
+- **Platform runs:** your endpoint connection reads attachments through a new `input_files` collection in its template, with four properties per file: `url`, `base64`, `filename`, and `mime_type`. See the [template syntax](/concepts/product/endpoint-connection-template-syntax).
+- **Python SDK:** an agent called through `evaluations.run`, `simulator.simulate`, or [`traces.generate`](/sdk/api/trace/generate) receives each attachment as an `InputFile` object, instead of a raw dictionary buried in the message metadata. Read one into memory with the new [`galtea.storage.read()`](/sdk/api/storage/read), or see [reading attached files](/sdk/api/agent/input).
+- **Dashboard:** an input holding only files used to render an empty cell. It now names the files, and a download saves under the real filename instead of the storage key.
+- **Video is not supported yet,** and a product that processes video recordings or live video is now named as such rather than left unclear.
+
+Limits to plan around: **20 MB** per input, at most **20 files**, 22 accepted extensions, a download link valid for **15 minutes**, and one turn per platform run. Evaluators still cannot read the file itself, so a metric needing the input is skipped unless you also log readable text as the turn input. A template reading `{{ input.content[0].uri }}` no longer returns an address, so use `{{ input_files[0].url }}`. The [document inputs tutorial](/sdk/tutorials/evaluate-document-inputs) covers the full path.
+
+## Delete Your Own Account
+
+The **Settings** page now has a **Delete Account** card. Deletion is immediate and cannot be undone: you are signed out at once and every API key you issued stops working. Your organization and everything in it is kept, and your email address becomes free for another organization to invite. See [roles and permissions](/security/roles-and-permissions).
+
+## Platform Improvements
+
+- **Read any payload as Pretty, JSON, or Raw:** every product payload now opens through one viewer with a `Pretty`, `JSON`, and `Raw` switch, so you can tell whether a field held the string `"950"` or the number `950`. Copy a value from any view without switching first, one nested row at a time if you want.
+- **Input and Output panels:** a [session](/concepts/product/version/session) whose product is not conversational drops the **User** and **Assistant** bubbles, and renders an **Input** panel above an **Output** panel per turn.
+- **Set up a specification for evaluation:** a [specification](/concepts/product/specification) still missing a dataset or a metric now offers **Setup for evaluation** in place of a disabled **Run Evaluation** button, and unlocks on its own once a generating dataset finishes. An Inability specification explains that inabilities are never evaluated, instead of asking for a dataset and a metric it can never hold.
+- **Filter runs by who launched them:** the sessions and evaluations tables gain a **Launched By** filter, listing the people in your organization with you first. The Python SDK takes the same filter through `user_ids` on [`sessions.list()`](/sdk/api/session/list) and `evaluations.list()`.
+- **Monitor columns that never appeared:** the monitor hub now shows **Settled At Turn** and **Monitor Sampling**. Both columns existed but had stayed hidden.
+- **Readable table headers:** a long column header now shortens with an ellipsis and reveals its full text when you hover it, instead of running past the edge of the column. The sort arrow is no longer clipped either.
+- **Scenario cases your agent can actually fail:** a scenario dataset generated from a specification now contains only direct cases. Before, roughly half the generated cases reported a violation the agent had no chance to commit. Expect these simulated conversations to run for more turns than before.
+- **European language varieties:** picking a language such as Spanish, French, or Portuguese now stores the European variety, and a simulated conversation with a bare language code uses it too. A bare `es` used to produce Latin American replies. English, Japanese, Chinese, and Korean stay as they are, and an explicit region you set always wins. See [test case](/concepts/product/dataset/test-case).
+
+</Update>
