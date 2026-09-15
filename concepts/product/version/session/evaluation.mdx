@@ -10,6 +10,7 @@ import SDKEvaluationServiceCard from '/snippets/cards/sdk-evaluation-service-car
 import SessionCard from '/snippets/cards/session-card.mdx';
 import DatasetCard from '/snippets/cards/dataset-card.mdx';
 import TestCaseCard from '/snippets/cards/test-case-card.mdx';
+import RunCard from '/snippets/cards/run-card.mdx';
 
 ## What is an Evaluation?
 
@@ -18,6 +19,8 @@ An evaluation in Galtea represents the assessment of traces from a [session](/co
 <Note>Evaluations do not call your AI product — they score outputs that have already been generated. Run your product first to produce outputs, then trigger the evaluation to score them.</Note>
 
 You can create evaluations from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/sdk/api/evaluation/service).
+
+Every launch you trigger creates a [Run](/concepts/product/run), and each evaluation of that launch points back at it. An evaluation produced by a [Monitor](/concepts/product/monitor) has no Run, because it comes from a rule instead of a launch.
 
 ## Evaluation Lifecycle
 
@@ -87,6 +90,10 @@ Once an evaluation completes, the following fields are available:
   The user who launched this evaluation, read-only and set by the API. For an evaluation launched through the SDK, this is the owner of the API key used. Null for a [Monitor](/concepts/product/monitor)-dispatched evaluation.
 </ResponseField>
 
+<ResponseField name="Run ID" type="Text" optional>
+  The ID of the [Run](/concepts/product/run) that launched this evaluation (`runId` in the API). It is empty for an evaluation produced by a [Monitor](/concepts/product/monitor), because an evaluation carries a Run or a Monitor, never both. A retried evaluation keeps the Run it was created with.
+</ResponseField>
+
 <ResponseField name="Product ID" type="Text" optional>
   The ID of the [product](/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
 </ResponseField>
@@ -133,4 +140,5 @@ Once an evaluation completes, the following fields are available:
   <TestCaseCard />
   <SessionCard />
   <MetricCard />
+  <RunCard />
 </CardGroup>

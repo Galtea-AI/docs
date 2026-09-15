@@ -20,6 +20,7 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     - `testCaseCount` — total number of test cases queued
     - `message` — a human-readable status message
     - `specifications` — summary of each specification evaluated
+    - `runId` — the [Run](/concepts/product/run) that records this launch
 
     <Tip>
       Use [`galtea.jobs.cancel(job_id)`](/sdk/api/job/cancel) to stop the batch before it finishes — for example, if you discover a misconfiguration after the job has already been queued.

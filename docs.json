@@ -606,6 +606,13 @@
                 ]
               },
               {
+                "group": "Run",
+                "icon": "rocket",
+                "pages": [
+                  "concepts/product/run"
+                ]
+              },
+              {
                 "group": "Job",
                 "icon": "circle-stop",
                 "pages": [

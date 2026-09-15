@@ -10,6 +10,7 @@ Cancel an async job that is still queued or currently being processed. This is u
 
 - A **queued or delayed** job is removed from the queue and will never run.
 - An **in-flight** job receives a cooperative cancellation signal. The worker stops dispatching further work at its next checkpoint. Work already dispatched when the signal is observed is **not** rolled back.
+- The launch that carried the job moves to `CANCELLED`. Its [Run](/concepts/product/run) follows only when a launch endpoint opened that Run and no other launch of it is still running. A Run you opened with `POST /runs` ends only when you close it, though the launch inside it is still cancelled.
 - Repeated cancels are **idempotent**: calling `cancel()` on an already-cancelled job still returns `state='cancelled'` rather than raising an error.
 
 ## Usage
