@@ -91,6 +91,20 @@ Once an evaluation completes, the following fields are available:
   The ID of the [product](/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
 </ResponseField>
 
+<ResponseField name="Judge Input Tokens" type="Number" optional>
+  The tokens the judge model received to score this evaluation, read-only and set by the API. It covers the metric prompt and the session content. Null when the judge model reported no usage, which is different from 0.
+</ResponseField>
+
+<ResponseField name="Judge Output Tokens" type="Number" optional>
+  The tokens the judge model produced to score this evaluation, read-only and set by the API. The judge's total is `judgeInputTokens` plus `judgeOutputTokens`. Null when the judge model reported no usage.
+</ResponseField>
+
+<ResponseField name="Judge Reasoning Tokens" type="Number" optional>
+  The part of `judgeOutputTokens` the judge model spent on reasoning, read-only and set by the API. It is a subset of the output tokens, so do not add it to the total. A judge model that does not reason reports 0, not null. Null means no reasoning count was recorded, which almost always means the whole measurement is missing and the other two fields are null too.
+</ResponseField>
+
+<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider.</Note>
+
 <ResponseField name="Human Evaluator ID" type="Text" optional>
   The ID of the human evaluator assigned to this evaluation, if applicable.
 </ResponseField>
