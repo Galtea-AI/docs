@@ -6,7 +6,7 @@ icon: "tower-cell"
 
 Galtea exposes a public [OpenTelemetry](https://opentelemetry.io/) (OTel) endpoint. OTel is the open standard for emitting traces. The endpoint is an OTLP collector, where OTLP is the OTel export protocol. Send your traces there to enable two use cases:
 
-- **Create production sessions from real traffic.** Uncorrelated spans become production [Sessions](/concepts/product/version/session) that [Monitors](/concepts/product/monitor) evaluate automatically. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+- **Create production sessions from real traffic.** Uncorrelated spans become production [Sessions](/concepts/product/version/session) that [Monitors](/concepts/product/monitor) evaluate automatically. Spans that name a test case become a non-production session instead, which no Monitor scores. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 - **Enrich existing Galtea Traces.** Spans correlated to a [Trace](/concepts/product/version/session/trace) become [Span](/concepts/product/version/session/span) records on it. Correlation uses the shared trace ID from the `traceparent` header Galtea propagates during Direct Inference, or the explicit `galtea.trace.id` span attribute. See [W3C Trace Context Propagation](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation).
 
 The endpoint, authentication, and exporter configuration on this page are the same for both.
@@ -317,6 +317,20 @@ All remaining unmapped span attributes are collected into the `metadata` field, 
 <Warning>
   Some common instrumentation styles do **not** populate input/output yet: Traceloop / OpenLLMetry (`gen_ai.prompt.0.content`-style flattened attributes) and OpenInference (`input.value`). Their data is still stored in the span's `metadata` field, so nothing is lost, but evaluations that read the span input and output will not see it.
 </Warning>
+
+## Attributes that route a conversation
+
+The keys above fill a Span record. Three more keys decide which session Galtea assembles the spans into. They apply to uncorrelated spans only, so a span already linked to a Trace ignores them.
+
+| Attribute Key | Set On | Description |
+|---|---|---|
+| `galtea.session.custom_id` | Span | Your own conversation ID. Spans sharing it become one session. Galtea also reads the standard `gen_ai.conversation.id` and `session.id` keys when this one is absent. |
+| `galtea.version.id` | Resource | The [Version](/concepts/product/version) the session is created under. Required: without it, uncorrelated spans are rejected. |
+| `galtea.test_case.id` | Resource or span | The [Test Case](/concepts/product/dataset/test-case) the conversation exercises. Galtea creates the session as non-production and links it to that test case, so no [Monitor](/concepts/product/monitor) scores it. A span value marks one conversation and wins over the resource value. Omit the key to get a production session. |
+
+Galtea rejects one conversation, while the rest of the payload still ingests, when the test case does not exist, when it belongs to another product than the version, when two spans of one conversation name different test case IDs or two resources do, or when the conversation key already holds another session on that version. Those spans are counted in the export response's `partialSuccess.rejectedSpans`.
+
+[Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry) walks through the full setup.
 
 ## Learn More
 
