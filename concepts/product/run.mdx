@@ -1,7 +1,7 @@
 ---
 title: "Run"
 sidebarTitle: "Overview"
-description: "The record of one evaluation launch, with its own id, status and evaluations"
+description: "The record of one launch, with its own id, status, sessions and evaluations"
 ---
 
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
@@ -12,7 +12,7 @@ import MonitorCard from '/snippets/cards/monitor-card.mdx';
 
 ## What is a Run?
 
-A Run is the record of one evaluation launch. Every launch creates a Run, and every [evaluation](/concepts/product/version/session/evaluation) of that launch points back at it. The Run answers three questions about a launch: who started it, what it evaluated, and how it ended.
+A Run is the record of one launch. Every launch creates a Run. Every [evaluation](/concepts/product/version/session/evaluation) of that launch points back at it, and so does every [session](/concepts/product/version/session) the launch created. The Run answers three questions about a launch: who started it, what it produced, and how it ended.
 
 A Run belongs to one [product](/concepts/product). It usually also names the [version](/concepts/product/version) you launched against.
 
@@ -37,15 +37,14 @@ These launches create a Run:
 - An evaluation of one session, or of several sessions, production sessions included. One call creates one Run per product, because a Run belongs to a single product.
 - An evaluation of a single inference result.
 - A single-turn evaluation.
-- An inference generation that also evaluates metrics.
+- An inference generation, with or without metrics.
 - A metric replay. One call creates one Run per product, for the same reason.
 - A test case replay. One call creates one Run per version, because each version runs as its own job.
 
 A launch rejected on its own contents, such as an unknown metric, creates no Run. You get the error in the response, so there is nothing to record.
 
-Three cases create no Run:
+Two cases create no Run:
 
-- **An inference generation with no metric.** A Run holds evaluations, and this launch creates none. It produces sessions only, so nothing would ever join the Run. Evaluate those sessions later and that evaluation opens its own Run, which then holds them.
 - **Monitor evaluations.** A Monitor evaluation belongs to its Monitor, not to a launch. An evaluation carries a Run or a Monitor, never both.
 - **Retries.** A retried evaluation keeps the Run it was created with. It does not start a new one.
 
@@ -90,9 +89,9 @@ A Run a launch opened takes the status of its launches: `COMPLETED` when any lau
 
 ## The sessions of a Run
 
-A Run does not own sessions. Its sessions are the distinct [sessions](/concepts/product/version/session) of its evaluations, counted when you read the Run.
+The sessions of a Run are a union: the [sessions](/concepts/product/version/session) the Run created, plus the distinct sessions of its evaluations. Galtea counts that union when you read the Run. A launch that generates inferences creates sessions, so the Run holds them even when it evaluates no metric. A launch over sessions that already exist creates none, and reaches its sessions through its evaluations.
 
-This is why a launch over sessions that already exist still gets a Run. Such a launch creates no session, so a Run that owned sessions could not describe it.
+A session names at most one Run: the Run that created it. The session carries it as `runId`. A session you log yourself carries no `runId`. That covers a session you open with `POST /sessions` and no run id, a trace file import, and OpenTelemetry traces. The session count of a Run is wider than that field. It also counts a session the Run only scored. The two `GET /sessions` filters keep the difference. `runIds` returns the sessions a Run created. `involvedInRunIds` returns the sessions it created or scored.
 
 ## Deleting a Run
 
@@ -104,7 +103,7 @@ Open a product and pick **Runs** in the sidebar. It lists every run of that prod
 
 To see the runs of one version only, open that version and pick its **Runs** tab.
 
-Evaluation tables show a **Run** column and a **Runs** filter, so you can narrow any list of evaluations down to one launch.
+Evaluation tables and session tables both show a **Run** column and a **Runs** filter, so you can narrow either list down to one launch. Session tables hide both in the Production view, because production traffic never belongs to a Run.
 
 ## API and CLI
 
@@ -114,6 +113,8 @@ Evaluation tables show a **Run** column and a **Runs** filter, so you can narrow
 </Note>
 
 The [REST API](/api-reference) offers `POST /runs`, `POST /runs/{id}/close`, `GET /runs`, `GET /runs/{id}` and `DELETE /runs/{id}`. `GET /evaluations` accepts a `runIds` filter, so you can read every evaluation of a launch.
+
+Three session operations name a Run. `POST /sessions` accepts an optional `runId`, so you can add a session to a Run you opened. It is refused on a production session. `GET /sessions?runIds=` returns the sessions a Run created. `GET /sessions?involvedInRunIds=` returns the sessions a Run created or scored.
 
 The [CLI](/cli/usage) mirrors those operations: `galtea runs list`, `galtea runs get`, `galtea runs create`, `galtea runs close` and `galtea runs delete`.
 
@@ -139,7 +140,7 @@ A single-run read carries the launches, oldest first: `GET /runs/{id}`, and the 
 
 <ResponseField name="kind" type="Enum" required>
   What the platform did in this launch. Possible values:
-  - `GENERATE_INFERENCES`: the platform generated sessions from test cases and scored them. `POST /evaluations/fromVersion`, `POST /evaluations/fromTestCases` and `POST /inferenceResults/generate` with metrics reach it.
+  - `GENERATE_INFERENCES`: the platform generated sessions from test cases, and scored them when the launch named a metric. `POST /evaluations/fromVersion`, `POST /evaluations/fromTestCases` and `POST /inferenceResults/generate` reach it.
   - `EVALUATE_SESSION`: the platform scored one existing session, inference result or single turn. `POST /evaluations/fromSession`, `POST /evaluations/fromInferenceResult` and `POST /evaluations/singleTurn` reach it.
   - `EVALUATE_SESSION_BATCH`: the platform scored several existing sessions in one call. `POST /evaluations/fromSessions` reaches it.
   - `REPLAY_METRIC`: the platform scored existing sessions again with a metric. `POST /evaluations/fromMetrics` reaches it.
@@ -223,7 +224,7 @@ A single-run read carries the launches, oldest first: `GET /runs/{id}`, and the 
 </ResponseField>
 
 <ResponseField name="sessionCount" type="int">
-  How many distinct sessions the run's evaluations cover. Galtea counts it when you read the run; it is not stored.
+  How many distinct sessions the run created or scored. Galtea counts it when you read the run; it is not stored. A deleted session is not counted, so this total always matches what `GET /sessions?involvedInRunIds=` returns.
 </ResponseField>
 
 <ResponseField name="launches" type="RunLaunch[]" optional>
