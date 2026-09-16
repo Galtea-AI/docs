@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific monitor by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Monitor](/concepts/product/monitor) object for the given monitor ID.
 
@@ -16,3 +18,5 @@ monitor = galtea.monitors.get(monitor_id=monitor.id)
 <ResponseField name="monitor_id" type="string" required>
   The ID of the monitor you want to retrieve.
 </ResponseField>
+
+<EntityNotFound />

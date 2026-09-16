@@ -4,6 +4,8 @@ sidebarTitle: "Get By Name"
 description: "Retrieve a specific version by its name."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Version](/concepts/product/version) object for the given product and version name.
 
@@ -19,3 +21,5 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=versio
 <ResponseField name="version_name" type="string" required>
   The name of the version you want to retrieve.
 </ResponseField>
+
+<EntityNotFound />

@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a single span by ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Span](/concepts/product/version/session/span) object.
 
@@ -16,3 +18,5 @@ span = galtea.spans.get(span_id=span_id)
 <ResponseField name="span_id" type="string" required>
   The unique identifier of the span to retrieve.
 </ResponseField>
+
+<EntityNotFound />

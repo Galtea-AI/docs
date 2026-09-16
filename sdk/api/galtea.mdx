@@ -43,3 +43,48 @@ The `Galtea` class provides access to the following services:
 ```python
 products = galtea.products.list(limit=10)
 ```
+
+### Errors
+
+Every call reaches the platform over HTTP, so a failure arrives as a `requests` exception.
+
+When the platform holds nothing under the id or name you passed, the SDK raises
+`EntityNotFoundException`. It covers every service: `products.get`, `versions.get_by_name`,
+`sessions.get_by_custom_id` and the rest all report a missing entity the same way.
+
+Import it with `from galtea import EntityNotFoundException`.
+
+```python
+try:
+    version = galtea.versions.get_by_name(product_id=product_id, version_name=version_name)
+except EntityNotFoundException:
+    version = galtea.versions.create(product_id=product_id, name=version_name)
+```
+
+`EntityNotFoundException` is the name to catch. It covers both ways the SDK learns that nothing
+matched, so you never have to know which one happened.
+
+<Note>
+  Only a 404 that names an entity becomes `EntityNotFoundException`. A 404 for a path the API does
+  not serve stays a plain `requests.HTTPError`, so a typo in a base URL never reads as a missing
+  record. Every other status stays a plain `requests.HTTPError` too.
+</Note>
+
+Read the status from `e.status_code`. It is always 404.
+
+### When you need the response
+
+The SDK learns that an entity is missing two ways, and raises a different class for each. Both are
+`EntityNotFoundException`, so catching that name is enough unless you want the difference.
+
+| Raised | When | Carries |
+|---|---|---|
+| `EntityNotFoundException` | a lookup by name found no match in a list the API returned in full | the message and `status_code` |
+| `EntityNotFoundHTTPError` | the API answered 404 | those, plus `response` and `request` |
+
+`EntityNotFoundHTTPError` also derives from `requests.HTTPError`, so a program that already catches
+`requests.HTTPError` around a `get()` call keeps catching it. Nothing forces you to migrate.
+
+The plain `EntityNotFoundException` is not a `requests.HTTPError`, because no request failed: the
+API answered normally and the name was simply not in the result. Reach for `response` only after
+catching `EntityNotFoundHTTPError`, where it is always present.

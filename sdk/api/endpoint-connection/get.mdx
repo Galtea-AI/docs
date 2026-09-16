@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific endpoint connection by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given ID.
 
@@ -16,3 +18,5 @@ endpoint_connection = galtea.endpoint_connections.get(endpoint_connection_id=end
 <ResponseField name="endpoint_connection_id" type="string" required>
   The ID of the endpoint connection to retrieve.
 </ResponseField>
+
+<EntityNotFound />

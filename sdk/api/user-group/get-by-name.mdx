@@ -4,6 +4,8 @@ sidebarTitle: "Get by Name"
 description: "Get a user group by its name."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [User Group](/concepts/user-group) object.
 
@@ -16,3 +18,5 @@ user_group = galtea.user_groups.get_by_name(name="quality-reviewers-" + run_iden
 <ResponseField name="name" type="string" required>
   The name of the user group to retrieve.
 </ResponseField>
+
+<EntityNotFound />

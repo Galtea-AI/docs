@@ -60,8 +60,8 @@ A `JobCancelResponse` object:
 
 | Error | Cause |
 |-------|-------|
-| `EntityNotFoundException` | The job does not exist, or belongs to a different organization (404). |
-| `JobAlreadyTerminalException` | The job has already reached `completed` or `failed` state and cannot be cancelled (409). |
+| `EntityNotFoundException` | The job does not exist, or belongs to a different organization (404). Import it with `from galtea import EntityNotFoundException`. |
+| `JobAlreadyTerminalException` | The job has already reached `completed` or `failed` state and cannot be cancelled (409). Import it with `from galtea import JobAlreadyTerminalException`. |
 
 <Note>
   `JobAlreadyTerminalException` is only raised for jobs that finished (`completed` or `failed`). Jobs that were already cancelled return `state='cancelled'` with a 200 response — repeated cancels are safe to call without checking status first.

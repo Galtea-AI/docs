@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific version by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Version](/concepts/product/version) object for the given version ID.
 
@@ -16,3 +18,5 @@ version = galtea.versions.get(version_id=version_id)
 <ResponseField name="version_id" type="string" required>
   The ID of the version you want to retrieve.
 </ResponseField>
+
+<EntityNotFound />

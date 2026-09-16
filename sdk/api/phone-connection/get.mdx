@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific phone connection by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Phone Connection](/concepts/product/phone-connection) object for the given ID.
 
@@ -16,3 +18,5 @@ phone_connection = galtea.phone_connections.get(phone_connection_id=phone_connec
 <ResponseField name="phone_connection_id" type="string" required>
   The ID of the phone connection to retrieve.
 </ResponseField>
+
+<EntityNotFound />

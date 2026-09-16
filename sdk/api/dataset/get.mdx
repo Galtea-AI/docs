@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific dataset by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Dataset](/concepts/product/dataset) object for the given dataset ID.
 
@@ -18,3 +20,5 @@ dataset = galtea.datasets.get(dataset_id=dataset_id)
 
   <Note>Deprecated alias: `test_id`.</Note>
 </ResponseField>
+
+<EntityNotFound />

@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific test case by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [TestCase](/concepts/product/dataset/test-case) object for the given test case ID.
 
@@ -16,3 +18,5 @@ test_case = galtea.test_cases.get(test_case_id=test_case_id)
 <ResponseField name="test_case_id" type="string" required>
   The ID of the test case you want to retrieve.
 </ResponseField>
+
+<EntityNotFound />

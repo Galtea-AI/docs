@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Retrieve a specific session by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Session](/concepts/product/version/session) object.
 
@@ -16,3 +18,5 @@ session = galtea.sessions.get(session_id=session_id)
 <ResponseField name="session_id" type="string" required>
   The ID of the session to retrieve.
 </ResponseField>
+
+<EntityNotFound />
