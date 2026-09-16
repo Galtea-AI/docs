@@ -271,8 +271,7 @@ completed = galtea.evaluations.wait_for(
     evaluation_ids=[e.id for e in result["evaluations"]],
 )
 
-# A readable pass/fail summary. Each metric defines its own passing threshold;
-# 0.5 is used here as a simple example — adjust it to your metrics.
+# A readable pass/fail summary.
 pass_threshold = 0.5
 scored = [e for e in completed if e.score is not None]
 passed = [e for e in scored if e.score >= pass_threshold]
