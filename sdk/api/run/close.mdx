@@ -1,0 +1,34 @@
+---
+title: "Close Run"
+sidebarTitle: "Close"
+description: "Close a run you opened, ending it."
+---
+
+## Returns
+
+Returns the closed [Run](/concepts/product/run), in a terminal status.
+
+Leaving a `with galtea.runs.start(...)` block already closes the run, so call this only for a run you
+opened without a block. A handle from [`runs.start()`](/sdk/api/run/start) closes its own run with
+`run.close()`, which takes no arguments and is a no-op the second time.
+
+The API refuses the close in three cases: the run is deleted, the run already ended, or a launch of the
+run is still running. A run the platform opened for a launch ends on its own, so a close of one is
+refused as already ended.
+
+## Example
+```python
+# A run you open without a `with` block stays open until you close it yourself.
+nightly_run = galtea.runs.start(product_id=product_id, custom_id="nightly-2026-09-16")
+closed_run = nightly_run.close()
+print(f"Run {closed_run.id} ended as {closed_run.status}")
+
+# With only the id in hand, close the run through the service.
+rerun = galtea.runs.start(product_id=product_id, custom_id="nightly-2026-09-16-rerun")
+galtea.runs.close(run_id=rerun.id)
+```
+
+## Parameters
+<ResponseField name="run_id" type="string" required>
+  The ID of the run to close.
+</ResponseField>

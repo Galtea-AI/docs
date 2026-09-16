@@ -1,0 +1,28 @@
+---
+title: "Get Run By Custom ID"
+sidebarTitle: "Get By Custom ID"
+description: "Retrieve a run by the label you gave it."
+---
+
+## Returns
+
+Returns a [Run](/concepts/product/run) object. It carries no `launches`; read it with
+[Get Run](/sdk/api/run/get) for those.
+
+Raises `EntityNotFoundException` when the product has no run with that label.
+
+## Example
+```python
+run = galtea.runs.get_by_custom_id(product_id=product_id, custom_id="ci-build-42")
+print(f"Run {run.id} holds {run.session_count} sessions and {run.evaluation_count} evaluations")
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product the run belongs to.
+
+  <Note>A custom ID is unique only per product, so the product anchor is required.</Note>
+</ResponseField>
+<ResponseField name="custom_id" type="string" required>
+  The label passed as `custom_id` to [Start Run](/sdk/api/run/start).
+</ResponseField>

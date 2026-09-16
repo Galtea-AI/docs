@@ -41,3 +41,13 @@ session = galtea.sessions.create(version_id=version_id, test_case_id=test_case_i
 <ResponseField name="metadata" type="object" optional>
   Arbitrary key/value metadata to attach to the session at creation time. Omit it to send no `metadata`. This is the same metadata you can later set with [Update Session](/sdk/api/session/update).
 </ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/concepts/product/run) this session belongs to. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+
+  <Note>
+    A production session belongs to no run, so the API refuses `run_id` when `is_production=True`.
+    Inside a `galtea.runs.start()` block the SDK applies the same rule before the call: a production
+    session joins no run, silently, instead of being refused. Pass `is_production=False` or a
+    `test_case_id` to join the block.
+  </Note>
+</ResponseField>

@@ -211,3 +211,6 @@ evaluations = galtea.evaluations.create(
     For self-hosted metrics, both score options are equally valid: pre-compute as a float, or use CustomScoreEvaluationMetric for dynamic calculation. Galtea-hosted metrics automatically compute scores and should not include a `score` field.
   </Note>
 </ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/concepts/product/run) these evaluations join. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+</ResponseField>

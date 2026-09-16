@@ -9,6 +9,7 @@ import ProductCard from '/snippets/cards/product-card.mdx';
 import VersionCard from '/snippets/cards/version-card.mdx';
 import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
 import MonitorCard from '/snippets/cards/monitor-card.mdx';
+import SDKRunServiceCard from '/snippets/cards/sdk-run-service-card.mdx';
 
 ## What is a Run?
 
@@ -54,9 +55,9 @@ You can also open a Run yourself, and pass its id to several launches. The launc
 
 The steps are:
 
-1. Create the Run with `POST /runs`, or with `galtea runs create`.
-2. Pass the returned id as `runId` on each launch. A metric replay and a test case replay accept no `runId`. They always open their own Runs, and return them as `runIds`.
-3. Close the Run with `POST /runs/{id}/close`, or with `galtea runs close`. Wait until every launch inside it has finished. The platform refuses to close a Run that still has a running launch.
+1. Create the Run with `POST /runs`, with `galtea runs create`, or with [`galtea.runs.start()`](/sdk/api/run/start).
+2. Pass the returned id as `runId` on each launch, or as `run_id` in the SDK. A metric replay and a test case replay accept no `runId`. They always open their own Runs, and return them as `runIds`.
+3. Close the Run with `POST /runs/{id}/close`, with `galtea runs close`, or by leaving the SDK `with` block. Wait until every launch inside it has finished. The platform refuses to close a Run that still has a running launch.
 
 <Warning>
   The `openedBy` field decides who ends a Run, not who supplied its id. A Run you opened (`CALLER`) stays
@@ -148,14 +149,17 @@ Evaluation tables and session tables both show a **Run** column and a **Runs** f
 
 ## API and CLI
 
-<Note>
-  The Galtea Python SDK has no Run service yet. An SDK launch still creates a Run. You list, open and close Runs
-  through the REST API or the CLI.
-</Note>
+The Galtea Python SDK exposes runs as [`galtea.runs`](/sdk/api/run/service): `start()`, `list()`, `get()`,
+`get_by_custom_id()`, `close()` and `delete()`. `start()` returns a context manager, so the sessions and
+evaluations you create inside a `with` block join the run, and leaving the block closes it.
+
+<SDKRunServiceCard />
 
 The [REST API](/api-reference) offers `POST /runs`, `POST /runs/{id}/close`, `POST /runs/{id}/relaunch`, `POST /runs/{id}/launches/{launchId}/cancel`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/metric-summary` and `DELETE /runs/{id}`. `GET /evaluations` accepts a `runIds` filter, so you can read every evaluation of a launch.
 
 Three session operations name a Run. `POST /sessions` accepts an optional `runId`, so you can add a session to a Run you opened. It is refused on a production session. `GET /sessions?runIds=` returns the sessions a Run created. `GET /sessions?involvedInRunIds=` returns the sessions a Run created or scored.
+
+The SDK write methods take the same id as `run_id`: [`sessions.create`](/sdk/api/session/create), [`sessions.get_or_create`](/sdk/api/session/get-or-create), [`evaluations.create`](/sdk/api/evaluation/create), [`evaluations.create_single_turn`](/sdk/api/evaluation/create-single-turn), [`evaluations.run`](/sdk/api/evaluation/run) and [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate). [`evaluations.list`](/sdk/api/evaluation/list) reads them back with the same `run_id` filter, and each `Session` and `Evaluation` carries its own `run_id`.
 
 The [CLI](/cli/usage) mirrors those operations: `galtea runs list`, `galtea runs get`, `galtea runs create`, `galtea runs close`, `galtea runs relaunch`, `galtea runs cancel-launch`, `galtea runs get-metric-summary` and `galtea runs delete`.
 

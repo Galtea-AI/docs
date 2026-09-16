@@ -46,3 +46,8 @@ session = galtea.sessions.get_or_create(
 <ResponseField name="metadata" type="object" optional>
   Arbitrary key/value metadata to attach to the session. Applied only when a new session is created; if the session already exists, it is returned unchanged and this value is ignored. Useful, for example, to record who is chatting via `metadata={"authenticated_user_id": ...}`.
 </ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/concepts/product/run) the new session belongs to. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+
+  <Note>Applied only when a new session is created. A production session belongs to no run, so the API refuses `run_id` when `is_production=True`.</Note>
+</ResponseField>

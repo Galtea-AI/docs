@@ -609,7 +609,20 @@
                 "group": "Run",
                 "icon": "rocket",
                 "pages": [
-                  "concepts/product/run"
+                  "concepts/product/run",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/run/service",
+                      "sdk/api/run/start",
+                      "sdk/api/run/list",
+                      "sdk/api/run/get",
+                      "sdk/api/run/get-by-custom-id",
+                      "sdk/api/run/close",
+                      "sdk/api/run/delete"
+                    ]
+                  }
                 ]
               },
               {
