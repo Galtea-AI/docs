@@ -21,6 +21,7 @@ metric = galtea.metrics.create(
     evaluation_params=["input", "actual_output", "expected_output"],
     tags=["custom", "accuracy"],
     description="A custom accuracy metric.",
+    judge_generation_settings={"temperature": 0.3, "max_output_tokens": 512},
 )
 ```
   </Tab>
@@ -137,4 +138,29 @@ metric = galtea.metrics.create(
 </ResponseField>
 <ResponseField name="documentation_url" type="string" optional>
   A URL pointing to more detailed documentation about the metric.
+</ResponseField>
+<ResponseField name="judge_generation_settings" type="object" optional>
+  The generation settings the judge runs with, instead of the platform defaults. Only these four keys are accepted, and any you omit keep the provider's own default:
+  - `temperature`
+  - `top_p`
+  - `max_output_tokens`
+  - `reasoning_effort` — a level the model accepts, such as `low`, `medium` or `high`. The set differs per model, so read the settings your evaluator model publishes before choosing one.
+
+  Only applicable to AI Evaluation metrics, which are the only ones with an LLM judge. The settings cannot be changed later: create a revision of the metric to use different ones.
+
+  <Warning>
+    **Check which settings your model accepts before you set them.** Each model accepts a different
+    subset. A setting the model does not accept is discarded when the judge runs, and the evaluation
+    still succeeds, so nothing tells you it had no effect.
+
+    List the models with `galtea evaluator-models list`. Each one reports
+    `generationCapabilities.configurableSettings`, the settings it accepts. A model whose
+    `generationCapabilities` is `null` is one we could not read, so no setting is guaranteed to apply.
+  </Warning>
+
+  <Note>
+    A value the model rejects as out of range, such as a `temperature` above the provider's own
+    ceiling, is reported per evaluation: that evaluation ends as `SKIPPED` carrying the provider's own
+    message, and is never scored at a substituted value.
+  </Note>
 </ResponseField>
