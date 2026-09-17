@@ -81,7 +81,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 ## What You Get
 
 - **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
-- **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When one span is the root of the turn (for example, an agent span that wraps child LLM and tool spans, the usual shape from MLflow autolog or an agent framework), the turn takes the root span's input and output: the user message and the agent's final answer. This applies per field. The input always comes from the root when the root carries it. The output comes from the root only when the root's output is a plain answer (a text reply, or a chat-completion or `assistant_message` envelope that reduces to text); when the root's output is a wrapper object that is not the answer (for example a status or tool-decision blob), the turn keeps the child span's real reply instead. A field the root does not carry, or a turn with no single root (for example, several sibling LLM calls), falls back to the first prompt as the turn input and the last completion as the turn output. If the chosen output is a raw OpenAI chat-completion object, the turn shows its message text; the span record keeps the full object. See [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
+- **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When one span is the root of the turn (for example, an agent span that wraps child LLM and tool spans, the usual shape from MLflow autolog or an agent framework), the turn takes the root span's input and output: the user message and the agent's final answer. This applies per field. The input always comes from the root when the root carries it. The output comes from the root only when the root's output is a plain answer (a text reply, or a chat-completion or `assistant_message` envelope that reduces to text); when the root's output is a wrapper object that is not the answer (for example a status or tool-decision blob), the turn keeps the child span's real reply instead. A field the root does not carry, or a turn with no single root (for example, several sibling LLM calls), falls back to the first prompt as the turn input and the last completion as the turn output. A configured input or output source rule replaces that fallback and the root span for its field, and leaves the field empty when it matches no span rather than falling back: see [Recover the turn input from a non-LLM span](#recover-the-turn-input-from-a-non-llm-span). If the chosen output is a raw OpenAI chat-completion object, the turn shows its message text; the span record keeps the full object. See [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
 - **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or spans. Later turns append to the same session.
 - **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
 
@@ -115,7 +115,7 @@ The rule has four parts:
 
 - **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
 - **`attribute`** — the span attribute that holds the reply, stored as a JSON string.
-- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`.
+- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
 - **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the user's own message as the reply.
 
 Here is a complete rule:
@@ -129,13 +129,65 @@ Here is a complete rule:
 }
 ```
 
-Read it step by step. The assistant's reply is saved on the `ExecuteActivity:save_reply` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the reply text inside that array. The predicate keeps user messages out: the same span also carries the user's message with role `"user"`, so the predicate makes the rule fire only for role `"assistant"`.
+Read it step by step. The assistant's reply is saved on the `ExecuteActivity:save_reply` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the reply text inside that array. The predicate keeps user messages out: the same span also carries the user's message with role `"user"`, so the predicate makes the rule fire only for role `"assistant"`. Name a span your system emits once per turn here too, because a replayed span appears several times and the latest copy may belong to another turn. The [input rule section](#recover-the-turn-input-from-a-non-llm-span) explains why.
 
 <Note>
-  This rule is a last resort. It fills only the turn output, and only when the turn has no LLM output. Galtea first tries the normal per-field sources (`galtea.span.*`, then `gen_ai.*`, then recognized managed-platform span shapes). The rule applies only if none of those produced an output. Within one turn, the turn's single root span wins when its output is a plain answer; otherwise the latest span with output by start time wins. So the rule recovers the reply when the reply-bearing span is emitted after the LLM or classifier span. This is the common classify-then-reply order.
+  The rule decides the turn output, whatever order your spans are emitted in. A rule fires on a span when the span name matches and the predicate passes. Galtea takes the turn output from the value the rule extracted, on the latest span where it fired. A span that matches the name but fails the predicate never wins the turn. The rule wins over the root-span and latest-span fallbacks. It also wins over a `galtea.span.output` set on a **different** span of the same turn.
+
+  So if you already set the Galtea attributes on the right span, you do not need a rule. The rule does not fire on a span that already holds the output through a higher source. `galtea.span.output` and `gen_ai.*` are the two common ones, and there the normal sources decide. When the rule fires on no span of the turn, the turn output is **empty**. The fallbacks do not apply: a rule is configured exactly where they give a wrong value, so falling back would restore the answer you rejected. If you ever need the fallback under a configured rule, ask us and it becomes an explicit setting on the rule.
+
+  Per span, nothing changes. Each [Span](/concepts/product/version/session/span) record still fills its own fields from `galtea.span.*`, then `gen_ai.*`, then a recognized managed-platform span shape, and the rule fills a field only when none of those did. The Span records you see in the dashboard are the same with or without a rule.
 </Note>
 
 Set `otelOutputSourceRule` on a product or a version. In the Python SDK you can set it when you create a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products or on version updates. To set it on a product, or to change it on an existing version, use the API or the dashboard. The version value wins over the product value.
+
+## Recover the Turn Input from a Non-LLM Span
+
+The turn input has the mirror problem. Many agents save the user message on their own span, and they save it **after** the LLM spans of the same turn. Galtea then reads the turn input from the earliest span that carries one, which is the LLM prompt: your system prompt plus a copy of the user message. So the turn shows the prompt instead of what the user typed.
+
+The `otelInputSourceRule` config field fixes this. It names the exact span and field that carry the user message, so the turn shows the real question. Set it on a [Product](/concepts/product) or a [Version](/concepts/product/version). The Version value overrides the Product value. Leave it `null` (the default) to keep the rule off.
+
+The rule has the same four parts:
+
+- **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
+- **`attribute`** — the span attribute that holds the user message, stored as a JSON string.
+- **`path`** — a JSONPath into that parsed JSON that points at the input text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the assistant's reply as the input.
+
+Name a span your system emits once per turn. A framework that replays work, such as a durable-workflow engine, re-emits the same span many times in one trace. The earliest copy can then belong to an earlier turn, and the rule picks the wrong message. In one week of production traces, an update-handler span appeared 685 times for 225 distinct updates. The activity that saved the message appeared exactly once per message. So name the span that saves or records the message, not a handler span that a replay re-enters.
+
+Here is a complete rule:
+
+```json
+{
+  "spanName": "ExecuteActivity:save_message",
+  "attribute": "app.arguments",
+  "path": "$[0].message.content",
+  "predicate": { "path": "$[0].message.role", "equals": "user" }
+}
+```
+
+Read it step by step. The user message is saved on the `ExecuteActivity:save_message` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the message text inside that array. The predicate keeps assistant messages out: the same span also carries the assistant's reply with role `"assistant"`, so the predicate makes the rule fire only for role `"user"`.
+
+<Note>
+  The rule decides the turn input, whatever order your spans are emitted in. A rule fires on a span when the span name matches and the predicate passes. Galtea takes the turn input from the value the rule extracted, on the earliest span where it fired. A span that matches the name but fails the predicate never wins the turn. The rule wins over the root-span and earliest-span fallbacks, and over a `galtea.span.input` set on any span of the turn, including the span the rule itself names.
+
+  Per span, nothing changes. A Span record still fills its own fields from `galtea.span.*`, then `gen_ai.*`, then a recognized managed-platform span shape, and the rule last, so a span that already holds an input through a higher source keeps showing that value. The turn input is separate: it is computed from your rule and the stored spans, so it takes what the rule extracts.
+
+  When the rule extracts nothing from any span of the turn, the turn input is **empty**. The fallbacks do not apply, for the same reason as the output rule: a rule is configured exactly where they give a wrong value. A greeting turn with no user message to save therefore has an empty input, and its output still comes from the output rule. If you ever need the fallback under a configured rule, ask us and it becomes an explicit setting on the rule.
+</Note>
+
+Set `otelInputSourceRule` on a product or a version, the same way as the output rule. In the Python SDK you can set both when you create a version: the fields are `otel_input_source_rule` and `otel_output_source_rule`. The SDK does not set either rule on products or on version updates. To set a rule on a product, or to change one on an existing version, use the API or the dashboard.
+
+### How a Rule Is Resolved and Changed
+
+Each source rule behaves the same way, and each direction is resolved on its own:
+
+- **A version inherits the product rule.** Galtea uses the version rule when the version has one, and the product rule when it does not. So a version whose rule is `null` uses the product rule. A version cannot opt out of a product rule today. Pointing the version rule at a span name that version never emits does not restore the product rule: it empties the field for every turn of that version. To stop recovering a field, clear the product rule, or point the version rule at a span that version does emit.
+- **A rule change reaches a stored turn when it extracts a value.** Galtea keeps every span it stored, so a turn that still receives new spans is recomputed with the rule configured at that moment, over all of its spans. Correcting a rule therefore repairs those turns, and a turn recorded before you set the rule is repaired the same way. A turn that receives no further spans keeps the value it has.
+- **A change never empties a field that holds a value.** If your new rule extracts nothing from a turn, Galtea leaves that turn's stored value alone rather than clearing it. Clearing stored values is a separate operation, so an edit to a rule cannot blank recorded traffic as a side effect. A turn is only recorded empty at the moment it is created, when the rule extracts nothing from the spans it has then.
+- **A rule that matches nothing empties its field.** A configured rule decides its direction outright. When it matches no span of the turn, that field is empty, and the root-span and earliest/latest fallbacks do not apply. Each direction is independent, so an input rule that matches nothing does not stop the output rule. If a rule of yours needs the fallback instead, ask us: it becomes an explicit setting on the rule, never the default.
+- **A recovered field is marked on the span.** A span whose field a rule filled carries `galtea.span.input_from_source_rule` or `galtea.span.output_from_source_rule` in its metadata. Galtea writes and reads these keys itself, and strips them from any value you send. Use them to confirm which span a rule fired on.
 
 ## Learn More
 
