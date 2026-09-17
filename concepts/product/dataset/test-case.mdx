@@ -205,6 +205,22 @@ The following properties apply specifically to test cases of type `BEHAVIOR` use
   The maximum number of conversation turns allowed in the simulation. This prevents conversations from running indefinitely. **Example**: 10
 </ResponseField>
 
+## Starting a Scenario from a Conversation
+
+A scenario test case can start from a conversation that already happened. The simulator then continues from that point instead of opening the dialogue itself. Give the conversation in one of two ways, never both in the same request:
+
+<ResponseField name="conversationHistory" type="Array">
+  The turns to store, written out. Each turn holds the user message, the agent answer, or both. Galtea stores them as a **seed session** and returns that session's id in `seedSessionId`. The array itself is never echoed back: read the stored conversation through the seed session. Sending the array again replaces the stored conversation.
+</ResponseField>
+
+<ResponseField name="seedSessionId" type="Text">
+  The id of a session to copy the conversation from. The copy takes that session's turns **and its traces**, so a seed built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished.
+
+  On a response, this field names the test case's own seed session, not the session you copied. Sending a test case body back unchanged is therefore safe: the API reads its own seed id as "leave the conversation alone".
+</ResponseField>
+
+Both fields are only accepted on `SCENARIOS` test cases whose product has at least one version.
+
 ## Revisions
 
 Editing a test case's evaluation content (for example its input, expected output, or context) creates a new **revision** instead of changing the existing row. This keeps your evaluation history accurate:
