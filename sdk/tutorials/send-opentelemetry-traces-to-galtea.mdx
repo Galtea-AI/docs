@@ -249,6 +249,9 @@ When a span becomes a [Span](/concepts/product/version/session/span) record — 
 1. **`galtea.span.*` explicit attributes** — full control, always wins.
 2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
 3. **Recognized managed-platform span shapes** — platform-specific formats Galtea knows.
+4. **A configured span-source rule** — `otelInputSourceRule` or `otelOutputSourceRule` on the Product or Version, which reads the field out of a named non-LLM span. See [Recover the turn input from a non-LLM span](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+
+A **turn's** input and output follow a different order, because a turn has many spans: a configured source rule decides the field, else the turn's single root span, else the earliest input and the latest output. A configured rule that fires on no span of the turn leaves that field empty; it never falls back. See [Monitor real user traffic](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#what-you-get).
 
 If you set no attributes, spans are still ingested. A span type Galtea does not recognize is also ingested: Galtea normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 

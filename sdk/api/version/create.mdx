@@ -83,3 +83,9 @@ version = galtea.versions.create(
 <ResponseField name="parent_version_id" type="string" optional>
   The ID of the parent [version](/concepts/product/version) this version is iterated from. Setting it makes the new version a revision of the parent and records the lineage. The parent must belong to the same product. Leave it empty to create a root version. See [Version Lineage](/concepts/product/version#version-lineage) for details.
 </ResponseField>
+<ResponseField name="otel_input_source_rule" type="dict" optional>
+  Recovers a turn's input from a non-LLM span, for products whose user message is not on the LLM span. An object with `spanName`, `attribute`, `path` and an optional `predicate`. The version value overrides the product value. See [Recover the turn input from a non-LLM span](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+</ResponseField>
+<ResponseField name="otel_output_source_rule" type="dict" optional>
+  Recovers a turn's output from a non-LLM span, for templated or non-LLM replies. Same four parts as `otel_input_source_rule`. The version value overrides the product value. See [Recover replies that do not come from the LLM](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-replies-that-do-not-come-from-the-llm).
+</ResponseField>
