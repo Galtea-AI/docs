@@ -525,7 +525,9 @@
                       "sdk/api/metric/list",
                       "sdk/api/metric/get",
                       "sdk/api/metric/get-by-name",
-                      "sdk/api/metric/delete"
+                      "sdk/api/metric/delete",
+                      "sdk/api/metric/set-analytics-exclusion",
+                      "sdk/api/metric/get-analytics-exclusion-impact"
                     ]
                   },
                   {

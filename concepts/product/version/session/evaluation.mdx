@@ -22,6 +22,14 @@ You can create evaluations from the [Galtea dashboard](https://platform.galtea.a
 
 Every launch you trigger creates a [Run](/concepts/product/run), and each evaluation of that launch points back at it. An evaluation produced by a [Monitor](/concepts/product/monitor) has no Run, because it comes from a rule instead of a launch.
 
+## Results Excluded from Analytics
+
+A metric revision can be excluded from analytics. Its evaluations stay available and keep their original score, reason, and status. They stop contributing to scores, coverage, insights, and monitor aggregates.
+
+The evaluation list hides these results by default. Turn on **Show excluded from analytics** to reveal them. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
+
+Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics.
+
 ## Evaluation Lifecycle
 
 Evaluations follow a specific lifecycle:

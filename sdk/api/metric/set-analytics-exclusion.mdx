@@ -1,0 +1,27 @@
+---
+title: 'Setting Analytics Exclusion'
+sidebarTitle: "Set Analytics Exclusion"
+description: "Exclude or include a metric revision in analytics."
+---
+
+## Returns
+Returns the updated [Metric](/concepts/metric) object.
+
+## Example
+```python
+    metric = galtea.metrics.set_analytics_exclusion(metric_id=metric_id, excluded=True)
+    print(f"Excluded from analytics at: {metric.excluded_from_analytics_at}")
+
+    # Restore it: its results go back into scores and coverage.
+    metric = galtea.metrics.set_analytics_exclusion(metric_id=metric_id, excluded=False)
+```
+
+This changes analytics aggregation only. Existing evaluations keep their scores and reasons — see [Revisions and Analytics](/concepts/metric#revisions-and-analytics).
+
+## Parameters
+<ResponseField name="metric_id" type="string" required>
+  The ID of the metric revision to exclude or include.
+</ResponseField>
+<ResponseField name="excluded" type="bool" required>
+  `True` to exclude the revision from analytics. `False` to include it again.
+</ResponseField>

@@ -63,6 +63,18 @@ flowchart TD
   </Card>
 </CardGroup>
 
+## Revisions and Analytics
+
+Creating a revision marks the previous metric revision as `Legacy`. Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it.
+
+After you save a revision, the dashboard shows how many results and products the earlier revision affects. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
+
+You can reverse this decision from the metric's actions menu. Exclusion does not delete or change any evaluation. Each evaluation keeps its score, reason, and metric revision.
+
+The metric list hides excluded revisions by default. Use **Show excluded from analytics** to reveal them. Turn on **Include legacy** to inspect earlier revisions. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
+
+When a product has excluded results, its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no data to that page.
+
 ## Available Metrics
 
 <Note>

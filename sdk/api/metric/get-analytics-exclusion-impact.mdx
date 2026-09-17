@@ -1,0 +1,34 @@
+---
+title: 'Getting Analytics Exclusion Impact'
+sidebarTitle: "Get Analytics Exclusion Impact"
+description: "Get the results and products affected by excluding a metric revision from analytics."
+---
+
+Call this before [excluding a metric revision](/sdk/api/metric/set-analytics-exclusion) to see how many results and products the change would affect.
+
+## Returns
+
+A `MetricAnalyticsExclusionImpact` object with the following fields:
+
+<ResponseField name="result_count" type="int">
+  Total number of results produced by this metric revision.
+</ResponseField>
+<ResponseField name="products" type="list[MetricAnalyticsExclusionImpactProduct]">
+  The products with results from this metric revision. Each `MetricAnalyticsExclusionImpactProduct` has:
+  - `id` (`str`): The product ID.
+  - `name` (`str`): The product name.
+  - `result_count` (`int`): Number of results this metric revision produced for this product.
+</ResponseField>
+
+## Example
+```python
+    impact = galtea.metrics.get_analytics_exclusion_impact(metric_id=metric_id)
+    print(f"Results affected:  {impact.result_count}")
+    for product in impact.products:
+        print(f"  {product.name}: {product.result_count} results")
+```
+
+## Parameters
+<ResponseField name="metric_id" type="string" required>
+  The ID of the metric revision to inspect.
+</ResponseField>

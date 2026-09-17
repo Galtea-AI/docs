@@ -45,3 +45,9 @@ metrics = galtea.metrics.list(limit=20)
 <ResponseField name="tags" type="list[string]" optional>
   Filter metrics by tags. Returns metrics that have at least one of the provided tags (match-any semantics).
 </ResponseField>
+
+<ResponseField name="include_excluded_from_analytics" type="bool" default="False">
+  Keyword-only. Whether to include metric revisions [excluded from analytics](/concepts/metric#revisions-and-analytics) in the results.
+
+  **Default:** `False` — excluded revisions are hidden. Set to `True` to also retrieve them. A lookup by `id` always returns the metric, excluded or not.
+</ResponseField>
