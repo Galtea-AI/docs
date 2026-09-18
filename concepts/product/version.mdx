@@ -85,8 +85,12 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
 
 ## Version Properties
 
-<ResponseField name="Version Name" type="Text" required>
-  The name of the version. **Example**: "v1.2.0" or "GPT-4 Implementation"
+<ResponseField name="Version Number" type="Integer" required>
+  The position of the version inside its product. Galtea assigns it, starting at 1, and never changes or reuses it. **Example**: 3
+</ResponseField>
+
+<ResponseField name="Version Name" type="Text">
+  An optional label of your own. Leave it out and the version shows its canonical label, the letter `v` followed by its number. A name of `v` followed by digits is refused, because that shape already belongs to another version's label. **Example**: "v1.2.0" or "GPT-4 Implementation"
 </ResponseField>
 
 <ResponseField name="Version Description" type="Text">
