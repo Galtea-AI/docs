@@ -202,7 +202,7 @@ The following properties apply specifically to test cases of type `BEHAVIOR` use
 </ResponseField>
 
 <ResponseField name="Live Turns to Run" type="Number">
-  The maximum number of turns the simulator runs, on top of the predefined conversation if the test case has one. This prevents conversations from running indefinitely. In the CSV file and in the SDK the field is named `max_iterations`. **Example**: 10
+  The maximum number of turns the simulator runs, on top of the predefined conversation if the test case has one. This prevents conversations from running indefinitely. A 4-turn stored conversation with **Live Turns to Run** 1 runs one new turn and the session ends with 5. In the CSV file and in the SDK the field is named `max_iterations`. **Example**: 10
 </ResponseField>
 
 ## Starting a Scenario from a Conversation
@@ -220,6 +220,30 @@ A scenario test case can start from a conversation that already happened. The si
 </ResponseField>
 
 Both fields are only accepted on `SCENARIOS` test cases whose product has at least one version.
+
+### How the run uses it
+
+When you run the test case, Galtea copies the stored conversation into the run's own session before
+your product answers anything. Your product therefore sees that conversation as history and answers
+the turn after it. The stored conversation itself is never changed, so every run of the test case
+starts from the same point.
+
+This works the same way whether Galtea calls your product for you, or your own code drives the
+conversation with `galtea.simulator.simulate()`, `galtea.evaluations.run(agent=...)` or
+`galtea sessions generate-message`.
+
+Two rules follow:
+
+- **Live Turns to Run counts only the new turns.** The copied turns are already answered, so they widen
+  the budget instead of spending it.
+- **A seeded test case needs `userPersona`, `goal` and `scenario`.** The run is never on its first
+  turn, so the simulator writes every new user message and cannot fall back to the test case
+  `input`.
+
+Start the run on a session that holds no turn. Galtea refuses a session that already holds turns of
+its own, because the conversation can no longer be placed in front of them. That is why
+`simulate(agent_goes_first=True)` cannot be used with a stored conversation: it records your agent's
+opening turn first.
 
 ## Revisions
 

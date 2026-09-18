@@ -182,7 +182,7 @@ Behavior datasets have a specific structure designed to enable realistic convers
 </ResponseField>
 
 <ResponseField name="max_iterations" type="Number" optional>
-  The maximum number of turns the simulator runs before the simulation automatically ends. It counts the live turns only: a test case that starts from a predefined conversation runs this many turns on top of it. This prevents infinite loops and controls test duration.
+  The maximum number of turns the simulator runs before the simulation automatically ends. It counts the live turns only: a test case that [starts from a stored conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation) runs this many turns on top of it. A 4-turn stored conversation with `max_iterations` 1 runs one new turn and the session ends with 5. This prevents infinite loops and controls test duration.
   **Example**: 10
 </ResponseField>
 
@@ -197,7 +197,7 @@ Behavior datasets are specifically designed to work with Galtea's [Conversation 
 
 1. **Initialize the conversation** using the `input` and `user_persona`
 2. **Generate realistic user responses** based on the `goal` and conversation history  
-3. **Continue the dialogue** until one of the `stopping_criterias` is met or `max_iterations` is reached
+3. **Continue the dialogue** until one of the `stopping_criterias` is met or the run has added `max_iterations` turns
 4. **Evaluate the conversation** using your selected [metrics](/concepts/metric) to assess performance
 
 For detailed implementation examples, see the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations).
