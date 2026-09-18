@@ -87,6 +87,9 @@ This method can be called in two ways:
 <ResponseField name="timeout" type="int" optional>
   Request timeout in seconds.
 </ResponseField>
+<ResponseField name="acknowledged_insecure_http" type="bool" optional>
+  Set to `true` to test an `http://` URL that is not saved yet. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+</ResponseField>
 
 <Note>
   All fields except `id` default to `PydanticUndefined` (from `pydantic_core`).

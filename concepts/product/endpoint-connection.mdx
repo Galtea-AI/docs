@@ -161,6 +161,27 @@ In this setup:
   Optional rate limit for requests per minute.
 </ResponseField>
 
+## HTTP endpoints
+
+HTTPS is required by default. An `http://` URL is allowed only when the connection
+acknowledges the risk: check the box in the dashboard, or pass
+`acknowledged_insecure_http=True` in the SDK.
+
+The risk: an `http://` connection sends traffic unencrypted. Anyone on the network
+path can read the prompts, the responses, and the credentials it sends.
+
+The acceptance covers the connection, not one address. On an inference call the
+platform follows a redirect, so an acknowledged connection can reach any public
+`http://` host and sends its credentials there too. Only blocked addresses, such as
+private and internal ranges, are still refused. A connection test never follows a
+redirect, so it only ever reaches the address you configured.
+
+A connection that has not acknowledged the risk never leaves HTTPS. If its endpoint
+redirects to an `http://` URL, the platform refuses to follow it.
+
+A self-hosted deployment can allow `http://` for every connection by setting
+`USER_SUPPLIED_URL_ALLOW_HTTP`.
+
 ## Best Practices
 
 <AccordionGroup>

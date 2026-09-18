@@ -95,3 +95,6 @@ endpoint_connection = galtea.endpoint_connections.create(
 <ResponseField name="retryable_status_codes" type="list[int]" optional>
   HTTP status codes that trigger retry. Defaults to `[429, 500, 502, 503, 504]`. Each value must be a valid HTTP status code (100–599).
 </ResponseField>
+<ResponseField name="acknowledged_insecure_http" type="bool" optional>
+  Set to `true` to accept an `http://` URL. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+</ResponseField>
