@@ -84,8 +84,9 @@ PRODUCT_ID = os.environ["GALTEA_PRODUCT_ID"]
 COMMIT_SHA = os.environ["GITHUB_SHA"]
 
 # One version per workflow run, named after the commit so every result is traceable to the
-# code that produced it. Version names are unique per product, and the same commit is built
-# again on `pull_request` and on every job re-run, so the run id and attempt keep it unique.
+# code that produced it. The same commit is built again on `pull_request` and on every job
+# re-run, so the run id and the attempt keep each name distinct. Leave `name` out and Galtea
+# labels the version `v` plus its number, which does not say which commit it tested.
 version = galtea.versions.create(
     name=f"ci-{COMMIT_SHA[:7]}-{os.environ['GITHUB_RUN_ID']}.{os.environ['GITHUB_RUN_ATTEMPT']}",
     product_id=PRODUCT_ID,

@@ -31,7 +31,6 @@ product = galtea.products.get(product_id=product_id)
 # @start creating_a_version
 # 1) Create a version
 version = galtea.versions.create(
-    name="v1.0-" + run_identifier,
     product_id=product.id,
     description="Initial version with basic summarization capabilities",
 )

@@ -1,15 +1,9 @@
-from datetime import datetime
-
 from _test_helpers import create_test_product, wait_for_dataset_ready
-from requests.exceptions import HTTPError
-
 from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
 )
-
-run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
@@ -44,9 +38,10 @@ _created_product_id = create_test_product(
 )
 versions = galtea.versions.list(product_id=_created_product_id)
 if versions is None or len(versions) == 0:
+    # No name, so Galtea allocates number 1 and labels the version `v1`. That is the
+    # label the lookup below asks for.
     galtea.versions.create(
         product_id=_created_product_id,
-        name="v1",
         description="Created via the Galtea SDK quickstart example",
     )
 

@@ -17,7 +17,6 @@ product_id: str = create_test_product(
 )
 
 version = galtea.versions.create(
-    name=f"v-specs-tutorial-{run_identifier}",
     product_id=product_id,
 )
 version_id: str = version.id

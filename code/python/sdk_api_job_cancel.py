@@ -40,7 +40,6 @@ try:
     # Link the endpoint connection to the version so evaluations.run() returns a jobId
     version = galtea.versions.create(
         product_id=product_id,
-        name=f"v-job-cancel-{run_identifier}",
         conversation_endpoint_connection_id=endpoint_connection.id,
     )
     version_id = version.id

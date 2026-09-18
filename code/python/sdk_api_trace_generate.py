@@ -24,7 +24,6 @@ product_id = create_test_product(
 )
 
 version = galtea_client.versions.create(
-    name="Version-" + run_identifier,
     product_id=product_id,
     description="Demo version for generate examples",
 )

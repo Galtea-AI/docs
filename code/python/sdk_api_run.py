@@ -21,7 +21,7 @@ product_id: str = create_test_product(
     inabilities="Cannot process payments",
 )
 
-version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
+version = galtea.versions.create(product_id=product_id)
 if version is None:
     raise ValueError("version is None")
 version_id: str = version.id

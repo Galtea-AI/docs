@@ -51,6 +51,12 @@ description: "Create a new product"
 {/* @embed path="code/python/sdk_api_product_create.py" lang="python" section="example" */}
 ```
 
+### Documenting a second exception
+
+`<EntityNotFound />` is not a table row. `docs/snippets/entity-not-found.mdx` emits its own `## Errors` heading **and** a complete `| Error | Cause |` table. A second table written below it gives the page one heading and two tables with the same header row.
+
+To document a second exception, drop the snippet and write one table that holds both rows. `docs/sdk/api/job/cancel.mdx` is the pattern to copy. Remove the `import EntityNotFound` line too.
+
 ## Redirects
 
 When renaming/moving pages, add to `docs.json`:

@@ -4,14 +4,12 @@ sidebarTitle: "Get By Name"
 description: "Retrieve a specific version by its name."
 ---
 
-import EntityNotFound from '/snippets/entity-not-found.mdx';
-
 ## Returns
 Returns a [Version](/concepts/product/version) object for the given product and version name.
 
 ## Example
 ```python
-version = galtea.versions.get_by_name(product_id=product_id, version_name=version_name)
+version = galtea.versions.get_by_name(product_id=product_id, version_name=child_version_name)
 ```
 
 ## Parameters
@@ -22,4 +20,15 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=versio
   The name of the version you want to retrieve.
 </ResponseField>
 
-<EntityNotFound />
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `EntityNotFoundException` | No version in the product carries that name. Import it with `from galtea import EntityNotFoundException`. |
+| `AmbiguousVersionNameException` | More than one version in the product carries that name. |
+
+<Note>
+  A name does not always identify one version. A version created before version numbers existed can carry a name such as `v5`, and the product's fifth version is stored under the same label. Both then answer to `v5`.
+
+  Import `AmbiguousVersionNameException` from `galtea`. Its message lists the ID of each match, and each match's number where the deployment has one. Pick one match and call [`galtea.versions.get`](/sdk/api/version/get) with its ID.
+</Note>

@@ -18,7 +18,7 @@ product_id: str = create_test_product(
     inabilities="Cannot sign anything",
 )
 
-version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
+version = galtea.versions.create(product_id=product_id)
 
 # @start attach
 dataset = galtea.datasets.create(

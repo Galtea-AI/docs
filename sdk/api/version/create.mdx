@@ -5,20 +5,25 @@ description: "Create a version for your product."
 ---
 
 ## Returns
-Returns a [Version](/concepts/product/version) object for the given parameters, or `None` if an error occurs.
+Returns a [Version](/concepts/product/version) object for the given parameters, or `None` if an error occurs. The returned object carries the `number` Galtea allocated, and the `name` the version is stored under.
 
 ## Example
 ```python
 version = galtea.versions.create(
-    name=version_name,
     product_id=product_id,
     description="Demo version created via SDK",
 )
 ```
 
 ## Parameters
-<ResponseField name="name" type="string" required>
-  The name of the version.
+<ResponseField name="name" type="string" optional>
+  Your own label for the version. Leave it out and Galtea stores the version under its label, `v` followed by its [number](/concepts/product/version#how-a-version-is-identified), for example `v7`.
+
+  A create with no name needs an API that allocates version numbers. A self-hosted deployment older than that still requires a name and refuses the create. Pass a name against such a deployment.
+
+  <Warning>
+    A name of `v` followed by digits is reserved for version labels. The check ignores upper and lower case, so `V7` follows the same rule as `v7`. Galtea accepts such a name only when it is the version's own label, so version 7 accepts `v7` and refuses `v3`. It always refuses `v01`, `v007` and `v0`, because no version is ever labelled that way. A name such as `v1.0` is outside the reserved shape and stays valid.
+  </Warning>
 </ResponseField>
 <ResponseField name="product_id" type="string" required>
   The ID of the product you want to create a version for.
@@ -42,7 +47,6 @@ version = galtea.versions.create(
     # Pass its id to versions.create so Galtea can track cost for this version's
     # traces using the model's per-token pricing.
     version = galtea.versions.create(
-        name="v1.0-with-model-" + run_identifier,
         product_id=_demo_product_id,
         model_id=selected_model.id,
         description="Version linked to a model for cost tracking.",

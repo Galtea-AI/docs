@@ -7,7 +7,7 @@ description: "Retrieve a specific version by its ID."
 import EntityNotFound from '/snippets/entity-not-found.mdx';
 
 ## Returns
-Returns a [Version](/concepts/product/version) object for the given version ID.
+Returns a [Version](/concepts/product/version) object for the given version ID. The object carries the version's `number`, its product-local identity. On a self-hosted deployment older than version numbers, `number` is `None`.
 
 ## Example
 ```python

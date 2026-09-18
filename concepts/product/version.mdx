@@ -19,6 +19,32 @@ You can **create**, view and manage your versions on the [Galtea dashboard](http
   src="/videos/version-overview.mp4"
 ></video>
 
+## How a Version is Identified
+
+A version carries three separate things. Each one has its own job.
+
+| Field | Who sets it | What it is for |
+|---|---|---|
+| **ID** | Galtea | The identity. Every API and SDK call that must point at one exact version uses it. |
+| **Number** | Galtea | A short, ordered label for people. It starts at 1 for each product and counts up. |
+| **Name** | You | An optional label of your own, for example "support release". |
+
+The **number** is local to the product, so every product has its own version 1. Galtea allocates it when the version is created and never changes it. A number is never given to a second version, so a deleted version leaves a permanent gap. Gaps are normal and mean nothing.
+
+Galtea writes the number as `v` followed by the number: `v1`, `v7`, `v42`. This is the version's **label**.
+
+The **name** is your own label, for example "support release". Through the SDK and the API you can leave it out. Galtea then stores the label as the name, so the version reads as `v7`. The dashboard form still asks you for a name.
+
+Galtea combines the two into one label. The label is `v7` when the name is the version's own label, and `v7: support release` when you gave the version a name. Galtea never repeats the label, so a version never reads as `v7: v7`.
+
+<Warning>
+  A name of `v` followed by digits is reserved for version labels. The check ignores upper and lower case, so `V7` follows the same rule as `v7`. Galtea accepts such a name only when it is the version's own label, so version 7 accepts `v7` and refuses `v3`. It also refuses `v01`, `v007` and `v0`, because no version is ever labelled that way. A name such as `v1.0` is outside the reserved shape and stays valid.
+</Warning>
+
+<Note>
+  A version created before numbers existed keeps whatever name it had, even a name such as `v5`. That version and the product's fifth version can therefore both answer to `v5`. So a name does not always identify one version. Use the ID whenever you need an exact match.
+</Note>
+
 ## Comparing Versions
 
 One of the key benefits of tracking versions in Galtea is the ability to compare different implementations of your product. This allows you to:
@@ -49,8 +75,10 @@ On the [Galtea dashboard](https://platform.galtea.ai/), use the **Iterate from v
 With the [Galtea SDK](/sdk/api/version/service), pass `parent_version_id` to `versions.create` to set the parent.
 
 ```python
+child_version_name = "Version-docs-child-" + run_identifier
+
 child_version = galtea.versions.create(
-    name="Version-docs-child-" + run_identifier,
+    name=child_version_name,
     product_id=product_id,
     description="Iteration of the previous version",
     parent_version_id=version_id,
@@ -86,11 +114,11 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
 ## Version Properties
 
 <ResponseField name="Version Number" type="Integer" required>
-  The position of the version inside its product. Galtea assigns it, starting at 1, and never changes or reuses it. **Example**: 3
+  The number Galtea gives the version. It starts at 1 for each product, never changes, and is never reused. See [How a Version is Identified](#how-a-version-is-identified).
 </ResponseField>
 
-<ResponseField name="Version Name" type="Text">
-  An optional label of your own. Leave it out and the version shows its canonical label, the letter `v` followed by its number. A name of `v` followed by digits is refused, because that shape already belongs to another version's label. **Example**: "v1.2.0" or "GPT-4 Implementation"
+<ResponseField name="Version Name" type="Text" optional>
+  Your own label for the version. **Example**: "v1.2.0" or "GPT-4 Implementation". The dashboard asks you for one. Through the SDK and the API you can leave it out, and Galtea then stores the version's label, `v` followed by its number. A name of `v` followed by digits is reserved: see [How a Version is Identified](#how-a-version-is-identified).
 </ResponseField>
 
 <ResponseField name="Version Description" type="Text">

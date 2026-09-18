@@ -65,6 +65,12 @@ except EntityNotFoundException:
 `EntityNotFoundException` is the name to catch. It covers both ways the SDK learns that nothing
 matched, so you never have to know which one happened.
 
+One lookup can also fail the opposite way. When a version name matches more than one version in the
+product, [`versions.get_by_name`](/sdk/api/version/get-by-name) raises `AmbiguousVersionNameException`
+instead of picking one. Import it with `from galtea import AmbiguousVersionNameException`. The
+message lists each match, so you can call [`galtea.versions.get`](/sdk/api/version/get) with the ID
+you want. No other service raises it.
+
 <Note>
   Only a 404 that names an entity becomes `EntityNotFoundException`. A 404 for a path the API does
   not serve stays a plain `requests.HTTPError`, so a typo in a base URL never reads as a missing
