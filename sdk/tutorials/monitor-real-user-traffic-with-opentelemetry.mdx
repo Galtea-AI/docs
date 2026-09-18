@@ -103,6 +103,8 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 
     The rest of the payload still ingests. The rejected spans appear in the export response's `partialSuccess.rejectedSpans` count.
 
+    The response's `partialSuccess.errorMessage` names the reason. It reports one clause per reason that applied to the batch, for example `5 spans carry no galtea.version.id resource attribute and match no existing trace`, so your collector log says what to change.
+
     Spans that carry no test case attribute still attach to whatever session the conversation key already holds. That is how OTel spans join a session the Galtea SDK opened during a test run.
 
     Galtea does not close a test-case-linked session on its own. The inactivity sweep closes production sessions only, unless you widen the product's auto-close scope to all sessions or to development sessions.

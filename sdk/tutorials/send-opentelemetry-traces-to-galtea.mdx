@@ -331,7 +331,7 @@ The keys above fill a Span record. Three more keys decide which session Galtea a
 | `galtea.version.id` | Resource | The [Version](/concepts/product/version) the session is created under. Required: without it, uncorrelated spans are rejected. |
 | `galtea.test_case.id` | Resource or span | The [Test Case](/concepts/product/dataset/test-case) the conversation exercises. Galtea creates the session as non-production and links it to that test case, so no [Monitor](/concepts/product/monitor) scores it. A span value marks one conversation and wins over the resource value. Omit the key to get a production session. |
 
-Galtea rejects one conversation, while the rest of the payload still ingests, when the test case does not exist, when it belongs to another product than the version, when two spans of one conversation name different test case IDs or two resources do, or when the conversation key already holds another session on that version. Those spans are counted in the export response's `partialSuccess.rejectedSpans`.
+Galtea rejects one conversation, while the rest of the payload still ingests, when the test case does not exist, when it belongs to another product than the version, when two spans of one conversation name different test case IDs or two resources do, or when the conversation key already holds another session on that version. Those spans are counted in the export response's `partialSuccess.rejectedSpans`. The response's `partialSuccess.errorMessage` names the reason that applied, so your collector log says what to change.
 
 [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry) walks through the full setup.
 
