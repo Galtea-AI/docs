@@ -201,8 +201,8 @@ The following properties apply specifically to test cases of type `BEHAVIOR` use
   Conditions that determine when the conversation should end, separated by `;` or `|`. The conversation will stop when any of these criteria are met. **Example**: "Booking confirmed|Unable to fulfill request"
 </ResponseField>
 
-<ResponseField name="Max Iterations" type="Number">
-  The maximum number of conversation turns allowed in the simulation. This prevents conversations from running indefinitely. **Example**: 10
+<ResponseField name="Live Turns to Run" type="Number">
+  The maximum number of turns the simulator runs, on top of the predefined conversation if the test case has one. This prevents conversations from running indefinitely. In the CSV file and in the SDK the field is named `max_iterations`. **Example**: 10
 </ResponseField>
 
 ## Starting a Scenario from a Conversation

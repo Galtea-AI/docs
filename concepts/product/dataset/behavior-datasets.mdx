@@ -182,7 +182,7 @@ Behavior datasets have a specific structure designed to enable realistic convers
 </ResponseField>
 
 <ResponseField name="max_iterations" type="Number" optional>
-  The maximum number of conversation turns before the simulation automatically ends. This prevents infinite loops and controls test duration.
+  The maximum number of turns the simulator runs before the simulation automatically ends. It counts the live turns only: a test case that starts from a predefined conversation runs this many turns on top of it. This prevents infinite loops and controls test duration.
   **Example**: 10
 </ResponseField>
 
