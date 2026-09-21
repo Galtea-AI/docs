@@ -1,0 +1,111 @@
+<Update label="2026-09-18" description="Runs, Test Cases That Start From a Conversation, Judge Settings Per Metric, and Platform Improvements">
+
+## Every Launch Now Leaves a Run
+
+A [run](/concepts/product/run) is the record of one launch. Galtea creates one every time you launch evaluations, from the dashboard, the CLI, the SDK or the REST API. A queue job disappears; a run stays, so you can still read last week's launch.
+
+- **Find runs under Runs in the product sidebar,** behind **More** unless **Show all tabs** is on. A run's page has four tabs: **Overview**, **Launches**, **Sessions** and **Evaluations**. Outside the Production view, session and evaluation tables gained a **Run** column and a **Runs** filter.
+- **A run whose test cases produced no session ends as `FAILED`,** with its reason. Sessions and no evaluations is still a success: a generation with no metric ends `COMPLETED` and carries no score.
+- **Run again** repeats a run and answers with a new one, leaving the original alone. The button is hidden, not disabled, when a run cannot repeat: two launches of one kind, no evaluation naming a session, or over 1000 sessions. For a run your own code drove, it re-scores the existing sessions rather than producing new ones. Only a re-launch accepts a different `versionId`.
+- **Cancel a queued launch** without stopping the rest of the run. A launch that finishes inside the request that started it cannot be cancelled. Whatever it already created is kept.
+- **Each run carries a number**, shown as `#42`, starting at 1 in each product. A deleted run keeps its number, so gaps are normal.
+- **Group several launches in one run.** Open a run, pass its id to each launch, and close it when they are done. `fromMetrics` and `fromTestCases` take no `runId` and open their own runs, and a run you opened yourself records no version.
+- **Python SDK:** [`galtea.runs`](/sdk/api/run/service) offers `start()`, `list()`, `get()`, `get_by_custom_id()`, `close()` and `delete()`. [`start()`](/sdk/api/run/start) returns a context manager, so sessions and evaluations created inside a `with` block join the run. The write methods also take `run_id` directly, and [`evaluations.list()`](/sdk/api/evaluation/list) filters by it.
+- **[CLI](/cli/usage):** `galtea runs list`, `get`, `create`, `close`, `relaunch`, `cancel-launch`, `get-metric-summary` and `delete`.
+
+**What joins no run, and says nothing about it:** a production session, which the API refuses a `runId` for and the SDK leaves out of a `with` block; a [monitor](/concepts/product/monitor) evaluation; a retry, which keeps the run it started in; work you start on another thread inside the block; and a session `get_or_create` finds rather than creates. A `with` block also cannot close a run holding a queued launch. It raises instead and asks you to call `runs.close()` once the launch ends. Deleting a run leaves its sessions in place.
+
+## Start a Test Case Mid-Conversation
+
+A `SCENARIOS` [test case](/concepts/product/dataset/test-case) can now start from a conversation that already happened. The simulator continues from that point instead of opening the dialogue itself. Use it to test what your agent does on turn five, not only on turn one.
+
+- **Two ways to give the conversation.** `conversationHistory` writes the turns out. `seedSessionId` copies them from an existing session, with its [spans](/concepts/product/version/session/span), so it carries the retrieval context and tool calls the written form cannot. Sending both is refused.
+- **Live Turns to Run counts only the new turns.** A 4-turn conversation with **Live Turns to Run** set to 1 ends with 5 turns. The field is `max_iterations` in the SDK and in a CSV file.
+- **Set `userPersona`, `goal` and `scenario`, or the run fails on its first live turn.** Nothing checks them when you save the test case. An `input` carrying files fails the same way.
+- **Not on voice yet.** A phone or WebRTC run ignores the conversation and starts from turn one.
+- **`simulate(agent_goes_first=True)` is refused** on a seeded test case, after your agent's opening turn is recorded. The session keeps that turn and produces no score.
+
+## Configure the Judge That Scores Your Metric
+
+An AI Evaluation [metric](/concepts/metric) can now name the generation settings its judge runs with, and prompt-based evaluations report what the judge spent.
+
+- **Prompt judges no longer run at `temperature: 0` by default.** Galtea used to apply it implicitly, and that is removed. Existing metrics were backfilled with an explicit `0`, so they are unchanged. A **new** metric created without a temperature now follows the provider's own default and is less deterministic. Set `temperature` yourself to keep the old behavior.
+- **Four settings are accepted:** `temperature`, `top_p`, `max_output_tokens` and `reasoning_effort`. Set them when you [create the metric](/sdk/api/metric/create), in the **Model settings** section under the evaluator model picker or through `judge_generation_settings` in the SDK. Any other key is refused.
+- **Only `FULL_PROMPT` and `PARTIAL_PROMPT` metrics use them.** A DeepEval metric fixes its own temperature and ignores the settings, so many built-in Galtea metrics cannot be tuned this way and report no tokens.
+- **The form offers only what your model accepts,** and a model can accept none of the four. A setting your model does not accept is dropped when the judge runs and the evaluation still succeeds, so nothing tells you it had no effect. A *value* your provider rejects is different: that evaluation ends `SKIPPED` carrying the provider's own message. List what a model accepts with `galtea evaluator-models list`.
+- **`reasoning_effort` is free text.** The levels differ per model: `minimal`, `none` and `max` exist beside `low`, `medium` and `high`.
+- **`Max output tokens` is capped by your model's ceiling in the dashboard only.** The API accepts any whole number of 1 or more, so an SDK or CLI caller can store a value the model will not honour.
+- **Settings cannot be changed later.** Create a revision of the metric to use different ones. The dashboard carries them into the revision, keeping those the new model also accepts. Through the SDK, a revision that omits them gets none.
+- **Prompt-based evaluations now record the judge's token usage.** The evaluation page shows it in a card under the **Verdict**, and the evaluation list offers **Judge Tokens**, **Input Tokens**, **Output Tokens**, **Reasoning Tokens** and **Token Distribution** columns. The Python SDK returns the counts on `Evaluation`. Reasoning tokens sit inside the output count, so never add all three together.
+
+## Choose What Counts in Your Analytics
+
+You can now exclude a [metric](/concepts/metric) revision from analytics, and read the Scores card in the order that answers your question.
+
+- **Exclude a revision from analytics.** Its results leave the score, coverage and insight numbers, and keep their own score and reason. Evaluation totals, latency, cost and token figures still count them. Before, analytics pooled every revision, so a stricter replacement diluted the current score.
+- **The exclusion is organization-wide, not per product.** One action changes every product holding results from that revision.
+- **Excluded results are then hidden by default,** in the evaluation list, in the metric list and in the SDK. Turn on **Show excluded from analytics**, or pass `include_excluded_from_analytics=True`. The metric list's **Analytics** column is hidden until you reveal it.
+- **A legacy revision still counts.** Creating a revision marks the previous one `Legacy`, and only an exclusion stops it counting. After you save a revision, the dashboard says how many results and products the earlier one affects, and keeps them by default. Excluding is a separate request, so it can fail on its own and leave the revision saved and still counted.
+- **The decision is reversible** from the metric's actions menu, and it changes no evaluation. You cannot exclude a Galtea platform metric, and a read-only account cannot exclude anything.
+- **A product's Analytics page says how many results sit outside the reported numbers,** and links to them. There is no way to read analytics with them added back.
+- **Python SDK:** [`metrics.set_analytics_exclusion()`](/sdk/api/metric/set-analytics-exclusion) and [`metrics.get_analytics_exclusion_impact()`](/sdk/api/metric/get-analytics-exclusion-impact).
+- **The Analytics Scores card draws bars instead of rings, lowest score first.** A picker beside the heading switches to `Highest first` or `A to Z`, and your choice rides the URL. It appears once the card holds two bars.
+
+## Compare the Expected Output Against the Actual One
+
+The [evaluation](/concepts/product/version/session/evaluation) details page now shows the expected output beside the actual one, and the expected tools beside the tools that were called.
+
+- **A JSON payload reads as a per-field table,** one row per path, marked `Match`, `Similar`, `Differs`, `Type mismatch`, `Missing`, `Unexpected` or `Length differs`. Matching rows hide behind a toggle that names how many it holds back. A large payload stops at 500 rows.
+- **Fields, Pretty and Raw.** A payload with fields offers all three. A short label or plain prose offers Pretty and Raw only, and the tools card carries no view controls at all.
+- **Each payload carries its own view controls,** so you can read one output as **Raw** while the page stays **Pretty**. That override is not saved: a reload returns every payload to the stored setting.
+- **Raw is the only view of the stored characters.** Fields and Pretty read the scored value, which unwraps `assistant_message` and content parts.
+
+The comparison opens on its own when the metric declares an expected output, both values are present, and the product is `PROGRAMMATIC` or `HUMAN_DIRECT`. Everywhere else, including a conversational product, the **Diff** switch in the card header reaches it in one click.
+
+## Read Every Attached File in Place
+
+A file attached to a turn now carries **Full size**, **Expand** and **Download** wherever the turn itself is shown, so checking an extracted field against its source stays on one screen.
+
+- **Expand** opens the file under its row, and **Full size** opens it in a lightbox. **Download** is still there for anything stored.
+- **A PDF renders inline,** next to the output and the verdict, without leaving for a download or another tab.
+- **An image gets the same controls,** for the formats a browser renders: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` and `.bmp`.
+- **A single file opens on its own** when the whole conversation is one turn and that file is one the platform can preview.
+
+Two limits. A file the platform cannot show in place, such as a `.docx`, a `.csv` or a TIFF, keeps the download alone. And a file listed in a table cell carries no controls, so open the session or the evaluation to reach it. Judges never read an attached file, whatever it shows.
+
+## Every Version Now Has a Number
+
+Each [version](/concepts/product/version) carries a number, unique inside its product and starting at 1. `v7` is the label Galtea derives from it.
+
+- **A version with no name shows its canonical label.** The dashboard shows `v7`, or `v7: support release` when the version carries a custom name. Galtea no longer invents a name for the first version it creates for you.
+- **`v` followed by digits is a reserved name shape.** `v28`, `v01` and `v0` are all refused, unless the name is that version's own label. A name such as `v1.0` stays valid.
+- **A name is no longer unique inside a product.** A version named `v5` before numbering and the product's fifth version can now stand side by side, so `versions.get_by_name` may raise `AmbiguousVersionNameException`.
+- **Numbers are not contiguous.** Deleting a version leaves a permanent gap.
+- **Python SDK:** `Version.number` is on the response model, and `versions.create(product_id=...)` now works with no name. `number` is optional, and the label falls back to the bare name when it is absent.
+
+## Reach Every Product Section From the Sidebar
+
+**Datasets**, **Sessions**, **Evaluations**, **Runs** and **Tutorial** appeared only when **Show all tabs** was on, so most readers never saw them listed.
+
+A **More** entry now sits after the other work entries and opens those five in a menu. Each item is a real link, so you can middle-click it into a new tab. In the Production view, Datasets is absent and **More** holds four. Turn **Show all tabs** on and the five render inline, with the **More** row gone. The setting lives in your browser, so it does not follow you to another device. Two sections also left the setting in this release: **Connections**, now development-only, and **Monitors**.
+
+## OpenTelemetry: Mark Test Traffic, and Name the Real Turn Input
+
+Three changes for products instrumented with plain [OpenTelemetry](/sdk/tutorials/send-opentelemetry-traces-to-galtea) and no Galtea SDK.
+
+- **Mark a trace as test traffic** with the `galtea.test_case.id` attribute, on the resource or on a span, where a span attribute wins. The session it opens is then non-production and linked to that test case, so a [monitor](/concepts/product/monitor) never scores it. Before, every ingested session was production, so development traffic reached your production monitors. Three things to know: a value that is not a non-empty string is ignored in silence and you get a production session, exactly as if you sent nothing; a marked session stays `PENDING` until you widen the product's auto-close scope or close it yourself; and only OTLP ingestion reads the attribute, so file import and `POST /traces/batch` ignore it.
+- **Name where the turn input lives** with `otelInputSourceRule`, per product or per version, when your [spans](/concepts/product/version/session/span) carry no recognised input attribute. Galtea used to fall back to the LLM span's messages array, which is your system prompt plus a copy of the user message, so the judge scored the reply against a prompt your user never wrote. `otelOutputSourceRule` does the same for the output. Two limits: when the rule finds nothing, the turn input is empty, because the old fallbacks no longer apply; and a version cannot opt out of a product rule.
+- **A batch missing `galtea.version.id` now logs one warn line per sender,** so you can find the sender environment to fix. The export response and the dropped-span counter name the reason but not the sender.
+
+## Platform Improvements
+
+- **Invite someone who already has an account:** inviting a registered address now moves that person across, when they are alone in their organization, that organization has a free plan or none, the invite names no user group, and neither side uses an enterprise IdP. They get an email naming the organization and the role, and confirm from a page within 24 hours. The move is final: their old organization stays behind unreachable, with its products, evaluations and credits, and their API keys start writing into the new one. Outside those conditions the invite fails as before.
+- **Choose the language of generated test cases:** the **Setup for evaluation** dialog now asks for a language in the same step as the number of test cases, from 13 options. It defaults to **Automatic**, which is the previous behavior. The field is ignored while no file is attached.
+- **Test an endpoint connection from its actions menu:** a **Test Connection** entry now sits in a saved HTTP [endpoint connection](/concepts/product/endpoint-connection)'s actions menu, on both the list and the details page, and opens a dialog with the status code, the latency, the raw response and the extracted output fields. A blank Authentication Token keeps the stored credential, as long as you do not change the authentication type. A blank username still overwrites.
+- **One SDK exception for a missing entity:** a read of an entity the platform does not hold now raises `EntityNotFoundException`, importable as `from galtea import EntityNotFoundException`, whether you read by id or by name. Nothing forces you to migrate: a 404 raises a subclass of both that and `requests.HTTPError`, so existing `except requests.HTTPError` code keeps working. A lookup by name raises the plain exception, which is not an `HTTPError`, as before.
+- **Clicking inside an open span no longer closes it:** only the span's header row toggles it now, by mouse.
+- **Keeping your work leads the setup dialog:** closing the specification setup dialog while metrics are still generating now puts the primary style on the button that keeps them.
+- **Disconnecting a linked account cannot hang:** every **Disconnect** button is disabled from the moment the confirmation dialog opens.
+- **Generated scenarios stay grounded:** a scenario generated from a conditional specification is now built on a catalog record the rule governs, and Galtea picks one itself when the planning model names none. When no record matches the rule, the scenario falls back to the whole catalog and the guarantee does not apply.
+
+</Update>
