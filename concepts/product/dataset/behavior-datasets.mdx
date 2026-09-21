@@ -87,21 +87,28 @@ Here are examples of behavior dataset content and structure:
   <Accordion title="Travel Booking Scenarios">
     <Tabs>
       <Tab title="Table View">
-        | Goal | User Persona | Input | Stopping Criterias | Max Iterations | Scenario |
-        |------|--------------|----------------|-------------------|----------------|----------|
-        | Book a one-way flight from SFO to JFK for next Tuesday | A busy professional who is direct and values efficiency | I need to book a flight | The user has confirmed the flight booking\|The chatbot indicates it cannot fulfill the request | 10 | Flight booking scenario |
-        | Find the cheapest round-trip flight to Europe in summer | A budget-conscious student who asks many questions | Hi, I'm looking for cheap flights to Europe | Flight is booked\|User decides not to book\|Maximum budget is exceeded | 15 | Budget travel scenario |
-        | Change an existing flight reservation | A frustrated customer whose plans have changed | I need to change my flight immediately | Reservation is successfully modified\|Customer is transferred to agent | 8 | Flight modification scenario |
+        | Goal | User Persona | Input | Stopping Criterias | Max Iterations | Scenario | Conversation History |
+        |------|--------------|----------------|-------------------|----------------|----------|----------------------|
+        | Book a one-way flight from SFO to JFK for next Tuesday | A busy professional who is direct and values efficiency | I need to book a flight | The user has confirmed the flight booking\|The chatbot indicates it cannot fulfill the request | 10 | Flight booking scenario | |
+        | Find the cheapest round-trip flight to Europe in summer | A budget-conscious student who asks many questions | Hi, I'm looking for cheap flights to Europe | Flight is booked\|User decides not to book\|Maximum budget is exceeded | 15 | Budget travel scenario | |
+        | Change an existing flight reservation | A frustrated customer whose plans have changed |  | Reservation is successfully modified\|Customer is transferred to agent | 8 | Flight modification scenario | `[{"role": "user", "content": "I booked flight GA123 last week"}, {"role": "assistant", "content": "I see it. How can I help?"}]` |
       </Tab>
       <Tab title="Raw CSV">
         ```csv
-        goal,user_persona,input,stopping_criterias,max_iterations,scenario
-        "Book a one-way flight from SFO to JFK for next Tuesday","A busy professional who is direct and values efficiency","I need to book a flight","The user has confirmed the flight booking|The chatbot indicates it cannot fulfill the request",10,"Flight booking scenario"
-        "Find the cheapest round-trip flight to Europe in summer","A budget-conscious student who asks many questions","Hi, I'm looking for cheap flights to Europe","Flight is booked|User decides not to book|Maximum budget is exceeded",15,"Budget travel scenario"
-        "Change an existing flight reservation","A frustrated customer whose plans have changed","I need to change my flight immediately","Reservation is successfully modified|Customer is transferred to agent",8,"Flight modification scenario"
+        goal,user_persona,input,stopping_criterias,max_iterations,scenario,conversation_history
+        "Book a one-way flight from SFO to JFK for next Tuesday","A busy professional who is direct and values efficiency","I need to book a flight","The user has confirmed the flight booking|The chatbot indicates it cannot fulfill the request",10,"Flight booking scenario",
+        "Find the cheapest round-trip flight to Europe in summer","A budget-conscious student who asks many questions","Hi, I'm looking for cheap flights to Europe","Flight is booked|User decides not to book|Maximum budget is exceeded",15,"Budget travel scenario",
+        "Change an existing flight reservation","A frustrated customer whose plans have changed",,"Reservation is successfully modified|Customer is transferred to agent",8,"Flight modification scenario","[{""role"": ""user"", ""content"": ""I booked flight GA123 last week""}, {""role"": ""assistant"", ""content"": ""I see it. How can I help?""}]"
         ```
       </Tab>
     </Tabs>
+    <Note>
+      The third row leaves `input` empty because `conversation_history` supplies the opening. A row
+      that sets `conversation_history` must not attach files to its `input`, because the platform
+      supports file inputs on single-turn runs only and a seeded run is multi-turn. Only a
+      text run reads `conversation_history`. A voice run (a phone or WebRTC connection) ignores the
+      column and still opens the conversation from `input`, so fill `input` for a voice product.
+    </Note>
   </Accordion>
 
   <Accordion title="Customer Support Scenarios">
@@ -186,9 +193,18 @@ Behavior datasets have a specific structure designed to enable realistic convers
   **Example**: 10
 </ResponseField>
 
-<ResponseField name="scenario" type="Text" optional>
+<ResponseField name="scenario" type="Text" required>
   A brief description of the scenario for documentation and organizational purposes. This helps categorize and manage different types of conversations.
   **Example**: "Flight booking scenario for business travelers"
+</ResponseField>
+
+<ResponseField name="conversation_history" type="Text" optional>
+  A conversation that already happened, which the simulation continues from instead of starting empty. The cell holds a JSON array of turns, each one `{"role": "user"|"assistant", "content": "..."}`. A turn carrying `retrieval_context` is refused. Only Behavior datasets accept this column; an Accuracy or Security dataset with a value in this column is refused.
+
+  When a row sets this column, its `input` is ignored: the simulation continues from the turns you gave, and the simulator writes the next user message. Such a row must not attach files to its `input`, because the platform supports file inputs on single-turn runs only and a seeded run is multi-turn.
+
+  This applies to a text run. A voice run (a phone or WebRTC connection) ignores this column and still opens the conversation from `input`, so keep `input` filled for a voice product.
+  **Example**: `[{"role": "user", "content": "I need to book a flight"}, {"role": "assistant", "content": "Sure, where to?"}]`
 </ResponseField>
 
 ## Using Behavior Datasets with the Conversation Simulator

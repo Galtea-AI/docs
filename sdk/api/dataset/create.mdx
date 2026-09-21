@@ -192,7 +192,7 @@ csv_dataset = galtea.datasets.create(
 
   **File Format by Dataset Type:**
   - **Accuracy/Security datasets**: Standard format with `input`, `expected_output`, `tag`, `source` columns
-  - **Behavior datasets**: Conversation simulator format with `goal`, `user_persona`, `input`, `stopping_criterias`, `max_iterations`, `scenario` columns
+  - **Behavior datasets**: Conversation simulator format with `goal`, `user_persona`, `input`, `stopping_criterias`, `max_iterations`, `scenario`, `conversation_history` columns. `conversation_history` holds a JSON array of turns, each one `{"role": "user"|"assistant", "content": "..."}`, and the simulation continues that conversation instead of starting empty. A turn carrying `retrieval_context` is refused, and a row that sets the column has its `input` ignored. Such a row must not attach files to its `input`, because the platform supports file inputs on single-turn runs only and a seeded run is multi-turn. This applies to a text run: a voice run (a phone or WebRTC connection) ignores the column and still opens the conversation from `input`.
 
   See the [Conversation Simulator Tutorial](/sdk/tutorials/simulating-conversations) for detailed Behavior dataset CSV format examples.
 
