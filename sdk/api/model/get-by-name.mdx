@@ -4,6 +4,8 @@ sidebarTitle: "Get By Name"
 description: "Retrieve a specific model by its name within the authenticated user's organization."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [Model](/concepts/model) object for the given name.
 
@@ -16,3 +18,5 @@ model = galtea.models.get_by_name(name=model_name)
 <ResponseField name="name" type="string" required>
   Name of the model to retrieve.
 </ResponseField>
+
+<EntityNotFound />

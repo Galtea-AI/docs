@@ -34,7 +34,6 @@ product_id = create_test_product(
 # Create version
 version = galtea.versions.create(
     product_id=product_id,
-    name="v1.0-" + run_identifier,
 )
 
 # Create a behavior test for simulation

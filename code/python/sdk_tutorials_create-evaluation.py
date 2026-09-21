@@ -16,7 +16,7 @@ product_id: str = create_test_product(
 )
 
 # Create version and test
-version = galtea.versions.create(product_id=product_id, name=f"v-{run_identifier}")
+version = galtea.versions.create(product_id=product_id)
 version_id: str = version.id
 
 dataset = galtea.datasets.create(

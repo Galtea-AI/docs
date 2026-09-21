@@ -156,3 +156,6 @@ evaluations = galtea.evaluations.create_single_turn(
 <ResponseField name="conversation_simulator_version" type="string" optional>
   The version of Galtea's conversation simulator used to generate the user message (input). This should only be provided if the input was generated using the `conversation_simulator_service`.
 </ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/concepts/product/run) these evaluations join. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+</ResponseField>

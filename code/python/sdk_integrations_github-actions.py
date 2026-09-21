@@ -68,8 +68,9 @@ PRODUCT_ID = os.environ["GALTEA_PRODUCT_ID"]
 COMMIT_SHA = os.environ["GITHUB_SHA"]
 
 # One version per workflow run, named after the commit so every result is traceable to the
-# code that produced it. Version names are unique per product, and the same commit is built
-# again on `pull_request` and on every job re-run, so the run id and attempt keep it unique.
+# code that produced it. The same commit is built again on `pull_request` and on every job
+# re-run, so the run id and the attempt keep each name distinct. Leave `name` out and Galtea
+# labels the version `v` plus its number, which does not say which commit it tested.
 version = galtea.versions.create(
     name=f"ci-{COMMIT_SHA[:7]}-{os.environ['GITHUB_RUN_ID']}.{os.environ['GITHUB_RUN_ATTEMPT']}",
     product_id=PRODUCT_ID,
@@ -84,11 +85,22 @@ def my_agent(user_message: str) -> str:
     return "This is a placeholder model answer."
 
 
-# One call runs the whole evaluation: it finds the product's specifications, resolves their
-# linked datasets and metrics, runs the agent on every test case, and submits the results.
-result = galtea.evaluations.run(version_id=version.id, agent=my_agent)
+# Open a run named after the workflow run, so every result of this CI job is grouped under one
+# entry you can find again from the build number. The label must be unique per product, and
+# "Re-run all jobs" keeps the run id and only bumps the attempt, so both go in the label.
+# Leaving the block closes the run.
+with galtea.runs.start(
+    product_id=PRODUCT_ID,
+    version_id=version.id,
+    custom_id=f"{os.environ['GITHUB_RUN_ID']}-{os.environ['GITHUB_RUN_ATTEMPT']}",
+):
+    # One call runs the whole evaluation: it finds the product's specifications, resolves their
+    # linked datasets and metrics, runs the agent on every test case, and submits the results.
+    # It joins the open run, so you pass no run id here.
+    result = galtea.evaluations.run(version_id=version.id, agent=my_agent)
 
 print(f"Evaluated {result['testCaseCount']} test cases against version {version.name}")
+print(f"Results are grouped under run {result['runId']}")
 # @end github_actions_workflow
 
 # Guard the gate itself: `run()` returns testCaseCount 0 and raises nothing when the

@@ -1,0 +1,291 @@
+---
+title: "Run"
+sidebarTitle: "Overview"
+description: "The record of one launch, with its own id, status, sessions and evaluations"
+---
+
+import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
+import ProductCard from '/snippets/cards/product-card.mdx';
+import VersionCard from '/snippets/cards/version-card.mdx';
+import EvaluationCard from '/snippets/cards/evaluation-card.mdx';
+import MonitorCard from '/snippets/cards/monitor-card.mdx';
+import SDKRunServiceCard from '/snippets/cards/sdk-run-service-card.mdx';
+
+## What is a Run?
+
+A Run is the record of one launch. Every launch creates a Run. Every [evaluation](/concepts/product/version/session/evaluation) of that launch points back at it, and so does every [session](/concepts/product/version/session) the launch created. The Run answers three questions about a launch: who started it, what it produced, and how it ended.
+
+A Run belongs to one [product](/concepts/product). It usually also names the [version](/concepts/product/version) you launched against.
+
+<Note>
+  A Run is an entity you can list, open and delete. It is not the SDK method [`evaluations.run()`](/sdk/api/evaluation/run).
+  That method starts a launch. The Run is the record that the launch leaves behind.
+</Note>
+
+A Run is the development counterpart of a [Monitor](/concepts/product/monitor). A Monitor scores production sessions on its own, with no launch. A Run records a launch you triggered.
+
+The record survives the queue. Before Runs, a launch was visible only as a queue job, and the queue drops old jobs. A Run stays, so you can still read last week's launch.
+
+## Every launch creates a Run
+
+You do not have to create a Run. Galtea creates one for you whenever you launch evaluations, from the dashboard, the CLI, the SDK or the REST API.
+
+Every launch response carries the id. A launch that returns evaluations gives it on each one, as `runId`. A launch that queues work or covers a batch returns it beside the job: `runId` for a single run, `runIds` for a call that opens one per product or per version.
+
+These launches create a Run:
+
+- An evaluation of a version against its test cases.
+- An evaluation of one session, or of several sessions, production sessions included. One call creates one Run per product, because a Run belongs to a single product.
+- An evaluation of a single inference result.
+- A single-turn evaluation.
+- An inference generation, with or without metrics.
+- A metric replay. One call creates one Run per product, for the same reason.
+- A test case replay. One call creates one Run per version, because each version runs as its own job.
+
+A launch rejected on its own contents, such as an unknown metric, creates no Run. You get the error in the response, so there is nothing to record.
+
+Two cases create no Run:
+
+- **Monitor evaluations.** A Monitor evaluation belongs to its Monitor, not to a launch. An evaluation carries a Run or a Monitor, never both.
+- **Retries.** A retried evaluation keeps the Run it was created with. It does not start a new one.
+
+## Grouping several launches in one Run
+
+You can also open a Run yourself, and pass its id to several launches. The launches then share one Run, so a pipeline that starts three launches reports one result.
+
+The steps are:
+
+1. Create the Run with `POST /runs`, with `galtea runs create`, or with [`galtea.runs.start()`](/sdk/api/run/start).
+2. Pass the returned id as `runId` on each launch, or as `run_id` in the SDK. A metric replay and a test case replay accept no `runId`. They always open their own Runs, and return them as `runIds`.
+3. Close the Run with `POST /runs/{id}/close`, with `galtea runs close`, or by leaving the SDK `with` block. Wait until every launch inside it has finished. The platform refuses to close a Run that still has a running launch.
+
+<Warning>
+  The `openedBy` field decides who ends a Run, not who supplied its id. A Run you opened (`CALLER`) stays
+  `RUNNING` until you close it, even when launches run inside it. A Run a launch opened (`LAUNCH`) ends by
+  itself once its last launch ends, whether or not you passed its id to a later launch.
+</Warning>
+
+You can also set your own `customId` on a Run, for example a build number from your pipeline. A `customId` must be unique within its product among runs that are not deleted. Deleting a run frees its `customId`.
+
+## The Run number
+
+Each Run has a number, shown as `#42`. Numbers start at 1 in each product and count up. A number is never reused, so a deleted Run never gives its number to a later one.
+
+The number is a label. Address a Run by its id, not by its number, and do not compare numbers across products.
+
+## Status
+
+A Run has one of four statuses:
+
+- **`RUNNING`** — the launch is in progress. Every new Run starts here.
+- **`COMPLETED`** — the launch finished and created its evaluations.
+- **`FAILED`** — the launch produced no evaluation. A launch that fails its endpoint check ends here with zero evaluations, and so does one whose every session failed. This makes visible a failure that used to leave no trace at all.
+- **`CANCELLED`** — you cancelled the launch, or the queue job that carried it out.
+
+A Run a launch opened settles when its last launch ends. A Run you opened settles only when you close it, and you cannot close it while a launch inside it still runs.
+
+A Run a launch opened takes the status of its launches: `COMPLETED` when any launch completed, else `FAILED` when any failed, else `CANCELLED`. A Run you opened reads `FAILED` only when one of its launches failed, and `COMPLETED` otherwise, because the sessions you score yourself write no launch. Each launch also keeps its own status, which you read in the `launches` field.
+
+`COMPLETED`, `FAILED` and `CANCELLED` are final. Each one also sets `finishedAt`. A Run that already holds a final status cannot change again, so closing it a second time returns an error.
+
+## The sessions of a Run
+
+The sessions of a Run are a union: the [sessions](/concepts/product/version/session) the Run created, plus the distinct sessions of its evaluations. Galtea counts that union when you read the Run. A launch that generates inferences creates sessions, so the Run holds them even when it evaluates no metric. A launch over sessions that already exist creates none, and reaches its sessions through its evaluations.
+
+A session names at most one Run: the Run that created it. The session carries it as `runId`. A session you log yourself carries no `runId`. That covers a session you open with `POST /sessions` and no run id, a trace file import, and OpenTelemetry traces. The session count of a Run is wider than that field. It also counts a session the Run only scored. The two `GET /sessions` filters keep the difference. `runIds` returns the sessions a Run created. `involvedInRunIds` returns the sessions it created or scored.
+
+## Running a Run again
+
+`POST /runs/{id}/relaunch` repeats a Run. It answers with a new Run, which names the one it repeats as `relaunchedFromRunId`. The source Run is never touched: its evaluations stay exactly as they were, so you can compare the two.
+
+The launches of the source decide what "again" means. You do not choose, and no field on the Run records it:
+
+- A Run whose launch generated inferences is **re-launched**. Galtea drives the version again, creates new sessions, and scores them.
+- A Run whose launch scored sessions that already existed is **re-evaluated**. Galtea scores the same sessions again with the same metrics, and creates no session.
+- A Run you performed yourself is also **re-evaluated**. It holds no launch naming its inputs, so Galtea reads the Run's own evaluations for the sessions and the metrics to score again. No session is created, because only you can produce one.
+
+Two bodies are accepted, both optional:
+
+- `versionId` runs the same tests against a different version. It is accepted only on a re-launch, because a re-evaluation scores sessions that already belong to a version.
+- `useCurrentTestCases` resolves the inputs again instead of repeating the recorded ones. On a re-launch it uses every test case the same datasets hold today. On a re-evaluation of a version it uses every session that version holds today. It changes nothing where the original request listed its test cases or sessions one by one, because there is no container to resolve again.
+
+Two Runs are refused, and the answer names the reason:
+
+- A Run holding two launches of one kind, because it names no single thing to repeat.
+- A Run whose evaluations name no session, so there is nothing to score again.
+
+## Cancelling a launch
+
+`POST /runs/{id}/launches/{launchId}/cancel` stops one launch that is still running, and the work behind it. The sessions and evaluations it already created are kept.
+
+Only a launch the platform queued can be cancelled. Every other launch finishes inside the request that started it, so by the time you read it there is nothing left to stop. A launch carrying a `jobId` is the queued kind.
+
+Cancelling one launch does not end the Run while another launch of it is still running. The Run settles by its own rule: it ends once its last launch ends.
+
+## Reading the scores of a Run
+
+`GET /runs/{id}/metric-summary` reports how each metric scored across the Run: the mean and the observed range, over the evaluations that carry a score. A reviewer's score wins over the judge's, the same rule every reported number uses. A metric whose evaluations are all still pending has no row.
+
+## Deleting a Run
+
+`DELETE /runs/{id}` hides the Run and every evaluation it holds. The sessions stay, and so does everything else that scored them. A Monitor's scores of the same sessions survive, and a session scored by two Runs keeps the scores of the other Run.
+
+## Finding runs in the dashboard
+
+Open a product and pick **Runs** in the sidebar. It lists every run of that product. The sidebar keeps **Runs** behind **More** unless you turn on **Show all tabs** in your settings.
+
+To see the runs of one version only, open that version and pick its **Runs** tab.
+
+Open a row to reach the run's own page. It has four tabs:
+
+- **Overview** — the product, the status, the version, who launched it, what it ran on, and how each metric scored.
+- **Launches** — one card per launch, with its request, its timestamps and its error. A launch that is still running and was queued carries a **Cancel** button.
+- **Sessions** — every session the run created or scored.
+- **Evaluations** — the evaluations the run launched.
+
+The page header carries **Run again**, which repeats the run. It is shown only for a run Galtea can repeat.
+
+Evaluation tables and session tables both show a **Run** column and a **Runs** filter, so you can narrow either list down to one launch. In both, the column links to the run's page. Session tables hide both in the Production view, because production traffic never belongs to a Run.
+
+## API and CLI
+
+The Galtea Python SDK exposes runs as [`galtea.runs`](/sdk/api/run/service): `start()`, `list()`, `get()`,
+`get_by_custom_id()`, `close()` and `delete()`. `start()` returns a context manager, so the sessions and
+evaluations you create inside a `with` block join the run, and leaving the block closes it.
+
+<SDKRunServiceCard />
+
+The [REST API](/api-reference) offers `POST /runs`, `POST /runs/{id}/close`, `POST /runs/{id}/relaunch`, `POST /runs/{id}/launches/{launchId}/cancel`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/metric-summary` and `DELETE /runs/{id}`. `GET /evaluations` accepts a `runIds` filter, so you can read every evaluation of a launch.
+
+Three session operations name a Run. `POST /sessions` accepts an optional `runId`, so you can add a session to a Run you opened. It is refused on a production session. `GET /sessions?runIds=` returns the sessions a Run created. `GET /sessions?involvedInRunIds=` returns the sessions a Run created or scored.
+
+The SDK write methods take the same id as `run_id`: [`sessions.create`](/sdk/api/session/create), [`sessions.get_or_create`](/sdk/api/session/get-or-create), [`evaluations.create`](/sdk/api/evaluation/create), [`evaluations.create_single_turn`](/sdk/api/evaluation/create-single-turn), [`evaluations.run`](/sdk/api/evaluation/run) and [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate). [`evaluations.list`](/sdk/api/evaluation/list) reads them back with the same `run_id` filter, and each `Session` and `Evaluation` carries its own `run_id`.
+
+The [CLI](/cli/usage) mirrors those operations: `galtea runs list`, `galtea runs get`, `galtea runs create`, `galtea runs close`, `galtea runs relaunch`, `galtea runs cancel-launch`, `galtea runs get-metric-summary` and `galtea runs delete`.
+
+## Launches
+
+A launch is one scoring call the platform carried out inside a Run. Each one leaves a launch row on the Run. The row keeps the request as the platform received it, what the request resolved to at dispatch, the queue job when there was one, and its own status and error.
+
+A scoring call of one session, one inference result or one turn writes no launch row when the `runId` names a Run you opened with `POST /runs`. You performed that launch, so the Run holds only its evaluations. Every other case writes a row, including that same call naming a Run a launch opened: a batch over several sessions, a metric replay, and a generation from test cases always write one.
+
+A queued generation writes its row before the endpoint checks the request. So a launch the check rejects still leaves a `FAILED` row, with its request and its error. Read it with `GET /runs/{id}`.
+
+A single-run read carries the launches, oldest first: `GET /runs/{id}`, and the responses of `POST /runs` and `POST /runs/{id}/close`. The items of `GET /runs` do not.
+
+### Launch Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier of the launch.
+</ResponseField>
+
+<ResponseField name="runId" type="string" required>
+  The ID of the run the launch belongs to. Deleting the run deletes its launches.
+</ResponseField>
+
+<ResponseField name="kind" type="Enum" required>
+  What the platform did in this launch. Possible values:
+  - `GENERATE_INFERENCES`: the platform generated sessions from test cases, and scored them when the launch named a metric. `POST /evaluations/fromVersion`, `POST /evaluations/fromTestCases` and `POST /inferenceResults/generate` reach it.
+  - `EVALUATE_SESSION`: the platform scored one existing session, inference result or single turn. `POST /evaluations/fromSession`, `POST /evaluations/fromInferenceResult` and `POST /evaluations/singleTurn` reach it.
+  - `EVALUATE_SESSION_BATCH`: the platform scored several existing sessions in one call. `POST /evaluations/fromSessions` reaches it.
+  - `REPLAY_METRIC`: the platform scored existing sessions again with a metric. `POST /evaluations/fromMetrics` reaches it.
+</ResponseField>
+
+<ResponseField name="jobId" type="string" optional>
+  The ID of the queue job that carried out the launch. It is empty when the launch finished inside the request, with no job.
+</ResponseField>
+
+<ResponseField name="status" type="Enum">
+  The lifecycle status of the launch. Possible values: `RUNNING`, `COMPLETED`, `FAILED`, `CANCELLED`, the same set as the run.
+  The last three are final and also set `finishedAt`.
+</ResponseField>
+
+<ResponseField name="error" type="string" optional>
+  Why the launch failed. It is empty unless the status is `FAILED`.
+</ResponseField>
+
+<ResponseField name="request" type="object">
+  The launch request as the platform received it.
+</ResponseField>
+
+<ResponseField name="resolvedInputs" type="object">
+  What the request resolved to at dispatch: the test cases, sessions or metrics the launch worked on. Its keys depend on `kind`.
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  Timestamp of when the launch was created (ISO 8601 format).
+</ResponseField>
+
+<ResponseField name="finishedAt" type="string" optional>
+  Timestamp of when the launch reached a final status (ISO 8601 format). It is empty while the launch is `RUNNING`.
+</ResponseField>
+
+## Run Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier of the run. Use it to address the run, and to link evaluations to it.
+</ResponseField>
+
+<ResponseField name="productId" type="string" required>
+  The ID of the product the run belongs to. A run always names exactly one product.
+</ResponseField>
+
+<ResponseField name="versionId" type="string" optional>
+  The ID of the version the launch evaluated. It is empty for a metric replay, because a replay can span several versions of one product, so no single version would be correct.
+</ResponseField>
+
+<ResponseField name="userId" type="string" optional>
+  The ID of the user who started the launch. It is empty when the launch came from an automation with no signed-in user.
+</ResponseField>
+
+<ResponseField name="ordinal" type="int">
+  The run number within its product, shown as `#42`. It starts at 1, counts up, and is never reused.
+</ResponseField>
+
+<ResponseField name="customId" type="string" optional>
+  Your own identifier for the run, for example a build number. It must be unique within the product among runs that are not deleted.
+</ResponseField>
+
+<ResponseField name="relaunchedFromRunId" type="string" optional>
+  The ID of the run this one repeats. `POST /runs/{id}/relaunch` sets it. It is empty on every other run.
+</ResponseField>
+
+<ResponseField name="openedBy" type="Enum">
+  Who opened the run. `LAUNCH` when a launch endpoint opened it; the run then closes on its own when its last launch ends. `CALLER` when `POST /runs` opened it; only `POST /runs/{id}/close` ends it.
+</ResponseField>
+
+<ResponseField name="status" type="Enum">
+  The lifecycle status of the run.
+  Possible values: `RUNNING`, `COMPLETED`, `FAILED`, `CANCELLED`.
+  The last three are final and also set `finishedAt`.
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  Timestamp of when the run was created (ISO 8601 format).
+</ResponseField>
+
+<ResponseField name="finishedAt" type="string" optional>
+  Timestamp of when the run reached a final status (ISO 8601 format). It is empty while the run is `RUNNING`.
+</ResponseField>
+
+<ResponseField name="evaluationCount" type="int">
+  How many evaluations the run holds. Galtea counts it when you read the run; it is not stored.
+</ResponseField>
+
+<ResponseField name="sessionCount" type="int">
+  How many distinct sessions the run created or scored. Galtea counts it when you read the run; it is not stored. A deleted session is not counted, so this total always matches what `GET /sessions?involvedInRunIds=` returns.
+</ResponseField>
+
+<ResponseField name="launches" type="RunLaunch[]" optional>
+  The launches of the run, oldest first. Only a single-run read carries it: `GET /runs/{id}`, and the responses of `POST /runs` and `POST /runs/{id}/close`. The items of `GET /runs` omit it.
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <ProductCard />
+  <VersionCard />
+  <EvaluationCard />
+  <MonitorCard />
+</CardGroup>

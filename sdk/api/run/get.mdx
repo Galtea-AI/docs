@@ -1,0 +1,25 @@
+---
+title: "Get Run"
+sidebarTitle: "Get"
+description: "Retrieve a run by its ID, with its launches."
+---
+
+## Returns
+
+Returns a [Run](/concepts/product/run) object, with its `launches` populated, oldest first.
+
+A launch is one scoring call the platform carried out inside the run. Work you performed yourself,
+such as sessions you created inside a `with` block, writes no launch, so a run you opened normally
+carries none.
+
+## Example
+```python
+run = galtea.runs.get(run_id=run.id)
+for launch in run.launches or []:
+    print(f"{launch.kind}: {launch.status}")
+```
+
+## Parameters
+<ResponseField name="run_id" type="string" required>
+  The ID of the run to retrieve.
+</ResponseField>

@@ -17,7 +17,6 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 product_id = create_test_product(galtea, name="Session Update Demo " + run_identifier)
 
 version = galtea.versions.create(
-    name="Version-" + run_identifier,
     product_id=product_id,
     description="Demo version for session update examples",
 )

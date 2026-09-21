@@ -1,10 +1,10 @@
 ---
 title: 'Monitor Real User Traffic via OpenTelemetry'
-description: "Send your live traffic's OpenTelemetry traces to Galtea to create production sessions that Monitors evaluate automatically."
+description: "Send your live traffic's OpenTelemetry traces to Galtea to create production sessions that Monitors evaluate automatically, or mark a conversation as a test case."
 icon: "satellite-dish"
 ---
 
-If your AI system serves real users and emits [OpenTelemetry](https://opentelemetry.io/) (OTel) traces, export them to Galtea. OTel is the open standard for emitting traces. Galtea assembles the spans into production [Sessions](/concepts/product/version/session) with conversation turns, and [Monitors](/concepts/product/monitor) evaluate those sessions automatically.
+If your AI system serves real users and emits [OpenTelemetry](https://opentelemetry.io/) (OTel) traces, export them to Galtea. OTel is the open standard for emitting traces. Galtea assembles the spans into production [Sessions](/concepts/product/version/session) with conversation turns, and [Monitors](/concepts/product/monitor) evaluate those sessions automatically. Spans that name a [Test Case](/concepts/product/dataset/test-case) open a development session instead, which no Monitor scores.
 
 <Note>
   This page is about real production traffic. To attach OTel spans to the test runs Galtea triggers via Direct Inference, see [W3C Trace Context Propagation](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation).
@@ -71,8 +71,47 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
     ```
   </Step>
 
+  <Step title="Link a conversation to a test case (optional)">
+    Skip this step for real user traffic. Use it when the traffic comes from a test run and you want the session to name the [Test Case](/concepts/product/dataset/test-case) it exercises.
+
+    Set `galtea.test_case.id` to the test case ID. Galtea then creates the session as a non-production session linked to that test case. A [Monitor](/concepts/product/monitor) scores only production sessions, so it never scores this session and the session spends no evaluation credits. Without the attribute, Galtea creates a production session, exactly as before.
+
+    Set the key in either place:
+
+    - **On the resource**, when the whole telemetry source is one test run. Add it next to `galtea.version.id` in the `resource/galtea` processor from the previous step.
+    - **On a span**, when one source sends several test cases. A span value marks one conversation, and it wins over the resource value.
+
+    ```yaml
+    # The resource form. Same Collector processor as the previous step, with one more attribute.
+    processors:
+      resource/galtea:
+        attributes:
+          - key: galtea.version.id
+            value: "<your-version-id>"
+            action: upsert
+          - key: galtea.test_case.id
+            value: "<your-test-case-id>"
+            action: upsert
+    ```
+
+    Galtea rejects the conversation, and only that conversation, in four cases:
+
+    - the test case does not exist;
+    - the test case belongs to another product than the version the spans route to;
+    - two spans of one conversation name different test case IDs, or two resources do (a span value overrides the resource value, so setting both is fine);
+    - the conversation key already holds another session on that version, either a production session or one linked to a different test case.
+
+    The rest of the payload still ingests. The rejected spans appear in the export response's `partialSuccess.rejectedSpans` count.
+
+    The response's `partialSuccess.errorMessage` names the reason. It reports one clause per reason that applied to the batch, for example `5 spans carry no galtea.version.id resource attribute and match no existing trace`, so your collector log says what to change.
+
+    Spans that carry no test case attribute still attach to whatever session the conversation key already holds. That is how OTel spans join a session the Galtea SDK opened during a test run.
+
+    Galtea does not close a test-case-linked session on its own. The inactivity sweep closes production sessions only, unless you widen the product's auto-close scope to all sessions or to development sessions.
+  </Step>
+
   <Step title="Send traffic and verify">
-    Once traffic flows, the assembled conversations appear as production sessions under the version you routed to, in the dashboard. Monitors evaluate them automatically.
+    Once traffic flows, the assembled conversations appear as sessions under the version you routed to, in the dashboard. They are production sessions, and Monitors evaluate them automatically. A conversation that names a test case appears as a non-production session instead, and no Monitor scores it.
 
     Galtea never guesses where your data belongs. Uncorrelated spans missing a conversation key, a version route, or both are rejected.
   </Step>
@@ -80,7 +119,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 
 ## What You Get
 
-- **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically.
+- **Production sessions.** Sessions created this way are production sessions, so [Monitors](/concepts/product/monitor) evaluate them automatically. The one exception is a conversation that names a test case: it creates a non-production session, which no Monitor scores.
 - **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When one span is the root of the turn (for example, an agent span that wraps child LLM and tool spans, the usual shape from MLflow autolog or an agent framework), the turn takes the root span's input and output: the user message and the agent's final answer. This applies per field. The input always comes from the root when the root carries it. The output comes from the root only when the root's output is a plain answer (a text reply, or a chat-completion or `assistant_message` envelope that reduces to text); when the root's output is a wrapper object that is not the answer (for example a status or tool-decision blob), the turn keeps the child span's real reply instead. A field the root does not carry, or a turn with no single root (for example, several sibling LLM calls), falls back to the first prompt as the turn input and the last completion as the turn output. A configured input or output source rule replaces that fallback and the root span for its field, and leaves the field empty when it matches no span rather than falling back: see [Recover the turn input from a non-LLM span](#recover-the-turn-input-from-a-non-llm-span). If the chosen output is a raw OpenAI chat-completion object, the turn shows its message text; the span record keeps the full object. See [How span content maps to Span records](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
 - **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or spans. Later turns append to the same session.
 - **Works together with the SDK.** If a session with the same custom ID already exists (for example, created by the SDK), ingestion attaches to it instead of creating a new one.
@@ -88,7 +127,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 <Note>
   Two behaviors to plan for:
 
-  - **A closed session can reopen for a new turn.** A session is closed once it reaches `COMPLETED` or `FAILED`, either by an explicit finish or by the auto-close sweep (see [Session lifecycle](/concepts/product/version/session#session-lifecycle)). Late spans for turns it already has are still accepted. Spans for a new turn follow the product's [Closed Session Inference Creation Policy](/concepts/product#product-properties): by default (`REOPEN_AND_REEVALUATE`) the turn is stored, the session goes back to `PENDING`, and a [Monitor](/concepts/product/monitor) scores it again once it closes. With `IGNORE` the turn is dropped silently. With `REJECT`, its spans appear in the export response's rejected-span count and nothing is stored; start a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow) to keep those turns.
+  - **A closed production session can reopen for a new turn.** A session is closed once it reaches `COMPLETED` or `FAILED`, either by an explicit finish or by the auto-close sweep (see [Session lifecycle](/concepts/product/version/session#session-lifecycle)). Late spans for turns it already has are still accepted. Spans for a new turn follow the product's [Closed Session Inference Creation Policy](/concepts/product#product-properties): by default (`REOPEN_AND_REEVALUATE`) the turn is stored, the session goes back to `PENDING`, and a [Monitor](/concepts/product/monitor) scores it again once it closes. With `IGNORE` the turn is dropped silently. With `REJECT`, its spans appear in the export response's rejected-span count and nothing is stored; start a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow) to keep those turns. Only a production session reopens: whatever the policy, a new turn on a closed non-production session is dropped.
   - **One payload can open at most 100 new conversations.** New sessions beyond that in the same OTLP payload are rejected (they appear in the export response's rejected-span count). Continuations of conversations that already exist do not count toward the limit. If you send a large backfill or a high-volume export, split it across smaller export batches. Self-hosted deployments can raise the limit with the `OTEL_MAX_NEW_CONVERSATIONS_PER_PAYLOAD` setting.
 </Note>
 

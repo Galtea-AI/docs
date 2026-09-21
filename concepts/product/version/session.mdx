@@ -11,7 +11,7 @@ import SDKSessionServiceCard from '/snippets/cards/sdk-session-service-card.mdx'
 
 A session groups the turns of a single conversation between a user and your AI product. It contains one or more [traces](/concepts/product/version/session/trace) (input/output pairs) and can be evaluated as a whole using conversational metrics.
 
-You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating a trace](/sdk/api/trace/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Production sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating a trace](/sdk/api/trace/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry). Those are production sessions, unless the spans name a test case with the `galtea.test_case.id` attribute.
 
 You can create, view, and manage sessions programmatically using the [Galtea SDK](/sdk/api/session/service).
 
@@ -32,15 +32,23 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 </ResponseField>
 
 <ResponseField name="Test Case" type="Test Case" optional>
-  The test case associated with the session. This is typically used for non-production evaluations.
+  The test case associated with the session. This is typically used for non-production evaluations. A session ingested from OpenTelemetry traces also carries one when the spans name it with the `galtea.test_case.id` attribute.
 </ResponseField>
 
 <ResponseField name="Launched By" type="User" optional>
-  The user who launched the session, read-only and set by the API. Null for a production session or one ingested via OpenTelemetry: neither has a launching user.
+  The user who launched the session, read-only and set by the API. Null for a production session, which has no launching user. A session ingested from OpenTelemetry traces is production too, unless the spans name a test case; that one records the user of the API key that sent the traces.
+</ResponseField>
+
+<ResponseField name="Run" type="Run" optional>
+  The [Run](/concepts/product/run) that created this session (`runId` in the API). Null for a session you log yourself: one opened via `POST /sessions` with no run id, a trace file import, or an OpenTelemetry-ingested session. You can also set it yourself: pass `runId` to `POST /sessions` to add the session to a Run you opened. The API refuses that on a production session. A production session never carries one, not even when a launch created it. This field names the creator only. A Run also reaches the sessions it scored, through its evaluations. See [The sessions of a Run](/concepts/product/run#the-sessions-of-a-run).
+</ResponseField>
+
+<ResponseField name="Launch" type="RunLaunch" optional>
+  The single launch inside the [Run](/concepts/product/run) that created this session (`launchId` in the API). A Run groups one or more launches, so this field says which one produced the session. Read-only, and set only where `Run` is set.
 </ResponseField>
 
 <ResponseField name="Is Production" type="Boolean" optional>
-  Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. Externally-ingested sessions (e.g. imported traces) may be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
+  Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. A session ingested from OpenTelemetry traces follows the same rule: it is non-production when the spans name a test case, and production otherwise. Externally-ingested sessions (e.g. imported traces) may also be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
 </ResponseField>
 
 <ResponseField name="Context" type="Text" optional>

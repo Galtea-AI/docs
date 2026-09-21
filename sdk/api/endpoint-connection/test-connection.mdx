@@ -93,4 +93,6 @@ This method can be called in two ways:
   Omit a field (or pass `PydanticUndefined`) to exclude it from the test request.
   Pass `None` to explicitly send null — useful to override a stored value when testing with an existing connection ID.
   Pass a value to include it.
+
+  `auth_token` and `password` are the exception: `None` or an empty string keeps the stored credential. Changing `auth_type` drops the credentials the new type does not use, so the test matches what saving would produce.
 </Note>

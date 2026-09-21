@@ -62,6 +62,12 @@ evaluations = galtea.evaluations.list(session_id=session_id)
 <ResponseField name="user_id" type="str | list[str]" default="None">
   Filter by the ID of the user who launched the evaluation. Null for a monitor-dispatched evaluation. This is an additional filter; it does not satisfy the scoping requirement below.
 </ResponseField>
+<ResponseField name="run_id" type="str | list[str]" default="None">
+  The ID or IDs of the [Runs](/concepts/product/run) that launched the evaluations to retrieve. A monitor-dispatched evaluation belongs to no run, so it never matches.
+</ResponseField>
+<ResponseField name="include_excluded_from_analytics" type="bool" default="False">
+  Keyword-only. Include evaluations whose metric revision is excluded from analytics. These results keep their score and reason, but they do not feed any analytics number. See [Metrics](/concepts/metric).
+</ResponseField>
 <Note>
-  At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`) described above must be passed to the method. `status` and `user_id` are additional filters and do **not** satisfy this requirement on their own.
+  At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`, `run_id`) described above must be passed to the method. `status` and `user_id` are additional filters and do **not** satisfy this requirement on their own.
 </Note>

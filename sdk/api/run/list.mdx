@@ -1,0 +1,58 @@
+---
+title: "List Runs"
+sidebarTitle: "List"
+description: "List runs with optional filtering."
+---
+
+## Returns
+
+Returns a list of [Run](/concepts/product/run) objects. A listed run carries no `launches`.
+
+## Example
+```python
+runs = galtea.runs.list(
+    product_ids=[product_id],
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+## Parameters
+<ResponseField name="product_ids" type="string | list[string]" optional>
+  The ID or IDs of the product(s) to filter runs by.
+</ResponseField>
+<ResponseField name="version_ids" type="string | list[string]" optional>
+  The ID or IDs of the version(s) to filter runs by.
+</ResponseField>
+<ResponseField name="ids" type="string | list[string]" optional>
+  The ID or IDs of the run(s) to retrieve.
+</ResponseField>
+<ResponseField name="custom_ids" type="string | list[string]" optional>
+  The label or labels to filter runs by.
+</ResponseField>
+<ResponseField name="statuses" type="string | list[string]" optional>
+  Filter runs by status. Valid values are `RUNNING`, `COMPLETED`, `FAILED` and `CANCELLED`. Other string
+  values are sent to the API unchanged, so values added in newer API versions can be used; the API
+  rejects invalid ones.
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" optional>
+  Filter runs created at or after this timestamp. Accepts an ISO 8601 string (e.g. `'2024-01-01T00:00:00Z'`)
+  or a Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" optional>
+  Filter runs created at or before this timestamp. Accepts an ISO 8601 string (e.g. `'2024-12-31T23:59:59Z'`)
+  or a Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort runs by creation date. Valid values are `"asc"` and `"desc"`.
+</ResponseField>
+<ResponseField name="offset" type="int" optional>
+  Number of runs to skip before collecting results. Use it for pagination.
+</ResponseField>
+<ResponseField name="limit" type="int" optional>
+  Maximum number of runs to return in a single request.
+</ResponseField>
+<Note>
+  At least one of `product_ids`, `version_ids` or `ids` must be passed. The other filters narrow the
+  result but do not satisfy this requirement on their own.
+</Note>

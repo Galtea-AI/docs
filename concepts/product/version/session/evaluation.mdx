@@ -10,6 +10,7 @@ import SDKEvaluationServiceCard from '/snippets/cards/sdk-evaluation-service-car
 import SessionCard from '/snippets/cards/session-card.mdx';
 import DatasetCard from '/snippets/cards/dataset-card.mdx';
 import TestCaseCard from '/snippets/cards/test-case-card.mdx';
+import RunCard from '/snippets/cards/run-card.mdx';
 
 ## What is an Evaluation?
 
@@ -18,6 +19,16 @@ An evaluation in Galtea represents the assessment of traces from a [session](/co
 <Note>Evaluations do not call your AI product — they score outputs that have already been generated. Run your product first to produce outputs, then trigger the evaluation to score them.</Note>
 
 You can create evaluations from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/sdk/api/evaluation/service).
+
+Every launch you trigger creates a [Run](/concepts/product/run), and each evaluation of that launch points back at it. An evaluation produced by a [Monitor](/concepts/product/monitor) has no Run, because it comes from a rule instead of a launch.
+
+## Results Excluded from Analytics
+
+A metric revision can be excluded from analytics. Its evaluations stay available and keep their original score, reason, and status. They stop contributing to scores, coverage, insights, and monitor aggregates.
+
+The evaluation list hides these results by default. Turn on **Show excluded from analytics** to reveal them. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
+
+Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics.
 
 ## Evaluation Lifecycle
 
@@ -87,9 +98,27 @@ Once an evaluation completes, the following fields are available:
   The user who launched this evaluation, read-only and set by the API. For an evaluation launched through the SDK, this is the owner of the API key used. Null for a [Monitor](/concepts/product/monitor)-dispatched evaluation.
 </ResponseField>
 
+<ResponseField name="Run ID" type="Text" optional>
+  The ID of the [Run](/concepts/product/run) that launched this evaluation (`runId` in the API). It is empty for an evaluation produced by a [Monitor](/concepts/product/monitor), because an evaluation carries a Run or a Monitor, never both. A retried evaluation keeps the Run it was created with.
+</ResponseField>
+
 <ResponseField name="Product ID" type="Text" optional>
   The ID of the [product](/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
 </ResponseField>
+
+<ResponseField name="Judge Input Tokens" type="Number" optional>
+  The tokens the judge model received to score this evaluation, read-only and set by the API. It covers the metric prompt and the session content. Null when the judge model reported no usage, which is different from 0.
+</ResponseField>
+
+<ResponseField name="Judge Output Tokens" type="Number" optional>
+  The tokens the judge model produced to score this evaluation, read-only and set by the API. The judge's total is `judgeInputTokens` plus `judgeOutputTokens`. Null when the judge model reported no usage.
+</ResponseField>
+
+<ResponseField name="Judge Reasoning Tokens" type="Number" optional>
+  The part of `judgeOutputTokens` the judge model spent on reasoning, read-only and set by the API. It is a subset of the output tokens, so do not add it to the total. A judge model that does not reason reports 0, not null. Null means no reasoning count was recorded, which almost always means the whole measurement is missing and the other two fields are null too.
+</ResponseField>
+
+<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider.</Note>
 
 <ResponseField name="Human Evaluator ID" type="Text" optional>
   The ID of the human evaluator assigned to this evaluation, if applicable.
@@ -119,4 +148,5 @@ Once an evaluation completes, the following fields are available:
   <TestCaseCard />
   <SessionCard />
   <MetricCard />
+  <RunCard />
 </CardGroup>

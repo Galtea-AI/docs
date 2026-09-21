@@ -86,4 +86,6 @@ endpoint_connection = galtea.endpoint_connections.update(
   Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
   Pass `None` to explicitly clear an optional field.
   Pass a value to update it.
+
+  `auth_token` and `password` are the exception: `None` or an empty string keeps the stored credential. To remove one, change `auth_type`, which clears the credentials the new type does not use.
 </Note>

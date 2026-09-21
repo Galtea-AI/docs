@@ -18,6 +18,7 @@ import MetricCard from '/snippets/cards/metric-card.mdx';
 import ModelCard from '/snippets/cards/model-card.mdx';
 import EndpointConnectionCard from '/snippets/cards/endpoint-connection-card.mdx';
 import MonitorCard from '/snippets/cards/monitor-card.mdx';
+import RunCard from '/snippets/cards/run-card.mdx';
 
 ## How Everything Connects
 
@@ -35,6 +36,7 @@ flowchart TD
     Tr[Traces]
     E[Evaluations]
     M[Metrics]
+    R[Runs]
 
     P --> |Defined by| Spec
     Spec -.-> |Challenged by| T
@@ -49,6 +51,9 @@ flowchart TD
     P --> |Iterated with| V
     V --> |Linked to| EC
     V --> |Evaluated in| S
+
+    P --> |Launched in| R
+    R --> |Groups| E
 ```
 
 <Info>The dotted lines represent relationships that don't exist for production-based evaluations, where there is no Dataset or Test Case and the Session is generated from real user interactions.</Info>
@@ -62,7 +67,7 @@ Galtea's concepts split into four lifecycle scopes:
 - **What you're testing**: Your [Product](/concepts/product), defined by a set of [Specifications](/concepts/product/specification) and iterated on through new [Versions](/concepts/product/version).
 - **What you test with**: [Datasets](/concepts/product/dataset) that group [Test Cases](/concepts/product/dataset/test-case); your Product's performance against them is measured with [Metrics](/concepts/metric).
 - **What your Product generates**: [Sessions](/concepts/product/version/session), each a sequence of [Traces](/concepts/product/version/session/trace) along with their [Spans](/concepts/product/version/session/span).
-- **How you measure performance**: [Evaluations](/concepts/product/version/session/evaluation) that apply a [Metric](/concepts/metric) to a [Session](/concepts/product/version/session) or to a specific [Trace](/concepts/product/version/session/trace).
+- **How you measure performance**: [Evaluations](/concepts/product/version/session/evaluation) that apply a [Metric](/concepts/metric) to a [Session](/concepts/product/version/session) or to a specific [Trace](/concepts/product/version/session/trace). Each Evaluation you launch by hand belongs to a [Run](/concepts/product/run), the record of that launch.
 
 ## Additional Notes
 
@@ -74,6 +79,7 @@ A few relationships are easy to misread, and some are omitted from the diagram f
 - **Per-turn evaluations.** An [Evaluation](/concepts/product/version/session/evaluation) can target a single [Trace](/concepts/product/version/session/trace) instead of the whole Session — useful when you want to score, for example, how the agent's output reflected the retrieval context the RAG system provided on that turn. Per-turn Evaluations still belong to the Session that contains the turn; they additionally point at the specific Trace being scored.
 - **Two types of model.** The standard [Model](/concepts/model) is what your Product runs on — linked to a Version and used to track costs, token usage, and similar. The **evaluator model** is the LLM Galtea uses to perform the judgment for non-deterministic Metrics; it's selected by name on the Metric, not on the Version. See [Models vs. Evaluator Models](/concepts/model#models-vs-evaluator-models) on the Model page for the full distinction.
 - **[User Groups](/concepts/user-group) for human evaluation.** A User Group routes [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) Metrics to a specific set of annotators, so only the right reviewers see those Evaluations on the dashboard.
+- **[Runs](/concepts/product/run) group the Evaluations of one launch.** Galtea creates a Run every time you launch Evaluations, and returns its id. The Run records who launched what, against which [Version](/concepts/product/version), and how it ended. An Evaluation carries a Run or a [Monitor](/concepts/product/monitor), never both: a Run is what a Monitor is, on the development side. A Run's Sessions are a union: the [Sessions](/concepts/product/version/session) it created, plus the distinct Sessions of its Evaluations. So a launch that generates inferences and evaluates no Metric still gets a Run, and a launch over Sessions that already exist reaches them through its Evaluations.
 - **[Monitors](/concepts/product/monitor) watch production automatically.** A Monitor is an always-on rule on a [Product](/concepts/product) (optionally one [Version](/concepts/product/version)) that scores a sampled fraction of its production [Sessions](/concepts/product/version/session) with a set of metric families, with no run to trigger by hand.
 
 ## All Concepts
@@ -89,6 +95,7 @@ A few relationships are easy to misread, and some are omitted from the diagram f
   <SessionCard />
   <TraceCard />
   <SpanCard />
+  <RunCard />
   <EvaluationCard />
   <MetricCard />
   <ModelCard />

@@ -25,7 +25,6 @@ product_id: str = create_test_product(
 )
 
 version = galtea_client.versions.create(
-    name=f"agent-input-version-{run_identifier}",
     product_id=product_id,
     description="Version for AgentInput documentation example",
 )

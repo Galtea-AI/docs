@@ -5,7 +5,7 @@ description: "List all versions associated with a specific product."
 ---
 
 ## Returns
-Returns a list of [Version](/concepts/product/version) objects for the given product.
+Returns a list of [Version](/concepts/product/version) objects for the given product. Each object carries the version's `number`, its product-local identity. On a self-hosted deployment older than version numbers, `number` is `None`.
 
 ## Example
 ```python

@@ -19,7 +19,6 @@ product_id = create_test_product(
 
 version = galtea.versions.create(
     product_id=product_id,
-    name=f"v-eval-run-{run_identifier}",
 )
 version_id = version.id
 

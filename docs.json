@@ -154,8 +154,7 @@
                   "sdk/integrations/langfuse/integration-guide"
                 ]
               },
-              "sdk/integrations/github-actions",
-              "sdk/integrations/slng"
+              "sdk/integrations/github-actions"
             ]
           },
           {
@@ -526,7 +525,9 @@
                       "sdk/api/metric/list",
                       "sdk/api/metric/get",
                       "sdk/api/metric/get-by-name",
-                      "sdk/api/metric/delete"
+                      "sdk/api/metric/delete",
+                      "sdk/api/metric/set-analytics-exclusion",
+                      "sdk/api/metric/get-analytics-exclusion-impact"
                     ]
                   },
                   {
@@ -602,6 +603,26 @@
                       "sdk/api/evaluation/get",
                       "sdk/api/evaluation/retry",
                       "sdk/api/evaluation/delete"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Run",
+                "icon": "rocket",
+                "pages": [
+                  "concepts/product/run",
+                  {
+                    "group": "SDK",
+                    "icon": "code",
+                    "pages": [
+                      "sdk/api/run/service",
+                      "sdk/api/run/start",
+                      "sdk/api/run/list",
+                      "sdk/api/run/get",
+                      "sdk/api/run/get-by-custom-id",
+                      "sdk/api/run/close",
+                      "sdk/api/run/delete"
                     ]
                   }
                 ]

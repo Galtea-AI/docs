@@ -4,6 +4,8 @@ sidebarTitle: "Get"
 description: "Get a user group by its ID."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns a [User Group](/concepts/user-group) object.
 
@@ -16,3 +18,5 @@ user_group = galtea.user_groups.get(user_group_id=user_group_id)
 <ResponseField name="user_group_id" type="string" required>
   The ID of the user group to retrieve.
 </ResponseField>
+
+<EntityNotFound />

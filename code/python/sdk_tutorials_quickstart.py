@@ -1,15 +1,9 @@
-from datetime import datetime
-
 from _test_helpers import create_test_product, wait_for_dataset_ready
-from requests.exceptions import HTTPError
-
 from galtea import (
     AgentInput,
     AgentResponse,
     Galtea,
 )
-
-run_identifier = datetime.now().strftime("%Y%m%d%H%M%S")
 
 galtea = Galtea(api_key="YOUR_API_KEY")
 
@@ -44,9 +38,10 @@ _created_product_id = create_test_product(
 )
 versions = galtea.versions.list(product_id=_created_product_id)
 if versions is None or len(versions) == 0:
+    # No name, so Galtea allocates number 1 and labels the version `v1`. That is the
+    # label the lookup below asks for.
     galtea.versions.create(
         product_id=_created_product_id,
-        name="v1",
         description="Created via the Galtea SDK quickstart example",
     )
 
@@ -223,8 +218,7 @@ completed = galtea.evaluations.wait_for(
     evaluation_ids=[e.id for e in result["evaluations"]],
 )
 
-# A readable pass/fail summary. Each metric defines its own passing threshold;
-# 0.5 is used here as a simple example — adjust it to your metrics.
+# A readable pass/fail summary.
 pass_threshold = 0.5
 scored = [e for e in completed if e.score is not None]
 passed = [e for e in scored if e.score >= pass_threshold]

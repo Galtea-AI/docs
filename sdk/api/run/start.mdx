@@ -1,0 +1,78 @@
+---
+title: "Start Run"
+sidebarTitle: "Start"
+description: "Open a run that you own and close yourself."
+---
+
+## Returns
+
+Returns an `ActiveRun`: a handle on the open [Run](/concepts/product/run) that also works as a context manager.
+
+Use it in a `with` block. Every session and evaluation the SDK creates inside the block joins the run,
+and leaving the block closes the run. A failure inside the block closes it too, so a run never stays open
+after an error.
+
+Outside a `with` block the handle stays open until you call `close()` on it, or
+[`runs.close(run_id)`](/sdk/api/run/close).
+
+<Warning>
+  Keep the block around the work of one product and one version. Every write inside it joins the
+  run, with no product or version check of its own, so an unrelated call inside a long block is
+  refused by the API with a 400 naming a run the caller never passed. There is no per-call opt-out:
+  `run_id=None` means "use the block". Close the block before you work on something else.
+</Warning>
+
+<Warning>
+  A thread started inside the block does not join the run. The open run travels on a context
+  variable, which an `asyncio` task inherits and a thread does not, so a session or evaluation
+  created in a worker thread lands outside the run and reports no error. Pass `run_id=run.id`
+  explicitly in the worker, or hand it the current context with `contextvars.copy_context()`.
+</Warning>
+
+<Warning>
+  Leaving the block cannot close a run that still holds a running launch, which is what
+  [`evaluations.run()`](/sdk/api/evaluation/run) without an agent queues. The SDK raises a
+  `RuntimeError` naming the run: wait for the launch with `galtea.evaluations.wait_for(job_id=...)`,
+  then call [`runs.close(run_id)`](/sdk/api/run/close) yourself.
+</Warning>
+
+<Note>
+  A production session cannot belong to a run, and `sessions.create()` treats a session with no
+  `test_case_id` as production. So a plain `galtea.sessions.create(version_id=...)` inside the
+  block joins no run; pass `is_production=False` or a `test_case_id` to join it.
+</Note>
+
+`ActiveRun` reads like the run itself: `run.id`, `run.ordinal`, `run.custom_id` and `run.status` all
+come from the wrapped [Run](/concepts/product/run). It adds two methods of its own, `close()` and
+`delete()`, both taking no arguments.
+
+## Example
+```python
+with galtea.runs.start(product_id=product_id, custom_id="ci-build-42") as run:
+    print(f"Opened run #{run.ordinal} ({run.id})")
+
+    # Every session and evaluation created inside the block joins the run.
+    session = galtea.sessions.create(version_id=version_id, is_production=False)
+    galtea.traces.create_batch(
+        session_id=session.id,
+        conversation_turns=[
+            {"role": "user", "content": "What is the capital of France?"},
+            {"role": "assistant", "content": "The capital of France is Paris."},
+        ],
+    )
+    galtea.evaluations.create(session_id=session.id, metrics=[{"name": "Conversation Relevancy"}])
+# Leaving the block closes the run, whether the block finished or raised.
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product this run belongs to. A run always names exactly one product.
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  The ID of the version under test. A run that names a version accepts only work naming that version.
+  Omit it to let the run span several versions of the product.
+</ResponseField>
+<ResponseField name="custom_id" type="string" optional>
+  Your own label for the run, for example a build number. It must be unique within the product among
+  runs that are not deleted. Use it to find the run again with [Get Run By Custom ID](/sdk/api/run/get-by-custom-id).
+</ResponseField>

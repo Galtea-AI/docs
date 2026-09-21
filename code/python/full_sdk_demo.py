@@ -51,11 +51,8 @@ product = galtea.products.get_by_name(name=product_name)
 if product is None:
     raise ValueError("product from get_by_name is None")
 
-version_name = "Version-docs-" + run_identifier
-
 # @start version_create
 version = galtea.versions.create(
-    name=version_name,
     product_id=product_id,
     description="Demo version created via SDK",
 )
@@ -66,8 +63,10 @@ if version is None:
 version_id = version.id
 
 # @start version_create_from_parent
+child_version_name = "Version-docs-child-" + run_identifier
+
 child_version = galtea.versions.create(
-    name="Version-docs-child-" + run_identifier,
+    name=child_version_name,
     product_id=product_id,
     description="Iteration of the previous version",
     parent_version_id=version_id,
@@ -95,7 +94,7 @@ if version is None:
     raise ValueError("version from get is None")
 
 # @start version_get_by_name
-version = galtea.versions.get_by_name(product_id=product_id, version_name=version_name)
+version = galtea.versions.get_by_name(product_id=product_id, version_name=child_version_name)
 # @end version_get_by_name
 if version is None:
     raise ValueError("version from get_by_name is None")

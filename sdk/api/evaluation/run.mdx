@@ -20,6 +20,16 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     - `testCaseCount` — total number of test cases queued
     - `message` — a human-readable status message
     - `specifications` — summary of each specification evaluated
+    - `runId` — the [Run](/concepts/product/run) that records this launch
+
+    <Warning>
+      This mode queues a launch that outlives the call, and the API refuses to close a run while
+      one of its launches is running. So a `with galtea.runs.start(...)` block around this call
+      cannot close its run: leaving the block raises a `RuntimeError` naming the run. Wait for the
+      launch with [`galtea.evaluations.wait_for(job_id=...)`](/sdk/api/evaluation/wait-for), then
+      call [`galtea.runs.close(run_id)`](/sdk/api/run/close) yourself. The agent mode below has no
+      such launch and closes its block normally.
+    </Warning>
 
     <Tip>
       Use [`galtea.jobs.cancel(job_id)`](/sdk/api/job/cancel) to stop the batch before it finishes — for example, if you discover a misconfiguration after the job has already been queued.
@@ -32,6 +42,11 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     - `evaluations` — list of all Evaluation objects created
     - `testCaseCount` — total number of test cases processed
     - `specifications` — summary of each specification evaluated, including `testCaseCount`
+    - `runId` — the [Run](/concepts/product/run) that records this launch. One run covers the whole call, not one per test case.
+
+    <Note>
+      With no `run_id` and no enclosing `galtea.runs.start()` block, the call opens a run of its own and closes it before returning, even when a test case fails.
+    </Note>
   </Tab>
 </Tabs>
 
@@ -97,5 +112,17 @@ print(f"Created {len(result['evaluations'])} evaluations")
 
   <Note>
     Specifications without linked metrics or without linked datasets are silently skipped. If no specification has linked metrics, or none of the linked datasets is ready to run, the call returns an error instead of running.
+  </Note>
+</ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/concepts/product/run) this launch joins. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+
+  <Note>
+    A run you supply stays yours to close. Only a run this method opened itself is closed by it.
+  </Note>
+
+  <Note>
+    In agent mode the run is checked once before the loop. The call raises a `ValueError` when the run
+    belongs to another product, or when it is pinned to a version other than `version_id`.
   </Note>
 </ResponseField>

@@ -1,0 +1,73 @@
+---
+title: 'Runs Service'
+sidebarTitle: "Service"
+description: "Runs Service API methods in the Galtea SDK"
+---
+
+import RunCard from '/snippets/cards/run-card.mdx';
+
+The Runs Service in the Galtea SDK allows you to manage [runs](/concepts/product/run) for your products.
+A run groups the sessions and evaluations of one launch, so a nightly job, a colleague's launch and a rerun stay separate.
+This Service is exposed by the `galtea.runs` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Open a run and put work inside it:
+```python
+with galtea.runs.start(product_id=product_id, custom_id="ci-build-42") as run:
+    print(f"Opened run #{run.ordinal} ({run.id})")
+
+    # Every session and evaluation created inside the block joins the run.
+    session = galtea.sessions.create(version_id=version_id, is_production=False)
+    galtea.traces.create_batch(
+        session_id=session.id,
+        conversation_turns=[
+            {"role": "user", "content": "What is the capital of France?"},
+            {"role": "assistant", "content": "The capital of France is Paris."},
+        ],
+    )
+    galtea.evaluations.create(session_id=session.id, metrics=[{"name": "Conversation Relevancy"}])
+# Leaving the block closes the run, whether the block finished or raised.
+```
+
+Find the run again by the label you gave it:
+```python
+run = galtea.runs.get_by_custom_id(product_id=product_id, custom_id="ci-build-42")
+print(f"Run {run.id} holds {run.session_count} sessions and {run.evaluation_count} evaluations")
+```
+
+## Joining work to a run
+
+These methods accept a `run_id`:
+[`sessions.create`](/sdk/api/session/create), [`sessions.get_or_create`](/sdk/api/session/get-or-create),
+[`evaluations.create`](/sdk/api/evaluation/create), [`evaluations.create_single_turn`](/sdk/api/evaluation/create-single-turn),
+[`evaluations.run`](/sdk/api/evaluation/run) and [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate).
+
+Inside a `with galtea.runs.start(...)` block you can leave `run_id` out: the SDK reads the open run
+from the block. An explicit `run_id` always wins over the block.
+
+<Note>
+  You only close a run you opened yourself. A run that a launch opened ends on its own when its last
+  launch ends, so `close()` finds it already ended and refuses it.
+</Note>
+
+## Service Methods
+- [Start Run](/sdk/api/run/start)
+- [List Runs](/sdk/api/run/list)
+- [Get Run](/sdk/api/run/get)
+- [Get Run By Custom ID](/sdk/api/run/get-by-custom-id)
+- [Close Run](/sdk/api/run/close)
+- [Delete Run](/sdk/api/run/delete)
+
+## Related
+
+<RunCard />

@@ -17,7 +17,6 @@ product_id = create_test_product(
     inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
 )
 version = galtea.versions.create(
-    name="Version-docs-" + run_identifier,
     product_id=product_id,
     description="Demo version created via SDK",
 )

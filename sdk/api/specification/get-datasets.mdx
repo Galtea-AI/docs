@@ -4,6 +4,8 @@ sidebarTitle: "Get Datasets"
 description: "Get all datasets linked to a specification."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 
 Returns a list of [Dataset](/concepts/product/dataset) objects linked to the specification.
@@ -19,3 +21,5 @@ datasets = galtea.specifications.get_datasets(
 <ResponseField name="specification_id" type="string" required>
   The ID of the specification to get linked datasets for.
 </ResponseField>
+
+<EntityNotFound />

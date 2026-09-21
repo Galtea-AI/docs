@@ -4,6 +4,8 @@ sidebarTitle: "Get Metrics"
 description: "Get all metrics linked to a specification."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 
 Returns a list of [Metric](/concepts/metric) objects linked to the specification.
@@ -19,3 +21,5 @@ metrics = galtea.specifications.get_metrics(
 <ResponseField name="specification_id" type="string" required>
   The ID of the specification to get linked metrics for.
 </ResponseField>
+
+<EntityNotFound />

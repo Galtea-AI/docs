@@ -4,6 +4,8 @@ sidebarTitle: "Get By Name"
 description: "Retrieve a specific endpoint connection by its name within a product."
 ---
 
+import EntityNotFound from '/snippets/entity-not-found.mdx';
+
 ## Returns
 Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given product and name.
 
@@ -22,3 +24,5 @@ endpoint_connection = galtea.endpoint_connections.get_by_name(
 <ResponseField name="product_id" type="string" required>
   ID of the product the connection belongs to.
 </ResponseField>
+
+<EntityNotFound />

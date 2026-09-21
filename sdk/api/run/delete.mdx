@@ -1,0 +1,27 @@
+---
+title: "Delete Run"
+sidebarTitle: "Delete"
+description: "Delete a run and retract its evaluations."
+---
+
+A handle from [`runs.start()`](/sdk/api/run/start) deletes its own run with `run.delete()`, which takes
+no arguments. Inside a `with` block, leave the block right after: the deleted run accepts no more work.
+
+## Example
+```python
+# The handle deletes the run it holds.
+nightly_run.delete()
+
+# With only the id in hand, delete the run through the service.
+galtea.runs.delete(run_id=rerun.id)
+```
+
+## Parameters
+<ResponseField name="run_id" type="string" required>
+  The ID of the run to delete.
+</ResponseField>
+
+<Note>
+  The sessions of the run stay, and so does everything else that scored them. A monitor's scores of the
+  same sessions survive, and a session scored by two runs keeps the scores of the other run.
+</Note>

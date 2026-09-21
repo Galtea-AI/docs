@@ -70,7 +70,6 @@ selected_model = galtea.models.get_by_name(name=model_name)
 # Pass its id to versions.create so Galtea can track cost for this version's
 # traces using the model's per-token pricing.
 version = galtea.versions.create(
-    name="v1.0-with-model-" + run_identifier,
     product_id=_demo_product_id,
     model_id=selected_model.id,
     description="Version linked to a model for cost tracking.",

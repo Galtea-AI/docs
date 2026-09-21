@@ -179,7 +179,8 @@ You do not need to change anything for spans the SDK sends for you, through `@tr
   - `galtea.span.*` fields are not recognised, so they land in the span's metadata instead of in the
     fields they name.
   - `galtea.trace.id` does not link the span to its trace. The span is then treated as uncorrelated,
-    so it is either assembled into a new production session or rejected.
+    so it is either assembled into a new session or rejected. That session is a production one,
+    unless the span names a test case with `galtea.test_case.id`.
   - `{{ trace_id }}` and `{{ dataset_id }}` are not known placeholders. Saving the connection fails
     validation, and a template that slips through renders an empty value.
 

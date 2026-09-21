@@ -18,7 +18,6 @@ galtea_client = Galtea(api_key="YOUR_API_KEY")
 # Register a product for this demo
 product_id = create_test_product(galtea_client, name="Simulation Demo " + run_identifier)
 version = galtea_client.versions.create(
-    name="v1.0-" + run_identifier,
     product_id=product_id,
     description="Version created from the tutorial",
 )
