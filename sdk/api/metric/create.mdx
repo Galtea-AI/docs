@@ -153,7 +153,7 @@ metric = galtea.metrics.create(
     subset. A setting the model does not accept is discarded when the judge runs, and the evaluation
     still succeeds, so nothing tells you it had no effect.
 
-    List the models with `galtea evaluator-models list`. Each one reports
+    On the CLI, list the models with `galtea evaluator-models list`. Each one reports
     `generationCapabilities.configurableSettings`, the settings it accepts. A model whose
     `generationCapabilities` is `null` is one we could not read, so no setting is guaranteed to apply.
   </Warning>
@@ -162,5 +162,22 @@ metric = galtea.metrics.create(
     A value the model rejects as out of range, such as a `temperature` above the provider's own
     ceiling, is reported per evaluation: that evaluation ends as `SKIPPED` carrying the provider's own
     message, and is never scored at a substituted value.
+
+    To find a rejected value before you create the metric, check it with the
+    [`galtea` CLI](/cli/usage). The SDK has no evaluator model surface, so the CLI is the only way
+    to reach this check:
+
+    ```bash
+    galtea evaluator-models test-generation-settings \
+      'evaluatorModelName: gpt-5-nano, judgeGenerationSettings{temperature: 1.5}'
+    ```
+
+    It sends one small completion to the judge model with your settings and consumes no credits.
+    The `outcome` field answers `accepted`, `refused` (with the provider's own message in `error`)
+    or `unreachable`. `accepted` tells you only that the provider took the values, never that they
+    changed how the judge answers.
+
+    The CLI builds its command tree from the API specification, so this command appears only after
+    the API release that carries it. Run `galtea sync` to pick it up.
   </Note>
 </ResponseField>
