@@ -154,7 +154,8 @@
                   "sdk/integrations/langfuse/integration-guide"
                 ]
               },
-              "sdk/integrations/github-actions"
+              "sdk/integrations/github-actions",
+              "sdk/integrations/slng"
             ]
           },
           {
