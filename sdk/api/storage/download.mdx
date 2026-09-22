@@ -20,14 +20,14 @@ downloaded_path = galtea.storage.download(test_case.input_files[0], output_direc
 
 ## Parameters
 
-<ResponseField name="file" type="string | InputFile" required>
-  The file to fetch: an [`InputFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files`, or the URI of any file this organization uploaded.
+<ResponseField name="file" type="string | AttachedFile" required>
+  The file to fetch: an [`AttachedFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files` or `trace.actual_output_files`, or the URI of any file this organization uploaded.
 </ResponseField>
 <ResponseField name="output_directory" type="string" default="the current directory" optional>
   Directory to write into, created when it does not exist. Defaults to the current directory.
 </ResponseField>
 <ResponseField name="filename" type="string" optional>
-  Name to save the file under. Defaults to the `InputFile`'s own `filename`, and otherwise to the name the object is stored at, which is a random id rather than the name the file was uploaded with.
+  Name to save the file under. Defaults to the `AttachedFile`'s own `filename`, and otherwise to the name the object is stored at, which is a random id rather than the name the file was uploaded with.
 </ResponseField>
 
 ## Errors

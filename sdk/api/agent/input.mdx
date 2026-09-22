@@ -18,7 +18,8 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   - `content` (`str`): The message text
   - `retrieval_context` (`Optional[str]`): Retrieved context (for RAG agents)
   - `metadata` (`Optional[dict[str, Any]]`): Additional fields. When the test case uses structured JSON input, non-message fields (e.g. `chat_type`, `priority`) appear here on the first user message.
-  - `input_files` (`list[InputFile]`): The files attached to a user message, ready for [`galtea.storage.download()`](/sdk/api/storage/download). Empty for a message that carries only text.
+  - `input_files` (`list[AttachedFile]`): The files attached to a user message, ready for [`galtea.storage.download()`](/sdk/api/storage/download). Empty for a message that carries only text.
+  - `output_files` (`list[AttachedFile]`): The files an earlier assistant message answered with, read the same way. Empty for a message that carries only text.
 </ResponseField>
 
 <ResponseField name="session_id" type="str" required>
@@ -33,8 +34,8 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   Additional metadata for the current execution.
 </ResponseField>
 
-<ResponseField name="input_files" type="list[InputFile]">
-  The files attached to the **last user message**, as `InputFile` objects, empty when it carries none. Derived from `messages` rather than stored, so an `input_files` keyword passed to the constructor is ignored; attach files through `ConversationMessage(input_files=...)`. For an earlier turn's files, read that message's own `input_files`. See [Reading attached files](#reading-attached-files).
+<ResponseField name="input_files" type="list[AttachedFile]">
+  The files attached to the **last user message**, as `AttachedFile` objects, empty when it carries none. Derived from `messages` rather than stored, so an `input_files` keyword passed to the constructor is ignored; attach files through `ConversationMessage(input_files=...)`. For an earlier turn's files, read that message's own `input_files`. See [Reading attached files](#reading-attached-files).
 </ResponseField>
 
 <ResponseField name="trace_id" type="Optional[str]">
@@ -48,7 +49,7 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
 </ResponseField>
 
 <ResponseField name="last_user_message()" type="Optional[ConversationMessage]">
-  Returns the full `ConversationMessage` object for the last user message (with `role`, `content`, `retrieval_context`, `metadata`, and `input_files`), or `None` if not found. Use this when you need access to the message's `metadata`.
+  Returns the full `ConversationMessage` object for the last user message (with `role`, `content`, `retrieval_context`, `metadata`, `input_files`, and `output_files`), or `None` if not found. Use this when you need access to the message's `metadata`.
 </ResponseField>
 
 ## Basic Usage
@@ -116,11 +117,11 @@ def my_context_agent(input_data: AgentInput) -> AgentResponse:
 
 ## Reading attached files
 
-A test case can [attach files](/concepts/product/dataset/test-case#file-inputs) to its input. When your agent runs through `evaluations.run()`, `simulator.simulate()` or `traces.generate()`, those files reach it as `input_data.input_files`: one `InputFile` per attached file, with the same `uri`, `filename` and `mime_type` as `test_case.input_files`. Pass each one to [`galtea.storage.download()`](/sdk/api/storage/download) to get the bytes:
+A test case can [attach files](/concepts/product/dataset/test-case#file-inputs) to its input. When your agent runs through `evaluations.run()`, `simulator.simulate()` or `traces.generate()`, those files reach it as `input_data.input_files`: one `AttachedFile` per attached file, with the same `uri`, `filename` and `mime_type` as `test_case.input_files`. Pass each one to [`galtea.storage.download()`](/sdk/api/storage/download) to get the bytes:
 
 ```python
 def my_document_agent(input_data: AgentInput) -> AgentResponse:
-    # Each InputFile has the same uri, filename and mime_type as test_case.input_files.
+    # Each AttachedFile has the same uri, filename and mime_type as test_case.input_files.
     document_paths = [
         galtea_client.storage.download(attached, output_directory="./.temp/agent-inputs")
         for attached in input_data.input_files
@@ -184,12 +185,13 @@ Outside of `AgentInput`, the `TestCase` and `Trace` models provide three fields 
 
 - `.input` (`str`): The `user_message` value as a plain string
 - `.input_data` (`dict`): The full structured input object with all fields
-- `.input_files` (`list[InputFile]`): The files attached to the input, empty for text
+- `.input_files` (`list[AttachedFile]`): The files attached to the input, empty for text
 
-`Trace` also provides a symmetric pair for the agent output:
+`Trace` also provides three symmetric fields for the agent output:
 
-- `.actual_output` (`str | None`): The scored output as a plain string. For voice turns this is the `assistant_message` transcript unwrapped from the content-parts envelope.
+- `.actual_output` (`str | None`): The scored output as a plain string. For voice turns this is the `assistant_message` transcript unwrapped from the content-parts envelope. `None` when the turn answered with files and no text.
 - `.actual_output_data` (`dict | None`): The full output envelope when present (e.g. `{"assistant_message": "...", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}`), otherwise `None` for plain-text output.
+- `.actual_output_files` (`list[AttachedFile]`): The files attached to the output, empty for text-only. See [Output Files](/concepts/product/version/session/trace#trace-properties).
 
 <Info>
   When submitting an `actualOutput` content-parts envelope, each audio part must include either a non-empty `transcript` or a non-empty `uri`. If you provide only a `uri`, the API transcribes the stored audio automatically and fills in the transcript. A client-supplied `transcript` or `assistant_message` always takes precedence over the API's speech-to-text result. The strict transcript requirement applies only to the user turn (`input`) — the agent output side accepts audio-only parts.

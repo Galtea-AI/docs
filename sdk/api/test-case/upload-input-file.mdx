@@ -6,11 +6,17 @@ description: "Upload a local file so it can be attached to a test case input."
 
 Use this when you build the test case input yourself. To attach files while creating a test case, pass `input_file_paths` to [Create Test Case](/sdk/api/test-case/create) instead: it is shorter and does the same upload.
 
-The one thing this method gives you that `input_file_paths` does not is reuse. Upload a document once and attach the same `InputFile` to many test cases, rather than uploading it per test case.
+The one thing this method gives you that `input_file_paths` does not is reuse. Upload a document once and attach the same `AttachedFile` to many test cases, rather than uploading it per test case.
+
+On the answer side, [Upload Output File](/sdk/api/trace/upload-output-file) does the same for a turn whose reply is a document.
 
 ## Returns
 
-Returns an `InputFile` with `uri`, `filename` and `mime_type`. Place it in the input's `content` list.
+Returns an `AttachedFile` with `uri`, `filename` and `mime_type`. Place it in the input's `content` list.
+
+<Note>
+  `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
+</Note>
 
 The `uri` still carries the upload's signature and expires. Galtea replaces it with the canonical, signature-free reference when the test case is written, and that is the one `test_case.input_files` reads back. Store that one, not this one.
 

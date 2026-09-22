@@ -66,7 +66,7 @@ document_only = galtea.test_cases.create(
 )
 ```
 
-To have Galtea run the inference for you, name the files in your [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio). Read the files back from `test_case.input_files` instead when you run your own pipeline, and fetch the bytes with [`galtea.storage.download()`](/sdk/api/storage/download), passing the `InputFile` straight from `test_case.input_files`. [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs) walks that whole round trip, from the CSV to a scored answer.
+To have Galtea run the inference for you, name the files in your [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio). Read the files back from `test_case.input_files` instead when you run your own pipeline, and fetch the bytes with [`galtea.storage.download()`](/sdk/api/storage/download), passing the `AttachedFile` straight from `test_case.input_files`. [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs) walks that whole round trip, from the CSV to a scored answer.
 
 To attach files to many test cases at once, add an `input_file_paths` column to your dataset CSV. Separate several paths with `;` or `|`. The SDK uploads each file and rewrites the row before the file is sent, so the column never reaches the platform and the paths stay private:
 

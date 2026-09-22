@@ -45,6 +45,14 @@ simulation_result = galtea.simulator.simulate(
   - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output
   
   Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`. Only the structured signature receives the files a test case attaches; the other two fail the trace for a file-only test case.
+
+  <Warning>
+    An agent called from `simulate()` cannot answer with files. `output_file_paths` on the
+    returned `AgentResponse` raises a `ValueError`, whether or not the response also carries
+    text. A simulated conversation carries no files yet, on either side, so they would be
+    dropped and the turn stored without them. Log a turn that answers with a document outside a
+    simulation, with `traces.create(output_file_paths=...)`.
+  </Warning>
 </ResponseField>
 
 <ResponseField name="max_turns" type="int">
@@ -83,6 +91,7 @@ simulation_result = galtea.simulator.simulate(
 
 <ResponseField name="stop_when_agent_returns_empty_response" type="bool">
   If True, the simulation will stop when the agent returns an empty (`""` / `None`) response. Default: True
+
   <Note>
     When `stop_when_agent_returns_empty_response` is set to `False`:
     - The simulation will continue even if the agent returns a response that is empty (`""`) or `None`.

@@ -479,6 +479,7 @@
                       "sdk/api/trace/create-and-evaluate",
                       "sdk/api/trace/create-batch",
                       "sdk/api/trace/update",
+                      "sdk/api/trace/upload-output-file",
                       "sdk/api/trace/list",
                       "sdk/api/trace/get",
                       "sdk/api/trace/delete"

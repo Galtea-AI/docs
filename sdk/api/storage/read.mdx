@@ -23,8 +23,8 @@ Inside an agent callback, the files of the current turn arrive as [`input_data.i
 
 ## Parameters
 
-<ResponseField name="file" type="string | InputFile" required>
-  The file to fetch: an [`InputFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files` or `input_data.input_files`, or the URI of any file this organization uploaded.
+<ResponseField name="file" type="string | AttachedFile" required>
+  The file to fetch: an [`AttachedFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files`, `input_data.input_files` or `trace.actual_output_files`, or the URI of any file this organization uploaded.
 </ResponseField>
 
 ## Errors

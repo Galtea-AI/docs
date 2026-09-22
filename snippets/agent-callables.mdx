@@ -22,7 +22,7 @@ def my_agent(messages: list[dict]) -> str:
   </Tab>
 
   <Tab title="Structured">
-    For full control over input and output — including optional usage tracking, cost tracking, and retrieval context for RAG evaluations.
+    For full control over input and output — including optional usage tracking, cost tracking, retrieval context for RAG evaluations, and answering with files through `output_file_paths` (not in a simulated conversation).
 
 ```python
 def my_agent(input_data: AgentInput) -> AgentResponse:
@@ -48,6 +48,8 @@ def my_agent(input_data: AgentInput) -> AgentResponse:
   All three signatures work with `evaluations.run()`, `traces.generate()`, and `simulator.simulate()`. Both sync and async functions are supported. The SDK auto-detects which signature you're using from the type hint on the first parameter.
 
   Only the **Structured** signature receives the files a test case attaches, as `input_data.input_files`. The other two receive the text alone and fail the trace for a file-only test case. See [Reading attached files](/sdk/api/agent/input#reading-attached-files).
+
+  Only the **Structured** signature can answer with files, through `AgentResponse.output_file_paths`. A response carrying files but no text is a real answer, not an empty one. `simulator.simulate()` is the exception: it raises a `ValueError` on a response carrying files, because a simulated conversation carries none yet. See [Output Files](/concepts/product/version/session/trace#trace-properties).
 
   For the full list of fields available on `AgentInput` (including structured input access via message metadata), see the [AgentInput reference](/sdk/api/agent/input).
 </Info>

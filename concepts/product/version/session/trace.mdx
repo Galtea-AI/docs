@@ -42,12 +42,32 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
   The input text or prompt for the trace. For most runs this is a plain string. For phone (voice) runs, when the simulated user's audio was captured, this is a content-parts envelope `{"user_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `user_message` field is the canonical scored scalar. Access the envelope via the SDK's `.input_data` field and the spoken transcript via `.input`.
 </ResponseField>
 
-<ResponseField name="Input Files" type="InputFile[]" optional>
-  The files attached to the input, when the test case carries any. Read them with the SDK's `.input_files` field, which returns one `InputFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read). An agent callback receives the same objects as [`input_data.input_files`](/sdk/api/agent/input#reading-attached-files).
+<ResponseField name="Input Files" type="AttachedFile[]" optional>
+  The files attached to the input, when the test case carries any. Read them with the SDK's `.input_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read). An agent callback receives the same objects as [`input_data.input_files`](/sdk/api/agent/input#reading-attached-files).
+
+  <Note>
+    `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
+  </Note>
 </ResponseField>
 
 <ResponseField name="Output" type="string | object" optional>
-  The generated output or response for the trace. For most runs this is a plain string. For phone (voice) runs, when the agent's audio was captured, this is a content-parts envelope `{"assistant_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `assistant_message` field is the canonical scored scalar. Access the envelope via the SDK's `.actual_output_data` field and the scored transcript via `.actual_output`.
+  The generated output or response for the trace. For most runs this is a plain string.
+
+  It becomes a content-parts envelope, `{"assistant_message": "<text>", "content": [...]}`, when the turn answers with more than text. The `content` list holds one part per attachment: an `audio` part for a phone (voice) run whose agent audio was captured, or a `file` part for a product whose answer is a document. The `assistant_message` field is the canonical scored scalar.
+
+  A document answer may carry no `assistant_message` at all, because the file is the whole answer. The SDK's `.actual_output` is then `None`. Read the envelope through `.actual_output_data` in every case, and the scored text through `.actual_output`.
+</ResponseField>
+
+<ResponseField name="Output Files" type="AttachedFile[]" optional>
+  The files the turn answered with, for a product whose reply is a document: a generated report, a filled form, a redacted contract. Read them with the SDK's `.actual_output_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
+
+  Attach them by naming local paths in `output_file_paths` on [Create Trace](/sdk/api/trace/create), [Update Trace](/sdk/api/trace/update) or [Create and Evaluate Trace](/sdk/api/trace/create-and-evaluate). An agent callback answers with files through `AgentResponse.output_file_paths`. To reuse one upload across turns, call [`galtea.traces.upload_output_file()`](/sdk/api/trace/upload-output-file) and build the envelope yourself.
+
+  One output accepts at most 20 files, 20 MB in total, of the same types an input accepts.
+
+  <Warning>
+    Evaluators cannot read output files yet. A metric that reads the output is **skipped** when no turn of the session answered with text of its own, counting neither a file nor a note sent beside one, with the reason `Evaluators cannot read output files yet.` One turn carrying text of its own is enough, so an attachment on one turn of a long session does not skip the rest. Log the text your pipeline produced as the turn output, without the file, to have it scored. This mirrors the input side; see [File inputs](/concepts/product/dataset/test-case#file-inputs).
+  </Warning>
 </ResponseField>
 
 <Note>
