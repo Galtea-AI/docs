@@ -125,11 +125,11 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Human Score" type="Number" optional>
-  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results.
+  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results. A reviewer can remove the annotation again, which clears this field. Where the AI produced a score, every reported number goes back to it. Where the AI produced none, as on a failed, skipped or cancelled evaluation, the evaluation stops being reported at all. The removal is permanent: the score is deleted, not archived, so getting it back means annotating the evaluation again.
 </ResponseField>
 
 <ResponseField name="Human Reason" type="Text" optional>
-  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason.
+  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Started At" type="Text" optional>
