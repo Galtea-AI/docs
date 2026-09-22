@@ -12,9 +12,12 @@ Leaving a `with galtea.runs.start(...)` block already closes the run, so call th
 opened without a block. A handle from [`runs.start()`](/sdk/api/run/start) closes its own run with
 `run.close()`, which takes no arguments and is a no-op the second time.
 
-The API refuses the close in three cases: the run is deleted, the run already ended, or a launch of the
-run is still running. A run the platform opened for a launch ends on its own, so a close of one is
-refused as already ended.
+The API refuses the close in three cases: the run is deleted, the run already ended, or the platform
+opened the run. It refuses a run the platform opened whatever its status: that run ends with its own
+launch.
+
+A close always ends the run as `COMPLETED`. You performed the work yourself, so the platform has no
+outcome of its own to report.
 
 ## Example
 ```python

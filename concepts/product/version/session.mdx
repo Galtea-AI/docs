@@ -43,10 +43,6 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   The [Run](/concepts/product/run) that created this session (`runId` in the API). Null for a session you log yourself: one opened via `POST /sessions` with no run id, a trace file import, or an OpenTelemetry-ingested session. You can also set it yourself: pass `runId` to `POST /sessions` to add the session to a Run you opened. The API refuses that on a production session. A production session never carries one, not even when a launch created it. This field names the creator only. A Run also reaches the sessions it scored, through its evaluations. See [The sessions of a Run](/concepts/product/run#the-sessions-of-a-run).
 </ResponseField>
 
-<ResponseField name="Launch" type="RunLaunch" optional>
-  The single launch inside the [Run](/concepts/product/run) that created this session (`launchId` in the API). A Run groups one or more launches, so this field says which one produced the session. Read-only, and set only where `Run` is set.
-</ResponseField>
-
 <ResponseField name="Is Production" type="Boolean" optional>
   Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. A session ingested from OpenTelemetry traces follows the same rule: it is non-production when the spans name a test case, and production otherwise. Externally-ingested sessions (e.g. imported traces) may also be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
 </ResponseField>
@@ -71,7 +67,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   - `COMPLETED` (**closed**): the session finished successfully.
   - `FAILED` (**closed**): the session ended with an error.
 
-  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product, calling `finish()` is the normal way to complete a session. A closed production session goes back to `PENDING` when a new turn arrives, unless you change the product's closed-session policy. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
+  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product every session, development or production, auto-closes after 30 quiet minutes, and calling `finish()` closes it right away. A closed session goes back to `PENDING` when a new turn arrives, unless you change the product's closed-session policy. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
 </ResponseField>
 
 <ResponseField name="Stopping Reason" type="Text" optional>
@@ -100,13 +96,13 @@ A session becomes closed in one of two ways:
 - **Explicit finish.** You end the session on purpose, and it closes right away. Call [`sessions.finish()`](/sdk/api/session/finish) from the SDK: it records a `Stopping Reason` and sets the status to `COMPLETED`. The endpoint behind it (`PATCH /sessions/{id}/finish`) also accepts an `error` instead, which closes the session as `FAILED`.
 - **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent trace is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
 
-You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `PRODUCTION`, so production sessions auto-close after the window while development (test) sessions stay open until you finish them.
+You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `ALL`, so both production and development (test) sessions auto-close after the window. A development session you create from the SDK therefore closes on its own once you stop adding turns, and you can still finish it explicitly to close it at once. Set the scope to `PRODUCTION` to keep development sessions open until you finish them.
 
 ### Turns that arrive after a session closes
 
 When a new trace arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
 
-- `REOPEN_AND_REEVALUATE` (the default): the API stores the turn and opens the session again. The status goes back to `PENDING`, so the auto-close sweep closes the session again later. The session's existing monitor evaluations move to the `OUTDATED` status, so their scores stop counting as current, and a [Monitor](/concepts/product/monitor) scores the session again once it closes. Only production sessions reopen. A development (test) session behaves as with `IGNORE`, because a monitor scores only production sessions.
+- `REOPEN_AND_REEVALUATE` (the default): the API stores the turn and opens the session again. The status goes back to `PENDING`, so the auto-close sweep closes the session again later. The session's existing monitor evaluations move to the `OUTDATED` status, so their scores stop counting as current, and a [Monitor](/concepts/product/monitor) scores the session again once it closes. A development (test) session reopens the same way; it has no monitor evaluations, so only the turn is stored and the status changes.
 - `IGNORE`: the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
 - `REJECT`: the API refuses the call and returns an error.
 

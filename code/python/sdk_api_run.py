@@ -55,9 +55,11 @@ assert run.session_count == 1, f"expected 1 session in the run, got {run.session
 
 # @start get
 run = galtea.runs.get(run_id=run.id)
-for launch in run.launches or []:
-    print(f"{launch.kind}: {launch.status}")
+# `kind` names the work the platform launched. It is empty on a run you opened yourself.
+print(f"{run.kind or 'opened by the client'}: {run.status}")
 # @end get
+
+assert run.kind is None, "a run opened with runs.start() records no platform launch"
 
 # @start list
 runs = galtea.runs.list(

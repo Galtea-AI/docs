@@ -1,22 +1,24 @@
 ---
 title: "Get Run"
 sidebarTitle: "Get"
-description: "Retrieve a run by its ID, with its launches."
+description: "Retrieve a run by its ID."
 ---
 
 ## Returns
 
-Returns a [Run](/concepts/product/run) object, with its `launches` populated, oldest first.
+Returns a [Run](/concepts/product/run) object.
 
-A launch is one scoring call the platform carried out inside the run. Work you performed yourself,
-such as sessions you created inside a `with` block, writes no launch, so a run you opened normally
-carries none.
+A run the platform launched usually names the work it carried out: `kind`, `request`,
+`resolved_inputs`, `job_id` and `error`. All five are `None` on a run you opened with
+[`runs.start()`](/sdk/api/run/start), which performs no such work, and on a platform run whose
+sessions were scored in several calls, where no single call describes the run. Read `opened_by` to
+tell your own run from the platform's; a `None` kind does not.
 
 ## Example
 ```python
 run = galtea.runs.get(run_id=run.id)
-for launch in run.launches or []:
-    print(f"{launch.kind}: {launch.status}")
+# `kind` names the work the platform launched. It is empty on a run you opened yourself.
+print(f"{run.kind or 'opened by the client'}: {run.status}")
 ```
 
 ## Parameters
