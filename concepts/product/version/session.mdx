@@ -51,6 +51,12 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. A session ingested from OpenTelemetry traces follows the same rule: it is non-production when the spans name a test case, and production otherwise. Externally-ingested sessions (e.g. imported traces) may also be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
 </ResponseField>
 
+<ResponseField name="Is Seed" type="Boolean" optional>
+  Indicates whether the session holds a [test case's predefined conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation). Read-only, and set by the API. A seed session is stored but never executed: each run copies its turns into the run's own session and continues from there, so the seed itself never changes. The test case that owns it names it in `seedSessionId`, and a session is the seed of at most one test case.
+
+  Listing sessions leaves seed sessions out, so this field reads `False` on every session a list returns. To read one, ask for it by id: take `seed_session_id` from the test case and fetch that session.
+</ResponseField>
+
 <ResponseField name="Context" type="Text" optional>
   The context provided to the AI product during the session or ground-truth related context. For production sessions, this value is taken from the request. For non-production sessions, it is derived from the linked test case.
 </ResponseField>

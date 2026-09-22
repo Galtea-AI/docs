@@ -18,6 +18,39 @@ test_case = galtea.test_cases.create(
 )
 ```
 
+### Starting from a predefined conversation
+Write the turns out, or copy them from a session that already holds them. See [Starting a Scenario from a Conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation).
+
+```python
+conversation_history = [
+    {"role": "user", "content": "Hi, I am checking what this analytics workspace can do."},
+    {"role": "assistant", "content": "I can help with dashboards, reports and data sources."},
+    {"role": "user", "content": "Does it handle orders and payments too?"},
+    {"role": "assistant", "content": "No. It reports on your data, it does not process payments."},
+]
+
+test_case = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    user_persona="A team lead evaluating the product",
+    goal="Get a clear answer about what the product does and does not cover",
+    scenario="The user asks about an unrelated service",
+    conversation_history=conversation_history,
+    # Turns the simulator runs after the predefined conversation.
+    max_iterations=2,
+)
+```
+
+```python
+reused = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    user_persona="A team lead evaluating the product",
+    goal="Ask for a feature the product does not have",
+    scenario="The user asks about an unrelated service",
+    seed_session_id=test_case.seed_session_id,
+    max_iterations=2,
+)
+```
+
 ## Parameters
 <ResponseField name="dataset_id" type="string" required>
   The ID of the dataset you want to create the test case for.
@@ -95,4 +128,28 @@ test_case = galtea.test_cases.create(
 
 <ResponseField name="stopping_criterias" type="list[string]" optional>
   List of criteria to end the conversation in scenario-based simulations.
+</ResponseField>
+
+<ResponseField name="conversation_history" type="list[dict]" optional>
+  A predefined conversation the simulation starts from, written out. Each entry is one message, `{"role": "user" | "assistant", "content": "..."}`, and at least one message is required. Galtea stores the conversation as a separate session and names it in the created test case's `seed_session_id`. See [Starting a Scenario from a Conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation).
+
+  An assistant message directly after a user message joins that user message to form **one turn**. Any other message opens a turn of its own, so a conversation may open with an assistant greeting or end on an unanswered question. The four messages above alternate, so they are two turns, which is the unit `max_iterations` counts.
+
+  <Note>
+    A message carries text only. `retrieval_context` on a message is refused, so use `seed_session_id` when the conversation must carry retrieval context or tool calls. Cannot be sent together with `seed_session_id`. Both are only accepted on a Behavior test case whose product has at least one version.
+  </Note>
+</ResponseField>
+
+<ResponseField name="seed_session_id" type="string" optional>
+  The ID of an existing session to copy the predefined conversation from. The copy takes that session's turns **and its traces**, so a conversation built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished.
+
+  <Note>
+    On the created test case, `seed_session_id` names the copy Galtea made, not the session you passed. Cannot be sent together with `conversation_history`.
+  </Note>
+</ResponseField>
+
+<ResponseField name="max_iterations" type="int" optional>
+  The maximum number of turns the simulator runs before the conversation ends. It counts the live turns only: a test case that starts from a predefined conversation runs this many turns on top of it. A predefined conversation of 4 turns with `max_iterations` 1 runs one new turn and the session ends with 5.
+
+  A turn is one exchange. A `conversation_history` of 8 alternating messages starting with the user is therefore 4 turns, not 8. Messages that do not alternate that way make more turns, so count them with the pairing rule above rather than halving.
 </ResponseField>
