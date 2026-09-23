@@ -21,13 +21,14 @@ You can **create**, view and manage your versions on the [Galtea dashboard](http
 
 ## How a Version is Identified
 
-A version carries three separate things. Each one has its own job.
+A version carries four separate things. Each one has its own job.
 
 | Field | Who sets it | What it is for |
 |---|---|---|
 | **ID** | Galtea | The identity. Every API and SDK call that must point at one exact version uses it. |
 | **Number** | Galtea | A short, ordered label for people. It starts at 1 for each product and counts up. |
 | **Name** | You | An optional label of your own, for example "support release". |
+| **Facts** | You | An optional map of the agent state the version represents, for example its model and its temperature. |
 
 The **number** is local to the product, so every product has its own version 1. Galtea allocates it when the version is created and never changes it. A number is never given to a second version, so a deleted version leaves a permanent gap. Gaps are normal and mean nothing.
 
@@ -43,6 +44,39 @@ Galtea combines the two into one label. The label is `v7` when the name is the v
 
 <Note>
   A version created before numbers existed keeps whatever name it had, even a name such as `v5`. That version and the product's fifth version can therefore both answer to `v5`. So a name does not always identify one version. Use the ID whenever you need an exact match.
+</Note>
+
+## Version Facts
+
+The **facts** are the agent state a version represents. They are a flat map of text to text. One entry is one piece of that state, for example `model: gpt-4o` or `temperature: 0.7`. The facts are optional, so a version with no facts is normal.
+
+You set the facts with the [REST API](/api-reference) (`POST /versions`, `PATCH /versions/{id}` and `POST /versions/get-or-create`), with the CLI (`galtea versions create`, `galtea versions update` and `galtea versions get-or-create`), or with the [Galtea SDK](/sdk/api/version/service) ([`versions.get_or_create`](/sdk/api/version/get-or-create) and [`versions.update`](/sdk/api/version/update)). The dashboard does not manage them yet.
+
+`POST /versions/get-or-create` asks for the version of one state instead of creating a row. You send a product and a facts map. Galtea answers the live version of that product whose facts are the ones you sent, and creates that version when no version holds them. So two jobs that run at the same time on one state receive the same version, and neither has to list the versions first and guess. The answer is `200` in both cases, and the key order you send does not change the match.
+
+The SDK can also record the commit the job runs on, under the `commit_hash` fact. See [Get or Create Version](/sdk/api/version/get-or-create).
+
+Galtea normalizes the facts on every write:
+
+- It removes the spaces at the start and the end of every key and every value.
+- It drops an entry whose key or value is empty after that.
+- It keeps the remaining text exactly. So `0.7` and `0.70` are two different facts.
+- It stores a map that leaves no entry as no facts.
+
+{/* The two limits below are MAX_FACT_KEYS and MAX_FACTS_BYTES in api/src/domain/models/versionFacts.ts. */}
+
+Two limits apply. A version accepts at most 32 keys. The whole map accepts at most 2000 bytes, measured after Galtea encodes it as JSON, so the punctuation of that encoding counts towards the limit too.
+
+A key and a value are text that Galtea must be able to store. Two things cannot be stored: the NUL character (`\u0000`), and half of a surrogate pair. Galtea refuses the whole map when a key or a value holds one of them.
+
+Galtea refuses two keys that become equal after the spaces around them are removed, for example `model` and `  model  `. It never keeps one of the two silently. Two keys that both become empty are the one exception: a blank key names no fact, so Galtea drops both instead of refusing the map. A key repeated with the exact same spelling is a different case: JSON parsing keeps only the last value of such a key, so the request reaches Galtea with one entry and this rule never sees it.
+
+<Warning>
+  Two live versions of one product cannot hold the same facts. The order in which you send the keys does not change this comparison, so `{"model": "gpt-4o", "temperature": "0.7"}` and `{"temperature": "0.7", "model": "gpt-4o"}` are the same facts. A deleted version no longer holds its facts, so a new version can take them.
+</Warning>
+
+<Note>
+  The facts are separate from the name and the number. Only the facts say which state a version represents. The name is a label for people, and the number is Galtea's own sequence.
 </Note>
 
 ## Comparing Versions

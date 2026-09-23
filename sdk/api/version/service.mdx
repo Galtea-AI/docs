@@ -38,11 +38,32 @@ Get a version by ID:
 version = galtea.versions.get(version_id=version_id)
 ```
 
+Get the version that holds an agent state, or create it:
+```python
+nightly_facts = {"model": "gpt-4o-mini", "prompt_version": "12"}
+
+nightly_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    name="Nightly build " + run_identifier,
+    auto_detect_commit_hash=True,
+)
+
+# The same facts always answer the same version, so a second job reuses the first one.
+same_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    auto_detect_commit_hash=True,
+)
+```
+
 ## Service Methods
 - [Create Version](/sdk/api/version/create)
+- [Get or Create Version](/sdk/api/version/get-or-create)
 - [Listing Versions](/sdk/api/version/list)
 - [Retrieving Version](/sdk/api/version/get)
 - [Retrieving Version By Name](/sdk/api/version/get-by-name)
+- [Updating Version](/sdk/api/version/update)
 - [Deleting Version](/sdk/api/version/delete)
 
 ## Related

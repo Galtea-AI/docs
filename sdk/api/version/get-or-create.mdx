@@ -1,0 +1,78 @@
+---
+title: 'Get or Create Version'
+sidebarTitle: "Get or Create"
+description: "Get the version that holds a set of facts, or create it."
+---
+
+Ask for the version of one agent state instead of creating a row. You send a product and a
+[facts](/concepts/product/version#version-facts) map. Galtea answers the live version of that
+product whose facts are the ones you sent, and creates that version when no version holds them.
+
+Two jobs that start at the same time on one state receive the same version. Neither has to list the
+versions first and guess a name. The key order you send does not change the match.
+
+## Returns
+Returns the [Version](/concepts/product/version) object that holds these facts, whether the call
+found it or created it.
+
+## Example
+```python
+nightly_facts = {"model": "gpt-4o-mini", "prompt_version": "12"}
+
+nightly_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    name="Nightly build " + run_identifier,
+    auto_detect_commit_hash=True,
+)
+
+# The same facts always answer the same version, so a second job reuses the first one.
+same_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    auto_detect_commit_hash=True,
+)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  ID of the [product](/concepts/product) the version belongs to.
+</ResponseField>
+<ResponseField name="facts" type="dict[str, str]" required>
+  The agent state the version represents, as a flat map of text to text. Galtea trims every key and
+  every value, drops an entry left empty, and keeps the rest exactly, so `"0.7"` and `"0.70"` are
+  two different facts. At least one entry must survive the trimming.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  Name to give the version, used only when this call creates one. A version the call finds keeps the
+  name it already has.
+</ResponseField>
+<ResponseField name="auto_detect_commit_hash" type="boolean" default="False" optional>
+  Record the commit of the machine that runs the SDK under the `commit_hash` fact.
+</ResponseField>
+
+## Commit Hash Detection
+
+Set `auto_detect_commit_hash=True` and the SDK adds one more fact, `commit_hash`. It reads the
+commit in this order:
+
+1. The continuous-integration variable of the provider that runs the job. The SDK supports
+   GitHub Actions, GitLab CI, CircleCI, Azure Pipelines, Bitbucket Pipelines, Travis CI, Buildkite,
+   Drone, AWS CodeBuild, Semaphore, AppVeyor, TeamCity, Vercel and Jenkins.
+2. `git rev-parse HEAD` in the current directory.
+
+Three rules keep the value honest:
+
+- **Detection describes the machine that runs the SDK.** It reports the commit that machine has
+  checked out. It ignores every edit you have not committed, so a changed working copy records the
+  commit it started from.
+- **A `commit_hash` you put in `facts` yourself always wins.** Detection never replaces it.
+- **The SDK omits the fact when it finds no commit.** It never sends a made-up or empty value.
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `VersionNameConflictException` | Another version of the product already holds the `name` you sent. The facts matched no version, so the call tried to create one, and the name was taken. You get this error only when you send a `name`. Import it with `from galtea import VersionNameConflictException`. |
+| `EntityNotFoundException` | The product does not exist. Import it with `from galtea import EntityNotFoundException`. |
+| `requests.HTTPError` | The call could not be completed for another reason. Galtea also answers 409 when two calls race on the same facts and neither wins, and when a version number is taken in the same moment. Those reach you as this error, which carries Galtea's own message. |

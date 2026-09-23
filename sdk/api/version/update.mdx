@@ -1,0 +1,80 @@
+---
+title: 'Update Version'
+sidebarTitle: "Update"
+description: "Update an existing version."
+---
+
+## Returns
+Returns the updated [Version](/concepts/product/version) object.
+
+## Example
+```python
+updated_version = galtea.versions.update(
+    version_id=version_id,
+    description="Iteration with a larger context window",
+    facts={"model": "gpt-4o", "temperature": "0.7"},
+)
+```
+
+## Parameters
+<ResponseField name="version_id" type="string" required>
+  ID of the version to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the version. A name of `v` followed by digits is reserved for a version number, so
+  the platform accepts it only when it is this version's own label.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  New version description.
+</ResponseField>
+<ResponseField name="system_prompt" type="string" optional>
+  New system prompt used for the version.
+</ResponseField>
+<ResponseField name="model_id" type="string" optional>
+  New reference to a [model](/concepts/model) configured in the Galtea Platform.
+</ResponseField>
+<ResponseField name="dataset_description" type="string" optional>
+  New description of the dataset used for training.
+</ResponseField>
+<ResponseField name="dataset_uri" type="string" optional>
+  New URI to the dataset.
+</ResponseField>
+<ResponseField name="guardrails" type="string" optional>
+  New configuration for safety guardrails.
+</ResponseField>
+<ResponseField name="parent_version_id" type="string" optional>
+  New ID of the version this one was revised from. The parent must belong to the same product.
+</ResponseField>
+<ResponseField name="facts" type="dict[str, str]" optional>
+  New [facts](/concepts/product/version#version-facts): the agent state this version represents, as
+  a flat map of text to text. Two live versions of one product cannot hold the same facts.
+</ResponseField>
+<ResponseField name="otel_output_source_rule" type="dict" optional>
+  New rule that recovers the user-visible reply from a non-LLM span.
+</ResponseField>
+<ResponseField name="otel_input_source_rule" type="dict" optional>
+  New rule that recovers the user message from a non-LLM span.
+</ResponseField>
+<ResponseField name="conversation_endpoint_connection_id" type="string" optional>
+  New [endpoint connection](/concepts/product/endpoint-connection) used for conversational
+  interactions with your AI product.
+</ResponseField>
+<ResponseField name="initialization_endpoint_connection_id" type="string" optional>
+  New endpoint connection executed before the conversation begins.
+</ResponseField>
+<ResponseField name="finalization_endpoint_connection_id" type="string" optional>
+  New endpoint connection executed after the conversation ends.
+</ResponseField>
+<ResponseField name="phone_connection_id" type="string" optional>
+  New phone connection used for voice interactions with your AI product.
+</ResponseField>
+<ResponseField name="web_rtc_connection_id" type="string" optional>
+  New WebRTC connection used for voice interactions with your AI product.
+</ResponseField>
+
+<Note>
+  All fields except `version_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+</Note>

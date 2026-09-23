@@ -283,9 +283,11 @@
                     "pages": [
                       "sdk/api/version/service",
                       "sdk/api/version/create",
+                      "sdk/api/version/get-or-create",
                       "sdk/api/version/list",
                       "sdk/api/version/get",
                       "sdk/api/version/get-by-name",
+                      "sdk/api/version/update",
                       "sdk/api/version/delete"
                     ]
                   }
