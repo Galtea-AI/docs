@@ -20,24 +20,6 @@ First, initialize the Galtea SDK:
 galtea = Galtea(api_key="YOUR_API_KEY")
 ```
 
-Create a version:
-```python
-version = galtea.versions.create(
-    product_id=product_id,
-    description="Demo version created via SDK",
-)
-```
-
-List versions for a product:
-```python
-versions = galtea.versions.list(product_id=product_id, limit=5)
-```
-
-Get a version by ID:
-```python
-version = galtea.versions.get(version_id=version_id)
-```
-
 Get the version that holds an agent state, or create it:
 ```python
 nightly_facts = {"model": "gpt-4o-mini", "prompt_version": "12"}
@@ -57,9 +39,27 @@ same_version = galtea.versions.get_or_create(
 )
 ```
 
+Create a version when you need to set other fields, such as a system prompt or an endpoint connection:
+```python
+version = galtea.versions.create(
+    product_id=product_id,
+    description="Demo version created via SDK",
+)
+```
+
+List versions for a product:
+```python
+versions = galtea.versions.list(product_id=product_id, limit=5)
+```
+
+Get a version by ID:
+```python
+version = galtea.versions.get(version_id=version_id)
+```
+
 ## Service Methods
-- [Create Version](/sdk/api/version/create)
 - [Get or Create Version](/sdk/api/version/get-or-create)
+- [Create Version](/sdk/api/version/create)
 - [Listing Versions](/sdk/api/version/list)
 - [Retrieving Version](/sdk/api/version/get)
 - [Retrieving Version By Name](/sdk/api/version/get-by-name)

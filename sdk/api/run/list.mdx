@@ -52,6 +52,10 @@ runs = galtea.runs.list(
 <ResponseField name="limit" type="int" optional>
   Maximum number of runs to return in a single request.
 </ResponseField>
+<ResponseField name="search" type="string" optional>
+  Free text that matches either the label of a run (case-insensitive, anywhere in the label) or its
+  number. The number is accepted with or without a leading `#`, so both `42` and `#42` find run 42.
+</ResponseField>
 <Note>
   At least one of `product_ids`, `version_ids` or `ids` must be passed. The other filters narrow the
   result but do not satisfy this requirement on their own.

@@ -56,6 +56,8 @@ You set the facts with the [REST API](/api-reference) (`POST /versions`, `PATCH 
 
 The SDK can also record the commit the job runs on, under the `commit_hash` fact. See [Get or Create Version](/sdk/api/version/get-or-create).
 
+Read each fact from the same setting your agent runs with, such as an environment variable or a configuration file. Do not type the value a second time. Then a change to the agent's settings gives a new version with no other edit, and the facts always describe the state that was tested. The [GitHub Actions guide](/sdk/integrations/github-actions) shows this.
+
 Galtea normalizes the facts on every write:
 
 - It removes the spaces at the start and the end of every key and every value.

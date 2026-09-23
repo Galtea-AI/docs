@@ -134,10 +134,10 @@ just made, so we can evaluate it.
 Under the hood:
 
 ```bash
-galtea versions create --product-id <product-id>
+echo '{"productId": "<product-id>", "facts": {"prompt_version": "2"}}' | galtea versions get-or-create
 ```
 
-Keeping each change behind its own version is what makes the comparison in the next step meaningful — every evaluation is attributed to the exact state of the product that produced it.
+The facts describe the new state of the product, here the second prompt revision. If the agent runs this step again, Galtea returns the same version instead of a duplicate. Keeping each change behind its own version is what makes the comparison in the next step meaningful — every evaluation is attributed to the exact state of the product that produced it.
 
 ## Step 5 — Re-evaluate and Compare
 

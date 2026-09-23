@@ -57,13 +57,22 @@ Import it with `from galtea import EntityNotFoundException`.
 
 ```python
 try:
-    version = galtea.versions.get_by_name(product_id=product_id, version_name=version_name)
+    metric = galtea.metrics.get_by_name(name=metric_name)
 except EntityNotFoundException:
-    version = galtea.versions.create(product_id=product_id, name=version_name)
+    metric = galtea.metrics.create(
+        name=metric_name,
+        evaluator_model_name="GPT-4.1",
+        source="partial_prompt",
+        judge_prompt="Determine whether the actual output is polite.",
+        evaluation_params=["input", "actual_output"],
+    )
 ```
 
 `EntityNotFoundException` is the name to catch. It covers both ways the SDK learns that nothing
 matched, so you never have to know which one happened.
+
+For a version, you do not need this fallback. [`versions.get_or_create`](/sdk/api/version/get-or-create)
+finds or creates the version in one call, and two jobs that run at the same time get the same one.
 
 One lookup can also fail the opposite way. When a version name matches more than one version in the
 product, [`versions.get_by_name`](/sdk/api/version/get-by-name) raises `AmbiguousVersionNameException`

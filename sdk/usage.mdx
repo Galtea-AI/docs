@@ -28,15 +28,17 @@ Product registration isn't supported via the SDK, so you'll need to do this from
 
 With a [version](/concepts/product/version), you can track changes to your product over time and compare different implementations.
 
+Describe the agent state you test as [facts](/concepts/product/version#version-facts). Galtea returns the version that holds those facts, and creates it the first time. So you can run the same script again and it reuses the version.
+
 ```python
-# 1) Create a version
-version = galtea.versions.create(
+# 1) Get the version of the agent state you test, or create it
+version = galtea.versions.get_or_create(
     product_id=product.id,
-    description="Initial version with basic summarization capabilities",
+    facts={"model": "gpt-4o-mini", "prompt_version": "1"},
 )
 ```
 <Info>
-    More information about creating a version can be found [here](/sdk/api/version/create).
+    More information can be found in [Get or Create Version](/sdk/api/version/get-or-create). To set other fields, such as a system prompt or an endpoint connection, see [Create Version](/sdk/api/version/create).
 </Info>
 
 ### Creating a Dataset

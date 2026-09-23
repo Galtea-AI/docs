@@ -46,6 +46,8 @@ jobs:
     env:
       GALTEA_API_KEY: ${{ secrets.GALTEA_API_KEY }}
       GALTEA_PRODUCT_ID: ${{ vars.GALTEA_PRODUCT_ID }}
+      AGENT_MODEL: gpt-4o-mini
+      AGENT_TEMPERATURE: "0.7"
     runs-on: ubuntu-latest
     steps:
      - name: Checkout
@@ -81,23 +83,25 @@ from galtea import Galtea
 galtea = Galtea(api_key=os.environ["GALTEA_API_KEY"])
 
 PRODUCT_ID = os.environ["GALTEA_PRODUCT_ID"]
-COMMIT_SHA = os.environ["GITHUB_SHA"]
 
-# One version per workflow run, named after the commit so every result is traceable to the
-# code that produced it. The same commit is built again on `pull_request` and on every job
-# re-run, so the run id and the attempt keep each name distinct. Leave `name` out and Galtea
-# labels the version `v` plus its number, which does not say which commit it tested.
-version = galtea.versions.create(
-    name=f"ci-{COMMIT_SHA[:7]}-{os.environ['GITHUB_RUN_ID']}.{os.environ['GITHUB_RUN_ATTEMPT']}",
+# The settings your agent runs with. The workflow sets them in its `env:` block, and the
+# defaults apply when you run this script on your own machine.
+AGENT_MODEL = os.environ.get("AGENT_MODEL", "gpt-4o-mini")
+AGENT_TEMPERATURE = os.environ.get("AGENT_TEMPERATURE", "0.7")
+
+# One version per agent state. The facts come from the same settings the agent uses, so they
+# always describe what was tested. `auto_detect_commit_hash` adds the commit: GITHUB_SHA in CI,
+# `git rev-parse HEAD` on your machine. A re-run of the same state gets the same version back.
+version = galtea.versions.get_or_create(
     product_id=PRODUCT_ID,
+    facts={"model": AGENT_MODEL, "temperature": AGENT_TEMPERATURE},
+    auto_detect_commit_hash=True,
 )
-if version is None:
-    raise RuntimeError("Could not create the version — check GALTEA_API_KEY and GALTEA_PRODUCT_ID")
 
 
 # Your product under test. Galtea calls it once per test case.
 def my_agent(user_message: str) -> str:
-    # In a real scenario, this would call your actual AI model or API
+    # In a real scenario, this would call your model with AGENT_MODEL and AGENT_TEMPERATURE
     return "This is a placeholder model answer."
 
 
@@ -118,6 +122,10 @@ with galtea.runs.start(
 print(f"Evaluated {result['testCaseCount']} test cases against version {version.name}")
 print(f"Results are grouped under run {result['runId']}")
 ```
+
+<Note>
+  `versions.get_or_create` gives each agent state one [Version](/concepts/product/version). The script reads the facts from the same environment variables your agent uses, so a change to `AGENT_MODEL` in the workflow gives a new version with no other edit. With `auto_detect_commit_hash=True`, the SDK also adds the commit from `GITHUB_SHA`. So each commit gets its own version, and a re-run of the same commit reuses it. See [Get or Create Version](/sdk/api/version/get-or-create).
+</Note>
 
 <Note>
   `run()` discovers work through specifications, so each one needs both its metrics and a dataset linked. A specification missing either is skipped silently, and the run evaluates nothing. That setup is done once (see [Writing Specifications](/sdk/tutorials/writing-specifications)), not on every CI run. If you need per-test-case control instead, see [Run Dataset-Based Evaluations](/sdk/tutorials/run-dataset-based-evaluations).

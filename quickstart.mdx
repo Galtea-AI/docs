@@ -87,9 +87,9 @@ You can use Galtea from the dashboard or via the Python SDK. This quickstart use
 
 Use versions to track iterations of your product and compare evaluation results over time. Each evaluation is tied to a version, so you can see how changes impact metrics.
 
-If you completed the **Onboarding** checklist on your product page, you already have an initial version (created automatically).
+A version stands for one state of your agent, described by its [facts](/concepts/product/version#version-facts), for example the model and the prompt revision. You do not need to create it first or copy its ID. `versions.get_or_create` returns the version that holds your facts, and creates it the first time.
 
-To find IDs in the dashboard, open your product and click the **3-dot menu** on any item, then select **Copy ID**.
+To find a product ID in the dashboard, open your product and click the **3-dot menu** on any item, then select **Copy ID**.
 
   <video            
     autoPlay
@@ -100,12 +100,17 @@ To find IDs in the dashboard, open your product and click the **3-dot menu** on 
     src="/videos/copy-id-from-dashboard.mp4"
   ></video>
 
-Or resolve your product and version by name in the SDK — no IDs to copy:
+Or resolve your product by name in the SDK, then get the version of your agent state:
 
 ```python
-# Look your product and version up by name — no need to copy IDs from the dashboard.
+# Look your product up by name — no need to copy IDs from the dashboard.
 product = galtea.products.get_by_name(name="Financial Assistant")
-version = galtea.versions.get_by_name(product_id=product.id, version_name="v1")
+
+# Describe the agent state you test. Galtea returns its version, and creates it the first time.
+version = galtea.versions.get_or_create(
+    product_id=product.id,
+    facts={"model": "gpt-4o-mini", "prompt_version": "1"},
+)
 
 product_id = product.id
 version_id = version.id
