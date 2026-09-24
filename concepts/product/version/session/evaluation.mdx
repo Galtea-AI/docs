@@ -71,6 +71,7 @@ Once an evaluation completes, the following fields are available:
     - The judge model was unavailable.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
+  - **Cancelled**: The evaluation was deleted while it was still waiting to be scored, so the platform stopped it before it produced a score. Deleting the evaluation, or something it belongs to such as its session, its run or its metric, cancels every pending evaluation the delete removes. The same step deletes the evaluation, so it no longer appears in lists. Cancelling a run does not cancel its evaluations.
   - **Outdated**: The evaluation was produced by a [Monitor](/concepts/product/monitor), and the session then reopened and gained a new turn. The score describes an older version of the conversation, so it no longer counts as current: charts and averages leave it out, and the monitor scores the session again once it closes. The row keeps its score and its reason, so you can still read what it found.
 </ResponseField>
 

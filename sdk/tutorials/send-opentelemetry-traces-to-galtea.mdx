@@ -293,6 +293,8 @@ So a span imported from an instrumented platform is typed without any Galtea att
 
     On an `execute_tool` span, send `gen_ai.tool.name` as well. The conventions name that span `execute_tool get_weather`, and Galtea stores the span name as the tool name. So without the attribute the tool reads as `execute_tool get_weather`, and a `tool_correctness` metric never matches it against `get_weather`.
 
+    `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` give Galtea the call's token counts. See [Token usage and cost](#token-usage-and-cost) below.
+
     <Tip>
       If your system is already instrumented with plain OpenTelemetry GenAI conventions, input, output and span type map with **zero** Galtea-specific attributes.
     </Tip>
@@ -312,6 +314,23 @@ These OTel fields are mapped **automatically for every span**, whichever source 
 - **`parentSpanId`** → `parentTraceId` (parent-child hierarchy)
 
 All remaining unmapped span attributes are collected into the `metadata` field, so no data is lost.
+
+## Token usage and cost
+
+Galtea reads the token counts your spans report and adds them up per turn. Send them with the OpenTelemetry GenAI keys:
+
+| Attribute Key | Type | Description |
+|---|---|---|
+| `gen_ai.usage.input_tokens` | `int` | Input (prompt) tokens the call consumed. |
+| `gen_ai.usage.output_tokens` | `int` | Output (completion) tokens the call produced. |
+
+A turn's `inputTokens`, `outputTokens` and `tokens` are the sum over every span of that turn, so a turn that makes three LLM calls reports the three calls added together. A span that reports no usage adds nothing. Send no usage at all and the turn keeps what Galtea already had: nothing when no Model is linked to the Version, or the estimate Galtea derived from the turn text when one is.
+
+Galtea also recognizes the usage a managed platform reports in its own format. MLflow Tracing's `mlflow.chat.tokenUsage` works with no Galtea attribute. When a span carries both, the `gen_ai.usage.*` keys win, field by field.
+
+**Cost** is derived from those counts and the per-token price of the [Model](/concepts/model) linked to the Version. Link a Model with a known price and the turn's `cost` is filled. With no Model, or with no price for it, `cost` stays empty rather than zero.
+
+A reported count replaces one Galtea estimated earlier: your own figure is the accurate one. A cost you reported yourself is kept, and the new counts do not replace it: Galtea recomputes only a cost it derived from the counts and the Model price, never a different figure you set. Spans of a turn may arrive in several export batches, and each batch raises the turn's total instead of replacing it. Re-sending the same spans changes nothing.
 
 <Note>
   **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.

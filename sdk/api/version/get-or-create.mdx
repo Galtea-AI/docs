@@ -40,7 +40,7 @@ same_version = galtea.versions.get_or_create(
 </ResponseField>
 <ResponseField name="facts" type="dict[str, str]" required>
   The agent state the version represents, as a flat map of text to text. Galtea trims every key and
-  every value, drops an entry left empty, and keeps the rest exactly, so `"0.7"` and `"0.70"` are
+  every value, drops an entry whose key or value is empty, and keeps the rest exactly, so `"0.7"` and `"0.70"` are
   two different facts. At least one entry must survive the trimming.
 </ResponseField>
 <ResponseField name="name" type="string" optional>
