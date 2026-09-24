@@ -91,10 +91,11 @@ A session is either **open** or **closed**, and its `Status` is the single sourc
 
 ### How a session closes
 
-A session becomes closed in one of two ways:
+A session becomes closed in one of these ways:
 
 - **Explicit finish.** You end the session on purpose, and it closes right away. Call [`sessions.finish()`](/sdk/api/session/finish) from the SDK: it records a `Stopping Reason` and sets the status to `COMPLETED`. The endpoint behind it (`PATCH /sessions/{id}/finish`) also accepts an `error` instead, which closes the session as `FAILED`.
 - **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent trace is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
+- **The agent ended the conversation.** In a run that calls your agent through an endpoint connection, a reply that matches one of the connection's [conversation end rules](/concepts/product/endpoint-connection-configuration#conversation-end-rules) closes the session as `COMPLETED` with the `Stopping Reason` `The agent ended the conversation (HTTP <code>)`, where `<code>` is the reply's status code. The session is evaluated. When the matching reply has no agent answer (an error, or a 2xx reply with no output), Galtea removes that turn and does not score it. Such a reply on the first turn, or in a single-turn test, fails the session instead.
 
 You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `ALL`, so both production and development (test) sessions auto-close after the window. A development session you create from the SDK therefore closes on its own once you stop adding turns, and you can still finish it explicitly to close it at once. Set the scope to `PRODUCTION` to keep development sessions open until you finish them.
 

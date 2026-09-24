@@ -1,11 +1,11 @@
 ---
 title: "Templates & Mapping"
 sidebarTitle: "Templates & Mapping"
-description: "Configure how Galtea formats requests to your endpoint, extracts values from responses, sets custom headers, and handles retries."
+description: "Configure how Galtea formats requests to your endpoint, extracts values from responses, sets custom headers, handles retries, and detects when your agent ends a conversation."
 icon: "code"
 ---
 
-This page covers the detailed configuration for [Endpoint Connection](/concepts/product/endpoint-connection) request formatting, response extraction, and retry behavior.
+This page covers the detailed configuration for [Endpoint Connection](/concepts/product/endpoint-connection) request formatting, response extraction, retry behavior, and conversation end rules.
 
 ## Input Template
 
@@ -124,7 +124,7 @@ A JSON object defining how to extract values from the API response using [JSONPa
 | `[]` | Array index or child operator |
 | `[*]` | Wildcard (all elements) |
 | `[0]` | First array element |
-| `[-1]` | Last array element |
+| `[-1:]` | The last array element, as a one-element list |
 
 ### Example
 
@@ -262,6 +262,48 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea ret
 
   Codes are honored literally with no client-error short-circuit. Adding a deterministic `4xx` code (such as `401`, `403`, or `422`) makes Galtea retry a call that will always fail, which wastes the full retry budget and the credits for each attempt.
 </ResponseField>
+
+## Conversation End Rules
+
+Some agents end a conversation on their own and then answer every further message with an error. Without a rule, Galtea reads that error as a failed turn, so the session fails and is never evaluated. A conversation end rule tells Galtea which reply means "the agent ended the conversation". On a match, the session completes with the turns so far and is evaluated.
+
+A rule has a status code and an optional body match. Default: no rules. A connection holds at most 20 rules, and only a `CONVERSATION` connection accepts them.
+
+<ResponseField name="Status Code" type="Number">
+  HTTP status code of the reply (`100`-`599`). A `2xx` code needs a body match, because a `2xx` rule without one would end the conversation after the first normal reply.
+</ResponseField>
+
+<ResponseField name="Body JSONPath" type="Text">
+  Optional. A JSONPath into the response body, starting with `$` (for example `$.error.code`). See [JSONPath Syntax Reference](#jsonpath-syntax-reference). Filter expressions such as `[?(...)]` are refused.
+</ResponseField>
+
+<ResponseField name="Expected Value" type="Text">
+  Used when a Body JSONPath is set. The first value the path finds must equal this text. An empty Expected Value matches an empty string.
+</ResponseField>
+
+### Example
+
+After your agent closes the conversation, it answers every further message with HTTP `409` and this body:
+
+```json
+{"error": {"code": "conversation_ended", "message": "This conversation has ended."}}
+```
+
+The rule is status code `409`, Body JSONPath `$.error.code`, and Expected Value `conversation_ended`. A `409` with any other `error.code` does not match, so it still fails the turn as before.
+
+### How a reply matches
+
+- Galtea checks the rules **before** the [retry policy](#retry-configuration). A matching reply is never retried, even when its status code is in Retryable Status Codes.
+- A reply matches when the status code is equal and, if the rule has a body match, the first value the JSONPath finds is a string, number, or boolean whose text equals the Expected Value. So the number `42` matches the Expected Value `42`.
+- A missing field, an object, an array, `null`, or a body that is not JSON never matches.
+- Rules apply only to the conversation calls of text sessions. Initialization and finalization calls, voice sessions, and the connection test ignore them.
+
+### What happens to the session
+
+- **A 2xx match with an agent answer**: the reply is a normal agent reply, so that turn stays as the last turn and is scored. This also holds on the first turn and in a single-turn test.
+- **A match with no agent answer**: a non-2xx match (such as the `409` above), or a 2xx match whose reply has no output. The rejected turn holds the simulated user message and no agent reply. Galtea removes that turn, so it is not scored.
+- In both cases the session completes with the stopping reason `The agent ended the conversation (HTTP <code>)`, for example `The agent ended the conversation (HTTP 409)`, and is evaluated.
+- A match with no agent answer on the first turn, or in a single-turn test, still fails the session, because there is no conversation left to evaluate.
 
 ## Related
 

@@ -214,7 +214,7 @@ A scenario test case can start from a conversation that already happened. The si
 </ResponseField>
 
 <ResponseField name="seedSessionId" type="Text">
-  The id of a session to copy the conversation from. The copy takes that session's turns **and its traces**, so a seed built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished.
+  The id of a session to copy the conversation from. The copy takes that session's turns **and its traces**, so a seed built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished. Removed turns at the end of the session are left out of the copy, so a session the agent ended can be copied. A removed turn in the middle of the session is refused.
 
   In the SDK the parameter and the test case field are both named `seed_session_id`.
 

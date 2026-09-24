@@ -30,6 +30,17 @@ The evaluation list hides these results by default. Turn on **Show excluded from
 
 Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics.
 
+## Filtering by Score
+
+Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Use them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The badge on the filter shows the condition, for example `≥ 70%`.
+
+- **Judge Score** reads the score the metric's judge gave. It ignores a human review.
+- **Human Score** reads the reviewer's score only.
+- An evaluation with no score of that kind never matches the filter.
+- Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
+
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. The SDK takes them as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list).
+
 ## Evaluation Lifecycle
 
 Evaluations follow a specific lifecycle:

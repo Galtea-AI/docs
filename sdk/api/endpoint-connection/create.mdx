@@ -98,3 +98,6 @@ endpoint_connection = galtea.endpoint_connections.create(
 <ResponseField name="acknowledged_insecure_http" type="bool" optional>
   Set to `true` to accept an `http://` URL. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
 </ResponseField>
+<ResponseField name="conversation_end_rules" type="list[ConversationEndRule]" optional>
+  Replies that mean your agent ended the conversation. On a match, the session completes and is evaluated instead of failing, and the match is never retried. Each `ConversationEndRule` has a `status_code` (100–599) and an optional `body_match`, a `ConversationEndBodyMatch` with a JSONPath `path` and the expected value `equals`. A `2xx` rule needs a `body_match`. At most 20 rules, and only for `CONVERSATION` type. Defaults to no rules. For example, `ConversationEndRule(status_code=409, body_match=ConversationEndBodyMatch(path="$.error.code", equals="conversation_ended"))`. See [Conversation End Rules](/concepts/product/endpoint-connection-configuration#conversation-end-rules).
+</ResponseField>

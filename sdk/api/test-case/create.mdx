@@ -141,7 +141,7 @@ reused = galtea.test_cases.create(
 </ResponseField>
 
 <ResponseField name="seed_session_id" type="string" optional>
-  The ID of an existing session to copy the predefined conversation from. The copy takes that session's turns **and its traces**, so a conversation built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished.
+  The ID of an existing session to copy the predefined conversation from. The copy takes that session's turns **and its traces**, so a conversation built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished. Removed turns at the end of the session are left out of the copy, so a session the agent ended can be copied. A removed turn in the middle of the session is refused.
 
   <Note>
     On the created test case, `seed_session_id` names the copy Galtea made, not the session you passed. Cannot be sent together with `conversation_history`.

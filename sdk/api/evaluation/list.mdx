@@ -68,6 +68,30 @@ evaluations = galtea.evaluations.list(session_id=session_id)
 <ResponseField name="include_excluded_from_analytics" type="bool" default="False">
   Keyword-only. Include evaluations whose metric revision is excluded from analytics. These results keep their score and reason, but they do not feed any analytics number. See [Metrics](/concepts/metric).
 </ResponseField>
+<ResponseField name="score_gt" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is greater than this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="score_gte" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is greater than or equal to this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="score_lt" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is less than this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="score_lte" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is less than or equal to this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_gt" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is greater than this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_gte" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is greater than or equal to this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_lt" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is less than this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_lte" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is less than or equal to this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
 <Note>
-  At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`, `run_id`) described above must be passed to the method. `status` and `user_id` are additional filters and do **not** satisfy this requirement on their own.
+  At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`, `run_id`) described above must be passed to the method. `status`, `user_id` and the score bounds are additional filters and do **not** satisfy this requirement on their own.
 </Note>
