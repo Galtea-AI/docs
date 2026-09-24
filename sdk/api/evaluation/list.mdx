@@ -92,6 +92,9 @@ evaluations = galtea.evaluations.list(session_id=session_id)
 <ResponseField name="human_score_lte" type="float" default="None">
   Keyword-only. Keep evaluations whose human review score is less than or equal to this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
 </ResponseField>
+<Tip>
+  To match one exact score, pass the same value as both inclusive bounds: `score_gte=0.5, score_lte=0.5` for the judge score, or `human_score_gte=0.5, human_score_lte=0.5` for the human score.
+</Tip>
 <Note>
   At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`, `run_id`) described above must be passed to the method. `status`, `user_id` and the score bounds are additional filters and do **not** satisfy this requirement on their own.
 </Note>

@@ -39,7 +39,7 @@ Every evaluation list has a **Judge Score** filter and a **Human Score** filter.
 - An evaluation with no score of that kind never matches the filter.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
 
-The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. The SDK takes them as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list).
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. The SDK takes them as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list).
 
 ## Evaluation Lifecycle
 
