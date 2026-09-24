@@ -99,8 +99,10 @@ When a product has excluded results, its Analytics page states how many results 
 | **[Spatial Match](/concepts/metric/spatial-match)** | Deterministic | Binary evaluation of spatial alignment using IoU score. |
 | **[URL Validation](/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |
 | **[Tool Correctness](/concepts/metric/tool-correctness)** | Deterministic | Compares tools used by the agent against expected tools. |
-| **[JSON Field Match](/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. |
-| **[JSON Field Match (Normalized)](/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. |
+| **[JSON Field Match](/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Normalized)](/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Strict)](/concepts/metric/json-field-match-strict)** | Deterministic | Like JSON Field Match, but an unexpected field in the actual output also lowers the score. |
+| **[JSON Field Match (Normalized, Strict)](/concepts/metric/json-field-match-normalized-strict)** | Deterministic | Like JSON Field Match (Normalized), but an unexpected field in the actual output also lowers the score. |
 | **[Role Adherence](/concepts/metric/role-adherence)** | Conversational | Evaluates whether the chatbot adheres to its given role throughout a conversation. |
 | **[Conversation Completeness](/concepts/metric/conversation-completeness)** | Conversational | Evaluates whether the chatbot satisfies user needs throughout a conversation. |
 | **[Conversation Relevancy](/concepts/metric/conversation-relevancy)** | Conversational | Evaluates whether the chatbot generates relevant responses throughout a conversation. |

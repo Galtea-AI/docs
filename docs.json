@@ -584,7 +584,9 @@
                       "concepts/metric/url-validation",
                       "concepts/metric/tool-correctness",
                       "concepts/metric/json-field-match",
-                      "concepts/metric/json-field-match-normalized"
+                      "concepts/metric/json-field-match-normalized",
+                      "concepts/metric/json-field-match-strict",
+                      "concepts/metric/json-field-match-normalized-strict"
                     ]
                   }
                 ]
