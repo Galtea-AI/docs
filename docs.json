@@ -713,61 +713,6 @@
         ]
       },
       {
-        "tab": "Deployment",
-        "groups": [
-          {
-            "group": "Overview",
-            "icon": "compass",
-            "pages": [
-              "deployment/executive-summary",
-              "deployment/choosing-a-model",
-              "deployment/reference-architecture"
-            ]
-          },
-          {
-            "group": "Deployment Models",
-            "icon": "layer-group",
-            "pages": [
-              "deployment/model-shared-saas",
-              "deployment/model-enterprise-organization",
-              "deployment/model-private-tenant",
-              "deployment/model-managed-in-your-cluster",
-              "deployment/model-self-hosted"
-            ]
-          },
-          {
-            "group": "Install and Operate",
-            "icon": "rocket",
-            "pages": [
-              "deployment/prerequisites-checklist",
-              "deployment/cloud-specifics",
-              "deployment/install-and-lifecycle",
-              "deployment/installation-examples",
-              "deployment/observability-and-operations"
-            ]
-          },
-          {
-            "group": "Connectivity and Security",
-            "icon": "shield-halved",
-            "pages": [
-              "deployment/security-assurance",
-              "deployment/connectivity-implementation",
-              "deployment/connectivity-reference",
-              "deployment/connecting-to-the-galtea-vpn"
-            ]
-          },
-          {
-            "group": "Reference",
-            "icon": "book",
-            "pages": [
-              "deployment/responsibilities",
-              "deployment/boundaries",
-              "deployment/glossary-and-faq"
-            ]
-          }
-        ]
-      },
-      {
         "tab": "REST API",
         "openapi": "https://dev.api.galtea.ai/openapi.json"
       }
