@@ -7,7 +7,7 @@ description: "Retry one or more failed evaluations."
 ## Returns
 Returns a dictionary containing retry results:
 - `retried` (int): Number of evaluations successfully queued for retry.
-- `skipped` (int): Number of evaluations skipped (not FAILED or exceeded max retries).
+- `skipped` (int): Number of evaluations not retried because they are not retryable, are over the retry limit, still miss the data their metric needs, or their organization lacks credits. `errors` names the cause.
 - `errors` (list[str]): Error messages for any failed retries.
 
 ## Example
