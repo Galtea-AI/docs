@@ -63,6 +63,8 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 
   Attach them by naming local paths in `output_file_paths` on [Create Trace](/sdk/api/trace/create), [Update Trace](/sdk/api/trace/update) or [Create and Evaluate Trace](/sdk/api/trace/create-and-evaluate). An agent callback answers with files through `AgentResponse.output_file_paths`. To reuse one upload across turns, call [`galtea.traces.upload_output_file()`](/sdk/api/trace/upload-output-file) and build the envelope yourself.
 
+  On a run Galtea makes through an endpoint connection, the files come from the response instead: the connection's `output_files` key names them, and Galtea stores a copy of each, or links a file already in Galtea. See [Files in the Response](/concepts/product/endpoint-connection-configuration#files-in-the-response).
+
   One output accepts at most 20 files, 20 MB in total, of the same types an input accepts.
 
   <Warning>

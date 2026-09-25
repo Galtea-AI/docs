@@ -113,6 +113,7 @@ A JSON object defining how to extract values from the API response using [JSONPa
 | `session_id` | Stored as the external session identifier, accessible via [`custom_id`](/concepts/product/version/session#session-properties). |
 | `retrieval_context` | Stored as a `RETRIEVER` span for RAG evaluations (derived at read time, not a directly-readable field). |
 | `traces` | Extracts an array of [span](/concepts/product/version/session/span) objects and stores them linked to the trace. Each object should contain at least a `name` field and can include any of the [Span properties](/concepts/product/version/session/span#span-properties): `type`, `description`, `inputData`, `outputData`, `error`, `latencyMs`, `metadata`, `startTime`, `endTime`. A `type` Galtea does not recognize is normalized to a known span type, and your original label is kept in that span's `metadata` under `galtea.span.original_type`. Galtea stores every valid span and drops only the invalid ones, and shows the [dropped count](/concepts/product/version/session/trace) on the trace. |
+| `output_files` | Stores each file your endpoint answers with, such as a generated report, as a Galtea file on the turn's output. The path can match one file or a list of files. See [Files in the Response](#files-in-the-response). |
 | Any other key | Stored in session metadata and available as `{{ key }}` in templates. |
 
 ### JSONPath Syntax Reference
@@ -133,9 +134,58 @@ A JSON object defining how to extract values from the API response using [JSONPa
   "output": "$.choices[0].message.content",
   "retrieval_context": "$.choices[0].retrieval_context",
   "session_id": "$.metadata.session_id",
-  "traces": "$.metadata.traces"
+  "traces": "$.metadata.traces",
+  "output_files": "$.files"
 }
 ```
+
+### Files in the Response
+
+Use the `output_files` key when your agent answers with a document: a generated report, a filled form, an image. Galtea stores a copy of each file on the turn's output, so a later read always sees the same bytes. A file that is already in Galtea is linked instead of copied. The stored files appear as the trace's [Output Files](/concepts/product/version/session/trace#param-output-files).
+
+Each file the path matches can take one of three forms:
+
+- **Bytes:** an object with `base64` and optional `mime_type` and `filename`, or a `data:` URI string. The standard and the URL-safe base64 alphabets both work. Galtea decodes the bytes and makes no extra request.
+- **URL:** an `http(s)` URL string, or an object with `url` (or `uri`) and optional `mime_type` and `filename`. Galtea downloads the file once, during the run.
+- **Galtea file:** the canonical storage URI of a file already uploaded to Galtea, as a string or in `url` or `uri`. It is the signature-free `uri` a written trace or test case reads back with. Galtea links the file on the turn, with no download and no copy. A signed link is a URL, not a Galtea file: it is downloaded and copied. That covers the `uri` an SDK upload returns and the `url` of an `input_files` item.
+
+<CodeGroup>
+```json Endpoint Response
+{
+  "answer": "Here is your quote.",
+  "files": [
+    { "base64": "JVBERi0xLjQK...", "mime_type": "application/pdf", "filename": "quote.pdf" },
+    { "url": "https://files.example.com/quotes/1234/terms.pdf" }
+  ]
+}
+```
+
+```json Output Mapping
+{
+  "output": "$.answer",
+  "output_files": "$.files"
+}
+```
+</CodeGroup>
+
+The text still comes from `output`. A response with files and no text is also a valid turn. An empty value (`null`, `[]`, `{}` or an empty string) means the turn has no file.
+
+The rules:
+
+- **Limits:** at most 20 files and 20 MB in total for one output, Galtea files included. The file extension decides the type, and it must be one a [test case input accepts](/concepts/product/dataset/test-case#file-inputs), such as `pdf`, `docx`, `png` or `csv`. A file with no extension takes one from its `mime_type`, or, for a URL, from the `Content-Type` the file host sends. A name that ends in digits only, such as `invoice_2026.09.23`, counts as having no extension.
+- **Download time:** all the URL downloads of one output share one time limit, the connection's [timeout](#timeout). A URL file that has not started when that time runs out is refused.
+- **No credentials to the file host:** Galtea sends none of the connection's headers or credentials with the download. A file that needs authentication must come back as bytes, or as a presigned URL that carries its own access.
+- **Galtea files belong to your organization:** a Galtea file must be an uploaded file of the organization that owns the product. A file of another organization, or a storage URI that does not name an uploaded file, fails the turn. The same holds for a file that no longer exists.
+- **Plain HTTP:** an `http://` file URL is downloaded only when the connection acknowledged plain HTTP, or the deployment allows it for every connection (see [HTTP endpoints](/concepts/product/endpoint-connection#http-endpoints)). Private and internal addresses, such as loopback and cloud metadata, are refused, as they are for the endpoint itself.
+- **A refused file fails the turn:** the error names the file and the reason, for example `Output file refused: file 2 ("setup.exe"): the type ".exe" is not allowed`. Galtea stores no file of that turn. When the check Galtea makes before a run already receives a file it would refuse, the run is rejected before it starts.
+- **Single-turn runs only:** as with [file inputs](/concepts/product/dataset/test-case#file-inputs), a run of more than one turn fails the turn whose response carries a file. The simulated user reads text only, so the conversation would go on as if the agent said nothing. Run the test case as a single turn, or remove `output_files` from the mapping.
+- **Conversation connections only:** Initialization and Finalization connections ignore `output_files`.
+
+The **Test Connection** panel lists the files it finds and shows why a file would be refused. It previews a bytes file and a Galtea file, and it never downloads a URL file. It refuses a Galtea file of another organization, but a Galtea file that no longer exists fails only when a run reads it.
+
+<Warning>
+  Evaluators cannot read output files yet. A metric that reads the output is skipped unless at least one turn of the session has text and no file. Text sent beside a file does not count, so a single-turn run whose answer carries a file always skips it. See [Output Files](/concepts/product/version/session/trace#param-output-files).
+</Warning>
 
 ### State Management
 
