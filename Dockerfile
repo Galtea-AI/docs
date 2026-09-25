@@ -24,10 +24,22 @@ FROM node:24.14.0-alpine AS runtime
 
 WORKDIR /app
 
-# Install Mint CLI (the renamed Mintlify CLI) and pre-fetch its dependencies
-# during the build so that container startup is fast and does not require
-# internet access at runtime.
-RUN npm install mint@4.2.558
+# Install Mint CLI (the renamed Mintlify CLI).
+RUN npm install mint@4.2.935
+
+# Pin the Mintlify client (the Next.js app `mint dev` serves). Pinning the CLI
+# does not pin it: without --client-version, every container start fetches
+# whatever client releases.mintlify.com calls latest into ~/.mintlify. Replicas
+# started on different days then serve different chunk hashes, so a page
+# rendered by one pod requests chunks another pod 404s on ("Error loading
+# page"). With --client-version the CLI re-downloads exactly this version on
+# start, and falls back to the copy baked here if the download fails. That
+# baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000.
+ENV MINT_CLIENT_VERSION=0.0.3687
+RUN mkdir -p /root/.mintlify/previews/3000 \
+  && wget -qO- "https://releases.mintlify.com/mint-${MINT_CLIENT_VERSION}.tar.gz" \
+    | tar -xz -C /root/.mintlify/previews/3000 \
+  && printf '%s' "$MINT_CLIENT_VERSION" > /root/.mintlify/previews/3000/mint/mint-version.txt
 
 # Copy the embedded docs output from the builder stage
 COPY --from=builder /docs-src/.build .
@@ -37,4 +49,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
   CMD wget -q --spider http://localhost:3000/ || exit 1
 
-CMD ["sh", "-c", "node_modules/.bin/mint dev --port 3000 < /dev/null"]
+CMD ["sh", "-c", "node_modules/.bin/mint dev --port 3000 --client-version \"$MINT_CLIENT_VERSION\" < /dev/null"]
