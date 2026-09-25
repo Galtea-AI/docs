@@ -7,6 +7,7 @@
 ```
 docs/
 ├── docs.json              # Mintlify configuration (navigation, theme)
+├── deployment/            # GENERATED from Galtea-AI/gitops docs/deployment (public edition); never edit here
 ├── concepts/              # Concept documentation
 ├── sdk/                   # SDK documentation (api/, tutorials/)
 ├── code/                  # Code snippets (Python scripts)
@@ -14,6 +15,14 @@ docs/
 ├── images/                # Documentation images
 └── logo/                  # Logo assets
 ```
+
+## Generated pages: `deployment/`
+
+`docs/deployment/**`, `docs/images/deployment/**` and the `Deployment` tab of `docs.json` are
+written by the `📤 Publish Deployment Guide` workflow in `Galtea-AI/gitops` on every
+`deployment-guide-v*` release. Every page header names the tag it came from. To change one,
+edit the source page in `gitops/docs/deployment/`, merge, and let release-please cut the
+release; **a hand edit here is overwritten by the next publication**.
 
 ## Critical Rule: Code Embeds
 
