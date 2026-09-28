@@ -255,6 +255,8 @@ Galtea uses role-based access control. Every member of your organization has one
 | --- | --- | --- | --- | --- |
 | Read | If data in own org | If data in own org | If data in own org | If data in own org |
 
+*The dashboard does not show the Coverage, Scores comparison, and Inference sections of the Analytics page to HUMAN_EVALUATOR and READER. This is a display choice, not a permission: the API still returns this data to both roles.*
+
 ## Notes
 
 - **Read-only roles**: READER and HUMAN_EVALUATOR can read exactly what a MEMBER can read (the same organization scope). They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
