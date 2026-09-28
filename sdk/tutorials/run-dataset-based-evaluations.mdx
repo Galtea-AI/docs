@@ -26,7 +26,7 @@ To evaluate a product version against a predefined [Dataset](/concepts/product/d
         Fetch all test cases associated with the dataset using `galtea.test_cases.list()`.
     </Step>
     <Step title="Generate and Evaluate Output">
-        For each test case, call your product to get its output, create a session with `galtea.sessions.create()`, then use `galtea.traces.create_and_evaluate()` to log and evaluate the result.
+        For each test case, call your product to get its output, create a session with `galtea.sessions.create()`, then use `galtea.traces.create_and_evaluate()` to log and evaluate the result. You do not need to close the session: the product's auto-close setting closes it after 30 quiet minutes by default, and [`sessions.finish()`](/sdk/api/session/finish) closes it at once if you prefer.
     </Step>
 </Steps>
 

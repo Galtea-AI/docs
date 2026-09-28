@@ -36,19 +36,15 @@ _created_product_id = create_test_product(
     inabilities="* Cannot provide personalized investment recommendations or financial advice\n* Does not execute trades or manage user investment portfolios\n* Cannot access user's bank accounts or financial information\n* Does not offer tax advice\n* Cannot assist with loan applications or debt management\n",
     policies="",
 )
-versions = galtea.versions.list(product_id=_created_product_id)
-if versions is None or len(versions) == 0:
-    # No name, so Galtea allocates number 1 and labels the version `v1`. That is the
-    # label the lookup below asks for.
-    galtea.versions.create(
-        product_id=_created_product_id,
-        description="Created via the Galtea SDK quickstart example",
-    )
-
 # @start find_ids
-# Look your product and version up by name — no need to copy IDs from the dashboard.
+# Look your product up by name — no need to copy IDs from the dashboard.
 product = galtea.products.get_by_name(name="Financial Assistant")
-version = galtea.versions.get_by_name(product_id=product.id, version_name="v1")
+
+# Describe the agent state you test. Galtea returns its version, and creates it the first time.
+version = galtea.versions.get_or_create(
+    product_id=product.id,
+    facts={"model": "gpt-4o-mini", "prompt_version": "1"},
+)
 
 product_id = product.id
 version_id = version.id

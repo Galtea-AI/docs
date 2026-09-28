@@ -17,6 +17,29 @@ trace = galtea.traces.create(
 )
 ```
 
+### Answering with a file
+
+For a product whose answer is a document, name the local files and the SDK uploads them:
+
+```python
+trace = galtea.traces.create(
+    session_id=session.id,
+    input="Draft the lease agreement we discussed",
+    output="Here is the draft you asked for.",
+    output_file_paths=["path/to/lease-agreement.pdf"],
+)
+```
+
+Leave `output` out when the file is the whole answer:
+
+```python
+document_only = galtea.traces.create(
+    session_id=session.id,
+    input="Send me the signed copy",
+    output_file_paths=["path/to/lease-agreement.pdf"],
+)
+```
+
 ## Parameters
 <ResponseField name="session_id" type="string" optional>
   The session ID to log the trace to.
@@ -42,11 +65,22 @@ trace = galtea.traces.create(
   <Note>If no session matches the `session_custom_id` and anchor, the call returns a `400` error. Create the session first via the [sessions API](/sdk/api/session/service).</Note>
 </Accordion>
 
-<ResponseField name="input" type="string" optional>
+<ResponseField name="input" type="string | object" optional>
   The input text/prompt. A dict is stored as sent, including any `content` array of file or audio parts; the judge reads only the text beside the parts.
 </ResponseField>
-<ResponseField name="output" type="string" optional>
-  The generated output/response.
+<ResponseField name="output" type="string | object" optional>
+  The generated output/response. A dict is stored as sent, including any `content` array of file or audio parts; the judge reads only the text beside the parts.
+</ResponseField>
+<ResponseField name="output_file_paths" type="list[str]" optional>
+  Files the turn answers with, for a product whose reply is a document. Each entry is a local path the SDK uploads, or a storage URI from an earlier upload, which is attached without uploading it again.
+
+  `output` stays optional, so a turn can answer with files and no text. Its `actual_output` then reads back as `None`, and the envelope is in `actual_output_data`.
+
+  One output accepts at most 20 files, 20 MB in total, of the same types an input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list and for reusing one upload across turns.
+
+  <Warning>
+    Evaluators cannot read output files yet. A metric that reads the output is **skipped** when no turn of the session answered with text of its own, counting neither a file nor a note sent beside one, with the reason `Evaluators cannot read output files yet.` One turn carrying text of its own is enough, so an attachment on one turn of a long session does not skip the rest. Log the text your pipeline produced as the turn output, without the file, to have it scored.
+  </Warning>
 </ResponseField>
 <ResponseField name="retrieval_context" type="string" optional>
   Context retrieved for RAG systems.

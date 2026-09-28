@@ -30,10 +30,9 @@ Outside a `with` block the handle stays open until you call `close()` on it, or
 </Warning>
 
 <Warning>
-  Leaving the block cannot close a run that still holds a running launch, which is what
-  [`evaluations.run()`](/sdk/api/evaluation/run) without an agent queues. The SDK raises a
-  `RuntimeError` naming the run: wait for the launch with `galtea.evaluations.wait_for(job_id=...)`,
-  then call [`runs.close(run_id)`](/sdk/api/run/close) yourself.
+  [`evaluations.run()`](/sdk/api/evaluation/run) without an agent does not join the block. That call
+  queues a launch, and the platform opens the run that holds it. Read that run from the `runId` of
+  the returned result.
 </Warning>
 
 <Note>

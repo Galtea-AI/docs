@@ -99,6 +99,36 @@ version = galtea.versions.get_by_name(product_id=product_id, version_name=child_
 if version is None:
     raise ValueError("version from get_by_name is None")
 
+# @start version_update
+updated_version = galtea.versions.update(
+    version_id=version_id,
+    description="Iteration with a larger context window",
+    facts={"model": "gpt-4o", "temperature": "0.7"},
+)
+# @end version_update
+if updated_version.facts != {"model": "gpt-4o", "temperature": "0.7"}:
+    raise ValueError("version from update does not hold the facts that were sent")
+
+# @start version_get_or_create
+nightly_facts = {"model": "gpt-4o-mini", "prompt_version": "12"}
+
+nightly_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    name="Nightly build " + run_identifier,
+    auto_detect_commit_hash=True,
+)
+
+# The same facts always answer the same version, so a second job reuses the first one.
+same_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    auto_detect_commit_hash=True,
+)
+# @end version_get_or_create
+if nightly_version.id != same_version.id:
+    raise ValueError("get_or_create answered two versions for one state")
+
 dataset_name = "accuracy-test-docs-" + run_identifier
 
 # @start test_create

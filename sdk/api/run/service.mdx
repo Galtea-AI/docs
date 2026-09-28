@@ -50,14 +50,15 @@ print(f"Run {run.id} holds {run.session_count} sessions and {run.evaluation_coun
 These methods accept a `run_id`:
 [`sessions.create`](/sdk/api/session/create), [`sessions.get_or_create`](/sdk/api/session/get-or-create),
 [`evaluations.create`](/sdk/api/evaluation/create), [`evaluations.create_single_turn`](/sdk/api/evaluation/create-single-turn),
-[`evaluations.run`](/sdk/api/evaluation/run) and [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate).
+[`evaluations.run`](/sdk/api/evaluation/run) (only when you pass an `agent`, because the queued mode
+performs its own launch) and [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate).
 
 Inside a `with galtea.runs.start(...)` block you can leave `run_id` out: the SDK reads the open run
 from the block. An explicit `run_id` always wins over the block.
 
 <Note>
-  You only close a run you opened yourself. A run that a launch opened ends on its own when its last
-  launch ends, so `close()` finds it already ended and refuses it.
+  You only close a run you opened yourself. A run the platform opened ends with the launch it holds,
+  so `close()` finds it already ended and refuses it.
 </Note>
 
 ## Service Methods

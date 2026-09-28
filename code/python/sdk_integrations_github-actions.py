@@ -65,23 +65,25 @@ from galtea import Galtea
 galtea = Galtea(api_key=os.environ["GALTEA_API_KEY"])
 
 PRODUCT_ID = os.environ["GALTEA_PRODUCT_ID"]
-COMMIT_SHA = os.environ["GITHUB_SHA"]
 
-# One version per workflow run, named after the commit so every result is traceable to the
-# code that produced it. The same commit is built again on `pull_request` and on every job
-# re-run, so the run id and the attempt keep each name distinct. Leave `name` out and Galtea
-# labels the version `v` plus its number, which does not say which commit it tested.
-version = galtea.versions.create(
-    name=f"ci-{COMMIT_SHA[:7]}-{os.environ['GITHUB_RUN_ID']}.{os.environ['GITHUB_RUN_ATTEMPT']}",
+# The settings your agent runs with. The workflow sets them in its `env:` block, and the
+# defaults apply when you run this script on your own machine.
+AGENT_MODEL = os.environ.get("AGENT_MODEL", "gpt-4o-mini")
+AGENT_TEMPERATURE = os.environ.get("AGENT_TEMPERATURE", "0.7")
+
+# One version per agent state. The facts come from the same settings the agent uses, so they
+# always describe what was tested. `auto_detect_commit_hash` adds the commit: GITHUB_SHA in CI,
+# `git rev-parse HEAD` on your machine. A re-run of the same state gets the same version back.
+version = galtea.versions.get_or_create(
     product_id=PRODUCT_ID,
+    facts={"model": AGENT_MODEL, "temperature": AGENT_TEMPERATURE},
+    auto_detect_commit_hash=True,
 )
-if version is None:
-    raise RuntimeError("Could not create the version — check GALTEA_API_KEY and GALTEA_PRODUCT_ID")
 
 
 # Your product under test. Galtea calls it once per test case.
 def my_agent(user_message: str) -> str:
-    # In a real scenario, this would call your actual AI model or API
+    # In a real scenario, this would call your model with AGENT_MODEL and AGENT_TEMPERATURE
     return "This is a placeholder model answer."
 
 

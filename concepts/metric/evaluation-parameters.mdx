@@ -148,7 +148,7 @@ Each section points to a different place to look:
   <tbody>
     <tr>
       <td>**Cannot be read by the judge**</td>
-      <td>The value is there, but the judge cannot use it. The judge is sent the conversation turns, so the turns decide this: a metric that reads `input` is skipped when no turn is left with text of its own, counting neither a prompt sent beside a file nor an audio part with no transcript. One turn carrying text of its own is enough, so an attachment on one turn of a long session does not skip the rest. Score those sessions with a metric that does not read the input, such as a JSON Field Match metric or a self-hosted metric. A metric that reads `conversation_turns` is never skipped for this: the turns are scored as you logged them. Nine of the eleven predefined Galtea metrics declare `input`, so expect most of them to skip on a session carrying a document. The Run Evaluation dialog greys these metrics out before the run, with the same reason under the name.</td>
+      <td>The value is there, but the judge cannot use it. The judge is sent the conversation turns, so the turns decide this: a metric that reads `input` is skipped when no turn is left with text of its own, counting neither a prompt sent beside a file nor an audio part with no transcript. The same rule applies to `actual_output`: a metric that reads it is skipped when no turn answered with text of its own, counting neither a file nor a note sent beside one. One turn carrying text of its own is enough on either side, so an attachment on one turn of a long session does not skip the rest. Score those sessions with a metric that does not read the input or the output, such as a JSON Field Match metric or a self-hosted metric. A metric that reads `conversation_turns` is never skipped for this: the turns are scored as you logged them. Nine of the eleven predefined Galtea metrics declare `input`, so expect most of them to skip on a session carrying a document. The Run Evaluation dialog greys these metrics out before the run, with the same reason under the name.</td>
     </tr>
     <tr>
       <td>**Missing from product settings**</td>
@@ -168,12 +168,14 @@ Each section points to a different place to look:
     </tr>
     <tr>
       <td>**Missing span data**</td>
-      <td>The metric needs span-derived data (`traces`, `tools_used`, or `retrieval_context`). Configure your product to send span data — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Span concept page](/concepts/product/version/session/span) for what gets captured. `tools_used` (from `TOOL` spans) and `retrieval_context` (from `RETRIEVER` spans) are automatically extracted from your span data; you do not provide them directly.</td>
+      <td>The metric needs span-derived data (`traces`, `tools_used`, or `retrieval_context`). Configure your product to send span data — see the [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations) tutorial for setup, and the [Span concept page](/concepts/product/version/session/span) for what gets captured. `tools_used` (from `TOOL` spans) and `retrieval_context` (from `RETRIEVER` spans) are automatically extracted from your span data; you do not provide them directly. One turn with the data is enough: a `retrieval_context` metric is skipped only when no turn of the session has a `RETRIEVER` span with content.</td>
     </tr>
   </tbody>
 </table>
 
 A skipped evaluation consumes no credits, and it is never dispatched to the evaluator.
+
+Spans can reach Galtea a few seconds after the turn they belong to. So on a run, Galtea waits up to about 9 seconds for late spans before it decides. When it skips after that wait, the message ends with a line such as `Waited ~9 s for late spans.` A production monitor checks at once, with no wait, and applies the same rules as a run, including the **Cannot be read by the judge** rule and the single-turn limit of deterministic metrics.
 
 Once you have provided the missing data, re-run the evaluation against the same session. A **Cannot be read by the judge** section is the exception: no data is missing, so re-running changes nothing until you pick a different metric or log the turn with the text you want scored, without the file.
 

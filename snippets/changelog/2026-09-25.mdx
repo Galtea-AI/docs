@@ -1,0 +1,94 @@
+<Update label="2026-09-25" description="Version Facts, Faster Evaluation Review, Conversations in Dataset Files, One Launch per Run, and Platform Improvements">
+
+## Identify a Version by Its Facts
+
+A [version](/concepts/product/version#version-facts) can now store **facts**: a flat map of text to text that names the agent state it represents, for example `model: gpt-4o` and `temperature: 0.7`. Two live versions of one product cannot hold the same facts.
+
+- **Get or create in one call.** `POST /versions/get-or-create`, `galtea versions get-or-create` and [`versions.get_or_create()`](/sdk/api/version/get-or-create) return the version that holds your facts, and create it when none does. Two jobs that run at the same time on one state get the same version.
+- **Key order does not matter, but text does.** Galtea trims every key and value and drops an empty entry. `0.7` and `0.70` are two different facts.
+- **Limits:** at most 32 keys and 2000 bytes of JSON. A second version with the same facts is refused. `get_or_create` refuses a map that is empty after trimming.
+- **`name` applies only when the call creates a version.** A version it finds keeps its name. The call accepts only `productId`, `facts` and `name`, so set a system prompt or an endpoint connection afterwards with [`versions.update()`](/sdk/api/version/update), which is new in the SDK and also changes facts.
+- **`auto_detect_commit_hash=True`** adds a `commit_hash` fact with the full commit hash, read from your CI variables or `git rev-parse HEAD`, unless you set one yourself. It is off by default.
+- **In the dashboard,** a **Facts** field is on the version create and edit forms, and the details page shows a **Facts** card when the version has facts. The versions list shows no facts. A version created from a parent does not copy its facts.
+- **A version created before this release has no facts.** Your first `get_or_create` on that product creates a new version. It does not adopt an old one.
+- **Some version numbers changed.** A live version named `vN` whose number was different now has number N, when N is not above the product's total version count, including deleted versions, and no other version blocks it. So a label that read `v1: v2` now reads `v2`. Names do not change.
+
+## Review Evaluations Faster
+
+You can now filter [evaluations](/concepts/product/version/session/evaluation) by score, remove a human annotation, and read an evaluation page from its verdict down.
+
+- **Filter by Judge Score or Human Score** in the evaluation tables. The Human Evaluation page does not offer it. Pick is below, is at most, equals, is at least or is above, and type a percentage from 0 to 100 with at most one decimal. The filter compares the score as it displays, rounded to one decimal. An evaluation with no score of that kind never matches.
+- **A human score wins.** Where a reviewer scored an evaluation, analytics, monitor results and runs report the reviewer's score. The **Judge Score** filter still matches the judge's own score, so use **Human Score** to find what reviewers decided.
+- **API and SDK:** `GET /evaluations` takes `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and the same four for `humanScore`. [`evaluations.list()`](/sdk/api/evaluation/list) takes them as keyword arguments, `score_gt` to `human_score_lte`. Both use the 0 to 1 scale, so send `0.7`, not `70`. A value outside 0 to 1 is refused. For one exact score, pass the same value to both inclusive bounds: `score_gte=0.5, score_lte=0.5`.
+- **Remove annotation** clears the reviewer's score and reason, and the evaluation can be claimed again. Where the judge produced a score, every reported number goes back to it. Where it produced none, as on a failed or skipped evaluation, the evaluation stops being reported. The removal is permanent. A Reader cannot remove an annotation. It is not offered on an `Outdated` evaluation, on a metric a person scores, or on an evaluation still waiting for a human score. The SDK has no method for it.
+- **The evaluation page opens on the Verdict,** titled with the metric name and naming the judge. The transcript follows, where you cannot delete turns or add traces. Next come the comparison cards, then a closed **Details** panel. Judge tokens and credits are in that panel now.
+- **A run reads the same in every table,** as its number plus its custom ID. Type a label or a number in the **Runs** filter to find any [run](/concepts/product/run). If you select exactly one run, a summary strip appears above the evaluations table.
+
+## Upload a Test Case's Conversation in Your Dataset File
+
+Release 5.4 let a Behavior test case start from a conversation that already happened. You can now give that conversation in a dataset CSV, and create it from the Python SDK.
+
+- **Add a `conversation_history` column to a Behavior dataset CSV.** Each cell holds a JSON array of turns, each one `{"role": "user" | "assistant", "content": "..."}`. An empty cell means the row starts from turn one. See the [Behavior dataset format](/concepts/product/dataset/behavior-datasets).
+- **A bad cell refuses the whole upload,** and no dataset is created. The message names the row, for example `Row 3: "conversation_history" must be a JSON array of turns`. A turn with `retrieval_context` is refused, and so is a file that fills the column for an Accuracy or Security dataset. The product must also have at least one version.
+- **A row that sets the column ignores its `input`.** If that `input` attaches files, the run fails on its first live turn, not at upload. A voice run ignores the column and starts from `input`.
+- **Export writes the column back,** so you can upload the file again. A conversation copied from a session exports its text only, without its spans.
+- **Python SDK:** [`test_cases.create()`](/sdk/api/test-case/create) now takes `conversation_history`, `seed_session_id` and `max_iterations`. You can read `TestCase.seed_session_id` and `Session.is_seed`.
+
+## Traces: Output Files, Reported Token Counts, and Clearer Skips
+
+A trace can now record the document your product answered with, from the SDK or from a platform run. An OpenTelemetry turn now shows the token counts its spans reported.
+
+- **Attach files to a trace's output.** `traces.create()`, `traces.update()` and `traces.create_and_evaluate()` take `output_file_paths`. In `traces.generate()`, an agent can answer with `AgentResponse.output_file_paths`. A turn can answer with files and no text. Read them back with `Trace.actual_output_files`. The input limits apply: at most 20 files and 20 MB per output. `traces.create_batch()` takes no files, and `simulator.simulate()` refuses an agent that answers with them. For a platform run, map `output_files` on the endpoint connection, as described under Endpoint Connections below. See [`traces.create()`](/sdk/api/trace/create).
+- **Judges do not read output files yet.** A metric that reads the output is skipped with `Evaluators cannot read output files yet.` when no turn of the session answered with text and no file. Text sent beside a file does not count. So a single-turn answer that carries a file always skips these metrics.
+- **`InputFile` is now `AttachedFile`.** The old names still import, with a `GalteaDeprecationWarning`.
+- **OpenTelemetry token counts fill the turn.** Galtea reads `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens`, or MLflow's `mlflow.chat.tokenUsage`, and adds them up over every span of the turn. So report each call on one span only, or it counts twice. A reported count replaces Galtea's estimate. When the turn stores no per-token prices of its own, `cost` comes from the price of the Model linked to the Version, and stays empty without one. A cost you set yourself is kept. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+- **A `retrieval_context` metric with no `RETRIEVER` span content on any turn is now `SKIPPED`, not `FAILED`.** This holds on runs, monitors and retries. A run first waits up to about 9 seconds for late spans.
+- **Late turn starts no longer shift text between turns.** This applies when Galtea groups spans into turns itself. Galtea does not reprocess turns stored before this release.
+
+## Endpoint Connections
+
+[Endpoint connections](/concepts/product/endpoint-connection) can now keep the files your agent answers with, and tell when your agent ends a conversation. They also check every address your endpoint sends them to.
+
+- **Keep the files your agent answers with.** Add an `output_files` key to the **Output Mapping** of a `CONVERSATION` connection, or to `output_mapping` in the SDK. Give it a JSONPath to one file or a list. A file can be an object with `base64` and optional `mime_type` and `filename`, a `data:` URI, an `http(s)` URL, or the storage URI of a file already in your Galtea organization. Galtea stores each file on the turn's output, and links a Galtea file instead of copying it. Your text still comes from `output`, and a turn with files and no text is valid. **Test Connection** lists the files and says why a file would be refused. It never downloads a URL file, so a broken link shows up only in a run. See [Files in the Response](/concepts/product/endpoint-connection-configuration#files-in-the-response).
+- **A refused file fails the turn.** One output takes at most 20 files and 20 MB. The file extension decides the type, and it must be one a test case input accepts. Galtea downloads a URL once, with none of the connection's headers or credentials. So send the bytes, or a presigned URL. All the downloads of one output share the connection's timeout, 15 seconds by default. An `http://` file URL needs the connection's HTTP acknowledgement, and private or internal addresses are refused. The error names the file and the reason, for example `Output file refused: file 2 ("setup.exe"): the type ".exe" is not allowed`. Galtea stores no file of that turn and does not call your endpoint again. If the check before a run receives a file it would refuse, the run does not start. A run of more than one turn fails the turn that carries a file, so run these test cases as a single turn.
+- **Tell Galtea how your agent ends a conversation.** Add **Conversation End Rules** under the advanced fields of a `CONVERSATION` connection, or pass `conversation_end_rules` in the SDK. A rule is a status code plus an optional body match: a JSONPath starting with `$`, and the value its first match must equal, such as `409` with `$.error.code` equal to `conversation_ended`. You can set up to 20 rules. A 2xx rule needs a body match. See [Conversation End Rules](/concepts/product/endpoint-connection-configuration#conversation-end-rules).
+- **A match ends the session as a success.** The session keeps the turns so far and is evaluated, with the stopping reason `The agent ended the conversation (HTTP 409)`. A turn refused with no reply is removed and not scored. A match is never retried. If the agent refuses the first call of a conversation that has no earlier turns, or the test is single-turn, the session still fails. Voice sessions ignore the rules.
+- **An `http://` URL now needs your acknowledgement.** Tick **I understand the risks of using HTTP**, or pass `acknowledged_insecure_http=True`. Connections you already saved with `http://` were acknowledged for you and keep working.
+- **An HTTPS connection never moves to plain HTTP.** Galtea refuses a redirect to `http://`, or to a private or internal address, before it connects. The call fails with a message that names the host.
+- **Each health check is a fresh session.** Test Connection and the check before a run send new session ids every time. So an endpoint that refuses a reused id no longer blocks your next launch. A run whose Initialization step returns no `session_id` now stops before it starts.
+
+## Stricter JSON Matching and a Clearer View of Your Judge
+
+Two new deterministic metrics catch fields your product invents. You can also check an AI Evaluation metric's judge before and after you save it.
+
+- **[JSON Field Match (Strict)](/concepts/metric/json-field-match-strict) and [JSON Field Match (Normalized, Strict)](/concepts/metric/json-field-match-normalized-strict)** score every top-level field in either output. A field that the actual output adds and the expected output never listed lowers the score, just like a missing field. A score of 1.0 needs exactly the same top-level keys. Both metrics need `actual_output` and `expected_output`, and the reason names each unexpected field.
+- **Keep the existing two metrics when a test case names only part of a larger payload.** They still ignore extra fields. In all four metrics, only top-level keys count. A nested object is compared as one value, so an extra key inside it fails its parent field.
+- **Check settings** in the **Model settings** section sends one short request to the judge model with your values. It costs no credits. It tells you whether the model accepted them, refused one (in the provider's own words), or could not be reached. Saving does not wait for it. An accepted check does not prove that a setting has an effect: a setting your model does not support is still dropped without notice. On the CLI, run `galtea evaluator-models test-generation-settings`.
+- **Preview shows the real prompt.** The **Preview** tab now shows the system prompt and user prompt that the evaluator builds, with placeholders for the test case values. Switch between **Single turn** and **Multi-turn** when they differ. On the CLI, run `galtea metrics preview-prompt`.
+- **Export** in a metric's actions menu downloads a revision as a JSON file. The file holds the judge prompt, the parameters and their order, the `definition`, the model name, the generation settings, and the assembled prompts and output schema. It works only for `FULL_PROMPT` and `PARTIAL_PROMPT` metrics. On the CLI, run `galtea metrics export`.
+
+## Runs Now Hold One Launch
+
+A [run](/concepts/product/run) now holds one platform launch, or none. Update your code if it passes `runId` to a launch call or cancels a launch by id.
+
+- **A launch call opens its own run.** `POST /evaluations/fromVersion`, `POST /evaluations/fromSessions` and `POST /inferenceResults/generate` now refuse a `runId`. Pass `runId` only to a run you opened with `POST /runs`, when you create sessions or evaluations inside it.
+- **Cancel the run, not a launch.** `POST /runs/{id}/cancel` replaces `POST /runs/{id}/launches/{launchId}/cancel`, and `galtea runs cancel` replaces `galtea runs cancel-launch`.
+- **Close only a run you opened.** `POST /runs/{id}/close` refuses a run that a platform launch opened, because that launch closes it. A run you close always ends `COMPLETED`.
+- **The run record changed.** `Run` gains `kind`, `jobId`, `error`, `request` and `resolvedInputs`, and loses `launches`. `Session` loses `launchId`. The run page has three tabs, **Overview**, **Sessions** and **Evaluations**, and a **What it ran** card on the Overview tab replaces the **Launches** tab.
+- **Python SDK:** `RunLaunchKind` is now `RunKind`, and the old name still imports. `RunLaunch` is gone. `evaluations.run()` without an agent raises `ValueError` when you pass `run_id`.
+
+## DeepEval Metrics Are Disabled
+
+Few teams used the DeepEval metrics, and most now create their own with Galtea's metrics generator. So we have disabled all DeepEval metrics: Answer Relevancy, Faithfulness, Contextual Precision, Contextual Recall, Contextual Relevancy, Non-Toxic, Unbiased, Role Adherence, Knowledge Retention, Conversation Completeness and Conversation Relevancy. A new evaluation that uses one of them ends `SKIPPED`, and your past results stay in place. Where another active metric has the same name, a launch by name uses it. Trace analysis no longer recommends Contextual Precision or Contextual Recall.
+
+## Platform Improvements
+
+- **Development sessions now close on their own:** a quiet session now closes after the product's inactivity window, 30 minutes by default, whether it is a development or a production session. Before, a development session you created from the SDK stayed `PENDING` until you called `finish()`. This also changes existing products: every product on the old default, `PRODUCTION`, moved to `ALL`. Products set to `NONE` or `DEVELOPMENT` keep their value. To keep development sessions open until you finish them, edit the product in the dashboard and set **Auto-close scope** back to **Production**. A turn that arrives after a development session closes now reopens it, the same way it reopens a production session. See [Session Lifecycle](/concepts/product/version/session#session-lifecycle).
+- **Filter analytics by specification:** set **Group by** to **Specification**, and the Filters popover offers a **Specifications** filter. The filter narrows the score charts to the metrics that specification links. Coverage still counts every metric. It lists only the specifications that link at least one metric. The API's analytics, export, insights, insights comparison and scores-over-time reads accept `specificationIds`. A specification that shares no metric with your `metricIds` returns no results.
+- **Ask the assistant about one specification:** evaluation insights from the Galtea AI assistant now cover only that specification's metrics, so the figures match the Analytics page with the same filter applied.
+- **Clicks on content stay on content:** selecting text, copying, or opening a control inside a card, a collapsible panel, a session turn row, or an endpoint connection block no longer collapses the box or navigates away. A collapsible panel no longer toggles when you select or copy text inside its header.
+- **Repeating a run scores the same metrics:** **Run again** on a batch evaluation now uses the metrics each session was scored with in the source run, not today's specification links. Today's links still apply when you pass `useCurrentTestCases` on a batch that scored a whole version, when the source run is older than this release, or when a session has no specification.
+- **AI-recommended evaluator model fills in:** on the metric form, **Complete with AI** now fills the recommended evaluator model even when your model catalog finishes loading after the click.
+- **Voice calls keep the agent's last words:** when Galtea ends a phone or WebRTC call at the turn cap or when the simulated user is done, it now waits for the agent to finish speaking before it hangs up. The wait stops after 1.5 seconds of silence and lasts 12 seconds at most.
+
+</Update>

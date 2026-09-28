@@ -4,13 +4,13 @@ sidebarTitle: "Upload"
 description: "Upload a local file to the platform's object storage."
 ---
 
-Attaching a file to a test case? Use [`test_cases.upload_input_file()`](/sdk/api/test-case/upload-input-file) or pass `input_file_paths` to [`test_cases.create()`](/sdk/api/test-case/create) instead: both call this method for you and return the reference in the shape a test case expects.
+Attaching a file to a test case input or a trace output? Use [`test_cases.upload_input_file()`](/sdk/api/test-case/upload-input-file) / `input_file_paths`, or [`traces.upload_output_file()`](/sdk/api/trace/upload-output-file) / `output_file_paths`, instead: each calls this method for you and returns the reference in the shape it expects.
 
-Reach for this method directly to store a file for another purpose, or when you need the raw URI rather than an `InputFile`.
+Reach for this method directly to store a file for another purpose, or when you need the raw URI rather than an `AttachedFile`.
 
 ## Returns
 
-Returns the URI the file is stored under. It still carries the upload's signature and expires; the API replaces it with the canonical, signature-free reference wherever it is persisted.
+Returns the URI the file is stored under. It still carries the upload's signature and expires. Attaching it to a test case input or to a trace output replaces it with the canonical, signature-free reference when the entity is written, so what you read back never expires. Never treat the uri you get here as a link to the bytes: it expires. Ask for a fresh one with [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
 
 ## Example
 
@@ -24,7 +24,7 @@ uri = galtea.storage.upload("path/to/lease-agreement.pdf")
   Path to the file on the machine running the SDK.
 </ResponseField>
 <ResponseField name="file_type" type="string" default="file" optional>
-  What the file is for, which decides the folder it is stored under and who may read it. The default, `"file"`, is a test case input attachment. The platform also accepts `"groundTruth"`, `"testFile"`, `"testCaseExport"`, `"dataCatalog"` and `"audio"`.
+  What the file is for, which decides the folder it is stored under and who may read it. The default, `"file"`, is an attachment on a test case input or a trace output. The platform also accepts `"groundTruth"`, `"testFile"`, `"testCaseExport"`, `"dataCatalog"` and `"audio"`.
 </ResponseField>
 <ResponseField name="key" type="string" optional>
   The name the platform records the object under. Defaults to the file's own name.

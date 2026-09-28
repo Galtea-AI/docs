@@ -4,6 +4,10 @@ sidebarTitle: "Create"
 description: "Create a version for your product."
 ---
 
+<Tip>
+  To get the version of one agent state, use [Get or Create Version](/sdk/api/version/get-or-create) instead. It returns the version that holds your facts, and creates it only the first time. So a script that runs again, or two jobs that run at the same time, reuse one version.
+</Tip>
+
 ## Returns
 Returns a [Version](/concepts/product/version) object for the given parameters, or `None` if an error occurs. The returned object carries the `number` Galtea allocated, and the `name` the version is stored under.
 

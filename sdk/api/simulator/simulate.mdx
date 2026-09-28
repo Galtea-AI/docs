@@ -45,10 +45,18 @@ simulation_result = galtea.simulator.simulate(
   - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output
   
   Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`. Only the structured signature receives the files a test case attaches; the other two fail the trace for a file-only test case.
+
+  <Warning>
+    An agent called from `simulate()` cannot answer with files. `output_file_paths` on the
+    returned `AgentResponse` raises a `ValueError`, whether or not the response also carries
+    text. A simulated conversation carries no files yet, on either side, so they would be
+    dropped and the turn stored without them. Log a turn that answers with a document outside a
+    simulation, with `traces.create(output_file_paths=...)`.
+  </Warning>
 </ResponseField>
 
 <ResponseField name="max_turns" type="int">
-  Number of conversation turns this simulation may add. Defaults to the Test Case's max turns if not provided. When the test case [starts from a stored conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation), the copied turns do not count against it: 4 stored turns with `max_turns=1` call your agent once.
+  Number of conversation turns this simulation may add. Defaults to the Test Case's max turns if not provided. When the test case [starts from a predefined conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation), the copied turns do not count against it: 4 predefined turns with `max_turns=1` call your agent once.
 </ResponseField>
 
 <ResponseField name="log_inference_results" type="bool">
@@ -77,12 +85,13 @@ simulation_result = galtea.simulator.simulate(
     - Any `input` (first user message) defined on the associated `TestCase` will be ignored.
     - The first call to your agent will have an empty `messages` list in the `AgentInput`. Ensure your agent function can handle cases where `input_data.last_user_message_str()` returns `None` (or the messages list is empty).
     - The opening turn is recorded as pending and only your agent's reply completes it. If the run stops during that first call, the turn stays pending and the session is not evaluated.
-    - It cannot be combined with a test case that [starts from a stored conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation). The opening turn is recorded before the stored conversation can be placed in front of it, so the simulation is refused.
+    - It cannot be combined with a test case that [starts from a predefined conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation). The opening turn is recorded before the predefined conversation can be placed in front of it, so the simulation is refused.
   </Note>
 </ResponseField>
 
 <ResponseField name="stop_when_agent_returns_empty_response" type="bool">
   If True, the simulation will stop when the agent returns an empty (`""` / `None`) response. Default: True
+
   <Note>
     When `stop_when_agent_returns_empty_response` is set to `False`:
     - The simulation will continue even if the agent returns a response that is empty (`""`) or `None`.

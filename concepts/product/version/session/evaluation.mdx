@@ -30,6 +30,17 @@ The evaluation list hides these results by default. Turn on **Show excluded from
 
 Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics.
 
+## Filtering by Score
+
+Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Use them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The badge on the filter shows the condition, for example `≥ 70%`.
+
+- **Judge Score** reads the score the metric's judge gave. It ignores a human review.
+- **Human Score** reads the reviewer's score only.
+- An evaluation with no score of that kind never matches the filter.
+- Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
+
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. The SDK takes them as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list).
+
 ## Evaluation Lifecycle
 
 Evaluations follow a specific lifecycle:
@@ -71,6 +82,7 @@ Once an evaluation completes, the following fields are available:
     - The judge model was unavailable.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
+  - **Cancelled**: The evaluation was deleted while it was still waiting to be scored, so the platform stopped it before it produced a score. Deleting the evaluation, or something it belongs to such as its session, its run or its metric, cancels every pending evaluation the delete removes. The same step deletes the evaluation, so it no longer appears in lists. Cancelling a run does not cancel its evaluations.
   - **Outdated**: The evaluation was produced by a [Monitor](/concepts/product/monitor), and the session then reopened and gained a new turn. The score describes an older version of the conversation, so it no longer counts as current: charts and averages leave it out, and the monitor scores the session again once it closes. The row keeps its score and its reason, so you can still read what it found.
 </ResponseField>
 
@@ -125,11 +137,11 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Human Score" type="Number" optional>
-  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results.
+  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results. A reviewer can remove the annotation again, which clears this field. Where the AI produced a score, every reported number goes back to it. Where the AI produced none, as on a failed, skipped or cancelled evaluation, the evaluation stops being reported at all. The removal is permanent: the score is deleted, not archived, so getting it back means annotating the evaluation again.
 </ResponseField>
 
 <ResponseField name="Human Reason" type="Text" optional>
-  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason.
+  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Started At" type="Text" optional>

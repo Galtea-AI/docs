@@ -263,7 +263,7 @@ A production session does not stay open forever. Galtea's auto-close sweep close
 
 So a turn that arrives after the session closes (for example, a user who replies an hour later) is handled by the product's **Closed Session Inference Creation Policy**:
 
-- `REOPEN_AND_REEVALUATE` (the default): the turn is **stored** and the session opens again with status `PENDING`. Its existing monitor evaluations move to the `OUTDATED` status, and the monitor scores the session again once it closes. Nothing is lost. Only production sessions reopen; a development (test) session behaves as with `IGNORE`.
+- `REOPEN_AND_REEVALUATE` (the default): the turn is **stored** and the session opens again with status `PENDING`. Its existing monitor evaluations move to the `OUTDATED` status, and the monitor scores the session again once it closes. Nothing is lost. A development (test) session reopens the same way; it has no monitor evaluations, so only the turn is stored and the status changes.
 - `IGNORE`: the log call returns success, but the turn is **not stored**. The late reply is silently dropped.
 - `REJECT`: the log call **fails with an error**. Your code must handle it (for example, start a new session for the reply).
 

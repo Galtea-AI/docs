@@ -283,9 +283,11 @@
                     "pages": [
                       "sdk/api/version/service",
                       "sdk/api/version/create",
+                      "sdk/api/version/get-or-create",
                       "sdk/api/version/list",
                       "sdk/api/version/get",
                       "sdk/api/version/get-by-name",
+                      "sdk/api/version/update",
                       "sdk/api/version/delete"
                     ]
                   }
@@ -479,6 +481,7 @@
                       "sdk/api/trace/create-and-evaluate",
                       "sdk/api/trace/create-batch",
                       "sdk/api/trace/update",
+                      "sdk/api/trace/upload-output-file",
                       "sdk/api/trace/list",
                       "sdk/api/trace/get",
                       "sdk/api/trace/delete"
@@ -581,7 +584,9 @@
                       "concepts/metric/url-validation",
                       "concepts/metric/tool-correctness",
                       "concepts/metric/json-field-match",
-                      "concepts/metric/json-field-match-normalized"
+                      "concepts/metric/json-field-match-normalized",
+                      "concepts/metric/json-field-match-strict",
+                      "concepts/metric/json-field-match-normalized-strict"
                     ]
                   }
                 ]
@@ -703,6 +708,61 @@
                   }
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Deployment",
+        "groups": [
+          {
+            "group": "Overview",
+            "icon": "compass",
+            "pages": [
+              "deployment/executive-summary",
+              "deployment/choosing-a-model",
+              "deployment/reference-architecture"
+            ]
+          },
+          {
+            "group": "Deployment Models",
+            "icon": "layer-group",
+            "pages": [
+              "deployment/model-shared-saas",
+              "deployment/model-enterprise-organization",
+              "deployment/model-private-tenant",
+              "deployment/model-managed-in-your-cluster",
+              "deployment/model-self-hosted"
+            ]
+          },
+          {
+            "group": "Install and Operate",
+            "icon": "rocket",
+            "pages": [
+              "deployment/prerequisites-checklist",
+              "deployment/cloud-specifics",
+              "deployment/install-and-lifecycle",
+              "deployment/installation-examples",
+              "deployment/observability-and-operations"
+            ]
+          },
+          {
+            "group": "Connectivity and Security",
+            "icon": "shield-halved",
+            "pages": [
+              "deployment/security-assurance",
+              "deployment/connectivity-implementation",
+              "deployment/connectivity-reference",
+              "deployment/connecting-to-the-galtea-vpn"
+            ]
+          },
+          {
+            "group": "Reference",
+            "icon": "book",
+            "pages": [
+              "deployment/responsibilities",
+              "deployment/boundaries",
+              "deployment/glossary-and-faq"
             ]
           }
         ]

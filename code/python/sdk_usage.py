@@ -29,10 +29,10 @@ product_id = create_test_product(
 product = galtea.products.get(product_id=product_id)
 
 # @start creating_a_version
-# 1) Create a version
-version = galtea.versions.create(
+# 1) Get the version of the agent state you test, or create it
+version = galtea.versions.get_or_create(
     product_id=product.id,
-    description="Initial version with basic summarization capabilities",
+    facts={"model": "gpt-4o-mini", "prompt_version": "1"},
 )
 # @end creating_a_version
 

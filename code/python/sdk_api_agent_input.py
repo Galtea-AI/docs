@@ -129,7 +129,7 @@ def my_context_agent(input_data: AgentInput) -> AgentResponse:
 
 # @start reading_attached_files
 def my_document_agent(input_data: AgentInput) -> AgentResponse:
-    # Each InputFile has the same uri, filename and mime_type as test_case.input_files.
+    # Each AttachedFile has the same uri, filename and mime_type as test_case.input_files.
     document_paths = [
         galtea_client.storage.download(attached, output_directory="./.temp/agent-inputs")
         for attached in input_data.input_files

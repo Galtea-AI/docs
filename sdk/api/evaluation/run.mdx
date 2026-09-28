@@ -23,12 +23,10 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     - `runId` — the [Run](/concepts/product/run) that records this launch
 
     <Warning>
-      This mode queues a launch that outlives the call, and the API refuses to close a run while
-      one of its launches is running. So a `with galtea.runs.start(...)` block around this call
-      cannot close its run: leaving the block raises a `RuntimeError` naming the run. Wait for the
-      launch with [`galtea.evaluations.wait_for(job_id=...)`](/sdk/api/evaluation/wait-for), then
-      call [`galtea.runs.close(run_id)`](/sdk/api/run/close) yourself. The agent mode below has no
-      such launch and closes its block normally.
+      This mode takes no `run_id`. It queues a launch, and the platform opens the run that holds it,
+      so the call raises a `ValueError` when you name a run. A `with galtea.runs.start(...)` block
+      around it is not joined either: read the run the platform opened from the `runId` above. The
+      agent mode below does join the block, and closes it normally.
     </Warning>
 
     <Tip>
@@ -115,14 +113,19 @@ print(f"Created {len(result['evaluations'])} evaluations")
   </Note>
 </ResponseField>
 <ResponseField name="run_id" type="string" optional>
-  The [Run](/concepts/product/run) this launch joins. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+  The [Run](/concepts/product/run) this launch joins. It applies in agent mode only. It defaults to the run of the enclosing `galtea.runs.start()` block, when there is one, and an explicit value wins over the block.
 
   <Note>
     A run you supply stays yours to close. Only a run this method opened itself is closed by it.
   </Note>
 
   <Note>
-    In agent mode the run is checked once before the loop. The call raises a `ValueError` when the run
-    belongs to another product, or when it is pinned to a version other than `version_id`.
+    The run is checked once before the loop. The call raises a `ValueError` when the run belongs to
+    another product, or when it is pinned to a version other than `version_id`.
+  </Note>
+
+  <Note>
+    Without an agent the call raises a `ValueError` for any `run_id`, because the platform opens the
+    run that holds the queued launch.
   </Note>
 </ResponseField>

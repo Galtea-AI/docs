@@ -108,6 +108,8 @@ In this setup:
 - Your **Conversation** connection can reuse it in the URL/body using `{{ session_id }}`.
 - Any additional fields extracted via `outputMapping` are stored in **session metadata** and can also be reused in later turns.
 
+Before each run starts, Galtea runs a health check through the same steps, as one short session with sample input. Each check starts with new `session_id` and `galtea_session_id` values, so no two checks share an id. The steps of one check share them, as in a real run. As in a real run, each step returns metadata that the check carries forward, and the latest `session_id` a step returns replaces the previous one. If the Initialization response returns no `session_id`, the run does not start. When the test cases attach files and the Conversation template uses `input_files`, the check skips the Conversation step, because it has no real file to send. Those turns are checked by the run itself. If a step fails after Initialization succeeded, the check still calls your Finalization connection once, to close the session it opened.
+
 ## Endpoint Connection Properties
 
 <ResponseField name="Name" type="Text" required>
@@ -154,12 +156,33 @@ In this setup:
 </ResponseField>
 
 <ResponseField name="Timeout" type="Number">
-  Request timeout in seconds (1–300). Default: 30 seconds.
+  Request timeout in seconds (1–120). Default: 15 seconds.
 </ResponseField>
 
 <ResponseField name="Rate Limit" type="Number">
   Optional rate limit for requests per minute.
 </ResponseField>
+
+## HTTP endpoints
+
+HTTPS is required by default. An `http://` URL is allowed only when the connection
+acknowledges the risk: check the box in the dashboard, or pass
+`acknowledged_insecure_http=True` in the SDK.
+
+The risk: an `http://` connection sends traffic unencrypted. Anyone on the network
+path can read the prompts, the responses, and the credentials it sends.
+
+The acceptance covers the connection, not one address. On an inference call the
+platform follows a redirect, so an acknowledged connection can reach any public
+`http://` host and sends its credentials there too. Only blocked addresses, such as
+private and internal ranges, are still refused. A connection test never follows a
+redirect, so it only ever reaches the address you configured.
+
+A connection that has not acknowledged the risk never leaves HTTPS. If its endpoint
+redirects to an `http://` URL, the platform refuses to follow it.
+
+A self-hosted deployment can allow `http://` for every connection by setting
+`USER_SUPPLIED_URL_ALLOW_HTTP`.
 
 ## Best Practices
 

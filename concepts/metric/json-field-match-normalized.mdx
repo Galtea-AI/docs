@@ -5,6 +5,8 @@ description: "Compares JSON objects field by field with case-insensitive and acc
 
 The JSON Field Match (Normalized) metric is one of the [Deterministic Metric](/concepts/metric) options in Galtea. It performs a field-level comparison between two JSON objects, just like [JSON Field Match](/concepts/metric/json-field-match), but with **case-insensitive and accent-insensitive** string comparison. This is ideal for entity extraction use cases where superficial text differences (e.g., "Sí" vs "SI") should not count as mismatches.
 
+Like JSON Field Match, this metric only checks that the expected fields are present and correct — it never lowers the score for an extra field the actual output invented. Use [JSON Field Match (Normalized, Strict)](/concepts/metric/json-field-match-normalized-strict) if unexpected fields should also count against the score.
+
 ## Evaluation Parameters
 
 To compute the `JSON Field Match (Normalized)` metric, the following parameters are required:
@@ -50,7 +52,7 @@ The metric compares top-level fields between the expected and actual JSON output
 - **0.5** — Half of the expected fields match.
 - **0.0** — No fields match.
 
-Extra keys in the actual output that are not in the expected output are ignored. Missing keys in the actual output count as non-matching.
+Extra keys in the actual output that are not in the expected output are ignored **by design**: this metric checks that a required set of fields is present, and does not penalize the actual output for including additional ones. Missing keys in the actual output count as non-matching. See [JSON Field Match (Normalized, Strict)](/concepts/metric/json-field-match-normalized-strict) if extra fields should lower the score.
 
 ## When to Use This vs JSON Field Match
 

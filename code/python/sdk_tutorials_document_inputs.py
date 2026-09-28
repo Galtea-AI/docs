@@ -85,7 +85,7 @@ galtea.specifications.link_datasets(specification_id=specification.id, dataset_i
 
 # @start evaluations_run
 def document_agent(input_data: AgentInput) -> AgentResponse:
-    # The same InputFile objects as test_case.input_files: filename and mime_type match.
+    # The same AttachedFile objects as test_case.input_files: filename and mime_type match.
     document_paths = [
         galtea.storage.download(attached, output_directory="./.temp/lease-documents")
         for attached in input_data.input_files
