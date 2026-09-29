@@ -40,6 +40,12 @@ metric = galtea.metrics.get(metric_id="your-metric-id")
 family_key = metric.metric_group_id
 ```
 
+A self-hosted metric family cannot be bound to a Monitor. A Monitor scores production sessions with
+no caller involved, and a self-hosted metric's score always comes from the caller, so there is no
+score for the Monitor to record. The API answers `400 Bad Request` when a create binds one, or when an
+update adds one; a family the Monitor already binds can still be resent without effect. In the SDK,
+`galtea.monitors.create` then returns `None`, and `galtea.monitors.update` raises the error.
+
 ## Sampling
 
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.

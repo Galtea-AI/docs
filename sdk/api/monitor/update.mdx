@@ -29,7 +29,9 @@ Pause and resume are just a `status` update. Users may set only `ACTIVE` (resume
   New version to watch. Pass `None` to watch every version of the product.
 </ResponseField>
 <ResponseField name="metric_group_ids" type="list[string]" optional>
-  New metric family IDs (`metric.metric_group_id`) to score with.
+  New metric family IDs (`metric.metric_group_id`) to score with. Adding a self-hosted metric family
+  raises an error, for the same reason as on create. A family the monitor already binds can still be
+  resent: only a newly added family is checked.
 </ResponseField>
 <ResponseField name="sampling_percentage" type="number" optional>
   New sampling percentage, from just above `0` up to `100`.

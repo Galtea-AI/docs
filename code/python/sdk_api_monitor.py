@@ -23,9 +23,14 @@ product_id: str = create_test_product(
 
 # A monitor scores production sessions with metric FAMILIES, not specific metric revisions.
 # The family key is `metric.metric_group_id` — pass that, not `metric.id`.
+# A monitor cannot bind a self-hosted metric: it evaluates production sessions with no caller
+# to supply a score, and a self-hosted metric's score always comes from the caller.
 metric = galtea.metrics.create(
     name=f"monitor-demo-metric-{run_identifier}",
-    source="self_hosted",
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Determine whether the actual output answers the input politely and on topic",
+    evaluation_params=["input", "actual_output"],
     description="Metric for monitor documentation",
 )
 if metric is None:
