@@ -73,6 +73,22 @@ A Monitor has a `status` that tells you whether it is scoring and, if not, why. 
 
 You can set only `ACTIVE` (to resume) or `PAUSED` (to pause). `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
 
+## Alert rules
+
+An alert rule describes when a monitor should warn your team: too many badly scored sessions on one metric family within a time window. Open the monitor and pick the **Alerts** tab to add, edit, or delete its rules. Rules go on a monitor that already exists; the creation form has no alert fields.
+
+- **Metric family**: one of the families this monitor scores. Add one rule per family to watch several.
+- **Window**: 15 minutes, 1 hour, 6 hours, or 24 hours.
+- **Bad session score**: 0 to 1. A session is bad at or below it.
+- **Threshold**: a whole number of 1 or more. The number of bad sessions within the window that the rule watches for.
+- **Recipients**: 1 to 20 email addresses. The form starts with your own. Stored in lowercase, and a repeated address is kept once.
+
+A new rule starts with a 1 hour window, a bad session score of 0.5, and a threshold of 10, and the list shows it as "10 or more sessions score 0.5 or lower within 1 hour".
+
+Removing a metric family from the monitor deletes the alert rules on that family. Deleting the monitor deletes its alert rules.
+
+Viewing rules needs read access to the monitor; adding, editing, or deleting them needs the permission to edit it.
+
 ## SDK Integration
 
 The SDK lets you create, list, retrieve, update (including pause and resume), and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
