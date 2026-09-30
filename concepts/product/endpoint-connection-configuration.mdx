@@ -250,6 +250,27 @@ Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and
   If you define an `Authorization` or `X-API-Key` header in custom headers, Galtea will **not** add the default authentication header — your custom header takes precedence.
 </Tip>
 
+### Secret Header Values
+
+Galtea treats a header value as a secret unless one of these is true:
+
+- The header name is `Content-Type`, `Accept`, `Accept-Language`, `Accept-Encoding`, `Cache-Control`, `User-Agent`, `traceparent`, or `tracestate`.
+- The value holds only placeholders, with an optional `Bearer`, `Basic`, or `Token` prefix (for example `Bearer {{ bearer_token }}`).
+
+Galtea encrypts each secret value when you save the connection, and sends the real value to your endpoint. The Dashboard, the API, the SDK, and the CLI show a secret value as `••••••••`.
+
+A test of a saved connection sends its stored secrets to the URL of the test. So a test against a URL different from the saved one needs permission to edit the connection, and is rejected with a `403` error otherwise. A member who can only view the connection can test it against its saved URL, but cannot read a secret value or send it anywhere else. A member who can edit the connection can change its URL, so give edit permission only to people you trust with its secrets.
+
+In the example above, only `X-Tenant-Id` is a secret. A header imported from a cURL command, such as `CF-Access-Client-Secret`, is a secret too.
+
+To change a connection's headers, send the whole map again:
+
+- Keep `••••••••` as the value of a header to keep its stored value.
+- Type a new value to replace it.
+- Remove the header to delete it.
+
+A `••••••••` value for a header that has no stored value is rejected with a `400` error. An encrypted value is also rejected with a `400` error: send the plain value instead. So is a value that only looks like `••••••••`, such as `••••••••abc`: keep the exact value, or type the whole new one.
+
 ### W3C Trace Context Propagation
 
 When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's spans without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
