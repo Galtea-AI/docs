@@ -4,6 +4,8 @@ sidebarTitle: "Create"
 description: "Create a new user group."
 ---
 
+Only an OWNER or ADMIN can create a user group.
+
 ## Returns
 
 Returns a [User Group](/concepts/user-group) object, or `None` if an error occurs.
@@ -25,4 +27,7 @@ user_group = galtea.user_groups.create(
 </ResponseField>
 <ResponseField name="description" type="string" optional>
   Description of the user group.
+</ResponseField>
+<ResponseField name="all_products" type="boolean" optional>
+  Links the group to every product of the organization, current and future. Galtea stores this link, but it does not restrict product access by group yet. Defaults to `false` on the API.
 </ResponseField>

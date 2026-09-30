@@ -8,26 +8,31 @@ import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 
 ## What is a User Group?
 
-A **User Group** organizes users and metrics within an organization to streamline human evaluation workflows.
+A **User Group** organizes users, metrics, and products within an organization to streamline human evaluation workflows.
 
-User Groups serve two key purposes:
+User Groups serve three key purposes:
 
 1. **Assigning evaluators**: Group users who should review and annotate AI outputs for specific metrics.
 2. **Scoping metrics**: Link metrics to groups so that only users in those groups see pending evaluations for those metrics.
+3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. Galtea stores these links, but it does not restrict product access by group yet.
 
-When a [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is linked to a user group, only users in that group will see pending evaluations for that metric in the **Human Evaluations** page of the dashboard.
+A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is routed strictly: only users in a group linked to that metric see its pending evaluations in the **Human Evaluations** page of the dashboard. A metric with no linked group reaches nobody, and its metric page shows a warning.
+
+A new organization gets an empty **"all products"** group. Organizations created before this feature also got this group, filled with their READER and HUMAN_EVALUATOR users. More than one group can be linked to all products.
 
 ## Managing User Groups
 
+Only an OWNER or ADMIN may create, edit, or delete a user group, or change its users or products. A MEMBER can read every group of the organization. A MEMBER can also link or unlink a group of the organization to a metric that the MEMBER may edit.
+
 User groups can be managed in two places:
 
-- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. From metric and user detail pages, you can also assign and unassign groups.
+- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. From the user detail page, an OWNER or ADMIN can assign and unassign groups. From the metric detail page, any user who may edit the metric can assign and unassign groups.
 - **SDK**: Use the `galtea.user_groups` service for programmatic management. See the [Human Evaluation tutorial](/sdk/tutorials/human-evaluation) for a step-by-step guide.
 
 ## SDK Integration
 
 <Card title="User Group SDK API" icon="code" href="/sdk/api/user-group/service">
-  Create, list, update, and delete user groups programmatically. Link and unlink users and metrics.
+  Create, list, update, and delete user groups programmatically. Link and unlink users, metrics, and products.
 </Card>
 
 ## User Group Properties
@@ -52,6 +57,13 @@ User groups can be managed in two places:
 </ResponseField>
 <ResponseField name="metric_ids" type="list[string]">
   IDs of metrics linked to this group.
+</ResponseField>
+<ResponseField name="product_ids" type="list[string]">
+  IDs of products linked to this group. Galtea stores this link, but it does not restrict product access by group yet.
+</ResponseField>
+<ResponseField name="all_products" type="boolean">
+  When `true`, the group is linked to every product of the organization, current and future,
+  regardless of `product_ids`. Galtea stores this link, but it does not restrict product access by group yet.
 </ResponseField>
 
 ## Related

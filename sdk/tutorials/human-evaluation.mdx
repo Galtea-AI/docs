@@ -25,7 +25,7 @@ It is especially useful when you need subjective judgment, domain expertise, or 
 
 ## Step 1: Create a User Group
 
-[User Groups](/concepts/user-group) organize evaluators and control who can score evaluations for specific metrics.
+[User Groups](/concepts/user-group) organize evaluators and control who can score evaluations for specific metrics. Only an OWNER or ADMIN can create a group or change its users. Any user who may edit a metric can link a group to that metric.
 
 ```python
 user_group = galtea.user_groups.create(
@@ -53,7 +53,7 @@ galtea.user_groups.link_users(
 
 ## Step 3: Create a Human Evaluation Metric
 
-Create a metric with the **Human Evaluation** type and link it to your user group. When evaluations run against this metric, they enter `PENDING_HUMAN` status and appear in the linked group members' dashboards.
+Create a metric with the **Human Evaluation** type and link it to your user group. When evaluations run against this metric, they enter `PENDING_HUMAN` status and appear in the linked group members' dashboards. A metric with no linked group reaches nobody, so always link at least one group before running evaluations against it.
 
 ### Option A: From the Dashboard
 

@@ -1,0 +1,23 @@
+---
+title: "Link Products"
+sidebarTitle: "Link Products"
+description: "Link products to a user group."
+---
+
+Only an OWNER or ADMIN can link products to a user group. Galtea stores this link, but it does not restrict product access by group yet.
+
+## Example
+```python
+galtea.user_groups.link_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_1, product_id_2],
+)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group.
+</ResponseField>
+<ResponseField name="product_ids" type="list[string]" required>
+  List of product IDs to link to the group.
+</ResponseField>

@@ -683,7 +683,9 @@
                       "sdk/api/user-group/link-users",
                       "sdk/api/user-group/unlink-users",
                       "sdk/api/user-group/link-metrics",
-                      "sdk/api/user-group/unlink-metrics"
+                      "sdk/api/user-group/unlink-metrics",
+                      "sdk/api/user-group/link-products",
+                      "sdk/api/user-group/unlink-products"
                     ]
                   }
                 ]

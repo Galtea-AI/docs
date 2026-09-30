@@ -11,8 +11,8 @@ Galtea uses role-based access control. Every member of your organization has one
 
 ## Roles
 
-- **OWNER**: Manages users and resources in their own organization. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most.
-- **MEMBER**: Day-to-day access in their organization: view and contribute, with limited edits. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most.
+- **OWNER**: Manages users and resources in their own organization. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most. Only OWNER may create, edit, or delete a User Group, or change its users or products.
+- **MEMBER**: Day-to-day access in their organization: view and contribute, with limited edits. Can permanently delete only Sessions; every other entity is soft delete at most. Reads every User Group of the organization. Cannot create, edit, or delete a User Group, or change its users or products. May link or unlink a group of the organization to a metric it may edit.
 - **HUMAN_EVALUATOR**: Read-only across the organization, plus may annotate AI metrics and submit human evaluations.
 - **READER**: Read-only across the organization. Cannot create, update, or delete anything.
 
@@ -59,11 +59,11 @@ Galtea uses role-based access control. Every member of your organization has one
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
-| Create | If group in own org | If group in own org | ❌ | ❌ |
+| Create | If group in own org | ❌ | ❌ | ❌ |
 | Read | If group in own org | If group in own org | If group in own org | If group in own org |
-| Update | If group in own org | If group in own org | ❌ | ❌ |
-| Delete | If group in own org | If group in own org | ❌ | ❌ |
-| Soft delete | If group in own org | If group in own org | ❌ | ❌ |
+| Update | If group in own org | ❌ | ❌ | ❌ |
+| Delete | If group in own org | ❌ | ❌ | ❌ |
+| Soft delete | If group in own org | ❌ | ❌ | ❌ |
 
 ### Test Assets
 
@@ -173,7 +173,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Annotate AI metric (add, edit, or remove) | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
 | Human evaluation | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
 
-*Human evaluation also requires membership in the relevant User Group; annotating an AI metric does not. One gate covers the whole annotation, so anyone who may annotate may also edit or remove an annotation another person wrote. The table shows the role-level gate only.*
+*Human evaluation also requires membership in a User Group linked to the metric. A HUMAN_EVALUATION metric with no linked group reaches nobody. Annotating an AI metric has no group check. One gate covers the whole annotation, so anyone who may annotate may also edit or remove an annotation another person wrote. The table shows the role-level gate only.*
 
 **Trace**
 
@@ -263,4 +263,4 @@ Galtea uses role-based access control. Every member of your organization has one
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
 - **Parent scope**: For nested records (Version, Dataset, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
 - **Global records**: Some records (Metric, Model, and a Dataset with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
-- **Hard delete**: Each entity table has two delete rows. **Soft delete** hides a record without removing it. **Delete** is a permanent removal, shown as allowed only for Session and User Group (OWNER and MEMBER, within their own organization); for every other entity it is denied to all roles listed here.
+- **Hard delete**: Each entity table has two delete rows. **Soft delete** hides a record without removing it. **Delete** is a permanent removal, shown as allowed for Session (OWNER and MEMBER, within their own organization) and for User Group (OWNER only, within their own organization); for every other entity it is denied to all roles listed here.
