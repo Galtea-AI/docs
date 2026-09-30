@@ -336,7 +336,7 @@ Configure automatic retry behavior for failed requests. When enabled, Galtea ret
 
 ## Conversation End Rules
 
-Some agents end a conversation on their own and then answer every further message with an error. Without a rule, Galtea reads that error as a failed turn, so the session fails and is never evaluated. A conversation end rule tells Galtea which reply means "the agent ended the conversation". On a match, the session completes with the turns so far and is evaluated.
+Some agents end a conversation on their own and then answer every further message with an error. Without a rule, Galtea reads that error as a failed turn, so the session fails. Its evaluations are then skipped because of the failed turn. A conversation end rule tells Galtea which reply means "the agent ended the conversation". On a match, the session completes with the turns so far and is evaluated.
 
 A rule has a status code and an optional body match. Default: no rules. A connection holds at most 20 rules, and only a `CONVERSATION` connection accepts them.
 

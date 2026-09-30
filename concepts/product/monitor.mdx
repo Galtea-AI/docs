@@ -40,11 +40,15 @@ metric = galtea.metrics.get(metric_id="your-metric-id")
 family_key = metric.metric_group_id
 ```
 
+For each family, the Monitor scores one revision per session: the newest revision that is not legacy. If every revision is legacy, the Monitor scores the newest one that is not disabled, so a legacy revision keeps scoring until it is disabled. A revision stays the scored one when its evaluator model is retired or unavailable: its sessions get a `SKIPPED` evaluation with the reason, and a Monitor never switches to an older revision for them. An optimized revision is never scored until you choose **Apply optimization**: while the optimization runs, while it waits for your review, and after you choose **Keep original**, the Monitor keeps scoring the original revision. When every revision is disabled, each sampled session gets a final `SKIPPED` evaluation that names the metric as disabled. Deleting the revision the Monitor scores stops it scoring that family: it never goes back to an older revision.
+
 A self-hosted metric family cannot be bound to a Monitor. A Monitor scores production sessions with
 no caller involved, and a self-hosted metric's score always comes from the caller, so there is no
 score for the Monitor to record. The API answers `400 Bad Request` when a create binds one, or when an
 update adds one; a family the Monitor already binds can still be resent without effect. In the SDK,
 `galtea.monitors.create` then returns `None`, and `galtea.monitors.update` raises the error.
+
+<Note>A **Self-Hosted** family a Monitor already binds scores nothing: every session gets a final `SKIPPED` evaluation instead. A **Human Evaluation** family is checked the same way as any other metric (missing data or a disabled metric still SKIPs); once those checks pass, it waits `PENDING_HUMAN` for a reviewer, the same as on any other evaluation path.</Note>
 
 ## Sampling
 
@@ -54,7 +58,7 @@ Changing `sampling_percentage` only affects sessions that close after the change
 
 ## When a session gets scored
 
-A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
+A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. A closed session with no turns is treated as fully decided and never scored: there is nothing to send for evaluation, so no row is written for it. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
 
 This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
 

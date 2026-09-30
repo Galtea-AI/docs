@@ -75,6 +75,15 @@ The metric list hides excluded revisions by default. Use **Show excluded from an
 
 When a product has excluded results, its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no data to that page.
 
+## Optimization review
+
+**Optimize** writes an improved judge prompt into a new revision named `<name> (Optimized)`. While it runs, that revision's page shows its progress, and you can leave the page. Unlike other revisions, it does not mark the original `Legacy`. When the optimizer returns a different prompt, the revision shows **Ready for review**, and its page shows both prompts side by side.
+
+- **Apply optimization** marks the original revision `Legacy`. The optimized revision takes the original's name, description, and tags, and joins its specifications and user groups. Monitors use it from their next run.
+- **Keep original** leaves the original unchanged and marks the optimized revision **Not applied**. You can then optimize again.
+
+Only the active revision of a metric can be optimized. Through the API, call `POST /metrics/{id}/activate-optimization` or `POST /metrics/{id}/decline-optimization` with the optimized revision's id.
+
 ## Judge model retirement
 
 When a judge model is retiring, you get an email up to 30 days before the retirement date. It names the affected metrics and the judge models you can use instead. The email goes to the organization owners and admins, and to the creator of each affected metric.
