@@ -6,20 +6,27 @@ description: "Retry one or more failed evaluations."
 
 ## Returns
 Returns a dictionary containing retry results:
-- `retried` (int): Number of evaluations successfully queued for retry.
-- `skipped` (int): Number of evaluations not retried because they are not retryable, are over the retry limit, still miss the data their metric needs, or their organization lacks credits. `errors` names the cause.
-- `errors` (list[str]): Error messages for any failed retries.
+- `retried` (int): Number of evaluations successfully queued for retry. A human-evaluation row counts here too: it is sent back to the annotation queue rather than to the evaluator.
+- `skipped` (int): Number of evaluations not retried because they are not retryable, are over the retry limit, still miss the data their metric needs, or the caller's organization lacks credits. `errors` names the cause.
+- `errors` (list[str]): One message per evaluation that was not retried, naming why.
+
+<Note>
+A single call can mix retryable and non-retryable IDs. Each row is judged on its own, except the
+credit check: the caller's organization must fund every evaluator row in the call, or none of them
+retries. A row that cannot be retried is counted in `skipped` with its reason in `errors`, and every
+other row still retries normally.
+</Note>
 
 ## Example
 
 ```python
-    retry_result = galtea.evaluations.retry(id=evaluation_id)
-    print(f"Retried: {retry_result['retried']}, Skipped: {retry_result['skipped']}")
+retry_result = galtea.evaluations.retry(id=evaluation_id)
+print(f"Retried: {retry_result['retried']}, Skipped: {retry_result['skipped']}")
 ```
 
 ## Parameters
 <ResponseField name="id" type="str | list[str]" required>
-  Single evaluation ID or list of evaluation IDs to retry. Only evaluations whose `canRetry` field is `true` can be retried, which covers both `FAILED` and `SKIPPED` ones. A retry re-scores the output already stored on the session, so it cannot fix a skip whose cause is that output.
+  Single evaluation ID or list of evaluation IDs to retry. An evaluation can be retried only when its `canRetry` field is `true`, which only a `FAILED` or `SKIPPED` evaluation carries. An evaluation of a metric with `source: "self_hosted"` is never retried, whatever its status: send its score again in a new evaluation instead. A retry re-scores the output already stored on the session, so it cannot fix a skip whose cause is that output.
 </ResponseField>
 
 ## Retry Limits

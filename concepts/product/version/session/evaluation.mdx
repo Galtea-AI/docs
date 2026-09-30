@@ -74,7 +74,7 @@ Once an evaluation completes, the following fields are available:
   - **Pending**: The evaluation has been created but not yet processed.
   - **Pending Human**: The evaluation is waiting for a human annotator to review and score it. This status is used for metrics with `source: "human_evaluation"`.
   - **Success**: The evaluation was processed successfully.
-  - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried.
+  - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried. An evaluation that stays **Pending** for longer than 24 hours (configurable with `EVALUATION_PENDING_TIMEOUT_HOURS` on an on-premise deployment) is marked **Failed** with `canRetry` set, so you can retry it.
   - **Skipped**: The evaluation could not produce a score. The error message names the cause. Common causes are:
     - Metric validation failed, for example a required parameter is missing.
     - The organization ran out of credits.
@@ -103,7 +103,9 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Can Retry" type="Boolean" default="false">
-  Indicates whether the evaluation is eligible for the retry operation. When `false`, it cannot be retried at all. When `true`, it can, but a retry does not always help: `canRetry` is a permission, not a promise. A retry re-scores the output already stored on the session, so it succeeds for a temporary cause (an evaluation processing error, insufficient credits, a judge model that was unavailable) and skips again when the cause is the stored output itself. Defaults to `false`.
+  Indicates whether the evaluation is eligible for the retry operation. When `false`, it cannot be retried at all. When `true`, it can (only a `FAILED` or `SKIPPED` evaluation carries it), but a retry does not always help: `canRetry` is a permission, not a promise. A retry re-scores the output already stored on the session, so it succeeds for a temporary cause (an evaluation processing error, insufficient credits, a judge model that was unavailable) and skips again when the cause is the stored output itself. Defaults to `false`.
+
+  A row for a metric with `source: "self_hosted"` is never eligible for retry, whatever its status: a self-hosted score comes from you, not the judge, so there is nothing stored to re-send. Send the score again in a new evaluation instead.
 </ResponseField>
 
 <ResponseField name="Launched By" type="User" optional>
