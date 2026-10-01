@@ -4,7 +4,7 @@ sidebarTitle: "Service"
 description: "Storage Service API methods in the Galtea SDK"
 ---
 
-The Storage Service moves files between this machine and the platform's object storage. Bytes never pass through the API: it hands out a presigned URL, the file travels straight to or from storage, and only the resulting reference is sent back to the API.
+The Storage Service moves files between this machine and the platform's object storage. The API hands out a link and the file travels through it. On most deployments that link is a presigned storage URL, so the bytes never pass through the API. A deployment whose network cannot reach storage serves the link from the API itself instead. Either way, only the resulting reference is sent back to the API.
 This Service is exposed by the `galtea.storage` object.
 
 <Info>
