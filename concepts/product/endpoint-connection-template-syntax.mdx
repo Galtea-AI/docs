@@ -207,6 +207,7 @@ An audio attachment on a voice test case appears in `input_files` too. Its trans
   These rules apply to attached files:
 
   - **The URL is valid for 15 minutes.** Galtea mints a fresh one for every request attempt, so your endpoint has the whole request window to fetch the file. Do not store the URL for later.
+  - **Your endpoint must be able to reach the host in the URL.** It usually points at Galtea's file storage. On a self-hosted deployment that serves files through the Galtea API instead, it points at the API host, so your endpoint's network must reach that host.
   - **`base64` grows the request body by about a third.** Galtea reads the file only when your template names `base64`, so a template that sends the URL alone costs no download. The total size of the files on one input is capped at 20 MB.
   - **A failed fetch is your endpoint's error.** If your endpoint cannot download the file, its own error response is what Galtea records for the run.
   - **The turn fails when Galtea cannot deliver a file.** Galtea never sends the request without the attachment, so a file it cannot sign or read stops that turn with an error.
