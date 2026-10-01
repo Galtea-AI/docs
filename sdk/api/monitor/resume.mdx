@@ -1,0 +1,28 @@
+---
+title: "Resuming Monitor"
+sidebarTitle: "Resume"
+description: "Resume a paused monitor so it scores production sessions again."
+---
+
+## Returns
+
+Returns the resumed [Monitor](/concepts/product/monitor).
+
+The monitor scores only the sessions that close after the resume.
+
+Resuming works from any status. Resuming a monitor that is already active returns it unchanged. If
+its monthly credit cap is used up or the organization is out of credits, the next scan sets `CAPPED`
+or `NO_CREDITS` again.
+
+The API refuses the call when the monitor does not exist or you cannot edit it.
+
+## Example
+```python
+# Score new production sessions again.
+resumed_monitor = galtea.monitors.resume(monitor.id)
+```
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor to resume.
+</ResponseField>

@@ -1,6 +1,6 @@
 """
 SDK API: Monitor
-Demonstrates how to create, list, get, update (pause/resume), and delete monitors.
+Demonstrates how to create, list, get, update, pause, resume, and delete monitors.
 """
 
 from datetime import datetime
@@ -66,12 +66,19 @@ monitors = galtea.monitors.list(
 # @end list
 
 # @start update
-# Pause a monitor (stops scoring until resumed). Users may only set ACTIVE or PAUSED.
-galtea.monitors.update(monitor.id, status="PAUSED")
-
-# Resume it, and raise the sampling rate at the same time.
-galtea.monitors.update(monitor.id, status="ACTIVE", sampling_percentage=25)
+# Raise the sampling rate. Only the fields you pass change.
+galtea.monitors.update(monitor.id, sampling_percentage=25)
 # @end update
+
+# @start pause
+# Stop scoring until the monitor is resumed. The monitor keeps its configuration.
+paused_monitor = galtea.monitors.pause(monitor.id)
+# @end pause
+
+# @start resume
+# Score new production sessions again.
+resumed_monitor = galtea.monitors.resume(monitor.id)
+# @end resume
 
 # @start delete
 galtea.monitors.delete(monitor_id=monitor.id)

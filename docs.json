@@ -267,6 +267,8 @@
                       "sdk/api/monitor/list",
                       "sdk/api/monitor/get",
                       "sdk/api/monitor/update",
+                      "sdk/api/monitor/pause",
+                      "sdk/api/monitor/resume",
                       "sdk/api/monitor/delete"
                     ]
                   }

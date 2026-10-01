@@ -81,7 +81,9 @@ A Monitor has a `status` that tells you whether it is scoring and, if not, why. 
 - **`NO_CREDITS`** — the organization ran out of credits. Sessions that close in the meantime are skipped for good. Scoring resumes when credits are available.
 - **`FAILING`** — reserved for a Monitor that keeps failing to score sessions. The system does not currently set it automatically.
 
-You can set only `ACTIVE` (to resume) or `PAUSED` (to pause). `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
+Pause and resume a Monitor from its row menu, from its page in the dashboard, with `galtea.monitors.pause` and `galtea.monitors.resume`, with `galtea monitors pause` and `galtea monitors resume`, or with `POST /monitors/{id}/pause` and `POST /monitors/{id}/resume`. Both work from any status, and repeating one changes nothing. If a resumed Monitor is still capped or out of credits, the next scan sets `CAPPED` or `NO_CREDITS` again.
+
+Setting `status` to `ACTIVE` or `PAUSED` through an update still works. You can set only those two values: `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
 
 ## Alert rules
 
@@ -101,7 +103,7 @@ Viewing rules needs read access to the monitor; adding, editing, or deleting the
 
 ## SDK Integration
 
-The SDK lets you create, list, retrieve, update (including pause and resume), and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
+The SDK lets you create, list, retrieve, update, pause, resume, and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
 
 <SDKMonitorServiceCard />
 
