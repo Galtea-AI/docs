@@ -254,12 +254,28 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Read | If data in own org | If data in own org | If data in own org | If data in own org |
+| See the Coverage section | If data in own org | If data in own org | ❌ | ❌ |
+| See the Scores comparison section | If data in own org | If data in own org | ❌ | ❌ |
+| See the Inference section | If data in own org | If data in own org | ❌ | ❌ |
 
-*The dashboard does not show the Coverage, Scores comparison, and Inference sections of the Analytics page to HUMAN_EVALUATOR and READER. This is a display choice, not a permission: the API still returns this data to both roles.*
+*The Coverage, Scores comparison, and Inference rows only control what the dashboard shows on the Analytics page: the API still returns this data to every role that can read Analytics.*
+
+### Dashboard
+
+**Dashboard views**
+
+| Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
+| --- | --- | --- | --- | --- |
+| Update the organization settings | ✅ | ❌ | ❌ | ❌ |
+| Create organization users | ✅ | ❌ | ❌ | ❌ |
+| Manage user groups | ✅ | ❌ | ❌ | ❌ |
+| See Human Evaluations | ✅ | ✅ | ✅ | ❌ |
+
+*These rows decide what the dashboard shows or hides for a role. They do not grant access: the platform still checks the permission behind each action.*
 
 ## Notes
 
-- **Read-only roles**: READER and HUMAN_EVALUATOR can read exactly what a MEMBER can read (the same organization scope). They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
+- **Read-only roles**: READER and HUMAN_EVALUATOR read the same data as a MEMBER (the same organization scope); the dashboard hides three Analytics sections from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
 - **Parent scope**: For nested records (Version, Dataset, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
 - **Global records**: Some records (Metric, Model, and a Dataset with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
