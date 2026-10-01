@@ -101,6 +101,16 @@ Removing a metric family from the monitor deletes the alert rules on that family
 
 Viewing rules needs read access to the monitor; adding, editing, or deleting them needs the permission to edit it.
 
+### Alerts
+
+A rule opens an alert when its threshold is reached. The alert closes once the count drops far enough below the threshold, when its rule is deleted, or when the rule's metric family, bad session score, or window changes. The **Alerts** tab shows alerts next to the rules:
+
+- **Status**: "Open" with the time it opened when the rule has an open alert, or "OK".
+- **Alerts · 30 days**: how many alerts were open at some point in the last 30 days, and when the newest one opened.
+- **Alert history**: a timeline with one line per rule and a bar for each time an alert was open, above a table of the alerts. Filter both by state, rule, and time range (24 hours, 7 days, or 30 days).
+
+Select an alert to open its page. It shows what the check saw when the alert opened: the bad session count, the scored session count, the threshold, the window, the sampling rate, and the metric revision. These values do not change later, even if a session is scored again. The page also lists the bad sessions the alert stored, up to 200 per alert.
+
 ## SDK Integration
 
 The SDK lets you create, list, retrieve, update, pause, resume, and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
