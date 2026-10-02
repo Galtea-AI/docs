@@ -76,6 +76,10 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | If product in own org | If product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If product in own org | If product is theirs (by userId) | ❌ | ❌ |
+| See the Tutorial entry | If product in own org | If product in own org | ❌ | ❌ |
+| See the Configuration entry | If product in own org | If product in own org | ❌ | ❌ |
+
+*The Tutorial and Configuration entry rows only control what the dashboard shows for this product (the sidebar entry, its page and its list URL): the API still returns this data to every role that can read the product.*
 
 **Version**
 
@@ -86,6 +90,9 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
+| See the Versions entry | If parent product in own org | If parent product in own org | ❌ | ❌ |
+
+*The Versions entry row only controls what the dashboard shows for this product (the sidebar entry, its page and its list URL): the API still returns versions to every role that can read them.*
 
 **Dataset**
 
@@ -96,6 +103,9 @@ Galtea uses role-based access control. Every member of your organization has one
 | Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
+| See the Datasets entry | If parent product in own org | If parent product in own org | ❌ | ❌ |
+
+*The Datasets entry row only controls what the dashboard shows for this product (the sidebar entry, its page and its list URL): the API still returns datasets to every role that can read them.*
 
 **Test Case**
 
@@ -275,7 +285,7 @@ Galtea uses role-based access control. Every member of your organization has one
 
 ## Notes
 
-- **Read-only roles**: READER and HUMAN_EVALUATOR read the same data as a MEMBER (the same organization scope); the dashboard hides three Analytics sections from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
+- **Read-only roles**: READER and HUMAN_EVALUATOR read the same data as a MEMBER (the same organization scope); the dashboard hides three Analytics sections, and the Datasets, Versions, Tutorial and Configuration entries of the product sidebar, from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
 - **Parent scope**: For nested records (Version, Dataset, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
 - **Global records**: Some records (Metric, Model, and a Dataset with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
