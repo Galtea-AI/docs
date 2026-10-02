@@ -13,8 +13,8 @@ Galtea uses role-based access control. Every member of your organization has one
 
 - **OWNER**: Manages users and resources in their own organization. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most. Only OWNER may create, edit, or delete a User Group, or change its users or products.
 - **MEMBER**: Day-to-day access in their organization: view and contribute, with limited edits. Can permanently delete only Sessions; every other entity is soft delete at most. Reads every User Group of the organization. Cannot create, edit, or delete a User Group, or change its users or products. May link or unlink a group of the organization to a metric it may edit.
-- **HUMAN_EVALUATOR**: Read-only across the organization, plus may annotate AI metrics and submit human evaluations.
-- **READER**: Read-only across the organization. Cannot create, update, or delete anything.
+- **HUMAN_EVALUATOR**: Read-only on the products their user groups grant, plus may annotate AI metrics and submit human evaluations on them.
+- **READER**: Read-only on the products their user groups grant. Cannot create, update, or delete anything.
 
 <Note>
   Each cell shows what a role can do for that action. ✅ means allowed and ❌ means not allowed. A short rule (for example, "If product in own org") means the action is allowed only when that rule is true at the time, checked against your organization and the record's ownership.
@@ -74,7 +74,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If product in own org | If product in own org | ❌ | ❌ |
-| Read | If product in own org | If product in own org | If product in own org | If product in own org |
+| Read | If product in own org | If product in own org | If product is granted by one of their user groups | If product is granted by one of their user groups |
 | Update | If product in own org | If product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If product in own org | If product is theirs (by userId) | ❌ | ❌ |
@@ -88,7 +88,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If parent product in own org | If parent product in own org | ❌ | ❌ |
-| Read | If parent product in own org | If parent product in own org | If parent product in own org | If parent product in own org |
+| Read | If parent product in own org | If parent product in own org | If parent product is granted by one of their user groups | If parent product is granted by one of their user groups |
 | Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
@@ -101,7 +101,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If parent product in own org | If parent product in own org | ❌ | ❌ |
-| Read | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global |
+| Read | If parent product in own org, or dataset is global | If parent product in own org, or dataset is global | If parent product is granted by one of their user groups, or dataset is global | If parent product is granted by one of their user groups, or dataset is global |
 | Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
@@ -114,7 +114,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If parent dataset in own org | If parent dataset in own org | ❌ | ❌ |
-| Read | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global |
+| Read | If parent dataset in own org, or dataset is global | If parent dataset in own org, or dataset is global | If parent dataset's product is granted by one of their user groups, or dataset is global | If parent dataset's product is granted by one of their user groups, or dataset is global |
 | Update | If parent dataset in own org | If parent dataset in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent dataset in own org | If parent dataset in own org | ❌ | ❌ |
@@ -124,7 +124,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If parent product in own org | If parent product in own org | ❌ | ❌ |
-| Read | If parent product in own org | If parent product in own org | If parent product in own org | If parent product in own org |
+| Read | If parent product in own org | If parent product in own org | If parent product is granted by one of their user groups | If parent product is granted by one of their user groups |
 | Update | If parent product in own org | If parent product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If parent product in own org | If parent product in own org | ❌ | ❌ |
@@ -136,7 +136,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
-| Read | If connection's product in own org | If connection's product in own org | If connection's product in own org | If connection's product in own org |
+| Read | If connection's product in own org | If connection's product in own org | If connection's product is granted by one of their user groups | If connection's product is granted by one of their user groups |
 | Update | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
@@ -146,7 +146,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
-| Read | If connection's product in own org | If connection's product in own org | If connection's product in own org | If connection's product in own org |
+| Read | If connection's product in own org | If connection's product in own org | If connection's product is granted by one of their user groups | If connection's product is granted by one of their user groups |
 | Update | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
@@ -156,7 +156,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
-| Read | If connection's product in own org | If connection's product in own org | If connection's product in own org | If connection's product in own org |
+| Read | If connection's product in own org | If connection's product in own org | If connection's product is granted by one of their user groups | If connection's product is granted by one of their user groups |
 | Update | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If connection's product in own org | If connection's product in own org | ❌ | ❌ |
@@ -168,7 +168,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If session's product in own org | If session's product in own org | ❌ | ❌ |
-| Read | If session's product in own org | If session's product in own org | If session's product in own org | If session's product in own org |
+| Read | If session's product in own org | If session's product in own org | If session's product is granted by one of their user groups | If session's product is granted by one of their user groups |
 | Update | If session's product in own org | If session's product in own org | ❌ | ❌ |
 | Delete | If session's product in own org | If session's product in own org | ❌ | ❌ |
 | Soft delete | If session's product in own org | If session's product in own org | ❌ | ❌ |
@@ -178,23 +178,23 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If evaluation's product in own org | If evaluation's product in own org | ❌ | ❌ |
-| Read | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org |
+| Read | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product is granted by one of their user groups | If evaluation's product is granted by one of their user groups |
 | Update | If evaluation's product in own org | If evaluation's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If evaluation's product in own org | If evaluation's product in own org | ❌ | ❌ |
-| Annotate AI metric (add, edit, or remove) | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
-| Human evaluation | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
-| See evaluation metadata | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
-| See inference metrics, judge cost and turn metrics | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
+| Annotate AI metric (add, edit, or remove) | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product is granted by one of their user groups | ❌ |
+| Human evaluation | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product is granted by one of their user groups | ❌ |
+| See evaluation metadata | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product is granted by one of their user groups | ❌ |
+| See inference metrics, judge cost and turn metrics | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product is granted by one of their user groups | ❌ |
 
-*Human evaluation also requires membership in a User Group linked to the metric. A HUMAN_EVALUATION metric with no linked group reaches nobody. Annotating an AI metric has no group check. One gate covers the whole annotation, so anyone who may annotate may also edit or remove an annotation another person wrote. The table shows the role-level gate only. The evaluation metadata and inference metrics rows only control what the dashboard shows on the evaluation page: the API still returns this data to every role that can read the evaluation. The inference metrics row also covers the Turn metrics tab of the Trace card. The Trace card's Evaluations tab still shows judge tokens, and its Spans tab shows span latency.*
+*Human evaluation also requires membership in a User Group linked to the metric. A HUMAN_EVALUATION metric with no linked group reaches nobody. Annotating an AI metric has no group check. One gate covers the whole annotation, so anyone who may annotate may also edit or remove an annotation another person wrote. The table shows the role-level gate only. The evaluation metadata and inference metrics rows only control what the dashboard shows on the evaluation page: the API still returns this data to every role that can read the evaluation, which for a READER or HUMAN_EVALUATOR means only on the products their user groups grant. The inference metrics row also covers the Turn metrics tab of the Trace card. The Trace card's Evaluations tab still shows judge tokens, and its Spans tab shows span latency.*
 
 **Trace**
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
-| Read | If trace's product in own org | If trace's product in own org | If trace's product in own org | If trace's product in own org |
+| Read | If trace's product in own org | If trace's product in own org | If trace's product is granted by one of their user groups | If trace's product is granted by one of their user groups |
 | Update | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If trace's product in own org | If trace's product in own org | ❌ | ❌ |
@@ -204,7 +204,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If span's product in own org | If span's product in own org | ❌ | ❌ |
-| Read | If span's product in own org | If span's product in own org | If span's product in own org | If span's product in own org |
+| Read | If span's product in own org | If span's product in own org | If span's product is granted by one of their user groups | If span's product is granted by one of their user groups |
 | Update | If span's product in own org | If span's product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If span's product in own org | If span's product in own org | ❌ | ❌ |
@@ -224,7 +224,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If product in own org | If product in own org | ❌ | ❌ |
-| Read | If product in own org | If product in own org | If product in own org | If product in own org |
+| Read | If product in own org | If product in own org | If parent product is granted by one of their user groups | If parent product is granted by one of their user groups |
 | Update | If product in own org | If product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If product in own org | If product in own org | ❌ | ❌ |
@@ -234,7 +234,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
 | Create | If product in own org | If product in own org | ❌ | ❌ |
-| Read | If product in own org | If product in own org | If product in own org | If product in own org |
+| Read | If product in own org | If product in own org | If parent product is granted by one of their user groups | If parent product is granted by one of their user groups |
 | Update | If product in own org | If product in own org | ❌ | ❌ |
 | Delete | ❌ | ❌ | ❌ | ❌ |
 | Soft delete | If product in own org | If product in own org | ❌ | ❌ |
@@ -267,12 +267,12 @@ Galtea uses role-based access control. Every member of your organization has one
 
 | Action | OWNER | MEMBER | HUMAN_EVALUATOR | READER |
 | --- | --- | --- | --- | --- |
-| Read | If data in own org | If data in own org | If data in own org | If data in own org |
+| Read | If data in own org | If data in own org | If product is granted by one of their user groups | If product is granted by one of their user groups |
 | See the Coverage section | If data in own org | If data in own org | ❌ | ❌ |
 | See the Scores comparison section | If data in own org | If data in own org | ❌ | ❌ |
 | See the Inference section | If data in own org | If data in own org | ❌ | ❌ |
 
-*The Coverage, Scores comparison, and Inference rows only control what the dashboard shows on the Analytics page: the API still returns this data to every role that can read Analytics.*
+*The Coverage, Scores comparison, and Inference rows only control what the dashboard shows on the Analytics page: the API still returns this data to every role that can read Analytics, and to a READER or HUMAN_EVALUATOR only for the products their user groups grant.*
 
 ### Dashboard
 
@@ -289,7 +289,8 @@ Galtea uses role-based access control. Every member of your organization has one
 
 ## Notes
 
-- **Read-only roles**: READER and HUMAN_EVALUATOR read the same data as a MEMBER (the same organization scope); the dashboard hides three Analytics sections, and the Datasets, Versions, Tutorial and Configuration entries of the product sidebar, from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot. On an evaluation page, the dashboard also hides the evaluation metadata, the inference metrics and the Turn metrics tab of the Trace card from READER.
+- **Read-only roles**: READER and HUMAN_EVALUATOR read what a MEMBER reads, except that products and everything inside a product are limited to the products granted by their user groups; the dashboard also hides three Analytics sections, and the Datasets, Versions, Tutorial and Configuration entries of the product sidebar, from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations, on those products only; READER cannot. On an evaluation page, the dashboard also hides the evaluation metadata, the inference metrics and the Turn metrics tab of the Trace card from READER.
+- **Product access**: A READER or HUMAN_EVALUATOR sees a product only when one of their user groups links it. A user group with the all-products setting grants every product of the organization, current and future. A user in no group sees no product. Records with no product, such as a global dataset, stay readable. Products outside the granted set answer like a record of another organization. OWNER and MEMBER are not limited this way.
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
 - **Parent scope**: For nested records (Version, Dataset, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
 - **Global records**: Some records (Metric, Model, and a Dataset with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.

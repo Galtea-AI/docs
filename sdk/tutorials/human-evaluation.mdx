@@ -13,9 +13,10 @@ It is especially useful when you need subjective judgment, domain expertise, or 
 ## How It Works
 
 1. **Create a user group** — organize the team members who will review outputs
-2. **Create a Human Evaluation metric** — route evaluations to your group instead of an LLM judge
-3. **Run evaluations** — evaluations enter `PENDING_HUMAN` status
-4. **Annotate in the dashboard** — group members review outputs and submit scores
+2. **Link products to the group** — choose which products the group members can review
+3. **Create a Human Evaluation metric** — route evaluations to your group instead of an LLM judge
+4. **Run evaluations** — evaluations enter `PENDING_HUMAN` status
+5. **Annotate in the dashboard** — group members review outputs and submit scores
 
 <video
   controls muted playsInline
@@ -38,7 +39,7 @@ You can also create groups from the dashboard: navigate to your organization's *
 
 ## Step 2: Add Users to the Group
 
-Link users by their user IDs. Users in the group will see pending evaluations for linked metrics in their **Human Evaluations** dashboard page.
+Link users by their user IDs. Users in the group will see pending evaluations for linked metrics in their **Human Evaluations** dashboard page. A READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant.
 
 ```python
 galtea.user_groups.link_users(
@@ -51,9 +52,20 @@ galtea.user_groups.link_users(
   You can find user IDs in the dashboard under **Settings > Members**, or by using the organization members API.
 </Tip>
 
-## Step 3: Create a Human Evaluation Metric
+## Step 3: Link Products to the Group
 
-Create a metric with the **Human Evaluation** type and link it to your user group. When evaluations run against this metric, they enter `PENDING_HUMAN` status and appear in the linked group members' dashboards. A metric with no linked group reaches nobody, so always link at least one group before running evaluations against it.
+A READER or HUMAN_EVALUATOR sees only the products that one of its groups links. Link the products that the group must review. You can also create the group with `all_products=True` to link every product of the organization, current and future.
+
+```python
+galtea.user_groups.link_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_1, product_id_2],
+)
+```
+
+## Step 4: Create a Human Evaluation Metric
+
+Create a metric with the **Human Evaluation** type and link it to your user group. When evaluations run against this metric, they enter `PENDING_HUMAN` status and appear in the linked group members' dashboards. A metric with no linked group reaches nobody, so always link at least one group before running evaluations against it. A READER or HUMAN_EVALUATOR in that group also needs a group that links the evaluation's product.
 
 ### Option A: From the Dashboard
 
@@ -83,7 +95,7 @@ galtea.user_groups.link_metrics(
 )
 ```
 
-## Step 4: Run Evaluations
+## Step 5: Run Evaluations
 
 Run evaluations using the SDK or from the dashboard just like any other metric. The only difference is that each evaluation will enter `PENDING_HUMAN` status instead of being scored by an LLM.
 
@@ -105,7 +117,7 @@ print(f"Submitted evaluations for {result['testCaseCount']} test cases")
 
 See also [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) for multi-turn reviews, [Run Dataset-Based Evaluations](/sdk/tutorials/run-dataset-based-evaluations) when you need per-test-case control, or [Direct Inferences and Evaluations from the Platform](/sdk/tutorials/direct-inferences-and-evaluations-from-platform).
 
-## Step 5: Annotate in the Dashboard
+## Step 6: Annotate in the Dashboard
 
 Navigate to the **Human Evaluations** page in the sidebar. Click **Start Evaluating** to open the annotation dialog. For each evaluation, review the conversation and context, submit a score (0–100, normalized to 0–1), and optionally add a reason.
 

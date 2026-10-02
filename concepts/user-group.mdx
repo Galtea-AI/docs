@@ -14,9 +14,9 @@ User Groups serve three key purposes:
 
 1. **Assigning evaluators**: Group users who should review and annotate AI outputs for specific metrics.
 2. **Scoping metrics**: Link metrics to groups so that only users in those groups see pending evaluations for those metrics.
-3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. Galtea stores these links, but it does not restrict product access by group yet.
+3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A READER or HUMAN_EVALUATOR sees the union of the products that all its groups link. When one of its groups links all products, it sees every product, including a product that no other group links. A READER or HUMAN_EVALUATOR in no group sees no product. OWNER, ADMIN and MEMBER users see every product of the organization, whatever their groups.
 
-A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is routed strictly: only users in a group linked to that metric see its pending evaluations in the **Human Evaluations** page of the dashboard. A metric with no linked group reaches nobody, and its metric page shows a warning.
+A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is routed strictly: only users in a group linked to that metric see its pending evaluations in the **Human Evaluations** page of the dashboard. A READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. A metric with no linked group reaches nobody, and its metric page shows a warning.
 
 A new organization gets an empty **"all products"** group. Organizations created before this feature also got this group, filled with their READER and HUMAN_EVALUATOR users. More than one group can be linked to all products.
 
@@ -59,11 +59,11 @@ User groups can be managed in two places:
   IDs of metrics linked to this group.
 </ResponseField>
 <ResponseField name="product_ids" type="list[string]">
-  IDs of products linked to this group. Galtea stores this link, but it does not restrict product access by group yet.
+  IDs of products linked to this group. The products a group links are the only products its READER and HUMAN_EVALUATOR users can see.
 </ResponseField>
 <ResponseField name="all_products" type="boolean">
   When `true`, the group is linked to every product of the organization, current and future,
-  regardless of `product_ids`. Galtea stores this link, but it does not restrict product access by group yet.
+  regardless of `product_ids`. A READER or HUMAN_EVALUATOR in the group then sees every product.
 </ResponseField>
 
 ## Related
