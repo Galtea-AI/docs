@@ -182,8 +182,10 @@ Galtea uses role-based access control. Every member of your organization has one
 | Soft delete | If evaluation's product in own org | If evaluation's product in own org | ❌ | ❌ |
 | Annotate AI metric (add, edit, or remove) | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
 | Human evaluation | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
+| See evaluation metadata | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
+| See inference metrics, judge cost and turn metrics | If evaluation's product in own org | If evaluation's product in own org | If evaluation's product in own org | ❌ |
 
-*Human evaluation also requires membership in a User Group linked to the metric. A HUMAN_EVALUATION metric with no linked group reaches nobody. Annotating an AI metric has no group check. One gate covers the whole annotation, so anyone who may annotate may also edit or remove an annotation another person wrote. The table shows the role-level gate only.*
+*Human evaluation also requires membership in a User Group linked to the metric. A HUMAN_EVALUATION metric with no linked group reaches nobody. Annotating an AI metric has no group check. One gate covers the whole annotation, so anyone who may annotate may also edit or remove an annotation another person wrote. The table shows the role-level gate only. The evaluation metadata and inference metrics rows only control what the dashboard shows on the evaluation page: the API still returns this data to every role that can read the evaluation. The inference metrics row also covers the Turn metrics tab of the Trace card. The Trace card's Evaluations tab still shows judge tokens, and its Spans tab shows span latency.*
 
 **Trace**
 
@@ -285,7 +287,7 @@ Galtea uses role-based access control. Every member of your organization has one
 
 ## Notes
 
-- **Read-only roles**: READER and HUMAN_EVALUATOR read the same data as a MEMBER (the same organization scope); the dashboard hides three Analytics sections, and the Datasets, Versions, Tutorial and Configuration entries of the product sidebar, from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot.
+- **Read-only roles**: READER and HUMAN_EVALUATOR read the same data as a MEMBER (the same organization scope); the dashboard hides three Analytics sections, and the Datasets, Versions, Tutorial and Configuration entries of the product sidebar, from them. They cannot create, update, or delete. HUMAN_EVALUATOR additionally may annotate AI metrics and submit human evaluations; READER cannot. On an evaluation page, the dashboard also hides the evaluation metadata, the inference metrics and the Turn metrics tab of the Trace card from READER.
 - **Organization scope**: "In own org" means the record (or its parent, such as a Product) has an organizationId equal to the signed-in user's organization. This keeps each client organization's data separate.
 - **Parent scope**: For nested records (Version, Dataset, Evaluation, and so on) access is derived from the parent's organization. Example: a Version belongs to a Product, and the Product belongs to an Organization. An Evaluation is reached through session to version to product.
 - **Global records**: Some records (Metric, Model, and a Dataset with no product) can be global, meaning not tied to one organization. Global records are readable by every role in addition to their own organization's records.
