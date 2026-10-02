@@ -1,0 +1,77 @@
+<Update label="2026-10-02" description="Product Access for Readers, Monitor Alerts, Reviewing Optimized Judge Prompts, Judge Model Retirement Notices, Features for Delivered Deployments, and Platform Improvements">
+
+## Limit Readers and Human Evaluators to Chosen Products
+
+A Reader or Human Evaluator now sees only the products their [user groups](/concepts/user-group) grant. Owners, Admins and Members are unchanged.
+
+- **Existing readers and human evaluators keep every product.** The upgrade puts them in an "all products" group.
+- **A Reader or Human Evaluator you invite from now on sees no product** until you add them to a group. To give full access, add them to the "all products" group.
+- **Choose a group's products** with the SDK ([`link_products`](/sdk/api/user-group/link-products)), the CLI (`link-products`) or the API. The dashboard has no screen for this yet.
+- **A human-evaluation metric with no linked group no longer reaches Human Evaluators.**
+
+Readers and Human Evaluators also see fewer dashboard views:
+
+- **Analytics:** Coverage, Scores comparison and Inference are hidden.
+- **Product sidebar:** Versions, Datasets, Tutorial, Product, Connections and Monitors are hidden.
+- **Readers only:** Human Evaluations and some evaluation page cards are hidden.
+
+See [Roles and permissions](/security/roles-and-permissions).
+
+## Get Emailed When a Monitor Scores Badly
+
+A [monitor](/concepts/product/monitor) can now raise an alert when too many sessions score badly, and email people about it.
+
+- **Add alert rules in the monitor's Alerts tab,** or through the API and the CLI (`galtea monitors create-alert-rule`). The SDK has no alert methods.
+- **A rule holds** a metric, a window of 15 minutes, 1 hour, 6 hours or 24 hours, a bad metric score, a threshold and 1 to 20 recipient emails. The dashboard prefills 0.5 and 10. The API and CLI require both values. The recipients need no Galtea account.
+- **Every 2 minutes Galtea counts the bad sessions.** A session is bad when its score is at or below the bad metric score. It counts once, by its latest score on that metric inside the window. Only evaluations made by that monitor count.
+- **The alert opens when the count reaches the threshold,** and recovers when it falls to the threshold minus its square root, rounded down. With a threshold of 10, that is 6. A window with no scored sessions leaves the alert as it is.
+- **Recipients get an email when an alert opens and another when it recovers,** with links to up to 25 sessions. A deployment with no email configured sends none.
+- **Deleting or pausing a rule closes its alert and sends no email.** So does changing its metric, bad score or window, which also checks the rule again at once. Editing only the threshold keeps the alert open.
+- **Follow alerts in the dashboard.** A rule shows OK, Open or Paused. A monitor page offers alert history with filters, and each alert has a page listing the evaluations behind it.
+- **Pause and resume a monitor** with [`monitors.pause()`](/sdk/api/monitor/pause) and [`monitors.resume()`](/sdk/api/monitor/resume), `galtea monitors pause`, or the dashboard. A paused monitor scores no new sessions. Its open alerts stay open once the window holds no scored sessions. You can pause a single rule too.
+- **A monitor can no longer take a self-hosted metric.** Creating a monitor with one, or adding one, is refused. Existing monitors keep theirs, and those metrics are skipped.
+- **Removing a metric from a monitor deletes the alert rules on that metric.**
+
+## Review an Optimized Judge Prompt Before It Replaces Your Metric
+
+Metric optimization no longer replaces your metric when it finishes. It now produces a candidate revision for you to review. See [Optimization review](/concepts/metric).
+
+- **The candidate waits as "Ready for review"** with the changes, the optimized prompt and the original prompt in tabs. **Apply optimization** makes it the active revision. It keeps the original's current name, description and tags, and copies its specification and user-group links. **Keep original** marks it "Not applied" and changes nothing.
+- **A declined candidate cannot be applied later.** A metric holds one waiting candidate at a time, and applying or declining needs permission to update the metric.
+- **An unchanged prompt ends as "No improvement".**
+- **While an optimization runs,** monitors score only the original metric.
+- **Your annotations are split before the run.** With at least 30 annotated evaluations, about one third of them (at least 10) are held out, chosen by session. The optimizer never searches on them. The confirmation shows the split. The review shows how well each prompt agrees with your annotations on both sets.
+- **Below 30 annotated evaluations there is no held-out set,** unless an earlier attempt on the same metric kept some. The review says when it has no validation result.
+- **Only an organization-owned AI Evaluation metric that is the active revision can be optimized.** The SDK has no optimize method. Use the dashboard, the CLI or the API.
+
+## Know Before a Judge Model Retires
+
+When the gateway reports the date a provider retires a judge model, Galtea now emails your organization about it.
+
+- **Within 30 days of the date,** Owners, Admins and the creators of the affected metrics receive "Action needed: a judge model used by your metrics is retiring". It lists up to 50 metric names. Your organization gets one warning for each model and date.
+- **After the date, once the model has been gone for 6 hours,** a second email says your metrics stopped scoring. Their evaluations are skipped while the model is unavailable.
+- **A metric on a legacy model keeps scoring** until the model is disabled.
+- **The [SDK reference](/sdk/api/metric/create) lists new judge models,** among them `claude-opus-5-5`, `claude-sonnet-5-5`, `GPT-6-Sol` and `GPT-5.6-Sol`. The models you can pick depend on your deployment.
+
+## For Delivered and Self-Hosted Deployments
+
+These changes are off or optional unless your deployment turns them on.
+
+- **Transfer files through the API.** With `STORAGE_PROXY_TRANSFER_ENABLED=true`, download links point to your API (valid for up to 1 hour) and uploads stream through it (15 minutes, 200 MiB per file by default). The flag also needs `STORAGE_TRANSFER_TOKEN_SECRET` and `API_URL`. The [Python SDK](/sdk/api/storage/service) follows these links. It is off by default.
+- **Check that every service can reach its dependencies.** Each Python AI service now reports on `GET /self-check`. The API gathers them in one `GET /self-check` and `galtea self-check`. An Admin, or a member of an Enterprise organization, can read it. Only an Admin sees the resolved values and the failure detail. An optional Helm Job (`selfCheckJob`, off by default) runs the check after a delivery, retries for a few minutes and prints a table to its log. The check makes billed model calls.
+- **A half-set Azure storage configuration now raises an error** when a service first uses storage, and the self-check shows it. Before, the service wrote to local disk.
+- **Sign in with Enterprise SSO.** When your deployment runs Keycloak sign-in, entering a team slug leads to your organization's identity provider. Every logout lands on the sign-in screen. New SAML providers validate response signatures, and a save is refused when no signing certificate is available. Existing SAML providers keep their old setting, so ask your Galtea operator to turn **Validate Signatures** on for them in Keycloak.
+
+## Platform Improvements
+
+- **Deactivate a user without deleting them.** An Owner or Admin can deactivate and reactivate a user from the users table or the user page. The user cannot sign in and their API keys stop working. Their role and data stay. Galtea refuses it when it would leave an organization with members and no active Owner or Admin.
+- **See pass counts on analytics score bars.** Hover a bar for the Passed and Not passed counts. Passed means a reported score of 0.5 or more. Merged bars now weight by evaluation count. Red now ends at 50% (it was 60%) and green starts at 85%.
+- **Secret header values on endpoint connections are encrypted** and shown as `••••••••`. Only a short list of common headers, such as `Content-Type` and `Accept`, and values made of placeholders such as `Bearer {{ bearer_token }}` stay readable. A value saved earlier is masked, but it stays unencrypted until you save the headers again.
+- **Retries claim each evaluation once.** An evaluation left pending for 24 hours now fails and can be retried. A self-hosted metric is never retried.
+- **Newly generated accuracy metrics read the test case's expected output** when their judge prompt asks for the correct answer. Metrics you already have are unchanged.
+- **Scenarios for a specification about language now exercise it.** A rule such as "never answer in Portuguese" now meets users who write in Portuguese, even on a Spanish test. Other specifications keep the test's language.
+- **A run where no session completed says how many test cases failed,** for example "3 of 3 test cases failed; no session completed".
+- **Last Successful on the analytics page** now counts evaluations of metrics excluded from analytics and skips deleted sessions.
+- **Faster pages on large products:** analytics scores and the metrics list for a product.
+
+</Update>
