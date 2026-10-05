@@ -65,7 +65,7 @@ Galtea normalizes the facts on every write:
 - It keeps the remaining text exactly. So `0.7` and `0.70` are two different facts.
 - It stores a map that leaves no entry as no facts.
 
-{/* The two limits below are MAX_FACT_KEYS and MAX_FACTS_BYTES in api/src/domain/models/versionFacts.ts. */}
+{/* The two limits below are MAX_FACT_KEYS and MAX_FACTS_BYTES in api/src/modules/product/domain/write/versionFacts.ts. */}
 
 Two limits apply. A version accepts at most 32 keys. The whole map accepts at most 2000 bytes, measured after Galtea encodes it as JSON, so the punctuation of that encoding counts towards the limit too.
 

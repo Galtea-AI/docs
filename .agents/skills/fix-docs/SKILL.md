@@ -380,8 +380,8 @@ Documentation is up to date for the checked scope.
 | SDK models | `sdk/galtea/domain/models/` |
 | SDK utilities | `sdk/galtea/utils/` |
 | SDK exports | `sdk/galtea/__init__.py` |
-| API routes | `api/src/infrastructure/in/routes/` |
-| API services | `api/src/application/services/` |
+| API routes | `api/src/modules/*/ui/routes/` |
+| API use cases and services | `api/src/modules/*/application/` |
 | Prisma schema | `api/prisma/schema.prisma` |
 | Dashboard source | `dashboard/src/` |
 | Evaluator metrics | `evaluator/` |
