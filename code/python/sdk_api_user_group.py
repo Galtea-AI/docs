@@ -1,11 +1,11 @@
 """
 SDK API: User Group
-Demonstrates how to create, list, get, update, delete user groups, and link/unlink users and metrics.
+Demonstrates how to create, list, get, update, delete user groups, and link/unlink users, metrics and products.
 """
 
 from datetime import datetime
 
-from _test_helpers import list_users
+from _test_helpers import create_test_product, list_users
 from galtea import Galtea
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
@@ -46,6 +46,10 @@ user_group_id = user_group.id
 # Setup: fetch a real user ID for link/unlink demos (filtered by organization)
 users_data = list_users(galtea, organization_id=user_group.organization_id)
 user_id_1 = users_data[0]["id"]
+
+# Setup: create two products for link/unlink demos
+product_id_1 = create_test_product(galtea, name="ug-demo-product-1-" + run_identifier)
+product_id_2 = create_test_product(galtea, name="ug-demo-product-2-" + run_identifier)
 
 # @start list
 user_groups = galtea.user_groups.list(
@@ -114,6 +118,26 @@ galtea.user_groups.unlink_metrics(
     metric_ids=[metric_id_2],
 )
 # @end unlink_metrics
+
+# @start link_products
+galtea.user_groups.link_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_1, product_id_2],
+)
+# @end link_products
+
+# @start unlink_products
+galtea.user_groups.unlink_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_2],
+)
+# @end unlink_products
+
+# Cleanup: unlink remaining product before deleting
+galtea.user_groups.unlink_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_1],
+)
 
 # Cleanup: unlink remaining metric before deleting
 galtea.user_groups.unlink_metrics(

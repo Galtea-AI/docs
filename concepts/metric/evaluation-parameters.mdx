@@ -175,7 +175,7 @@ Each section points to a different place to look:
 
 A skipped evaluation consumes no credits, and it is never dispatched to the evaluator.
 
-Spans can reach Galtea a few seconds after the turn they belong to. So on a run, Galtea waits up to about 9 seconds for late spans before it decides. When it skips after that wait, the message ends with a line such as `Waited ~9 s for late spans.` A production monitor checks at once, with no wait, and applies the same rules as a run, including the **Cannot be read by the judge** rule and the single-turn limit of deterministic metrics.
+Spans can reach Galtea a few seconds after the turn they belong to. So on a run, Galtea waits up to about 9 seconds for late spans before it decides. It does not wait when every turn that misses a span finished more than about 9 seconds ago, because late spans for those turns would already have arrived. When it skips after a wait, the message ends with a line such as `Waited ~9 s for late spans.` A production monitor applies the same wait rule and the same other rules as a run, including the **Cannot be read by the judge** rule and the single-turn limit of deterministic metrics. A monitor decides a session up to about two minutes after the session closes, so it rarely waits.
 
 Once you have provided the missing data, re-run the evaluation against the same session. A **Cannot be read by the judge** section is the exception: no data is missing, so re-running changes nothing until you pick a different metric or log the turn with the text you want scored, without the file.
 

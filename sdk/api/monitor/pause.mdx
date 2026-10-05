@@ -1,0 +1,27 @@
+---
+title: "Pausing Monitor"
+sidebarTitle: "Pause"
+description: "Pause a monitor so it stops scoring production sessions."
+---
+
+## Returns
+
+Returns the paused [Monitor](/concepts/product/monitor).
+
+A paused monitor scores nothing until you resume it, and it keeps its configuration. Sessions that
+close while it is paused are skipped for good.
+
+Pausing works from any status. Pausing a monitor that is already paused returns it unchanged.
+
+The API refuses the call when the monitor does not exist or you cannot edit it.
+
+## Example
+```python
+# Stop scoring until the monitor is resumed. The monitor keeps its configuration.
+paused_monitor = galtea.monitors.pause(monitor.id)
+```
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor to pause.
+</ResponseField>

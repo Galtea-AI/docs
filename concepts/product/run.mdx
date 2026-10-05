@@ -80,7 +80,7 @@ A Run has one of four statuses:
 
 - **`RUNNING`** — the work is in progress. Every new Run starts here.
 - **`COMPLETED`** — the work finished and created its evaluations.
-- **`FAILED`** — the launch produced no evaluation. A launch that fails its endpoint check ends here with zero evaluations, and so does one whose every session failed. The `error` field says why.
+- **`FAILED`** — no session of the launch completed. A launch that fails its endpoint check ends here with zero evaluations. A launch whose every session failed also ends here. Its sessions still hold evaluations: a session with a failed turn has each metric `SKIPPED`, and a session whose turns all completed is scored. The `error` field says why.
 - **`CANCELLED`** — you cancelled the Run, or the queue job that carried it out.
 
 A Run the platform opened settles with its own launch. The launch has one outcome, and that outcome becomes the status of the Run.

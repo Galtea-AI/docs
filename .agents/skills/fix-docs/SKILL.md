@@ -40,13 +40,13 @@ Store the choice as `FOCUS_AREA`.
 ## 2. Read Context Files
 
 Read these files for context on the documentation system:
-- `docs/CLAUDE.md` - Code embed system, page structure, MDX conventions
+- `docs/AGENTS.md` - Code embed system, page structure, MDX conventions
 - `docs/component_reference.md` - Component templates and formatting patterns
 - `docs/docs.json` - Navigation structure and all registered pages
 
 If code snippets are in scope, also read:
 - `docs/CODE_SNIPPETS.md` - Embed placeholder format, section markers, validation, file naming
-- `sdk/CLAUDE.md` - SDK development guidelines, resource patterns, testing
+- `sdk/AGENTS.md` - SDK development guidelines, resource patterns, testing
 
 ## 3. Read Documentation and Source Code
 
@@ -385,6 +385,6 @@ Documentation is up to date for the checked scope.
 | Prisma schema | `api/prisma/schema.prisma` |
 | Dashboard source | `dashboard/src/` |
 | Evaluator metrics | `evaluator/` |
-| Doc conventions | `docs/CLAUDE.md`, `docs/component_reference.md` |
+| Doc conventions | `docs/AGENTS.md`, `docs/component_reference.md` |
 | SDK tests | `sdk/tests/` |
 | API tests | `api/tests/` |

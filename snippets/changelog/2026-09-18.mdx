@@ -4,7 +4,7 @@
 
 A [run](/concepts/product/run) is the record of one launch. Galtea creates one every time you launch evaluations, from the dashboard, the CLI, the SDK or the REST API. A queue job disappears; a run stays, so you can still read last week's launch.
 
-- **Find runs under Runs in the product sidebar,** behind **More** unless **Show all tabs** is on. A run's page has three tabs: **Overview**, **Sessions** and **Evaluations**. Outside the Production view, session and evaluation tables gained a **Run** column and a **Runs** filter.
+- **Find runs under Runs in the product sidebar,** behind **More** unless **Show all tabs** is on. A run's page has four tabs: **Overview**, **Launches**, **Sessions** and **Evaluations**. Outside the Production view, session and evaluation tables gained a **Run** column and a **Runs** filter.
 - **A run whose test cases produced no session ends as `FAILED`,** with its reason. Sessions and no evaluations is still a success: a generation with no metric ends `COMPLETED` and carries no score.
 - **Run again** repeats a run and answers with a new one, leaving the original alone. The button is hidden, not disabled, when a run cannot repeat: two launches of one kind, no evaluation naming a session, or over 1000 sessions. For a run your own code drove, it re-scores the existing sessions rather than producing new ones. Only a re-launch accepts a different `versionId`.
 - **Cancel a queued launch** without stopping the rest of the run. A launch that finishes inside the request that started it cannot be cancelled. Whatever it already created is kept.
@@ -36,7 +36,7 @@ An AI Evaluation [metric](/concepts/metric) can now name the generation settings
 - **`reasoning_effort` is free text.** The levels differ per model: `minimal`, `none` and `max` exist beside `low`, `medium` and `high`.
 - **`Max output tokens` is capped by your model's ceiling in the dashboard only.** The API accepts any whole number of 1 or more, so an SDK or CLI caller can store a value the model will not honour.
 - **Settings cannot be changed later.** Create a revision of the metric to use different ones. The dashboard carries them into the revision, keeping those the new model also accepts. Through the SDK, a revision that omits them gets none.
-- **Prompt-based evaluations now record the judge's token usage.** The evaluation page shows it in the **Details** panel, and the evaluation list offers **Judge Tokens**, **Input Tokens**, **Output Tokens**, **Reasoning Tokens** and **Token Distribution** columns. The Python SDK returns the counts on `Evaluation`. Reasoning tokens sit inside the output count, so never add all three together.
+- **Prompt-based evaluations now record the judge's token usage.** The evaluation page shows it in a card under the **Verdict**, and the evaluation list offers **Judge Tokens**, **Input Tokens**, **Output Tokens**, **Reasoning Tokens** and **Token Distribution** columns. The Python SDK returns the counts on `Evaluation`. Reasoning tokens sit inside the output count, so never add all three together.
 
 ## Choose What Counts in Your Analytics
 

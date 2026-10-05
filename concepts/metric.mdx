@@ -73,7 +73,30 @@ You can reverse this decision from the metric's actions menu. Exclusion does not
 
 The metric list hides excluded revisions by default. Use **Show excluded from analytics** to reveal them. Turn on **Include legacy** to inspect earlier revisions. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
 
-When a product has excluded results, its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no data to that page.
+When a product has excluded results, its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no scores to that page. The page's **Last Successful** date still counts their evaluations, because it reports when an evaluation last ran.
+
+## Optimization review
+
+**Optimize** writes an improved judge prompt into a new revision named `<name> (Optimized)`. While it runs, that revision's page shows its progress, and you can leave the page. Unlike other revisions, it does not mark the original `Legacy`. When the optimizer returns a different prompt, the revision shows **Ready for review**, and its page shows the changes and both prompts.
+
+- **Apply optimization** marks the original revision `Legacy`. The optimized revision takes the original's name, description, and tags, and joins its specifications and user groups. Monitors use it from their next run.
+- **Keep original** leaves the original unchanged and marks the optimized revision **Not applied**. You can then optimize again.
+
+From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
+
+The review compares the original and the optimized prompt on both sets. For each prompt, it shows how many of the evaluations that both prompts scored agree with your annotation, and the alignment when it is defined. A declined or applied revision keeps these results on its page. The validation result is evidence, not a guarantee: a small validation set gives a rough estimate.
+
+Only the active revision of a metric can be optimized. Through the API, call `POST /metrics/{id}/activate-optimization` or `POST /metrics/{id}/decline-optimization` with the optimized revision's id.
+
+## Judge model retirement
+
+When a judge model is retiring, you get an email up to 30 days before the retirement date. It names the affected metrics and the judge models you can use instead. The email goes to the organization owners and admins, and to the creator of each affected metric.
+
+A metric's judge model cannot change after you create it. For your own metrics, create a new revision with another judge model.
+
+Galtea maintains its own metrics, so you cannot revise them. If your organization used one in the last 90 days, its owners and admins get the email too. To keep evaluating after the retirement date, create your own metric with one of the listed judge models.
+
+If the judge model becomes unavailable to Galtea on or after the retirement date, and stays unavailable for six hours, the same recipients get one email naming the metrics that stopped scoring.
 
 ## Available Metrics
 

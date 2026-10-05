@@ -84,7 +84,7 @@ simulation_result = galtea.simulator.simulate(
     When `agent_goes_first` is set to `True`:
     - Any `input` (first user message) defined on the associated `TestCase` will be ignored.
     - The first call to your agent will have an empty `messages` list in the `AgentInput`. Ensure your agent function can handle cases where `input_data.last_user_message_str()` returns `None` (or the messages list is empty).
-    - The opening turn is recorded as pending and only your agent's reply completes it. If the run stops during that first call, the turn stays pending and the session is not evaluated.
+    - The opening turn is recorded as pending and only your agent's reply completes it. If the run stops during that first call, the turn stays pending, and the session's evaluations are skipped until something completes it.
     - It cannot be combined with a test case that [starts from a predefined conversation](/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation). The opening turn is recorded before the predefined conversation can be placed in front of it, so the simulation is refused.
   </Note>
 </ResponseField>

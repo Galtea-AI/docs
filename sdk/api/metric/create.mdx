@@ -63,11 +63,19 @@ metric = galtea.metrics.create(
   The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.
   
   **Available models:**
+  - `"claude-opus-5-5"`
+  - `"claude-sonnet-5-5"`
   - `"claude-opus-5"`
   - `"claude-sonnet-5"`
   - `"claude-sonnet-4-6"`
   - `"claude-sonnet-4-5"`
   - `"claude-haiku-4-5"`
+  - `"GPT-6.1-Sol"`
+  - `"GPT-6-Sol"`
+  - `"GPT-6-Luna"`
+  - `"GPT-5.6-Sol"`
+  - `"GPT-5.6-Terra"`
+  - `"GPT-5.6-Luna"`
   - `"GPT-5.5"`
   - `"GPT-5.4"`
   - `"GPT-5.2"`
@@ -126,9 +134,9 @@ metric = galtea.metrics.create(
   </Note>
 </ResponseField>
 <ResponseField name="user_group_ids" type="list[string]" optional>
-  A list of [user group](/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`.
-  - If user group IDs are specified, only users in those groups can annotate evaluations for this metric.
-  - If no user group IDs are specified, any user in the organization can annotate.
+  A list of [user group](/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`. Each group must belong to your organization.
+  - Only users in the linked groups can annotate evaluations for this metric.
+  - A metric with no linked group reaches nobody: its pending evaluations show up for no one, and its metric page shows a warning.
 </ResponseField>
 <ResponseField name="tags" type="list[string]" optional>
   Tags to categorize the metric.

@@ -40,6 +40,16 @@ metric = galtea.metrics.get(metric_id="your-metric-id")
 family_key = metric.metric_group_id
 ```
 
+For each family, the Monitor scores one revision per session: the newest revision that is not legacy. If every revision is legacy, the Monitor scores the newest one that is not disabled, so a legacy revision keeps scoring until it is disabled. A revision stays the scored one when its evaluator model is retired or unavailable: its sessions get a `SKIPPED` evaluation with the reason, and a Monitor never switches to an older revision for them. An optimized revision is never scored until you choose **Apply optimization**: while the optimization runs, while it waits for your review, and after you choose **Keep original**, the Monitor keeps scoring the original revision. When every revision is disabled, each sampled session gets a final `SKIPPED` evaluation that names the metric as disabled. Deleting the revision the Monitor scores stops it scoring that family: it never goes back to an older revision.
+
+A self-hosted metric family cannot be bound to a Monitor. A Monitor scores production sessions with
+no caller involved, and a self-hosted metric's score always comes from the caller, so there is no
+score for the Monitor to record. The API answers `400 Bad Request` when a create binds one, or when an
+update adds one; a family the Monitor already binds can still be resent without effect. In the SDK,
+`galtea.monitors.create` then returns `None`, and `galtea.monitors.update` raises the error.
+
+<Note>A **Self-Hosted** family a Monitor already binds scores nothing: every session gets a final `SKIPPED` evaluation instead. A **Human Evaluation** family is checked the same way as any other metric (missing data or a disabled metric still SKIPs); once those checks pass, it waits `PENDING_HUMAN` for a reviewer, the same as on any other evaluation path.</Note>
+
 ## Sampling
 
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
@@ -48,7 +58,7 @@ Changing `sampling_percentage` only affects sessions that close after the change
 
 ## When a session gets scored
 
-A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
+A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. A closed session with no turns is treated as fully decided and never scored: there is nothing to send for evaluation, so no row is written for it. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
 
 This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
 
@@ -71,11 +81,43 @@ A Monitor has a `status` that tells you whether it is scoring and, if not, why. 
 - **`NO_CREDITS`** — the organization ran out of credits. Sessions that close in the meantime are skipped for good. Scoring resumes when credits are available.
 - **`FAILING`** — reserved for a Monitor that keeps failing to score sessions. The system does not currently set it automatically.
 
-You can set only `ACTIVE` (to resume) or `PAUSED` (to pause). `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
+Pause and resume a Monitor from its row menu, from its page in the dashboard, with `galtea.monitors.pause` and `galtea.monitors.resume`, with `galtea monitors pause` and `galtea monitors resume`, or with `POST /monitors/{id}/pause` and `POST /monitors/{id}/resume`. Both work from any status, and repeating one changes nothing. If a resumed Monitor is still capped or out of credits, the next scan sets `CAPPED` or `NO_CREDITS` again.
+
+Setting `status` to `ACTIVE` or `PAUSED` through an update still works. You can set only those two values: `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
+
+## Alert rules
+
+An alert rule describes when a monitor should warn your team: too many badly scored sessions on one metric family within a time window. Open the monitor and pick the **Alerts** tab to add, edit, or delete its rules. Rules go on a monitor that already exists; the creation form has no alert fields.
+
+- **Metric family**: one of the families this monitor scores. Add one rule per family to watch several.
+- **Window**: 15 minutes, 1 hour, 6 hours, or 24 hours.
+- **Bad metric score**: 0 to 1. A session is bad when its metric score is at or below it.
+- **Threshold**: a whole number of 1 or more. The number of bad sessions within the window that the rule watches for.
+- **Recipients**: 1 to 20 email addresses. The form starts with your own. Stored in lowercase, and a repeated address is kept once.
+
+A new rule starts with a 1 hour window, a bad metric score of 0.5, and a threshold of 10, and the list shows it as "10 or more sessions with a metric score of 0.5 or lower within 1 hour".
+
+Filter the rules by metric family, status, or creation date. Click a rule to open its page. Its header shows the status, a Pause or Resume button, and a menu to edit or delete the rule. The **Overview** tab lists its condition, recipients, and recent activity. The **Alerts** tab shows the alert history of that rule only. A rule you add opens on its own page.
+
+Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email. If it has an open alert, pausing closes it without a recovery email. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and emails its recipients. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
+
+Removing a metric family from the monitor deletes the alert rules on that family. Deleting the monitor deletes its alert rules.
+
+Viewing rules needs read access to the monitor; adding, editing, pausing, resuming, or deleting them needs the permission to edit it.
+
+### Alerts
+
+A rule opens an alert when its threshold is reached. The alert closes once the count drops far enough below the threshold, when its rule is deleted or paused, or when the rule's metric family, bad metric score, or window changes. The **Alerts** tab shows alerts next to the rules:
+
+- **Status**: "Paused" when the rule is paused, "Open" with the time it opened when the rule has an open alert, or "OK".
+- **Alerts · 30 days**: how many alerts were open at some point in the last 30 days, and when the newest one opened.
+- **Alert history**: a timeline with one line per rule and a bar for each time an alert was open, above a table of the alerts. Filter both by state and by rule, one or more of each. Filter by time range too: the last hour, 12 hours, 24 hours, 7 days, or 30 days, or a period you pick in the calendar.
+
+Select an alert to open its page. It shows what the check saw when the alert opened: the bad session count, the scored session count, the threshold, the window, the sampling rate, and the metric revision. These values do not change later, even if a session is scored again. The page also lists the monitor's evaluations of the bad sessions the alert stored, up to 200 sessions per alert, so you can see each score.
 
 ## SDK Integration
 
-The SDK lets you create, list, retrieve, update (including pause and resume), and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
+The SDK lets you create, list, retrieve, update, pause, resume, and delete monitors. See the [Monitor Service API documentation](/sdk/api/monitor/service) for more details.
 
 <SDKMonitorServiceCard />
 

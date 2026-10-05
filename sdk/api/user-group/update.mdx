@@ -4,6 +4,8 @@ sidebarTitle: "Update"
 description: "Update an existing user group."
 ---
 
+Only an OWNER or ADMIN can update a user group.
+
 ## Returns
 Returns the updated [User Group](/concepts/user-group) object.
 
@@ -25,4 +27,7 @@ user_group = galtea.user_groups.update(
 </ResponseField>
 <ResponseField name="description" type="string" optional>
   New description for the user group.
+</ResponseField>
+<ResponseField name="all_products" type="boolean" optional>
+  Links the group to every product of the organization, current and future. A READER or HUMAN_EVALUATOR in the group then sees every product.
 </ResponseField>
