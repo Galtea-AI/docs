@@ -10,7 +10,7 @@ Reach for this method directly to store a file for another purpose, or when you 
 
 ## Returns
 
-Returns the URI the file is stored under. It still carries the upload's signature and expires. Attaching it to a test case input or to a trace output replaces it with the canonical, signature-free reference when the entity is written, so what you read back never expires. Never treat the uri you get here as a link to the bytes: it expires. Ask for a fresh one with [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
+Returns the URI the file is stored under. It still carries the upload's signature and expires. Attaching it to a test case input or to a trace output replaces it with a signature-free storage reference when the entity is written, so what you read back never expires. Never treat the uri you get here as a link to the bytes: it expires. Ask for a fresh one with [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
 
 ## Example
 

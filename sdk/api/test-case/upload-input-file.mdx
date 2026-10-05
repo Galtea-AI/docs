@@ -18,7 +18,7 @@ Returns an `AttachedFile` with `uri`, `filename` and `mime_type`. Place it in th
   `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
 </Note>
 
-The `uri` still carries the upload's signature and expires. Galtea replaces it with the canonical, signature-free reference when the test case is written, and that is the one `test_case.input_files` reads back. Store that one, not this one.
+The `uri` still carries the upload's signature and expires. Galtea replaces it with a signature-free storage reference when the test case is written, and that is the one `test_case.input_files` reads back. Store that one, not this one.
 
 ## Example
 
