@@ -31,8 +31,9 @@ monitor = galtea.monitors.create(
 <ResponseField name="metric_group_ids" type="list[string]" required>
   The metric family IDs (`metric.metric_group_id`) the monitor scores with. At least one is required.
   The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
-  A self-hosted metric family is refused, because a monitor has no caller to supply the score. `create`
-  then returns `None` instead of a Monitor.
+  A self-hosted metric family is refused, because a monitor has no caller to supply the score. A
+  [Classifier (Jev)](/concepts/metric/classifier) family is refused when classifier metrics are off on
+  the deployment. In both cases `create` returns `None` instead of a Monitor.
 </ResponseField>
 <ResponseField name="version_id" type="string" optional>
   The ID of a single version to watch. Omit to watch every version of the product.

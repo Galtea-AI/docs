@@ -72,6 +72,16 @@ Complete with AI is available for **AI Evaluation** and **Human Evaluation** met
 - For **AI Evaluation**, it produces a binary LLM-judge prompt and sets the platform's default evaluator model, which you can change before saving.
 - For **Human Evaluation**, it produces annotator guidelines on a 0–100 scoring scale (no evaluator model, since a human assigns the score).
 
+For **AI Evaluation** with the **Classifier (Jev)** judge, it builds the metric's one question from the description:
+
+- One condition that always applies gets a Yes/No question with its **Good answer**, or a Scale question for a graded quality.
+- One condition that applies only sometimes gets a Scale question with a **Does not apply** level.
+- Several conditions that always apply get one Yes/No question that lists them all.
+- Several conditions where some do not always apply get no question. Create one metric per condition.
+- Any part it could not turn into a question (counting, dates, exact text) is listed with a suggested alternative.
+
+The question is a draft for you to review. See [Classifier (Jev)](/concepts/metric/classifier#complete-with-ai).
+
 **Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/concepts/metric/evaluation-types) for the differences between these scoring methods.
 
 ## Update a Metric with AI
@@ -83,7 +93,7 @@ The endpoint **persists nothing** — you review the revision and decide whether
 In the dashboard it is available only from the **New Revision** form (open a metric → **New Revision**), not from a blank or template create form. It is a panel beside the form fields, on screen for as long as the form is: you write the instruction in it and the revised values land in the fields next to it.
 
 <Info>
-  Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable.
+  Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable. Classifier metrics have no judge prompt, so they cannot be revised with AI.
 </Info>
 
 Applying a revision only fills in the form: the judge prompt, evaluation parameters, and description each get an "AI Generated" badge, but nothing is saved until you submit the **New Revision** form.
@@ -123,3 +133,5 @@ When you save a metric generated from a specification, it is automatically linke
 Metrics created via **Complete with AI** are not automatically linked to a specification — you can link them manually from the [Specification Hub](/concepts/product/specification) if needed.
 
 You can view linked specifications directly from a metric's detail page, and manage metric-specification links from the [Specification Hub](/concepts/product/specification).
+
+You can also set the links from the metric side with the [REST API](/api-reference). Send `specificationIds` in `PATCH /metrics/{id}` (`galtea metrics update`). The field is the full list of POLICY or CAPABILITY specifications the metric links to. A link missing from the list is removed, `[]` removes every link, and leaving the field out keeps the links. A specification must belong to the metric's organization. To link a Galtea default metric, start from the specification instead: `POST /specifications/{id}/metrics` (`galtea specifications link-metrics`) links it to a specification of your organization.

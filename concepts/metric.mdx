@@ -155,7 +155,7 @@ If the judge model becomes unavailable to Galtea on or after the retirement date
 </ResponseField>
 
 <ResponseField name="Evaluator Model" type="Text" optional>
-  The model used to score the metric. Does not apply to deterministic metrics. **Example**: "GPT-4.1"
+  The model used to score the metric. Does not apply to deterministic metrics. For a [Classifier (Jev)](/concepts/metric/classifier) metric, the platform sets the Jev model. **Example**: "GPT-4.1"
 </ResponseField>
 
 <ResponseField name="Tags" type="Text List" optional>
@@ -171,7 +171,11 @@ If the judge model becomes unavailable to Galtea on or after the retirement date
 </ResponseField>
 
 <ResponseField name="Evaluation Parameters" type="List[Enum]" required>
-  The data fields available to the evaluator. See [Evaluation Parameters](/concepts/metric/evaluation-parameters) for the full reference. Not applicable for Self-Hosted metrics.
+  The data fields available to the evaluator. See [Evaluation Parameters](/concepts/metric/evaluation-parameters) for the full reference. Not applicable for Self-Hosted metrics. For a Classifier (Jev) metric, the platform derives them from the placeholders in the question.
+</ResponseField>
+
+<ResponseField name="Classifier Question" type="Object" optional>
+  The one Yes/No or Scale question a classifier metric asks. Only for the classifier source. See [Classifier (Jev)](/concepts/metric/classifier).
 </ResponseField>
 
 ## Related
