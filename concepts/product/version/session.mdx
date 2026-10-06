@@ -79,7 +79,7 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
 </ResponseField>
 
 <ResponseField name="Recording URI" type="Text" optional>
-  The canonical storage URI of the full-call recording for telephony sessions. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
+  The storage URI of the full-call recording for telephony sessions, returned under the deployment's public file base when one is set, otherwise as stored. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
 </ResponseField>
 
 ## Session Lifecycle

@@ -56,7 +56,7 @@ In both cases, the AI analyzes your product name, description, and the selected 
 
 ## Complete a Metric with AI
 
-When you already know **what** you want to measure but don't want to write the judge prompt by hand, use **Complete with AI**. You provide the metric's name, description, and evaluation type as the source of truth, and the AI fills in the rest: the judge prompt and the evaluation parameters (plus a recommended evaluator model for AI Evaluation).
+When you already know **what** you want to measure but don't want to write the judge prompt by hand, use **Complete with AI**. You provide the metric's name, description, and evaluation type as the source of truth, and the AI fills in the rest: the judge prompt and the evaluation parameters. For AI Evaluation, the metric gets the platform's default evaluator model for generated metrics, which you can change before saving.
 
 This is available in two places:
 
@@ -69,7 +69,7 @@ This is available in two places:
 
 Complete with AI is available for **AI Evaluation** and **Human Evaluation** metrics:
 
-- For **AI Evaluation**, it produces a binary LLM-judge prompt and recommends an evaluator model.
+- For **AI Evaluation**, it produces a binary LLM-judge prompt and sets the platform's default evaluator model, which you can change before saving.
 - For **Human Evaluation**, it produces annotator guidelines on a 0–100 scoring scale (no evaluator model, since a human assigns the score).
 
 **Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/concepts/metric/evaluation-types) for the differences between these scoring methods.
@@ -113,7 +113,7 @@ Each AI-generated metric candidate includes:
 | **Judge Prompt** | The evaluation prompt with placeholders for dynamic data |
 | **Evaluation Parameters** | The data parameters the judge needs for evaluation (automatically selected based on the specification in spec mode, or from the metric description in completion mode) |
 | **Tags** | Categorization tags |
-| **Evaluator Model** | The LLM model used for evaluation (null for Human Evaluation metrics) |
+| **Evaluator Model** | The platform's default evaluator model for generated metrics. You can change it before saving. Null for Human Evaluation metrics. |
 | **Test Type** | Inherited from the source specification (null in completion mode when no specification is provided) |
 
 ## Specification Linking

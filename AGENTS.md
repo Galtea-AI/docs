@@ -59,7 +59,7 @@ This also decides whether the check can fail at all. A snippet whose agent callb
 
 No hand-written page is the API contract: the wire-level contract is the generated OpenAPI reference (the `openapi` entry in `docs.json`). `concepts/` pages describe product fields as display labels ("Stopping Reason") in SDK vocabulary, so their field names do not track the API's. Two traps follow.
 
-- **Absolute claims.** Before writing "every", "always", or "never", check the field in `api/prisma/schema.prisma` and `api/src/swagger.ts`, not only the SDK method. The API often accepts what the SDK does not expose: `SessionInput.status` lets a caller create an already-closed session, while `session_service.create()` has no such parameter.
+- **Absolute claims.** Before writing "every", "always", or "never", check the field in `api/prisma/schema.prisma` and `api/src/bootstrap/swagger.ts`, not only the SDK method. The API often accepts what the SDK does not expose: `SessionInput.status` lets a caller create an already-closed session, while `session_service.create()` has no such parameter.
 - **Contrasting two settings.** Confirm **both** still exist. A removed field is easy to describe from memory and yields prose that contradicts the page it links to, as happened with a per-Monitor inactivity window documented after #3379 deleted it.
 
 ## Adding a New Page

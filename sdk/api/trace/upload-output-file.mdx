@@ -14,7 +14,7 @@ This is the answer-side twin of [Upload Input File](/sdk/api/test-case/upload-in
 
 Returns an `AttachedFile` with `uri`, `filename` and `mime_type`. Place it in the output's `content` list.
 
-The `uri` still carries the upload's signature and expires. The API replaces it with the canonical, signature-free reference when the turn is written, so `trace.actual_output_files` reads back a uri that does not expire and grants nobody the bytes on its own. Never treat either form as a link to the bytes: ask for a fresh one with [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
+The `uri` still carries the upload's signature and expires. The API replaces it with a signature-free storage reference when the turn is written, so `trace.actual_output_files` reads back a uri that does not expire and grants nobody the bytes on its own. Never treat either form as a link to the bytes: ask for a fresh one with [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
 
 <Note>
   `AttachedFile` is the object that used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.

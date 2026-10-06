@@ -12,7 +12,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 
 ## Prerequisites
 
-- A [Product](/concepts/product) and a [Version](/concepts/product/version) in Galtea.
+- A [Product](/concepts/product) in Galtea. A [Version](/concepts/product/version) too, if you route by version ID.
 - A Galtea API key.
 - Your system emits OpenTelemetry traces.
 
@@ -46,29 +46,76 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
   </Step>
 
   <Step title="Route to a product version">
-    Assembly requires the `galtea.version.id` **resource attribute**. It routes the spans to a [Version](/concepts/product/version) of your product and is validated against the organization of the API key you authenticate with. Without it, uncorrelated spans are rejected.
+    Assembly needs to know which [Version](/concepts/product/version) the spans belong to. You name it with **resource attributes**. A resource attribute describes the whole telemetry source, not a single span. So you can set it once on your own OTel Collector, even when a managed platform emits the spans and you cannot edit them. Galtea validates it against the organization of the API key you authenticate with. Without a route, uncorrelated spans are rejected.
 
-    A resource attribute describes the whole telemetry source, not a single span. So you can set it once on your own OTel Collector, even when a managed platform emits the spans and you cannot edit them:
+    Pick one of two options.
 
-    ```yaml
-    # Add this to the Collector config from the "Send OpenTelemetry Traces to Galtea" setup page.
-    # The otlp receiver, the batch processor, and the otlphttp/galtea exporter
-    # are defined there; here you only add the resource/galtea processor and
-    # reference it in the traces pipeline.
-    processors:
-      resource/galtea:
-        attributes:
-          - key: galtea.version.id
-            value: "<your-version-id>"
-            action: upsert
+    <Tabs>
+      <Tab title="By version ID">
+        Set `galtea.version.id` to the ID of a Version you created.
 
-    service:
-      pipelines:
-        traces:
-          receivers: [otlp]
-          processors: [resource/galtea, batch]
-          exporters: [otlphttp/galtea]
-    ```
+        ```yaml
+        # Add this to the Collector config from the "Send OpenTelemetry Traces to Galtea" setup page.
+        # The otlp receiver, the batch processor, and the otlphttp/galtea exporter
+        # are defined there; here you only add the resource/galtea processor and
+        # reference it in the traces pipeline.
+        processors:
+          resource/galtea:
+            attributes:
+              - key: galtea.version.id
+                value: "<your-version-id>"
+                action: upsert
+
+        service:
+          pipelines:
+            traces:
+              receivers: [otlp]
+              processors: [resource/galtea, batch]
+              exporters: [otlphttp/galtea]
+        ```
+
+        Every change to your agent then needs a new Version and a new ID in this configuration.
+      </Tab>
+      <Tab title="By product and facts">
+        Set `galtea.product.id` to your product ID, and one `galtea.version.fact.<key>` attribute for each [fact](/concepts/product/version#version-facts) of your agent state. The text after the prefix is the fact key. Galtea finds the Version of that product that holds exactly these facts, and creates the product's next Version when none does. It follows the rules of [Get or Create Version](/sdk/api/version/get-or-create):
+
+        - The same facts reuse one Version, whatever the order of the attributes.
+        - One changed value creates a new Version, so a release or a model change needs no configuration edit in Galtea.
+        - A fact is text. An integer is sent as text and accepted. A decimal number, a boolean, or a list makes the facts invalid, so quote `"0.7"` in the Collector configuration: an unquoted `0.7` is sent as a decimal number.
+
+        ```yaml
+        processors:
+          resource/galtea:
+            attributes:
+              - key: galtea.product.id
+                value: "<your product id>"
+                action: upsert
+              - key: galtea.version.fact.release
+                from_attribute: service.version
+                action: upsert
+              - key: galtea.version.fact.model
+                value: "gpt-4o"
+                action: upsert
+              - key: galtea.version.fact.temperature
+                value: "0.7"
+                action: upsert
+        ```
+
+        Add `resource/galtea` to the traces pipeline as in the first tab. Without a Collector, set the same attributes in your OTel SDK environment. Percent-encode commas, equals signs, and spaces in a value.
+
+        ```bash
+        export OTEL_RESOURCE_ATTRIBUTES="galtea.product.id=<your product id>,galtea.version.fact.model=gpt-4o,galtea.version.fact.release=1.4.2"
+        ```
+
+        <Warning>
+          Never map a value that changes per request, such as a request ID or a timestamp, to a fact. Every distinct value creates a new Version, and Galtea does not limit how many.
+        </Warning>
+
+        Your API key must belong to the product's organization. When no Version holds the facts yet, its role must also be allowed to create a Version. Otherwise Galtea rejects the spans and the export response says so.
+      </Tab>
+    </Tabs>
+
+    If a resource sets `galtea.version.id` and the product and fact attributes, `galtea.version.id` wins and Galtea ignores the rest.
   </Step>
 
   <Step title="Link a conversation to a test case (optional)">
@@ -78,7 +125,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 
     Set the key in either place:
 
-    - **On the resource**, when the whole telemetry source is one test run. Add it next to `galtea.version.id` in the `resource/galtea` processor from the previous step.
+    - **On the resource**, when the whole telemetry source is one test run. Add it next to the version attributes in the `resource/galtea` processor from the previous step.
     - **On a span**, when one source sends several test cases. A span value marks one conversation, and it wins over the resource value.
 
     ```yaml
@@ -103,7 +150,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
 
     The rest of the payload still ingests. The rejected spans appear in the export response's `partialSuccess.rejectedSpans` count.
 
-    The response's `partialSuccess.errorMessage` names the reason. It reports one clause per reason that applied to the batch, for example `5 spans carry no galtea.version.id resource attribute and match no existing trace`, so your collector log says what to change.
+    The response's `partialSuccess.errorMessage` names the reason. It reports one clause per reason that applied to the batch, for example `5 spans carry neither galtea.version.id nor galtea.product.id with galtea.version.fact.* resource attributes, and match no existing trace`, so your collector log says what to change.
 
     Spans that carry no test case attribute still attach to whatever session the conversation key already holds. That is how OTel spans join a session the Galtea SDK opened during a test run.
 

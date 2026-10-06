@@ -84,6 +84,8 @@ When a product has excluded results, its Analytics page states how many results 
 
 From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
 
+Expand **Advanced Options** in the **Optimize** confirmation to narrow a run. **Strategies** sets which rewrites the optimizer tries: **Fix false passes**, **Fix false failures**, **Add a scoring rubric**, **Simplify the prompt** and **Broaden the wording**. Each step asks for one rewrite per selected strategy and keeps the best one. **Maximum steps** sets how many steps the run may take, from 1 to 10, and defaults to 10. A run stops earlier when the prompt stops improving. With every strategy selected and 10 steps, the run is the same as one without options. The review card, the No improvement notice and the page of a declined or applied revision show the steps the run used out of its maximum and the strategies it ran. An attempt that did not report them shows **Not reported**.
+
 The review compares the original and the optimized prompt on both sets. For each prompt, it shows how many of the evaluations that both prompts scored agree with your annotation, and the alignment when it is defined. A declined or applied revision keeps these results on its page. The validation result is evidence, not a guarantee: a small validation set gives a rough estimate.
 
 Only the active revision of a metric can be optimized. Through the API, call `POST /metrics/{id}/activate-optimization` or `POST /metrics/{id}/decline-optimization` with the optimized revision's id.
@@ -94,7 +96,7 @@ When a judge model is retiring, you get an email up to 30 days before the retire
 
 A metric's judge model cannot change after you create it. For your own metrics, create a new revision with another judge model.
 
-Galtea maintains its own metrics, so you cannot revise them. If your organization used one in the last 90 days, its owners and admins get the email too. To keep evaluating after the retirement date, create your own metric with one of the listed judge models.
+Galtea maintains its own metrics, so you cannot revise them. If your organization used one in the last 90 days, its owners and admins get the email too. Galtea may replace one of its metrics with a new revision on another judge model. When it does, the email names the new revision and links to it. Use that revision to keep evaluating. When there is no new revision, create your own metric with one of the listed judge models to keep evaluating after the retirement date.
 
 If the judge model becomes unavailable to Galtea on or after the retirement date, and stays unavailable for six hours, the same recipients get one email naming the metrics that stopped scoring.
 

@@ -147,7 +147,7 @@ Each file the path matches can take one of three forms:
 
 - **Bytes:** an object with `base64` and optional `mime_type` and `filename`, or a `data:` URI string. The standard and the URL-safe base64 alphabets both work. Galtea decodes the bytes and makes no extra request.
 - **URL:** an `http(s)` URL string, or an object with `url` (or `uri`) and optional `mime_type` and `filename`. Galtea downloads the file once, during the run.
-- **Galtea file:** the canonical storage URI of a file already uploaded to Galtea, as a string or in `url` or `uri`. It is the signature-free `uri` a written trace or test case reads back with. Galtea links the file on the turn, with no download and no copy. A signed link is a URL, not a Galtea file: it is downloaded and copied. That covers the `uri` an SDK upload returns and the `url` of an `input_files` item.
+- **Galtea file:** the storage URI of a file already uploaded to Galtea, as a string or in `url` or `uri`. It is the signature-free `uri` a written trace or test case reads back with, as stored or under the deployment's public file base when one is set. Galtea links the file on the turn, with no download and no copy. A signed link is a URL, not a Galtea file: it is downloaded and copied. That covers the `uri` an SDK upload returns and the `url` of an `input_files` item.
 
 <CodeGroup>
 ```json Endpoint Response
