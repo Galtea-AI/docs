@@ -342,13 +342,19 @@ A reported count replaces one Galtea estimated earlier: your own figure is the a
 
 ## Attributes that route a conversation
 
-The keys above fill a Span record. Three more keys decide which session Galtea assembles the spans into. They apply to uncorrelated spans only, so a span already linked to a Trace ignores them.
+The keys above fill a Span record. The keys below decide which session Galtea assembles the spans into. They apply to uncorrelated spans only, so a span already linked to a Trace ignores them.
 
 | Attribute Key | Set On | Description |
 |---|---|---|
 | `galtea.session.custom_id` | Span | Your own conversation ID. Spans sharing it become one session. Galtea also reads the standard `gen_ai.conversation.id` and `session.id` keys when this one is absent. |
-| `galtea.version.id` | Resource | The [Version](/concepts/product/version) the session is created under. Required: without it, uncorrelated spans are rejected. |
+| `galtea.version.id` | Resource | One of two ways to name the [Version](/concepts/product/version) the session is created under. When it is set, Galtea uses it and does not read `galtea.product.id` or the fact attributes. Without it and without the product and fact attributes, uncorrelated spans are rejected. |
+| `galtea.product.id` | Resource | The [Product](/concepts/product) the spans belong to. Send it with the fact attributes below. It must belong to the organization of your API key. |
+| `galtea.version.fact.<key>` | Resource | One fact of the agent state, for example `galtea.version.fact.model`. The text after the prefix is the fact key. A value is text or an integer. Galtea uses the Version of the product that holds exactly these facts, and creates it when none does. |
 | `galtea.test_case.id` | Resource or span | The [Test Case](/concepts/product/dataset/test-case) the conversation exercises. Galtea creates the session as non-production and links it to that test case, so no [Monitor](/concepts/product/monitor) scores it. A span value marks one conversation and wins over the resource value. Omit the key to get a production session. |
+
+Name the version in one of two ways. `galtea.version.id` points at a Version you already created. `galtea.product.id` plus the `galtea.version.fact.<key>` attributes describe the agent state instead, and Galtea finds or creates the matching Version with the rules of [Get or Create Version](/sdk/api/version/get-or-create): the same facts reuse one Version, and one changed value creates a new one. If a resource sets both, `galtea.version.id` wins and the fact attributes are ignored. [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry) shows both setups.
+
+Galtea rejects the uncorrelated spans of a resource, while the rest of the payload still ingests, when it sends fact attributes without `galtea.product.id`, when the facts are not valid (a value that is not text or an integer, more than 32 keys, or more than 2000 bytes in all), or when the product does not exist in your organization. The last case also covers an API key whose role cannot create a Version when no Version holds the facts yet.
 
 Galtea rejects one conversation, while the rest of the payload still ingests, when the test case does not exist, when it belongs to another product than the version, when two spans of one conversation name different test case IDs or two resources do, or when the conversation key already holds another session on that version. Those spans are counted in the export response's `partialSuccess.rejectedSpans`. The response's `partialSuccess.errorMessage` names the reason that applied, so your collector log says what to change.
 
