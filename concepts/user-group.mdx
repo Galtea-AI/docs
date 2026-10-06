@@ -59,7 +59,7 @@ User groups can be managed in two places:
   IDs of metrics linked to this group.
 </ResponseField>
 <ResponseField name="product_ids" type="list[string]">
-  IDs of products linked to this group. The products a group links are the only products its READER and HUMAN_EVALUATOR users can see.
+  IDs of products linked to this group. The products a group links are the only products its READER and HUMAN_EVALUATOR users can see. A READER or HUMAN_EVALUATOR gets only the IDs of the products it can see, in every group.
 </ResponseField>
 <ResponseField name="all_products" type="boolean">
   When `true`, the group is linked to every product of the organization, current and future,
