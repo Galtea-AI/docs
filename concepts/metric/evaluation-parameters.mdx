@@ -10,6 +10,7 @@ When creating or configuring a metric, you select which parameters are relevant 
 - For **AI Evaluation**, the selected parameters are automatically prepended to your `judge_prompt`.
 - For **Human Evaluation**, they determine which data fields are displayed to annotators.
 - For **Self-Hosted** metrics, evaluation parameters do not apply.
+- For **Classifier (Jev)** metrics, you do not select parameters. They come from the `{{ name }}` placeholders in the question, and only a [short list of names](/concepts/metric/classifier#allowed-placeholders) is allowed.
 
 <Warning>
   Only select parameters that your evaluation criteria actually reference. Including unnecessary parameters can reduce evaluation quality by adding noise to the evaluator's context.

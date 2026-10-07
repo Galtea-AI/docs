@@ -1,0 +1,197 @@
+---
+title: "Classifier (Jev)"
+sidebarTitle: "Classifier (Jev)"
+description: "Score an AI Evaluation metric with one typed question that TypeSafe's Jev answers with probabilities, for 1 credit"
+icon: "bolt"
+---
+
+## What the classifier is
+
+The classifier is a judge for an **AI Evaluation** metric. It uses Jev, a decision model from TypeSafe. Jev answers one typed question about the conversation and returns a probability for each answer. It writes no reasoning.
+
+- It is fast: an answer usually takes less than a second.
+- It costs 1 credit per evaluation.
+
+In the metric form, pick **AI Evaluation**, then **Judge: Classifier (Jev)**. The classifier is available only where your deployment enables it. In the SDK, the metric source is `"classifier"`.
+
+## When to use it
+
+- **Classifier**: a clear rule that a reply must follow or must never break, or a graded quality whose levels you can describe as concrete situations.
+- **LLM judge**: the check needs reasoning, a written explanation of the score, or files.
+- **Deterministic metric**: exact text or JSON matching. Use one of Galtea's metrics, such as [Text Similarity](/concepts/metric/text-similarity) or [JSON Field Match](/concepts/metric/json-field-match).
+- **Counting, arithmetic, dates or time limits**: use an LLM judge metric or a [Self-Hosted](/concepts/metric/evaluation-types#self-hosted) metric.
+
+## Question types
+
+A classifier metric asks exactly one question. The question names the data it reads with placeholders, such as `{{ actual_output }}` or `{{ input }}`. Insert them from the Evaluation Parameters list above the text.
+
+### Allowed placeholders
+
+A question can use only these names. Any other name is refused, including the deprecated parameters.
+
+- `product_description`
+- `input`
+- `expected_output`
+- `context`
+- `expected_tools`
+- `goal`
+- `actual_output`
+- `retrieval_context`
+- `traces`
+- `tools_used`
+
+See [Evaluation Parameters](/concepts/metric/evaluation-parameters) for what each name holds.
+
+### Yes/No
+
+A question with a yes or no answer. You must set the **Good answer**: Yes or No.
+
+Example: "Does `{{ actual_output }}` ask the user for their full card number?", with Good answer **No**.
+
+Under **Advanced**, **Refine what yes and no mean** lets you describe a boundary case. Use it only when the question alone is not clear.
+
+### Scale
+
+A question with two or more levels, worst first. Each level has a description and a score from 0 to 1. The scores are evenly spaced by default (for three levels: 0, 0.5 and 1). You can edit them, but they must not go down from the worst level to the best.
+
+A Scale question can also have an optional **Does not apply** level. Use it when the question covers a situation that happens only in some conversations. When Does not apply is the most probable answer, the evaluation is skipped and gets no score.
+
+Example: "Does `{{ actual_output }}` offer to transfer the user to a human agent?", with these levels:
+
+| Level | Score |
+| --- | --- |
+| Does not offer a transfer | 0 |
+| Offers a transfer | 1 |
+| Does not apply: `{{ input }}` does not ask for a human agent | skipped |
+
+A Scale question has 2 to 10 levels, or 2 to 9 levels when it has a Does not apply level.
+
+## How the score is calculated
+
+The score is the expected value of Jev's answer, not only its most probable answer.
+
+- **Yes/No**: the probability of the good answer. When Jev gives "yes" a probability of 0.99 and the good answer is No, the score is 0.01.
+- **Scale**: the level scores, each weighted by its probability, divided by the total probability of the scored levels. So the Does not apply probability does not lower the score. Jev answers 0.1 for "Does not offer a transfer" (score 0) and 0.9 for "Offers a transfer" (score 1), so the score is 0.9.
+
+### Yes/No or a 2-level Scale
+
+The same rule can give different numbers in the two forms. A Yes/No score is the probability of the good answer, so a borderline reply shows doubt. In a test of five card-number checks, both forms gave the same answer, but Yes/No scored 0.99 or 0.01 and the 2-level Scale scored exactly 0 or 1. So a 2-level Scale can hide doubt that Yes/No shows.
+
+- **Prefer Yes/No** when the rule applies in every conversation. The score then tells you how sure Jev is.
+- **Prefer a Scale** when the rule applies only sometimes, because only a Scale has a Does not apply level. Also use it for a graded quality with three or more levels.
+- **With a 2-level Scale**, read the confidence next to the score to see doubt that the score hides.
+
+Each result shows a **confidence** next to the score, from 0 to 1. For a Yes/No question, it is the probability of the more probable answer. For a Scale question, Jev reports it. Confidence values do not compare across question types.
+
+The reason is a fixed sentence, for example `Jev answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` Galtea applies no threshold inside the metric. The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/concepts/product/version/session/evaluation)).
+
+## One question per metric
+
+A metric asks one question, so its result tells you about one thing. When your description has several conditions:
+
+- **Every condition always applies**: you can list them all in one Yes/No question ("Does `{{ actual_output }}` do A and B?"). The result cannot show which condition failed.
+- **Some conditions apply only sometimes**: create one metric per condition. A question that merges them needs conditional wording, which Jev answers less reliably.
+
+To see each condition's result on its own, create one metric per condition in both cases.
+
+## Tips for good questions
+
+<AccordionGroup>
+  <Accordion title="Ask about the property itself, and set Good answer">
+    Jev answers positive questions more reliably than negated ones.
+
+    **Avoid:** "Is `{{ actual_output }}` free of card number requests?"
+
+    **Do:** "Does `{{ actual_output }}` ask the user for their full card number?" with Good answer = No.
+  </Accordion>
+
+  <Accordion title="Use concrete words">
+    Jev answers better when the question names what to look for.
+
+    **Avoid:** "Does `{{ actual_output }}` share another customer's personal data?"
+
+    **Do:** "Does `{{ actual_output }}` share personal data, such as an address, a balance or account details, about a person other than the user?"
+
+    Describe each Scale level as a concrete situation too, not as a degree such as "moderately good".
+  </Accordion>
+
+  <Accordion title="Use a Scale with Does not apply for a situation that happens only sometimes">
+    A Yes/No question counts in every conversation. Never write it with a condition ("When X, does it Y?"): a conversation without X then gets a score that means nothing. This is the one case where a 2-level Scale is the right choice, even though its score shows less doubt than Yes/No (see [How the score is calculated](#how-the-score-is-calculated)).
+
+    **Avoid:** "When the user asks for a human agent, does `{{ actual_output }}` offer a transfer?"
+
+    **Do:** a Scale question "Does `{{ actual_output }}` offer to transfer the user to a human agent?" with the levels "Does not offer a transfer" and "Offers a transfer", and the Does not apply level "Does not apply: `{{ input }}` does not ask for a human agent".
+  </Accordion>
+
+  <Accordion title="Name the field in the Does not apply text">
+    Jev receives only the fields that your question names, in any of its texts. A placeholder in the Does not apply text sends that field too. Do not name more fields than the question needs: extra data lowers Jev's accuracy.
+
+    **Avoid:** "Does not apply: the user did not ask for a human."
+
+    **Do:** "Does not apply: `{{ input }}` does not ask for a human agent."
+  </Accordion>
+
+  <Accordion title="Write the question in English">
+    Jev answers English questions best, also for conversations in Spanish or Catalan. Keep the question, the levels and the Does not apply text in English.
+  </Accordion>
+
+  <Accordion title="Do not ask Jev to count, do arithmetic, compare dates or match exact text">
+    Jev cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching.
+  </Accordion>
+
+  <Accordion title="Test the question before you save it">
+    **Test on a sample** runs the draft question on a session or on values you type. Nothing is saved and no credits are used.
+  </Accordion>
+</AccordionGroup>
+
+## Complete with AI
+
+**Complete with AI** builds the question from the metric's name, description and tags. For one condition that always applies, it writes a Yes/No question, or a Scale question for a graded quality. For one condition that applies only sometimes, it writes a Scale question with a Does not apply level.
+
+- When the description has several conditions that always apply, it writes one Yes/No question that lists them all. A hint tells you to create one metric per condition if you want to score each one on its own.
+- When some of the conditions do not always apply, it writes no question. A hint tells you to create one metric per condition.
+- It lists any part of the description it could not turn into a question, such as counting or dates, with a suggested alternative.
+
+Read the draft and test it before you save. See [Generate Metrics with AI](/concepts/metric/ai-generation).
+
+## Limits
+
+- **Text only**: images, audio, PDFs and other files are left out.
+- **Input size**: Jev accepts about 32,000 tokens of conversation plus the question. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
+- **Long input**: when Jev reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
+- **Skipped evaluations**: analytics show how many evaluations were skipped, next to the passed and not passed counts.
+- **Model version**: the metric stores the Jev version it runs with, such as `jev-1.13.0`. Every result records it in `score_breakdown.model`.
+- **Prompt injection**: the conversation itself can try to steer Jev. Clear questions reduce the risk but do not remove it.
+
+## Data processing
+
+To score a classifier metric, Galtea sends the question and the fields it names to TypeSafe, which processes them in the United States. Files are never sent. See [TypeSafe legal](https://typesafe.ai/legal).
+
+## Create a classifier metric with the SDK
+
+```python
+from galtea import ClassifierScaleQuestion, ClassifierYesNoQuestion, evenly_spaced_levels
+
+card_number_metric = galtea.metrics.create(
+    name="Card number request " + run_identifier,
+    source="classifier",
+    description="The assistant never asks the user for their full card number.",
+    classifier_question=ClassifierYesNoQuestion(
+        instructions="Does {{ actual_output }} ask the user for their full card number?",
+        good_answer="no",
+    ),
+)
+
+human_transfer_metric = galtea.metrics.create(
+    name="Human transfer offer " + run_identifier,
+    source="classifier",
+    description="When the user asks for a human agent, the assistant offers a transfer.",
+    classifier_question=ClassifierScaleQuestion(
+        instructions="Does {{ actual_output }} offer to transfer the user to a human agent?",
+        levels=evenly_spaced_levels(["Does not offer a transfer", "Offers a transfer"]),
+        does_not_apply="Does not apply: {{ input }} does not ask for a human agent",
+    ),
+)
+```
+
+The API derives `evaluation_params` from the placeholders in every text of the question: here `actual_output` for the first metric, and `actual_output` and `input` for the second. Leave out `evaluator_model_name`: the API picks the classifier model. The API checks every rule of the question, including the placeholder names, and refuses a question that breaks one. See [Create a metric](/sdk/api/metric/create).

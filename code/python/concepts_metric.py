@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from galtea import Galtea
@@ -53,3 +54,48 @@ try:
     galtea.user_groups.delete(user_group_id=quality_reviewers_group.id)
 except Exception:
     pass
+
+# @start create_classifier_metric
+from galtea import ClassifierScaleQuestion, ClassifierYesNoQuestion, evenly_spaced_levels
+
+card_number_metric = galtea.metrics.create(
+    name="Card number request " + run_identifier,
+    source="classifier",
+    description="The assistant never asks the user for their full card number.",
+    classifier_question=ClassifierYesNoQuestion(
+        instructions="Does {{ actual_output }} ask the user for their full card number?",
+        good_answer="no",
+    ),
+)
+
+human_transfer_metric = galtea.metrics.create(
+    name="Human transfer offer " + run_identifier,
+    source="classifier",
+    description="When the user asks for a human agent, the assistant offers a transfer.",
+    classifier_question=ClassifierScaleQuestion(
+        instructions="Does {{ actual_output }} offer to transfer the user to a human agent?",
+        levels=evenly_spaced_levels(["Does not offer a transfer", "Offers a transfer"]),
+        does_not_apply="Does not apply: {{ input }} does not ask for a human agent",
+    ),
+)
+# @end create_classifier_metric
+
+classifier_metrics = [card_number_metric, human_transfer_metric]
+if any(created is None for created in classifier_metrics):
+    # The flag that turns the classifier on is off by default; this deployment answers a create with
+    # a 400 naming CLASSIFIER. Only the mocked snippet job (flags on) treats a `None` as a real failure.
+    if os.environ.get("GALTEA_E2E_MOCKED") == "1":
+        raise ValueError("Failed to create the classifier metrics")
+    print("The classifier is not enabled on this deployment; skipped.")
+else:
+    if sorted(card_number_metric.evaluation_params or []) != ["actual_output"]:
+        raise ValueError("Unexpected evaluation_params derived for the Yes/No classifier metric")
+    if sorted(human_transfer_metric.evaluation_params or []) != ["actual_output", "input"]:
+        raise ValueError("Unexpected evaluation_params derived for the Scale classifier metric")
+for created in classifier_metrics:
+    if created is None:
+        continue
+    try:
+        galtea.metrics.delete(metric_id=created.id)
+    except Exception:
+        pass

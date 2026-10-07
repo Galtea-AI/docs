@@ -27,8 +27,9 @@ To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) a
 </ResponseField>
 <ResponseField name="metric_group_ids" type="list[string]" optional>
   New metric family IDs (`metric.metric_group_id`) to score with. Adding a self-hosted metric family
-  raises an error, for the same reason as on create. A family the monitor already binds can still be
-  resent: only a newly added family is checked.
+  raises an error, for the same reason as on create. So does a newly bound
+  [Classifier (Jev)](/concepts/metric/classifier) family when classifier metrics are off on the
+  deployment. A family the monitor already binds can still be resent: only a newly bound family is checked.
 </ResponseField>
 <ResponseField name="sampling_percentage" type="number" optional>
   New sampling percentage, from just above `0` up to `100`.

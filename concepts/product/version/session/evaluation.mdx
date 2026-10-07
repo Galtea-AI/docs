@@ -36,10 +36,11 @@ Every evaluation list has a **Judge Score** filter and a **Human Score** filter.
 
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
 - **Human Score** reads the reviewer's score only.
-- An evaluation with no score of that kind never matches the filter.
+- **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
 
-The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. The SDK takes them as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list).
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. It also takes `confidenceGt`, `confidenceGte`, `confidenceLt` and `confidenceLte`, and can sort by `confidence`, with evaluations that have no confidence last in both directions. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. The SDK takes the score bounds as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list). It does not take the confidence bounds.
 
 ## Evaluation Lifecycle
 
@@ -80,6 +81,7 @@ Once an evaluation completes, the following fields are available:
     - The organization ran out of credits.
     - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object.
     - The judge model was unavailable.
+    - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, or the input was too long for the classifier.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
 
@@ -134,7 +136,29 @@ Once an evaluation completes, the following fields are available:
   The part of `judgeOutputTokens` the judge model spent on reasoning, read-only and set by the API. It is a subset of the output tokens, so do not add it to the total. A judge model that does not reason reports 0, not null. Null means no reasoning count was recorded, which almost always means the whole measurement is missing and the other two fields are null too.
 </ResponseField>
 
-<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider.</Note>
+<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/concepts/metric/classifier) metric, these token fields count Jev's tokens.</Note>
+
+<ResponseField name="Score Breakdown" type="Object" optional>
+  How a [classifier](/concepts/metric/classifier) metric reached its score, read-only and set by the API. Present only for `CLASSIFIER` metrics. The fields depend on the question type:
+
+  - `version`: the breakdown schema version, `2`.
+  - `model`: the classifier model that answered, such as `jev-1.13.0`.
+  - `type`: `yes_no` or `scale`.
+  - `value`: the score.
+  - `confidence`: the same value as the evaluation's **Confidence**.
+  - For `yes_no`: `pYes` (the probability of "yes") and `goodAnswer` (`yes` or `no`).
+  - For `scale`: `probabilities` (the probability of each level, keyed by its index as a string, worst level first, with the Does not apply level last when the question has one), `levelScores` (the score of each scored level, worst first), and `doesNotApply` (whether the question has a Does not apply level).
+
+  In the SDK it is `evaluation.score_breakdown`, with snake_case keys (`p_yes`, `good_answer`, `level_scores`, `does_not_apply`).
+</ResponseField>
+
+<ResponseField name="Confidence" type="Number" optional>
+  How sure the classifier was of its answer, from 0 to 1, read-only and set by the API. Present only for `CLASSIFIER` metrics, and null for every other source. Confidence values do not compare across question types. In the SDK it is `evaluation.confidence`.
+</ResponseField>
+
+<ResponseField name="Long Input" type="Boolean" optional>
+  True for a `CLASSIFIER` evaluation whose input is longer than the classifier reads reliably (about 2,000 tokens) and that no reviewer has scored. The evaluation keeps its score, but analytics leave it out of pass rates and score averages. False for every other evaluation. In the SDK it is `evaluation.long_input`.
+</ResponseField>
 
 <ResponseField name="Human Evaluator ID" type="Text" optional>
   The ID of the human evaluator assigned to this evaluation, if applicable.
