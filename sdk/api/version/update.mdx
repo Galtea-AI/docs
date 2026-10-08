@@ -4,6 +4,8 @@ sidebarTitle: "Update"
 description: "Update an existing version."
 ---
 
+The parent of a revision is set when the version is created, with `parent_version_id` on [`versions.create`](/sdk/api/version/create), and cannot change.
+
 ## Returns
 Returns the updated [Version](/concepts/product/version) object.
 
@@ -31,7 +33,8 @@ updated_version = galtea.versions.update(
   New system prompt used for the version.
 </ResponseField>
 <ResponseField name="model_id" type="string" optional>
-  New reference to a [model](/concepts/model) configured in the Galtea Platform.
+  New reference to a [model](/concepts/model) configured in the Galtea Platform. It must be one of your
+  organization's models or a global model. `None` clears the model.
 </ResponseField>
 <ResponseField name="dataset_description" type="string" optional>
   New description of the dataset used for training.
@@ -42,12 +45,10 @@ updated_version = galtea.versions.update(
 <ResponseField name="guardrails" type="string" optional>
   New configuration for safety guardrails.
 </ResponseField>
-<ResponseField name="parent_version_id" type="string" optional>
-  New ID of the version this one was revised from. The parent must belong to the same product.
-</ResponseField>
 <ResponseField name="facts" type="dict[str, str]" optional>
   New [facts](/concepts/product/version#version-facts): the agent state this version represents, as
-  a flat map of text to text. Two live versions of one product cannot hold the same facts.
+  a flat map of text to text. Two live versions of one product cannot hold the same facts. When the version has
+  no model and you send no `model_id`, a [model fact](/concepts/product/version#model-facts) links the model.
 </ResponseField>
 <ResponseField name="otel_output_source_rule" type="dict" optional>
   New rule that recovers the user-visible reply from a non-LLM span.

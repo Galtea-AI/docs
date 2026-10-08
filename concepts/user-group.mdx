@@ -26,7 +26,7 @@ Only an OWNER or ADMIN may create, edit, or delete a user group, or change its u
 
 User groups can be managed in two places:
 
-- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. From the user detail page, an OWNER or ADMIN can assign and unassign groups. When an OWNER or ADMIN invites a READER or HUMAN_EVALUATOR, the invite form asks for their groups and warns before it sends an invitation with no group. From the metric detail page, any user who may edit the metric can assign and unassign groups.
+- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. The create and edit forms set the group's products, or **All products**. In a group's **Products** tab, an OWNER or ADMIN links products and unlinks the selected ones. While **All products** is on, the tab shows only a note. The group keeps its stored links, and they apply again when **All products** is turned off. The edit form shows them. In the create form, turning on **All products** clears the products that you picked. From the user detail page, an OWNER or ADMIN can assign and unassign groups. When an OWNER or ADMIN invites a READER or HUMAN_EVALUATOR, the invite form asks for their groups and warns before it sends an invitation with no group. From the metric detail page, any user who may edit the metric can assign and unassign groups.
 - **SDK**: Use the `galtea.user_groups` service for programmatic management. See the [Human Evaluation tutorial](/sdk/tutorials/human-evaluation) for a step-by-step guide.
 
 ## SDK Integration

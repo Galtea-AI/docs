@@ -63,6 +63,8 @@ galtea.user_groups.link_products(
 )
 ```
 
+You can also link products from the dashboard: open the group and use its **Products** tab, or set the products (or **All products**) in the group's create and edit forms.
+
 ## Step 4: Create a Human Evaluation Metric
 
 Create a metric with the **Human Evaluation** type and link it to your user group. When evaluations run against this metric, they enter `PENDING_HUMAN` status and appear in the linked group members' dashboards. A metric with no linked group reaches nobody, so always link at least one group before running evaluations against it. A READER or HUMAN_EVALUATOR in that group also needs a group that links the evaluation's product.
