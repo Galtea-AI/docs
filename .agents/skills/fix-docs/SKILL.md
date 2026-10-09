@@ -262,7 +262,7 @@ Preserve the strict code file structure:
 - Concepts: `concepts_<topic>.py`
 - Integrations: `sdk_integrations_<platform>.py`
 
-**Python Compatibility:** Target >=3.9. Prefer `Optional[T]` in library code; `T | None` is acceptable in illustrative snippets.
+**Python Compatibility:** Target >=3.10. Prefer `Optional[T]` in library code; `T | None` is acceptable in illustrative snippets.
 
 ## 7. Verify Fixes
 
