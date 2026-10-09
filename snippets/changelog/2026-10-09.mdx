@@ -1,0 +1,48 @@
+<Update label="2026-10-09" description="Empty Datasets You Fill by Hand, Product Access Through User Groups, and Platform Improvements">
+
+## Create an Empty Dataset and Add Test Cases by Hand
+
+You can now create a [dataset](/concepts/product/dataset) with no test cases and write each test case yourself. Nothing is generated, so no credits are spent.
+
+- **In the dashboard**, pick "Add test cases manually" as the dataset origin. It is available for every dataset type, with or without a linked specification. The new dataset opens on its *Test Cases* tab, where *New Test Case* adds each [test case](/concepts/product/dataset/test-case).
+- **Test cases can carry file attachments**. On a Behavior test case, a file runs on a single turn only, so a multi-turn simulation of it fails. See [Accuracy datasets](/concepts/product/dataset/accuracy-datasets), [Security & Safety datasets](/concepts/product/dataset/security-datasets) and [Behavior datasets](/concepts/product/dataset/behavior-datasets).
+- **Through the API**, send `empty: true` on `POST /tests`. `empty` must be a boolean. You cannot combine it with a file (`uri`, `groundTruthUri`, `dataCatalogUri`), a source dataset (`sourceTestId`) or a generation field such as `maxTestCases` or `strategies`. The error names each field it refuses. `POST /tests/batch` refuses `empty: true`, so create each empty dataset on its own. The SDK has no `empty` option yet.
+
+What to know before you run it:
+
+- An evaluation of a dataset with no test cases fails when you start it, with "No test cases found to process". Add at least one test case first.
+- A specification counts a linked empty dataset as done, so once it has a metric it offers *Run Evaluation*, which then fails the same way.
+- The "From an existing Accuracy Dataset" origin lists empty Accuracy datasets. Picking one fails, and no credits are spent.
+
+## Give Readers and Human Evaluators Product Access Through User Groups
+
+A Reader or a Human Evaluator sees only the products that their [user groups](/concepts/user-group) grant. You can now set up that access in the dashboard.
+
+**Manage a group's products.** Open a user group: a new **Products** tab lists the products the group grants.
+
+- **Link products** opens a searchable picker of your organization's products.
+- **Unlink** removes the selected products. It warns you first that the group's users lose access, unless another of their groups grants it. The products themselves are not deleted.
+- The create and edit forms of a group now have an **All products, current and future** toggle and a product picker. The edit form shows the same warning before a save that removes access.
+- While **All products** is on, the tab shows only a note. The group keeps its linked products, and they apply again when you turn the toggle off.
+
+Only Owners can link and unlink products. Other users see the tab read-only.
+
+**Invite with a group.** When you invite a Reader or a Human Evaluator, the invite form now shows the **User Groups** picker under the role. If you pick no group, the form asks you to confirm first, because the new user would see no product. With a group, the new user sees its products on their first sign-in.
+
+If the invited address already has its own Galtea account as the only member of a free organization, the invitation cannot carry groups. Invite the person without groups, then add the groups after they join.
+
+## Platform Improvements
+
+- **Evaluate imported and production sessions against the specifications you choose.** When you evaluate existing sessions by [specifications](/concepts/product/specification) instead of by a list of metrics, sessions that have no specification of their own, such as imported traces and production sessions, are now scored too. Each one gets the metrics of the chosen specifications of its own product, and each metric is used once. The "Import Traces" onboarding flow now evaluates the sessions you import, and *Evaluate sample* on the production insights card scores your production sessions when it evaluates by specifications.
+  - A session whose own specification is not in your list is still skipped. A session is also skipped when none of the chosen specifications of its product has linked metrics. The response message counts the skipped sessions for each reason.
+  - When nothing was evaluated, the production insights card now shows that message as an error.
+  - When you [run a Run again](/concepts/product/run#running-a-run-again), it scores these sessions with the same metrics as the original Run. Most Runs created before this release with chosen specifications skip these sessions again when you run them again.
+  - Run details and the Run again dialog now count every metric of a Run scoped per specification.
+- **Link a version to its model from its facts.** A version [fact](/concepts/product/version) named `model` or `model_name` (case, `_` and `-` are ignored), such as `model: azure/gpt-4o`, now links the version to that [model](/concepts/model), so sessions on the version report token cost from the model's prices when the inference result sends no cost of its own. This works when you [create](/sdk/api/version/create) a version without a `model_id`, when [get-or-create](/sdk/api/version/get-or-create) or [OpenTelemetry traces](/sdk/tutorials/send-opentelemetry-traces-to-galtea) create one, and when you [update](/sdk/api/version/update) the facts of a version that has no model.
+  - The value must match a model name exactly, provider prefix included. Only case is ignored. Your organization's models and the global models count, and your own model wins over a global one with the same name.
+  - A fact never replaces a model the version already has. Existing versions are not linked until you update their facts. When two fact values each match a different model, no model is linked, with no error.
+  - `PATCH /versions/:id` now refuses `productId`, `number`, `parentVersionId` and unknown fields, and `versions.update` in the SDK no longer takes `parent_version_id`. A revision's parent is set when you create it, as before.
+- **Read long names in tables and form fields.** When a table cuts a linked name short, such as a metric, test or version name in the evaluations tables, hover the name or move keyboard focus to it to see the full name in a tooltip. Dialog picker fields and dropdown fields now keep a long value on one line, end it with an ellipsis, and show the full value when you hover it. These field tooltips open on hover only.
+- **The dataset form no longer shows a false "At least one type is required" error** when you create a dataset from a specification or change its linked specification.
+
+</Update>
