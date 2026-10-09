@@ -23,16 +23,21 @@ You can **create**, view and manage your datasets on the [Galtea dashboard](http
 
 When creating a dataset in the Galtea dashboard, you'll be asked to specify the dataset origin:
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Generated" icon="wand-magic-sparkles">
     Galtea will take the knowledge base file and generate a set of test cases that will define the dataset.
   </Card>
   <Card title="Uploaded" icon="file-arrow-up">
     The dataset is uploaded by you as a complete set of test cases.
   </Card>
+  <Card title="Manual" icon="pen">
+    Start with an empty dataset and add each test case yourself. Accuracy and Security test cases can carry file attachments.
+  </Card>
 </CardGroup>
 
-Your selection will determine whether you need to provide a *Knowledge Base File* or a *Dataset File*.
+Behavior datasets have a fourth origin, "From an existing Accuracy Dataset". It uses the test cases of an Accuracy Dataset as the basis for new behavior test cases.
+
+Your selection will determine whether you need to provide a *Knowledge Base File*, a *Dataset File*, or no file at all. The manual origin needs no file: you add the test cases one by one after the dataset is created.
 
   <video
     controls
@@ -218,6 +223,9 @@ The Galtea SDK allows you to create, view, and manage datasets programmatically.
       - **Accuracy/Security Datasets**: Must include `input`, `expected_output`, `tag`, `source` columns
       - **Behavior Datasets**: Must include conversation simulation columns (see Behavior Dataset File Format below)
     </ResponseField>
+  </Tab>
+  <Tab title="Manual">
+    No file or generation settings are needed. The dataset is created with no test cases, so add at least one before you run an evaluation. Add each test case from the dataset's *Test Cases* tab with *New Test Case*. For Accuracy and Security, a test case has an input, an optional expected output and optional file attachments. For Behavior, a test case has a persona, a scenario, a goal and a first input. *New Test Case* starts each test case with the dataset's background noise, and you can change it there. A test case created through the API or the SDK has no background noise unless the request sets it. This origin is available in the dashboard.
   </Tab>
 </Tabs>
 

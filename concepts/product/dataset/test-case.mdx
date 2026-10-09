@@ -17,7 +17,7 @@ It represents a specific set of *inputs* that must be sent to the product's AI m
   Test cases are part of a [dataset](/concepts/product/dataset), so you'll need to create a dataset first. You can do this in the Galtea dashboard or using the SDK.
 </Info>
 
-You can **create**, view and manage your test cases on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/test-case/service).
+You can **create**, view and manage your test cases on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/sdk/api/test-case/service). A dataset created with the *Add test cases manually* origin starts empty and is filled this way, one test case at a time.
 
 ## Using Test Cases in Evaluations
 
@@ -100,7 +100,7 @@ Through the API instead, upload each file first and send the storage URI the upl
 
 `mimeType` is filled from the stored file. `filename` is filled too on Galtea Cloud, so the download offers the name you uploaded rather than a random id. A self-hosted deployment on Azure Blob Storage cannot keep that name, so send `filename` yourself there. Your own values override the filled ones, with one exception: `sizeBytes` comes back measured from the stored file, and a value you send for it is ignored. The 20 MB limit below is read from that measurement. The SDK sends `filename` and `mimeType`, read from the local file, so they are right on every deployment.
 
-You can also attach a file from the dashboard, on the test case create and update forms. An attached image shows a thumbnail; click it to view the image at full size.
+You can also attach a file from the dashboard, on the test case create and update forms. An attached image shows a thumbnail; click it to view the image at full size. If you have no dataset to add the test case to, create one with the [manual origin](/concepts/product/dataset#dataset-origin).
 
 These limits apply, and each one is refused with a clear error rather than failing later:
 
