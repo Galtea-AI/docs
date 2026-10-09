@@ -14,7 +14,7 @@ User Groups serve three key purposes:
 
 1. **Assigning evaluators**: Group users who should review and annotate AI outputs for specific metrics.
 2. **Scoping metrics**: Link metrics to groups so that only users in those groups see pending evaluations for those metrics.
-3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A READER or HUMAN_EVALUATOR sees the union of the products that all its groups link. When one of its groups links all products, it sees every product, including a product that no other group links. A READER or HUMAN_EVALUATOR in no group sees no product. OWNER, ADMIN and MEMBER users see every product of the organization, whatever their groups.
+3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A READER or HUMAN_EVALUATOR sees the union of the products that all its groups link. When one of its groups links all products, it sees every product, including a product that no other group links. A READER or HUMAN_EVALUATOR in no group sees no product. Unless one of its groups links all products, a READER or HUMAN_EVALUATOR sees only the metrics that its products evaluate, link to a specification, or monitor. OWNER, ADMIN and MEMBER users see every product and every metric of the organization, whatever their groups.
 
 A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is routed strictly: only users in a group linked to that metric see its pending evaluations in the **Human Evaluations** page of the dashboard. A READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. A metric with no linked group reaches nobody, and its metric page shows a warning.
 
@@ -56,7 +56,7 @@ User groups can be managed in two places:
   IDs of users in this group.
 </ResponseField>
 <ResponseField name="metric_ids" type="list[string]">
-  IDs of metrics linked to this group.
+  IDs of metrics linked to this group. A READER or HUMAN_EVALUATOR gets only the IDs of the metrics it can see.
 </ResponseField>
 <ResponseField name="product_ids" type="list[string]">
   IDs of products linked to this group. The products a group links are the only products its READER and HUMAN_EVALUATOR users can see. A READER or HUMAN_EVALUATOR gets only the IDs of the products it can see, in every group.
