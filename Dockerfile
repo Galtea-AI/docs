@@ -20,12 +20,43 @@ ENV SHOW_PLATFORM_ASSISTANT=$SHOW_PLATFORM_ASSISTANT
 RUN python scripts/run.py --embed-only
 
 # ─── Stage 2: Serve with Mint dev server ──────────────────────────────────────
-FROM node:24.14.0-alpine AS runtime
+FROM node:24.21.0-alpine3.24 AS runtime
 
 WORKDIR /app
 
-# Install Mint CLI (the renamed Mintlify CLI).
-RUN npm install mint@4.2.935
+# Install Mint CLI (the renamed Mintlify CLI). Even the newest mint pins
+# @modelcontextprotocol/sdk, adm-zip, axios, js-yaml and sharp below the
+# releases that fix their CVEs, so the overrides lift them; drop each one once
+# mint ships it. The other overrides hold the version every other Galtea image
+# uses for that package, since this install has no lockfile.
+COPY <<'EOF' package.json
+{
+  "private": true,
+  "dependencies": {
+    "mint": "4.2.935"
+  },
+  "overrides": {
+    "@modelcontextprotocol/sdk": "1.31.0",
+    "adm-zip": "0.6.1",
+    "axios": "1.20.0",
+    "brace-expansion@^1": "1.1.20",
+    "express-rate-limit@^8": "8.5.1",
+    "ip-address@^10": "10.3.1",
+    "js-yaml@^4": "4.3.2",
+    "minimatch@^3": "3.1.4",
+    "nanoid@^3": "3.3.18",
+    "picomatch@^4": "4.0.4",
+    "sharp": "0.35.5"
+  }
+}
+EOF
+RUN npm install --no-audit --no-fund
+
+# The runtime starts node_modules/.bin/mint directly and never calls a package
+# manager, so npm, npx and corepack are removed with the dependencies they
+# bundle, which carry CVEs no npm release fixes yet.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /root/.npm
 
 # Pin the Mintlify client (the Next.js app `mint dev` serves). Pinning the CLI
 # does not pin it: without --client-version, every container start fetches
