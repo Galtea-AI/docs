@@ -154,6 +154,33 @@ To see each condition's result on its own, create one metric per condition in bo
 
 Read the draft and test it before you save. See [Generate Metrics with AI](/concepts/metric/ai-generation).
 
+## Convert an LLM judge metric
+
+**Convert to classifier** turns an LLM judge metric into classifier metrics. It is a button on the metric's page. The AI reads the judge prompt and writes one question for each condition in it. Each question becomes its own **Classifier (Jev)** metric.
+
+The button shows only for an LLM judge metric that has a judge prompt, where classifier metrics are on and your role can create metrics. The source can be a metric of your organization or a Galtea metric. The new metrics always belong to your organization. It is off while an optimization of the metric runs or waits for review, and for a metric with too many revisions to check for one.
+
+1. **Generate questions.** The AI splits the judge prompt. This takes 10 to 40 seconds. Nothing is saved and no credits are charged.
+2. **Check the proposals.** Pick how many metrics to create. Edit a question or leave it out.
+3. **Create.** Galtea creates all the metrics you kept in one step. If one is refused, for example because its name is taken, none is created.
+
+You can pick one of two options when at least two conditions became questions:
+
+- **One metric per condition (Recommended)**: one question for each condition, so a failed result shows which condition broke. Each metric is its own evaluation, at 1 credit each. Each metric is named `<source name>: <label>`. A specification's score pools the scored evaluations of its metrics, so one failed condition lowers it only by that metric's share.
+- **One metric for all conditions**: one Yes/No question that lists every condition. It is available only when all of those conditions always apply. The result does not show which condition failed. The metric is named `<source name> (Classifier)`.
+
+A judge prompt with one condition gives one metric, named `<source name> (Classifier)`.
+
+Each new metric is linked to the specifications of your organization that the source metric is linked to. The source stays linked too, so each condition is checked twice. After you compare the scores, unlink the source from those specifications. Each new metric also takes the source's tags.
+
+A part of the judge prompt that the classifier cannot check, such as counting, dates or exact matching, is listed under **Not converted**. Only the source metric still checks it.
+
+The source metric does not change, and its past results stay. Before you stop using it, run the new metrics next to it on a few sessions and compare the scores. The classifier gives no written reason, and its scores can differ from the LLM judge.
+
+The converted metrics are new metrics. A monitor that uses the source metric keeps using it and does not get the new metrics.
+
+A new revision can also change the judge, to try the classifier in place of an LLM judge on the same metric. Views that follow every revision of a metric, such as scores over time, then mix the two judges' scores. To keep the LLM judge metric and add classifier metrics next to it, use **Convert to classifier**.
+
 ## Limits
 
 - **Text only**: images, audio, PDFs and other files are left out.
