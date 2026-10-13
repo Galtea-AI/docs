@@ -1,4 +1,4 @@
-<Update label="2026-10-09" description="Empty Datasets You Fill by Hand, Product Access Through User Groups, and Platform Improvements">
+<Update label="2026-10-09" description="Empty Datasets You Fill by Hand, Product Access Through User Groups, a Focused View for Readers, and Platform Improvements">
 
 ## Create an Empty Dataset and Add Test Cases by Hand
 
@@ -30,6 +30,16 @@ Only Owners can link and unlink products. Other users see the tab read-only.
 **Invite with a group.** When you invite a Reader or a Human Evaluator, the invite form now shows the **User Groups** picker under the role. If you pick no group, the form asks you to confirm first, because the new user would see no product. With a group, the new user sees its products on their first sign-in.
 
 If the invited address already has its own Galtea account as the only member of a free organization, the invitation cannot carry groups. Invite the person without groups, then add the groups after they join.
+
+## A Focused View for Readers
+
+Readers and Human Evaluators now get a view focused on the products that their [user groups](/concepts/user-group) grant.
+
+- **Land on Analytics.** With exactly one product, they land on that product's *Analytics* after sign-in, and when they go home from an error page. With several products, they land on the product list, as before.
+- **Only the metrics their products use.** The metrics list shows only the metrics that a granted product evaluates, links to a live specification, or watches with a live monitor. A metric that only other products use cannot be opened. Users in a group with **All products** still see every metric.
+- **No inference metrics or judge cost for Readers.** Evaluation lists leave out the credits and judge token columns, also in the column menu and the CSV export. Session and version pages hide their inference metrics, and the Trace card hides its metrics tab. Human Evaluators keep them. Span latency and the *Analytics* version summary stay visible.
+
+See [Roles and permissions](/security/roles-and-permissions) for the full rules.
 
 ## Platform Improvements
 
