@@ -105,6 +105,14 @@ The SDK allows you to list existing products, retrieve specific products by thei
   <Info>The API default is `30`.</Info>
 </ResponseField>
 
+<ResponseField name="OpenTelemetry Product Key Values (otelProductKeyValues)" type="Map" optional>
+  One value for each attribute of the product key, for example `service.namespace` and `service.name`. An OpenTelemetry trace whose resource carries these values, and Galtea fact attributes but no `galtea.product.id`, goes to this product. Two live products of one organization cannot hold the same values. Set it in the **OpenTelemetry** section of the product's Configuration group, or with `PATCH /products/{id}/otel-settings`. See [Route Traces to a Product by Resource Attributes](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#route-traces-to-a-product-by-resource-attributes).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Product Key (otelProductKey)" type="List of text" optional>
+  The resource attribute names that identify this product, 1 to 10 names. Leave it `null` to follow the product key of the organization. Set it to give this product its own key.
+</ResponseField>
+
 <ResponseField name="Closed Session Inference Creation Policy" type="Enum" optional>
   What happens when you try to add an inference to a session that is already closed.
   Possible values:

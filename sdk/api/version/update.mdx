@@ -51,10 +51,10 @@ updated_version = galtea.versions.update(
   no model and you send no `model_id`, a [model fact](/concepts/product/version#model-facts) links the model.
 </ResponseField>
 <ResponseField name="otel_output_source_rule" type="dict" optional>
-  New rule that recovers the user-visible reply from a non-LLM span.
+  New rule that recovers the user-visible reply from a non-LLM span. The version value overrides the product value, which overrides the organization value.
 </ResponseField>
 <ResponseField name="otel_input_source_rule" type="dict" optional>
-  New rule that recovers the user message from a non-LLM span.
+  New rule that recovers the user message from a non-LLM span. The version value overrides the product value, which overrides the organization value.
 </ResponseField>
 <ResponseField name="conversation_endpoint_connection_id" type="string" optional>
   New [endpoint connection](/concepts/product/endpoint-connection) used for conversational
