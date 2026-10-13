@@ -72,7 +72,7 @@ This method can be called in two ways:
   Password for `BASIC` authentication.
 </ResponseField>
 <ResponseField name="headers" type="dict[string, string]" optional>
-  Custom headers. Supports credential placeholders (e.g., `{{ bearer_token }}`, `{{ api_key }}`). When you test a stored connection, a `••••••••` value sends the stored value of that header. See [Secret Header Values](/concepts/product/endpoint-connection-configuration#secret-header-values).
+  Custom headers. Supports placeholders: credentials (e.g., `{{ bearer_token }}`, `{{ api_key }}`) and call values (e.g., `{{ trace_id }}`, `{{ session_id }}`). When you test a stored connection, a `••••••••` value sends the stored value of that header. See [Secret Header Values](/concepts/product/endpoint-connection-configuration#secret-header-values).
 </ResponseField>
 <ResponseField name="output_mapping" type="dict[string, string]" optional>
   Output mapping using JSONPath expressions. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).

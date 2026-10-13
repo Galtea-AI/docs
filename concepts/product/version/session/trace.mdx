@@ -106,7 +106,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </ResponseField>
 
 <ResponseField name="OpenTelemetry Trace ID" type="string" optional>
-  The W3C trace ID for the root span created during [Direct Inference](/concepts/product/endpoint-connection). This is the OpenTelemetry trace id, not the id of this Trace, which is `id`. It is the same trace ID propagated to your endpoint via the `traceparent` header, enabling correlation with your OTEL-instrumented service. Only present when the inference was generated via Direct Inference with W3C trace context propagation enabled.
+  The W3C trace ID that Galtea sends to your endpoint in the `traceparent` header on this [Direct Inference](/concepts/product/endpoint-connection) turn. Galtea stores it when the turn starts. This is the OpenTelemetry trace id, not the id of this Trace, which is `id`. It lets you correlate the turn with your OTEL-instrumented service. Present on every conversation turn that Galtea generates through an HTTP endpoint connection (Direct Inference), including turns that failed. Phone and WebRTC turns do not have it.
 </ResponseField>
 
 ## Related
