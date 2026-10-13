@@ -11,7 +11,7 @@ This Service is exposed by the `galtea.storage` object.
   Remember that we will be using the `galtea` object. More information [here](/sdk/api/galtea).
 </Info>
 
-Most test cases attach files through [`test_cases.create()`](/sdk/api/test-case/create) or [`test_cases.upload_input_file()`](/sdk/api/test-case/upload-input-file), which call `upload()` for you. Reach for `galtea.storage` directly when you need to fetch the bytes back, or upload a file for a purpose other than a test case input.
+Most test cases attach files through [`test_cases.create()`](/sdk/api/test-case/create) or [`test_cases.upload_input_file()`](/sdk/api/test-case/upload-input-file), which call `upload()` for you. Traces do the same through `input_file_paths` and `output_file_paths` on [`traces.create()`](/sdk/api/trace/create) and [`traces.update()`](/sdk/api/trace/update). Reach for `galtea.storage` directly when you need to fetch the bytes back, or upload a file for a purpose other than a test case input or a trace.
 
 For the full round trip, from a dataset of documents to a scored answer, see [Evaluate Document Inputs](/sdk/tutorials/evaluate-document-inputs).
 

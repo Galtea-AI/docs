@@ -167,7 +167,8 @@ def my_multi_turn_agent(input_data: AgentInput) -> AgentResponse:
 ```
 
 <Note>
-  A history with files on more than one turn only comes from turns you create yourself with
+  A history with files on more than one turn only comes from turns you create yourself. Log earlier turns with
+  [`traces.create()`](/sdk/api/trace/create) and `input_file_paths`, or run a turn with
   [`traces.generate()`](/sdk/api/trace/generate), passing `input={"user_message": "...", "content": [...]}`.
   The conversation simulator supports attached files on single-turn runs only, so
   `evaluations.run()` and `simulator.simulate()` put every file on the opening turn.
