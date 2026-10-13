@@ -18,7 +18,7 @@ Unlike [Accuracy Datasets](/concepts/product/dataset/accuracy-datasets) that foc
 
 ## Creating Behavior Datasets
 
-You can create behavior datasets in Galtea through two methods:
+You can create behavior datasets in Galtea through the methods below. In the dashboard, you can also select "From an existing Accuracy Dataset" as the dataset origin. Galtea then uses the test cases of that Accuracy Dataset as the basis for new behavior test cases.
 
 <Tabs>
   <Tab title="Behavior Generator">
@@ -61,6 +61,19 @@ You can create behavior datasets in Galtea through two methods:
       </Step>
       <Step title="Upload your behavior dataset file">
         Select the file you created and upload it to Galtea
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Add Test Cases Manually">
+    <Steps>
+      <Step title="Configure the dataset">
+        Select "Behavior" as the dataset type and "Add test cases manually" as the dataset origin
+        <Info>
+          This origin is available in the [Galtea dashboard](https://platform.galtea.ai/). No file is needed: the dataset starts with no test cases.
+        </Info>
+      </Step>
+      <Step title="Add your test cases">
+        Open the new dataset on its *Test Cases* tab and select *New Test Case*. Fill in the user persona, scenario and goal, and write the first input. Repeat for each test case.
       </Step>
     </Steps>
   </Tab>

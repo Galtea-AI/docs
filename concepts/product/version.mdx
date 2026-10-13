@@ -81,6 +81,17 @@ Galtea refuses two keys that become equal after the spaces around them are remov
   The facts are separate from the name and the number. Only the facts say which state a version represents. The name is a label for people, and the number is Galtea's own sequence.
 </Note>
 
+### Model facts
+
+A model fact links the version to its [model](/concepts/model), so you do not state the model twice. A fact is a model fact when its key is `model`, `model_name`, `model-name` or `modelName`. Galtea compares the key without case, `_` and `-`, so `MODEL_NAME` counts too. Every other key links nothing.
+
+- The value must be the exact name of a model on the **Models** page of your organization in the dashboard, provider prefix included. `gpt-4o` and `azure/gpt-4o` are two different models, so use the full name of the one you run. Upper and lower case do not matter.
+- Your organization's own model wins over a global model with the same name.
+- A `model_id` (`modelId` in the REST API) you send wins over a model fact. It must name a model of your organization or a global model. On a create, a `model_id` of `null` or an empty string counts as not sent. On an update, `model_id: null` clears the model, and an empty string is refused.
+- When model facts name two different models, Galtea links no model and still stores the version.
+- Every way Galtea creates a version from facts links the model: `POST /versions`, `POST /versions/get-or-create` (the SDK's `versions.get_or_create`), and the `galtea.version.fact.<key>` attributes of [OpenTelemetry traces](/sdk/tutorials/send-opentelemetry-traces-to-galtea). A version Galtea finds keeps its model.
+- An update links a model only when the request sends `facts` and no `model_id`, and the version has no model yet. An update never replaces a model.
+
 ## Comparing Versions
 
 One of the key benefits of tracking versions in Galtea is the ability to compare different implementations of your product. This allows you to:
@@ -166,7 +177,7 @@ The Galtea SDK allows you to create, view, and manage versions programmatically.
 </ResponseField>
 
 <ResponseField name="Model" type="Model" required>
-  The AI [Model](/concepts/model) used by this version. Galtea uses this to track costs, calculate per-evaluation inference spend, and associate the version with the model's pricing and tokenization characteristics.
+  The AI [Model](/concepts/model) used by this version. Galtea uses this to track costs, calculate per-evaluation inference spend, and associate the version with the model's pricing and tokenization characteristics. A [model fact](#model-facts) can set it for you.
 </ResponseField>
 
 <ResponseField name="System Prompt" type="Text">

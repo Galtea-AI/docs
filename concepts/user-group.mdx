@@ -14,7 +14,7 @@ User Groups serve three key purposes:
 
 1. **Assigning evaluators**: Group users who should review and annotate AI outputs for specific metrics.
 2. **Scoping metrics**: Link metrics to groups so that only users in those groups see pending evaluations for those metrics.
-3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A READER or HUMAN_EVALUATOR sees the union of the products that all its groups link. When one of its groups links all products, it sees every product, including a product that no other group links. A READER or HUMAN_EVALUATOR in no group sees no product. OWNER, ADMIN and MEMBER users see every product of the organization, whatever their groups.
+3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A READER or HUMAN_EVALUATOR sees the union of the products that all its groups link. When one of its groups links all products, it sees every product, including a product that no other group links. A READER or HUMAN_EVALUATOR in no group sees no product. Unless one of its groups links all products, a READER or HUMAN_EVALUATOR sees only the metrics that its products evaluate, link to a specification, or monitor. OWNER, ADMIN and MEMBER users see every product and every metric of the organization, whatever their groups.
 
 A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is routed strictly: only users in a group linked to that metric see its pending evaluations in the **Human Evaluations** page of the dashboard. A READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. A metric with no linked group reaches nobody, and its metric page shows a warning.
 
@@ -26,7 +26,7 @@ Only an OWNER or ADMIN may create, edit, or delete a user group, or change its u
 
 User groups can be managed in two places:
 
-- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. From the user detail page, an OWNER or ADMIN can assign and unassign groups. From the metric detail page, any user who may edit the metric can assign and unassign groups.
+- **Dashboard**: Navigate to an organization's **Groups** tab to create, edit, and delete groups. The create and edit forms set the group's products, or **All products**. In a group's **Products** tab, an OWNER or ADMIN links products and unlinks the selected ones. While **All products** is on, the tab shows only a note. The group keeps its stored links, and they apply again when **All products** is turned off. The edit form shows them. In the create form, turning on **All products** clears the products that you picked. From the user detail page, an OWNER or ADMIN can assign and unassign groups. When an OWNER or ADMIN invites a READER or HUMAN_EVALUATOR, the invite form asks for their groups and warns before it sends an invitation with no group. From the metric detail page, any user who may edit the metric can assign and unassign groups.
 - **SDK**: Use the `galtea.user_groups` service for programmatic management. See the [Human Evaluation tutorial](/sdk/tutorials/human-evaluation) for a step-by-step guide.
 
 ## SDK Integration
@@ -56,7 +56,7 @@ User groups can be managed in two places:
   IDs of users in this group.
 </ResponseField>
 <ResponseField name="metric_ids" type="list[string]">
-  IDs of metrics linked to this group.
+  IDs of metrics linked to this group. A READER or HUMAN_EVALUATOR gets only the IDs of the metrics it can see.
 </ResponseField>
 <ResponseField name="product_ids" type="list[string]">
   IDs of products linked to this group. The products a group links are the only products its READER and HUMAN_EVALUATOR users can see. A READER or HUMAN_EVALUATOR gets only the IDs of the products it can see, in every group.
