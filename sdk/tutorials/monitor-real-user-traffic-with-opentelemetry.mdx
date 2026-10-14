@@ -116,10 +116,10 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
       <Tab title="By version attributes">
         Your organization names, once, which standard resource attributes make up a Version, for example `service.version` and `app.agent.model`. Your telemetry then needs no `galtea.version.fact.*` rename. Send `galtea.product.id` (or let Galtea find the product by its [key values](#route-traces-to-a-product-by-resource-attributes)) and the listed attributes your agent already emits. Galtea builds the [facts](/concepts/product/version#version-facts) from them, finds the Version that holds exactly these facts, and creates it when none does.
 
-        Set the list with `PATCH /organizations/{id}/otel-settings`. A product can replace it with its own list through `PATCH /products/{id}/otel-settings`. Send `null` for a product to follow the organization list again. Both are in the **OpenTelemetry** settings of the dashboard, in the **Version routing** block.
+        Set the list with `PATCH /organizations/{id}`. A product can replace it with its own list through `PATCH /products/{id}`. Send `null` for a product to follow the organization list again. Both are in **Advanced Options** of the organization edit dialog and of the product edit form in the dashboard.
 
         ```bash
-        curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>/otel-settings" \
+        curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>" \
           -H "Authorization: Bearer ${GALTEA_API_KEY}" \
           -H "Content-Type: application/json" \
           -d '{"otelVersionAttributes": ["service.version", "app.agent.model"]}'
@@ -234,12 +234,16 @@ When no product matches, Galtea rejects the spans as `version_facts_without_prod
 Where to set what steps 1.3 and 2.2 read:
 
 - **The version attributes:**
-  - Dashboard: the organization **Edit** page, **OpenTelemetry** card, **Version routing**. A product replaces the list on its own **Edit** page, in the same block.
-  - API: `PATCH /organizations/{id}/otel-settings` and `PATCH /products/{id}/otel-settings`, field `otelVersionAttributes`.
-  - CLI: `galtea organizations update-otel-settings` and `galtea products update-otel-settings`.
+  - Dashboard: **Advanced Options** of the organization edit dialog. A product replaces the list in **Advanced Options** of its edit form.
+  - API: `PATCH /organizations/{id}` and `PATCH /products/{id}`, field `otelVersionAttributes`.
+  - CLI: `galtea organizations update` and `galtea products update`.
 - **The key and the key values:**
-  - Dashboard: the organization **Edit** page, **OpenTelemetry** card, **Trace routing**, for the key. Each product's **Edit** page, **Trace routing**, for its values or its own key.
+  - Dashboard: **Advanced Options** of the organization edit dialog, for the key. **Advanced Options** of each product's edit form, for its values or its own key.
   - API: the same two endpoints, fields `otelProductKey` and `otelProductKeyValues`.
+  - CLI: the same two commands.
+- **The input and output source rules** ([output](#recover-replies-that-do-not-come-from-the-llm), [input](#recover-the-turn-input-from-a-non-llm-span)):
+  - Dashboard: **Advanced Options** of the organization edit dialog, and of each product's edit form.
+  - API: the same two endpoints, fields `otelInputSourceRule` and `otelOutputSourceRule`.
   - CLI: the same two commands.
 
 Changing these settings needs the permission in [Roles and permissions](/security/roles-and-permissions).
@@ -265,23 +269,23 @@ Rules to know:
 - **The key is locked while products use it.** The organization cannot change the set of attributes of its key while a live product that follows the key holds key values. The request answers `409`. You can reorder the same attributes. To change the set, clear those key values first or give the products their own key.
 - **Stored traces keep their product.** Galtea routes once, when it ingests a trace. A later change of a key or of key values moves no stored trace.
 
-First set the key of the organization. Then give each product its values. The caller needs permission to change the OpenTelemetry settings (see [Roles and permissions](/security/roles-and-permissions)).
+First set the key of the organization. Then give each product its values. The caller needs permission to update the organization and the product (see [Roles and permissions](/security/roles-and-permissions)).
 
 ```bash
-curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>/otel-settings" \
+curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>" \
   -H "Authorization: Bearer ${GALTEA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{"otelProductKey": ["service.namespace", "service.name"]}'
 
-curl -X PATCH "https://api.galtea.ai/products/<product-id>/otel-settings" \
+curl -X PATCH "https://api.galtea.ai/products/<product-id>" \
   -H "Authorization: Bearer ${GALTEA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{"otelProductKeyValues": {"service.namespace": "checkout", "service.name": "checkout-agent"}}'
 ```
 
-Send only the fields you change. An absent field keeps its value, and `null` clears it. The same two routes set the version attributes and the span source rules of an organization and of a product. For version attributes, an organization sends `[]` to turn the list off, and a product sends `null` to follow the organization's list.
+Send only the fields you change. An absent field keeps its value. On a product, `null` clears a field. The organization key cannot be `null`. The same two routes set the version attributes and the span source rules of an organization and of a product. `POST /products` accepts the same fields for a new product. For version attributes, an organization sends `[]` to turn the list off, and a product sends `null` to follow the organization's list.
 
-In the dashboard, the organization settings page has an **OpenTelemetry** card. A product has an **OpenTelemetry** section in the Configuration group of its sidebar. Both edit the key, the key values, the version attributes, and the span source rules.
+In the dashboard, open **Advanced Options** of the product edit form, or of the organization edit dialog. They edit the key, the version attributes, and the span source rules. The product form also edits the key values.
 
 Then send traces with the attributes of the key on the resource and the facts of the agent state. This resource goes to the product above:
 
@@ -338,7 +342,7 @@ Read it step by step. The assistant's reply is saved on the `ExecuteActivity:sav
   Per span, nothing changes. Each [Span](/concepts/product/version/session/span) record still fills its own fields from `galtea.span.*`, then `gen_ai.*`, then a recognized managed-platform span shape, and the rule fills a field only when none of those did. The Span records you see in the dashboard are the same with or without a rule.
 </Note>
 
-Set `otelOutputSourceRule` on a version, a product, or an organization. In the Python SDK you can set it when you create a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products, on organizations, or on version updates. To set it on a product or an organization, call `PATCH /products/{id}/otel-settings` or `PATCH /organizations/{id}/otel-settings`, or use the dashboard (see [Route Traces to a Product by Resource Attributes](#route-traces-to-a-product-by-resource-attributes)). To change it on an existing version, use the API or the dashboard. The version value wins over the product value, which wins over the organization value.
+Set `otelOutputSourceRule` on a version, a product, or an organization. In the Python SDK you can set it when you create a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products, on organizations, or on version updates. To set it on a product or an organization, use the dashboard, the API or the CLI, as [Where to set what](#how-galtea-routes-a-trace) lists. To change it on an existing version, use the API or the dashboard. The version value wins over the product value, which wins over the organization value.
 
 ## Recover the Turn Input from a Non-LLM Span
 
@@ -376,7 +380,7 @@ Read it step by step. The user message is saved on the `ExecuteActivity:save_mes
   When the rule extracts nothing from any span of the turn, the turn input is **empty**. The fallbacks do not apply, for the same reason as the output rule: a rule is configured exactly where they give a wrong value. A greeting turn with no user message to save therefore has an empty input, and its output still comes from the output rule. If you ever need the fallback under a configured rule, ask us and it becomes an explicit setting on the rule.
 </Note>
 
-Set `otelInputSourceRule` on a version, a product, or an organization, the same way as the output rule. In the Python SDK you can set both when you create a version: the fields are `otel_input_source_rule` and `otel_output_source_rule`. The SDK does not set either rule on products, on organizations, or on version updates. To set a rule on a product or an organization, use the settings routes or the dashboard. To change one on an existing version, use the API or the dashboard.
+Set `otelInputSourceRule` on a version, a product, or an organization, the same way as the output rule. In the Python SDK you can set both when you create a version: the fields are `otel_input_source_rule` and `otel_output_source_rule`. The SDK does not set either rule on products, on organizations, or on version updates. To set a rule on a product or an organization, use the dashboard, the API or the CLI, as [Where to set what](#how-galtea-routes-a-trace) lists. To change one on an existing version, use the API or the dashboard.
 
 ### How a Rule Is Resolved and Changed
 
