@@ -26,17 +26,17 @@ Every launch you trigger creates a [Run](/concepts/product/run), and each evalua
 
 A metric revision can be excluded from analytics. Its evaluations stay available and keep their original score, reason, and status. They stop contributing to scores, coverage, insights, and monitor aggregates.
 
-The evaluation list hides these results by default. Turn on **Show excluded from analytics** to reveal them. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
+The evaluation list hides these results by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
 
 Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics.
 
 ## Filtering by Score
 
-Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Use them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The badge on the filter shows the condition, for example `≥ 70%`.
+Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Open **Filters**, then choose one of them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The pill in the filter row shows the condition, for example `≥ 70%`.
 
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
 - **Human Score** reads the reviewer's score only.
-- **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
 - An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
 

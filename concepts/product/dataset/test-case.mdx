@@ -252,7 +252,7 @@ opening turn first.
 Editing a test case's evaluation content (for example its input, expected output, or context) creates a new **revision** instead of changing the existing row. This keeps your evaluation history accurate:
 
 - **Past evaluations stay pinned** to the exact content that produced them. An old score always reflects the test case as it was when that evaluation ran.
-- **The list shows the latest revision** of each test case by default. Turn on the **Include legacy** filter to also see superseded revisions, which are marked with a `Legacy` status.
+- **The list shows the latest revision** of each test case by default. To also see superseded revisions, open **Filters** and turn on **Include legacy**. They are marked with a `Legacy` status.
 - **The details page links back** with an **Evolved from** link to the revision it was created from.
 - **Outdated evaluations are flagged.** When an evaluation ran against a revision that has since been replaced, it shows an outdated marker next to its score. Run a new evaluation against the current revision for an up-to-date score.
 - **Replay past evaluations in one step.** Right after an edit creates a new revision, a **Re-evaluate with this Test Case** dialog lists the products whose earlier evaluations of this test case can be re-run, all selected by default. Confirming generates fresh responses from your product for the new revision and evaluates them with the same metrics as before. The dialog only appears when at least one product has previous evaluations to replay.
