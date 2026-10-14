@@ -29,7 +29,7 @@ There is no `npm run dev` here: `docs/package.json` is empty and there is no `no
 
 ## Validate
 
-**`python scripts/run.py --build` is the validation command** (it runs `mint validate`, strict: broken links, navigation issues). Run it before committing docs changes.
+**`python scripts/run.py --validate` is the validation command** (it runs `mint validate`, strict: broken links, navigation issues). Run it before committing docs changes.
 
 Do **not** use bare `python scripts/run.py` to validate: it runs `mint dev`, a hot-reload preview server that never exits, so it will hang until you kill it. Use `--embed-only` when you want just the clone plus code-embed pass with no `mint` step.
 
