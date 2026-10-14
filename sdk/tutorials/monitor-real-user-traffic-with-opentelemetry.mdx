@@ -116,7 +116,7 @@ If your AI system serves real users and emits [OpenTelemetry](https://openteleme
       <Tab title="By version attributes">
         Your organization names, once, which standard resource attributes make up a Version, for example `service.version` and `app.agent.model`. Your telemetry then needs no `galtea.version.fact.*` rename. Send `galtea.product.id` (or let Galtea find the product by its [key values](#route-traces-to-a-product-by-resource-attributes)) and the listed attributes your agent already emits. Galtea builds the [facts](/concepts/product/version#version-facts) from them, finds the Version that holds exactly these facts, and creates it when none does.
 
-        Set the list with `PATCH /organizations/{id}`. A product can replace it with its own list through `PATCH /products/{id}`. Send `null` for a product to follow the organization list again. In the dashboard, the organization list is in the **OpenTelemetry** card of the **Update Organization** page (the **Edit** action of the organization menu), and the product list is in **Advanced Options** of the product edit form.
+        Set the list with `PATCH /organizations/{id}`. A product can replace it with its own list through `PATCH /products/{id}`. Send `null` for a product to follow the organization list again. Both are in **Advanced Options** of the organization edit dialog and of the product edit form in the dashboard.
 
         ```bash
         curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>" \
@@ -234,15 +234,15 @@ When no product matches, Galtea rejects the spans as `version_facts_without_prod
 Where to set what steps 1.3 and 2.2 read:
 
 - **The version attributes:**
-  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page. A product replaces the list in **Advanced Options** of its edit form.
+  - Dashboard: **Advanced Options** of the organization edit dialog. A product replaces the list in **Advanced Options** of its edit form.
   - API: `PATCH /organizations/{id}` and `PATCH /products/{id}`, field `otelVersionAttributes`.
   - CLI: `galtea organizations update` and `galtea products update`.
 - **The key and the key values:**
-  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page, for the key. **Advanced Options** of each product's edit form, for its values or its own key.
+  - Dashboard: **Advanced Options** of the organization edit dialog, for the key. **Advanced Options** of each product's edit form, for its values or its own key.
   - API: the same two endpoints, fields `otelProductKey` and `otelProductKeyValues`.
   - CLI: the same two commands.
 - **The input and output source rules** ([output](#recover-replies-that-do-not-come-from-the-llm), [input](#recover-the-turn-input-from-a-non-llm-span)):
-  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page, and **Advanced Options** of each product's edit form.
+  - Dashboard: **Advanced Options** of the organization edit dialog, and of each product's edit form.
   - API: the same two endpoints, fields `otelInputSourceRule` and `otelOutputSourceRule`.
   - CLI: the same two commands.
 
@@ -285,7 +285,7 @@ curl -X PATCH "https://api.galtea.ai/products/<product-id>" \
 
 Send only the fields you change. An absent field keeps its value. On a product, `null` clears a field. The organization key cannot be `null`. The same two routes set the version attributes and the span source rules of an organization and of a product. `POST /products` accepts the same fields for a new product. For version attributes, an organization sends `[]` to turn the list off, and a product sends `null` to follow the organization's list.
 
-In the dashboard, open the **OpenTelemetry** card of the **Update Organization** page, or **Advanced Options** of the product edit form. Both edit the key, the version attributes, and the span source rules. The product form also edits the key values.
+In the dashboard, open **Advanced Options** of the product edit form, or of the organization edit dialog. They edit the key, the version attributes, and the span source rules. The product form also edits the key values.
 
 Then send traces with the attributes of the key on the resource and the facts of the agent state. This resource goes to the product above:
 
