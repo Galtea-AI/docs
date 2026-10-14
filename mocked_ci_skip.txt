@@ -7,9 +7,10 @@
 # fails the run, so this list cannot silently hide a missing snippet.
 #
 # The two below cannot run against the mocked stack until the mocks-server is
-# extended (tracked by #2603). Their ONLY validation is the nightly live E2E
-# run (.github/workflows/e2e.yml, job validate-snippets-live), which executes
-# every snippet against the live environment with no skip-list. The release
+# extended (tracked by #2603). Their ONLY validation is the live run in
+# .github/workflows/_docs-snippets-live.yml, which executes every snippet
+# with no skip-list: nightly against dev (from e2e.yml), and against each
+# release candidate's throwaway environment (from release-train.yml). The release
 # pipeline validates against the mocked stack and honors this list (#3587).
 #
 #   - full_sdk_demo.py: the storage-download flow returns a presigned MinIO
