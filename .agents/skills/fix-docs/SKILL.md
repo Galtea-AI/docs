@@ -281,8 +281,6 @@ Preserve the strict code file structure:
 cd docs && python scripts/run.py --validate
 ```
 
-Bare `run.py` starts the preview server and never exits (the `test-docs` skill).
-
 ## 8. Final Review with Git
 
 Before finishing, check that recent codebase changes are reflected:
