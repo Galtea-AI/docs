@@ -1,0 +1,12 @@
+<Update label="2026-10-13" description="Per-Metric Pass Threshold">
+
+## Set the Score That Counts as a Pass for Each Metric
+
+Every [metric](/concepts/metric#pass-threshold) now has a pass threshold: the score, from 0 to 1, at or above which an evaluation passes. Metrics without one keep 0.5, so existing results do not change.
+
+- **Set it at creation.** The dashboard shows it as **Pass threshold (%)** under **Advanced Options**, prefilled with 50. In the SDK, pass `pass_threshold` to `metrics.create()`. The API takes `passThreshold`. It is fixed once the metric exists: create a revision to change it, and the revision starts with the threshold of its source.
+- **Read each verdict.** An [evaluation](/concepts/product/version/session/evaluation) now carries `passed` (null when it has no reported score) and the threshold it was judged at: `metric_pass_threshold` in the SDK, `metricPassThreshold` in the API. Score pills in the dashboard are green at or above the threshold and red below it.
+- **Filter by verdict.** The evaluation lists have a **Result** filter and a hidden **Result** column, which the CSV export includes. In the SDK, `evaluations.list(passed=True)` keeps the evaluations that passed. The API takes `passed=true|false` on `GET /evaluations`.
+- **Optimization follows the threshold.** The optimizer judges at the metric's pass threshold, and an optimized revision keeps it.
+
+</Update>

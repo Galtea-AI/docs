@@ -37,10 +37,11 @@ Every evaluation list has a **Judge Score** filter and a **Human Score** filter.
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
 - **Human Score** reads the reviewer's score only.
 - **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Result** (open **Filters**, then choose **Result**) keeps the evaluations that passed or failed their metric's [pass threshold](/concepts/metric#pass-threshold). Pick both options, or none, and the filter does nothing. It follows the reported score, so a human review counts, unlike the Judge Score filter. The **Result** column shows PASS, FAIL or a dash, is hidden by default, and is included in the CSV export.
 - An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
 
-The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. It also takes `confidenceGt`, `confidenceGte`, `confidenceLt` and `confidenceLte`, and can sort by `confidence`, with evaluations that have no confidence last in both directions. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. The SDK takes the score bounds as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list). It does not take the confidence bounds.
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. It also takes `confidenceGt`, `confidenceGte`, `confidenceLt` and `confidenceLte`, and can sort by `confidence`, with evaluations that have no confidence last in both directions. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. It also takes `passed=true` or `passed=false`, which sends the same verdict filter as the Result filter. The SDK takes `passed` and the score bounds as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list). It does not take the confidence bounds.
 
 ## Evaluation Lifecycle
 
@@ -92,6 +93,14 @@ Once an evaluation completes, the following fields are available:
 
 <ResponseField name="Score" type="Number">
   The score assigned to the output by the metric's evaluation criteria. **Example**: 0.85
+</ResponseField>
+
+<ResponseField name="Passed" type="Boolean" optional>
+  Whether the reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). Null when the evaluation has no reported score, when it is outdated or deleted, or when it is a classifier result marked **Long input**. In the SDK it is `evaluation.passed`.
+</ResponseField>
+
+<ResponseField name="Metric Pass Threshold" type="Number" optional>
+  The pass threshold of the metric revision that scored this evaluation, from 0 to 1. In the SDK it is `evaluation.metric_pass_threshold`.
 </ResponseField>
 
 <ResponseField name="Reason" type="Text">

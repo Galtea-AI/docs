@@ -83,7 +83,7 @@ The same rule can give different numbers in the two forms. A Yes/No score is the
 
 Each result shows a **confidence** next to the score, from 0 to 1. For a Yes/No question, it is the probability of the more probable answer. For a Scale question, Jev reports it. Confidence values do not compare across question types.
 
-The reason is a fixed sentence, for example `Jev answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` Galtea applies no threshold inside the metric. The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/concepts/product/version/session/evaluation)).
+The reason is a fixed sentence, for example `Jev answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` The metric applies no threshold to the score. An evaluation passes when its reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/concepts/product/version/session/evaluation)).
 
 ## One question per metric
 
