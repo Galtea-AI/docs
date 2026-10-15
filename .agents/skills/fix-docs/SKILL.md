@@ -130,9 +130,9 @@ All individual metric pages (under `docs/concepts/metric/`) must follow:
 **Concept Overview Pages Should Not Contain SDK Code:**
 SDK code (decorators, method calls, code examples) belongs in tutorials or SDK API reference pages. Concept pages link to tutorials via `## SDK Integration` cards instead.
 
-**Tutorial Grouping (Guides tab):**
-- **Core Workflows**: Writing Specs → Evaluations from Specs → Simulating Conversations → Create a Custom Dataset → Run Dataset-Based Evaluations → Direct Inferences from Platform
-- **Production & Monitoring**: Monitor Production Responses → Evaluating Conversations
+**Tutorial Grouping (Guides tab):** `docs/docs.json` is the source of truth; read it before moving a page. At the time of writing:
+- **Core Workflows**: Writing Specs → Evaluations from Specs → Simulating Conversations → Evaluating Conversations → Create a Custom Dataset → Run Dataset-Based Evaluations → Evaluate Document Inputs → Direct Inferences from Platform
+- **Production & Monitoring**: Monitor Production Responses → Send OpenTelemetry Traces → Monitor Real User Traffic with OpenTelemetry
 - **Advanced**: Judge Prompts → Custom Metrics → Tracing → Agentic Evaluation → Human Evaluation
 - Manual/advanced tutorials should have a `<Note>` at the top pointing to the spec-driven workflow as the recommended alternative
 
@@ -142,7 +142,6 @@ Videos must be placed consistently based on their type:
 - **Contextual workflow videos**: inside the relevant creation/setup section they demonstrate (e.g., endpoint connection creation video inside "Creating an Endpoint Connection", dataset generation video inside "Dataset Origin" Tab)
 - **Tutorial videos**: right after the intro paragraph or Tip, before the step-by-step content
 - Video placeholders for missing videos use `{/* <!-- VIDEO PLACEHOLDER: description ... --> */}` comment wrapping
-- Track all pending and existing videos in `docs/VIDEO_PLACEHOLDERS.md`
 
 **Long Concept Pages Should Be Split:**
 If a concept page exceeds ~200 lines due to dense reference material (e.g., configuration syntax, parameter tables), split the reference into a sub-page. Examples:
@@ -169,7 +168,7 @@ For each code snippet file in scope, check:
 - `SpanType`: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
 - `EvaluationStatus`: `PENDING`, `PENDING_HUMAN`, `SUCCESS`, `FAILED`, `SKIPPED`, `CANCELLED`, `OUTDATED`
 - `SpecificationType`: `CAPABILITY`, `INABILITY`, `POLICY`
-- Metric `source`: `"self_hosted"`, `"partial_prompt"`, `"full_prompt"`, `"human_evaluation"`
+- Metric `source`: read `MetricSource` in `sdk/galtea/domain/models/metric.py` (uppercase values; `FULL_PROMPT` is deprecated for creation)
 
 **MetricInput Format:**
 The evaluations.create `metrics` parameter accepts:

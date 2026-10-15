@@ -1,6 +1,6 @@
 ---
 name: test-docs
-description: Validate the Mintlify docs build after editing files under docs/. Runs python scripts/run.py to catch broken links, code-embed misses, and navigation issues before commit.
+description: Validate the Mintlify docs build after editing files under docs/. Runs python scripts/run.py --validate to catch broken links, code-embed misses, and navigation issues before commit.
 ---
 
 # Test the Mintlify docs
