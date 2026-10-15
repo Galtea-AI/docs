@@ -1,4 +1,4 @@
-<Update label="2026-10-13" description="Per-Metric Pass Threshold">
+<Update label="2026-10-13" description="Per-Metric Pass Threshold and Monitor Alerts to a Webhook">
 
 ## Set the Score That Counts as a Pass for Each Metric
 
@@ -8,5 +8,15 @@ Every [metric](/concepts/metric#pass-threshold) now has a pass threshold: the sc
 - **Read each verdict.** An [evaluation](/concepts/product/version/session/evaluation) now carries `passed` (null when it has no reported score) and the threshold it was judged at: `metric_pass_threshold` in the SDK, `metricPassThreshold` in the API. Score pills in the dashboard are green at or above the threshold and red below it.
 - **Filter by verdict.** The evaluation lists have a **Result** filter and a hidden **Result** column, which the CSV export includes. In the SDK, `evaluations.list(passed=True)` keeps the evaluations that passed. The API takes `passed=true|false` on `GET /evaluations`.
 - **Optimization follows the threshold.** The optimizer judges at the metric's pass threshold, and an optimized revision keeps it.
+
+## Send Monitor Alerts to a Webhook or a Slack Channel
+
+A [monitor](/concepts/product/monitor) alert rule can now post to a webhook URL, next to or instead of its email recipients. Teams that watch Slack or their own tools no longer need to wait for an email.
+
+- **Add a Webhook URL to a rule** in the monitor's Alerts tab, or send `webhookUrl` through the API and the CLI. A rule holds one URL, and now needs at least one email address or a webhook URL. A rule can hold 0 to 20 email addresses.
+- **Galtea sends one signed `POST` when an alert opens and one when it recovers.** The JSON body carries the same fields as the alert email, with up to 25 session links. Galtea tries a failed delivery up to 6 times over about 5 minutes.
+- **A Slack incoming-webhook URL shows a readable message** with links to the alert and up to 10 sessions. Mattermost and Rocket.Chat show the same message from the `text` property.
+- **The URL is write-only.** The dashboard and the API show only its host and port. An address in a private network is refused.
+- **Check the signature, if you want.** Each rule has a secret. To see it in the dashboard, tick **Show the signing secret after saving** when you save the URL. Through the API or the CLI, read it with `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/regenerate-webhook-secret` or `galtea monitors regenerate-alert-rule-webhook-secret`, which also replaces it. The rule's menu has **Regenerate signing secret**. See [Webhooks](/concepts/product/monitor#webhooks) for the headers, the body and verification code.
 
 </Update>

@@ -94,15 +94,16 @@ An alert rule describes when a monitor should warn your team about one metric fa
 - **Window**: 15 minutes, 1 hour, 6 hours, or 24 hours.
 - **Bad metric score**: 0 to 1. A session is bad when its metric score is at or below it. The form shows this field only for "Sessions score badly".
 - **Threshold**: for "Sessions score badly", a whole number of 1 or more: the number of bad sessions within the window that the rule watches for. For "Sessions get no score", the label is **Threshold (%)**: a percent above 0 and at most 100, with a default of 20.
-- **Recipients**: 1 to 20 email addresses. The form starts with your own. Stored in lowercase, and a repeated address is kept once.
+- **Recipients**: 0 to 20 email addresses. The form starts with your own. Stored in lowercase, and a repeated address is kept once.
+- **Webhook URL**: optional, one per rule. Galtea sends a signed POST to it when an alert opens or recovers (see [Webhooks](#webhooks)). A rule needs at least one email address or a webhook URL. For a second webhook, add a second rule.
 
 A new rule starts with "Sessions score badly", a 1 hour window, a bad metric score of 0.5, and a threshold of 10, and the list shows it as "10 or more sessions with a metric score of 0.5 or lower within 1 hour". A "Sessions get no score" rule shows as a percent of evaluated sessions with no score within the window.
 
 While a "Sessions get no score" rule has fewer evaluated sessions in its window than it needs, the list and the rule page show a line next to its status, for example "Waiting for data: 3 evaluated sessions in the last hour (minimum 5)". Hover the line to see why. The line is not shown for a paused rule. The dashboard says "evaluated sessions" for what the API calls settled sessions.
 
-Filter the rules by metric family, status, or creation date. Click a rule to open its page. Its header shows the status, a Pause or Resume button, and a menu to edit or delete the rule. The **Overview** tab lists its condition, recipients, and recent activity. The **Alerts** tab shows the alert history of that rule only. A rule you add opens on its own page.
+Filter the rules by metric family, status, or creation date. Click a rule to open its page. Its header shows the status, a Pause or Resume button, and a menu to edit or delete the rule. The **Overview** tab lists its condition, recipients, webhook host, and recent activity. The **Alerts** tab shows the alert history of that rule only. A rule you add opens on its own page.
 
-Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email. If it has an open alert, pausing closes it without a recovery email. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and emails its recipients. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
+Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email or webhook. If it has an open alert, pausing closes it without a recovery email or webhook. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and notifies its recipients and its webhook. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
 
 Removing a metric family from the monitor deletes the alert rules on that family. Deleting the monitor deletes its alert rules.
 
@@ -128,6 +129,123 @@ A rule opens an alert when its threshold is reached. The alert closes once its v
 - **Alert history**: a timeline with one line per rule and a bar for each time an alert was open, above a table of the alerts. Filter both by state and by rule, one or more of each. Filter by time range too: the last hour, 6 hours, 12 hours, 24 hours, 7 days, 30 days, 90 days, year, or 2 years, or a period you pick in the calendar. A range from that list moves with the clock, and hovering its name shows the dates it covers.
 
 Select an alert to open its page. It shows what the check saw when the alert opened: the value the rule compared with its threshold (the bad session count, or the no-score rate), the number of sessions it came from, the threshold, the window, the sampling rate, and the metric revision. For a `BAD_SESSION_COUNT` alert the sessions are the scored sessions in the window. For a `NO_SCORE_RATE` alert they are the settled sessions, and the alert opens or closes only with at least 5 of them. These values do not change later, even if a session is scored again. For a `NO_SCORE_RATE` alert the page shows the no-score rate, the threshold, and the close value as percents. The page also lists the monitor's evaluations of the sessions the alert stored when it opened, up to 200 sessions per alert. For a `BAD_SESSION_COUNT` alert these are the bad sessions, and you can see each score. For a `NO_SCORE_RATE` alert these are the sessions with no score; check the status column to see why each one got no score.
+
+### Webhooks
+
+A webhook sends the alert to your own system, or to a chat channel, as a signed `POST` with a JSON body. It covers the same two events as the email: `monitor_alert.opened` and `monitor_alert.recovered`. A rule with only a webhook URL and no email address works.
+
+Set the URL in the **Webhook URL** field of the rule form, or send `webhookUrl` through the API or the CLI. The URL must use `https`, can have at most 2048 characters, and cannot hold a user name or password. A deployment can allow `http`. The URL is write-only: Galtea never returns it. The API and the dashboard show only its host and port, for example `hooks.slack.com` or `hooks.example.com:8443`. The port shows only when it is not the default. To change the URL, send a new one. To remove it, send `null`. In the dashboard, turn on **Remove the webhook** in the edit form. An empty URL field keeps the saved URL.
+
+Galtea checks the host when it saves the rule. An IP address or `localhost` in a private or reserved range is refused. A host name is checked again on every delivery. A name that points to a private network is refused at delivery, not at save, and Galtea does not retry it. Galtea does not follow redirects.
+
+**Request.** Galtea sends one `POST` with `Content-Type: application/json` and these headers:
+
+- `Galtea-Signature`: `t=<unix seconds>,v1=<hex signature>`. See [Verify a webhook](#verify-a-webhook).
+- `Galtea-Event`: `monitor_alert.opened` or `monitor_alert.recovered`.
+- `Galtea-Webhook-Id`: `<alert id>.opened` or `<alert id>.recovered`. It is the same value on every retry, so your receiver can use it to ignore a repeat.
+- `User-Agent`: `Galtea-Webhooks/1`.
+
+**Body.** The same fields as the alert email. A field that does not apply to the event is left out.
+
+```json
+{
+  "id": "7c1f0c3e.opened",
+  "event": "monitor_alert.opened",
+  "occurredAt": "2026-10-13T09:00:00.000Z",
+  "text": "**Alert opened** on monitor [Support bot](https://platform.galtea.ai/product/p1/monitor/m1) ...",
+  "monitor": { "id": "m1", "name": "Support bot", "url": "https://platform.galtea.ai/product/p1/monitor/m1" },
+  "alert": {
+    "id": "7c1f0c3e",
+    "url": "https://platform.galtea.ai/product/p1/monitor/m1/alert/7c1f0c3e",
+    "type": "BAD_SESSION_COUNT",
+    "metric": "Helpfulness",
+    "revision": null,
+    "window": "SIX_HOURS",
+    "windowEnd": "2026-10-13T09:00:00.000Z",
+    "threshold": 3,
+    "observedValue": 4,
+    "sampleSize": 18,
+    "badSessionScore": 0.4,
+    "samplingPercentage": 10,
+    "sessionCount": 4,
+    "sessions": [{ "id": "s1", "url": "https://platform.galtea.ai/product/p1/version/v1/session/s1" }]
+  }
+}
+```
+
+- `id`, `event`, `occurredAt`: the event id (the same as `Galtea-Webhook-Id`), its name, and when it happened. For `monitor_alert.opened` this is the end of the window, and for `monitor_alert.recovered` it is the close time.
+- `text`: the message in Markdown, as the chat tools below show it.
+- `monitor`: the `id`, `name` and dashboard `url` of the monitor.
+- `alert.id`, `url`, `type`, `metric`, `window`, `threshold`: the alert, its dashboard page, its [rule type](#rule-types), the metric family name, the window (`FIFTEEN_MINUTES`, `ONE_HOUR`, `SIX_HOURS` or `TWENTY_FOUR_HOURS`), and the threshold.
+- `alert.observedValue` and `alert.sampleSize`: what the check saw when the alert opened. For `BAD_SESSION_COUNT` they are the bad session count and the scored session count. For `NO_SCORE_RATE` they are the no-score rate in percent and the settled session count. `badSessionScore` is sent for `BAD_SESSION_COUNT` only.
+- Opened only: `revision` (the metric revision, `null` for the family head), `windowEnd`, `samplingPercentage`, `sessionCount` (the sessions behind the alert) and `sessions` (up to 25 session `id` and `url` pairs).
+- Recovered only: `openedAt` and `closedAt`.
+
+**Respond with a 2xx status.** Any other status counts as a failure. Galtea waits 5 seconds for the answer.
+
+**Retries.** Galtea tries up to 6 times: at once, then about 10, 30, 70, 150 and 310 seconds after the first try. A timeout, a network error, and a 408, 429 or 5xx status are tried again. Every other 4xx status, a redirect, a refused destination, and an unexpected error while Galtea sends the request stop the delivery at once. A delivery that fails after the last try is dropped, and the dashboard does not show it. A retry can reach your receiver twice when its answer is lost, so use `Galtea-Webhook-Id` to ignore a repeat. Delivery order is not guaranteed: a retried event can arrive after a later one, so order events by `occurredAt`. A webhook failure never delays or repeats the alert email. When Galtea cannot queue a delivery at all, that alert is not posted to your webhook.
+
+#### Verify a webhook
+
+Checking the signature is optional. It proves that Galtea sent the request. Each rule has one secret that starts with `whsec_`. Galtea shows it once:
+
+- **In the dashboard**, tick **Show the signing secret after saving** under the URL field. The box starts unticked. After the save, a dialog shows the secret. A new rule opens on its own page, and the dialog appears there. Copy the secret, tick the confirmation box, then click **Done**. On a rule that already has a URL, the box reads **Show a new signing secret after saving** and replaces the current secret. A secret is created with the first URL and kept when you replace or remove the URL. You can also use **Regenerate signing secret** in the rule's menu on a rule that has a webhook URL. The dashboard asks you to confirm before it replaces the secret.
+- **Through the API or the CLI**, create or update the rule, then call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/regenerate-webhook-secret` or run `galtea monitors regenerate-alert-rule-webhook-secret`. This is the only way to read a secret, and it needs a rule with a URL. Create and update never return it. The dashboard menu entry **Regenerate signing secret** does the same.
+
+A new secret replaces the old one, which stops working at once. Store the secret with your endpoint's configuration.
+
+To verify a request:
+
+1. Read the `t` and `v1` values of the `Galtea-Signature` header.
+2. Reject the request when `t` is more than 5 minutes from your clock.
+3. Compute the HMAC-SHA256 of `<t>.<raw body>` with the secret, as hex. Use the raw bytes you received, not a parsed and re-encoded body.
+4. Compare it with `v1` in constant time.
+
+<CodeGroup>
+```javascript Node.js
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+// rawBody is the request body exactly as received (a Buffer or a string).
+export function verifyGalteaSignature(rawBody, header, secret, toleranceSeconds = 300) {
+  if (!header) return false;
+  const parts = Object.fromEntries(header.split(",").map((part) => part.split("=")));
+  const timestamp = Number(parts.t);
+  if (!Number.isFinite(timestamp)) return false;
+  if (Math.abs(Date.now() / 1000 - timestamp) > toleranceSeconds) return false;
+
+  const expected = createHmac("sha256", secret).update(`${timestamp}.`).update(rawBody).digest();
+  const received = Buffer.from(parts.v1 ?? "", "hex");
+  return received.length === expected.length && timingSafeEqual(received, expected);
+}
+```
+
+```python title="Python"
+import hashlib
+import hmac
+import time
+
+
+def verify_galtea_signature(raw_body: bytes, header: str | None, secret: str, tolerance_seconds: int = 300) -> bool:
+    if not header:
+        return False
+    try:
+        parts = dict(part.split("=", 1) for part in header.split(","))
+        timestamp = int(parts["t"])
+        if abs(time.time() - timestamp) > tolerance_seconds:
+            return False
+
+        signed = f"{timestamp}.".encode() + raw_body
+        expected = hmac.new(secret.encode(), signed, hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected.encode(), parts.get("v1", "").encode())
+    except (KeyError, ValueError, OverflowError):
+        return False
+```
+</CodeGroup>
+
+#### Slack and self-hosted chat
+
+- **Slack.** Create an [incoming webhook](https://api.slack.com/messaging/webhooks) and paste its URL. A URL on `hooks.slack.com` or `hooks.slack-gov.com` gets a Slack message instead of the JSON body above: a bold title, the sentence, a link to the alert, and up to 10 session links. When an alert has more sessions, the message links to the monitor's sessions tab.
+- **Mattermost and Rocket.Chat.** Paste the URL of an incoming webhook. Both read the `text` property of the JSON body and show it as Markdown, with the same message and links.
 
 ## SDK Integration
 
