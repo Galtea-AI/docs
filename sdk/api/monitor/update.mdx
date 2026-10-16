@@ -50,8 +50,8 @@ To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) a
 <ResponseField name="specification_ids" type="list[string]" optional>
   New Specification IDs to bind. The list replaces the bound Specifications, and an empty list unbinds them all.
   Only Policy and Capability Specifications of the monitor's product are accepted. The update is refused when
-  the monitor would be left with nothing to score. Removing a Specification deletes the alert rules on the
-  families that only it brought.
+  the monitor would be left with nothing to score. Removing a Specification deletes the alert rules on that
+  Specification and on the families that only it brought.
 </ResponseField>
 
 <Note>
