@@ -8,6 +8,8 @@ description: "Create a monitor for a product."
 
 Returns a [Monitor](/concepts/product/monitor) object for the given parameters, or `None` if an error occurs.
 
+Raises `ValueError` before any request when both `metric_group_ids` and `specification_ids` are empty.
+
 ## Example
 ```python
 monitor = galtea.monitors.create(
@@ -21,6 +23,17 @@ monitor = galtea.monitors.create(
 )
 ```
 
+To bind a Specification instead of picking metric families:
+```python
+specification_monitor = galtea.monitors.create(
+    name="Production specification monitor",
+    product_id=product_id,
+    specification_ids=[specification.id],
+    # Optional: add metric families too. The monitor scores the union of both.
+    # metric_group_ids=[metric_group_id],
+)
+```
+
 ## Parameters
 <ResponseField name="name" type="string" required>
   Name of the monitor.
@@ -28,8 +41,8 @@ monitor = galtea.monitors.create(
 <ResponseField name="product_id" type="string" required>
   The ID of the product whose production sessions this monitor scores.
 </ResponseField>
-<ResponseField name="metric_group_ids" type="list[string]" required>
-  The metric family IDs (`metric.metric_group_id`) the monitor scores with. At least one is required.
+<ResponseField name="metric_group_ids" type="list[string]" optional>
+  The metric family IDs (`metric.metric_group_id`) the monitor scores with. Pass this, `specification_ids`, or both.
   The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
   A self-hosted metric family is refused, because a monitor has no caller to supply the score. A
   [Classifier (Jev)](/concepts/metric/classifier) family is refused when classifier metrics are off on
@@ -44,4 +57,10 @@ monitor = galtea.monitors.create(
 <ResponseField name="monthly_credit_cap" type="int" optional>
   Maximum credits to spend per month. Must be positive when set. `None` (default) means uncapped.
   The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
+</ResponseField>
+<ResponseField name="specification_ids" type="list[string]" optional>
+  The IDs of [Specifications](/concepts/product/specification) of the product to bind. Pass this, `metric_group_ids`, or both.
+  The monitor scores the metric families the Specifications link, and follows a change to those links from its next scan.
+  Only Policy and Capability Specifications can be bound: an Inability, or a Specification of another product, is refused,
+  and `create` returns `None`. The monitor scores the union of the bound Specifications and the picked families.
 </ResponseField>

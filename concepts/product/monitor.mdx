@@ -13,7 +13,7 @@ import SDKMonitorServiceCard from '/snippets/cards/sdk-monitor-service-card.mdx'
 
 A Monitor is an always-on evaluation rule for a product's production sessions. The Monitor is the rule; the production sessions are the data it watches. Once you create a Monitor, Galtea keeps scoring a sampled fraction of that product's production sessions on its own, with no run to trigger by hand.
 
-Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with a set of metric families and records the result.
+Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with the metric families it scores and records the result. You choose those families directly, through [Specifications](/concepts/product/specification), or both.
 
 <Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry). Ingested spans that name a test case create a non-production session instead, so no Monitor scores it.</Note>
 
@@ -49,6 +49,18 @@ update adds one; a family the Monitor already binds can still be resent without 
 `galtea.monitors.create` then returns `None`, and `galtea.monitors.update` raises the error.
 
 <Note>A **Self-Hosted** family a Monitor already binds scores nothing: every session gets a final `SKIPPED` evaluation instead. A **Human Evaluation** family is checked the same way as any other metric (missing data or a disabled metric still SKIPs); once those checks pass, it waits `PENDING_HUMAN` for a reviewer, the same as on any other evaluation path.</Note>
+
+## Binding Specifications
+
+A [Specification](/concepts/product/specification) states one requirement of your product and links the metrics that measure it. A Monitor can bind one or more Specifications of its product instead of, or together with, metric families. Pass `specification_ids` in the SDK, the CLI, or the API.
+
+- **Union rule.** The Monitor scores the metric families you picked plus the families its bound Specifications link. A family that appears twice is scored once. This is the same rule as `POST /evaluations`. You need at least one source, and the Monitor must have at least one family left to score. The API checks this only on create and on an update that changes the scope. A Monitor can end up with nothing to score later, for example when a bound Specification loses its last metric or is deleted. Sessions that close while it has nothing to score are never scored, and no `SKIPPED` evaluation is recorded for them. Scoring starts again with the sessions that close after a metric is linked again.
+- **It follows the Specification.** When you link or unlink a metric on a bound Specification, the Monitor scores the new set from its next scan. Scores already recorded do not change.
+- **Policy and Capability only.** An Inability Specification cannot be bound, because it has no metrics to score. A Specification of another product cannot be bound either. While a monitor binds a Specification, you cannot change its type to Inability.
+- **Some metrics are left out.** A bound Specification brings a family only when the Monitor can score it. It leaves out a family whose newest revision is Self-Hosted, a family that cannot score production sessions, and a [Classifier (Jev)](/concepts/metric/classifier) family when classifier metrics are off on the deployment. The Monitor skips these without a `SKIPPED` evaluation. A family you pick directly is never left out this way.
+- **`scored_metric_group_ids`** lists the families the Monitor scores now, from both sources. `metric_group_ids` keeps only the picked ones. `specification_ids_by_metric_group_id` names the bound Specifications behind each family they bring.
+
+Deleting a Specification removes its link to the Monitor. Alert rules, results and charts use the scored families, so they follow the bound Specifications too.
 
 ## Sampling
 
@@ -105,7 +117,7 @@ Filter the rules by metric family, status, or creation date. Click a rule to ope
 
 Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email or webhook. If it has an open alert, pausing closes it without a recovery email or webhook. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and notifies its recipients and its webhook. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
 
-Removing a metric family from the monitor deletes the alert rules on that family. Deleting the monitor deletes its alert rules.
+A rule can use any family the monitor scores, including one that a bound Specification brings. Removing a metric family from the monitor, or unbinding the Specification that brought it, deletes the alert rules on that family unless another source still brings it. When a bound Specification stops linking a metric, the rules on its family stay but open no alert. Deleting the monitor deletes its alert rules.
 
 Viewing rules needs read access to the monitor; adding, editing, pausing, resuming, or deleting them needs the permission to edit it.
 
@@ -272,9 +284,21 @@ The SDK lets you create, list, retrieve, update, pause, resume, and delete monit
   Changing it only affects sessions that close after the change; sessions already skipped under the old value are not picked up.
 </ResponseField>
 
-<ResponseField name="metric_group_ids" type="list[string]" required>
-  The metric family IDs (`metric.metric_group_id`) the monitor scores with. At least one is required.
+<ResponseField name="metric_group_ids" type="list[string]">
+  The metric family IDs (`metric.metric_group_id`) picked directly. Can be empty when the monitor binds a Specification.
   The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
+</ResponseField>
+
+<ResponseField name="specification_ids" type="list[string]">
+  The IDs of the Policy and Capability Specifications the monitor binds. Can be empty when the monitor picks families.
+</ResponseField>
+
+<ResponseField name="scored_metric_group_ids" type="list[string]">
+  The families the monitor scores now: the picked families plus the families its bound Specifications link, minus the Specification families it cannot score. Read-only.
+</ResponseField>
+
+<ResponseField name="specification_ids_by_metric_group_id" type="dict[string, list[string]]">
+  For each family a bound Specification brings, the IDs of the bound Specifications that bring it. Read-only.
 </ResponseField>
 
 <ResponseField name="sampling_percentage" type="number" default="10">

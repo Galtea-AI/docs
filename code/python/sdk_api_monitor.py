@@ -54,6 +54,31 @@ monitor = galtea.monitors.create(
 if monitor is None:
     raise ValueError("monitor is None")
 
+# A Specification groups the metrics that measure one product requirement. A monitor can bind it
+# instead of picking metric families, and follows the Specification's metric links from its next scan.
+specification = galtea.specifications.create(
+    product_id=product_id,
+    name="Answer product questions",
+    description="The assistant answers questions about the product politely and on topic.",
+    type="CAPABILITY",
+)
+if specification is None:
+    raise ValueError("specification is None")
+galtea.specifications.link_metrics(specification_id=specification.id, metric_ids=[metric.id])
+
+# @start create_with_specification
+specification_monitor = galtea.monitors.create(
+    name="Production specification monitor",
+    product_id=product_id,
+    specification_ids=[specification.id],
+    # Optional: add metric families too. The monitor scores the union of both.
+    # metric_group_ids=[metric_group_id],
+)
+# @end create_with_specification
+
+if specification_monitor is None:
+    raise ValueError("specification_monitor is None")
+
 # @start get
 monitor = galtea.monitors.get(monitor_id=monitor.id)
 # @end get
@@ -70,6 +95,12 @@ monitors = galtea.monitors.list(
 galtea.monitors.update(monitor.id, sampling_percentage=25)
 # @end update
 
+# @start update_specifications
+# Replace the bound Specifications. Pass an empty list to unbind them all.
+# The monitor must keep at least one metric family or Specification.
+galtea.monitors.update(specification_monitor.id, specification_ids=[specification.id])
+# @end update_specifications
+
 # @start pause
 # Stop scoring until the monitor is resumed. The monitor keeps its configuration.
 paused_monitor = galtea.monitors.pause(monitor.id)
@@ -83,3 +114,5 @@ resumed_monitor = galtea.monitors.resume(monitor.id)
 # @start delete
 galtea.monitors.delete(monitor_id=monitor.id)
 # @end delete
+
+galtea.monitors.delete(monitor_id=specification_monitor.id)

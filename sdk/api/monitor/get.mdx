@@ -14,6 +14,8 @@ Returns a [Monitor](/concepts/product/monitor) object for the given monitor ID.
 monitor = galtea.monitors.get(monitor_id=monitor.id)
 ```
 
+The returned monitor lists `metric_group_ids` (the families picked directly), `specification_ids` (the bound Specifications) and `scored_metric_group_ids` (the families the monitor scores today, from both sources). `specification_ids_by_metric_group_id` maps each family a bound Specification brings to the Specifications behind it.
+
 ## Parameters
 <ResponseField name="monitor_id" type="string" required>
   The ID of the monitor you want to retrieve.

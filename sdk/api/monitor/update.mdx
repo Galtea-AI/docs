@@ -13,6 +13,13 @@ Returns the updated [Monitor](/concepts/product/monitor) object.
 galtea.monitors.update(monitor.id, sampling_percentage=25)
 ```
 
+To change the bound Specifications:
+```python
+# Replace the bound Specifications. Pass an empty list to unbind them all.
+# The monitor must keep at least one metric family or Specification.
+galtea.monitors.update(specification_monitor.id, specification_ids=[specification.id])
+```
+
 To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) and [`monitors.resume()`](/sdk/api/monitor/resume). Setting `status` here still works. Users may set only `ACTIVE` (resume) or `PAUSED` (pause); `CAPPED`, `NO_CREDITS`, and `FAILING` are system-set and are rejected.
 
 ## Parameters
@@ -40,7 +47,13 @@ To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) a
 <ResponseField name="status" type="string | MonitorStatus" optional>
   New status. Prefer [`pause()`](/sdk/api/monitor/pause) and [`resume()`](/sdk/api/monitor/resume). Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
+<ResponseField name="specification_ids" type="list[string]" optional>
+  New Specification IDs to bind. The list replaces the bound Specifications, and an empty list unbinds them all.
+  Only Policy and Capability Specifications of the monitor's product are accepted. The update is refused when
+  the monitor would be left with nothing to score. Removing a Specification deletes the alert rules on the
+  families that only it brought.
+</ResponseField>
 
 <Note>
-  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear a nullable field such as `version_id` or `monthly_credit_cap`.
+  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear `version_id` or `monthly_credit_cap`, the only nullable fields. The other fields refuse `None`: leave them out to keep their value, or pass an empty list to clear `metric_group_ids` or `specification_ids`.
 </Note>

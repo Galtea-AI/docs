@@ -99,6 +99,10 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
 <ResponseField name="type" type="Enum" required>
   The type of specification.
   Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+  <Note>
+    You cannot change a specification to `INABILITY` while a live [Monitor](/concepts/product/monitor) binds it.
+    The API answers `400`. Unbind the specification from the monitor first.
+  </Note>
 </ResponseField>
 
 <ResponseField name="test_type" type="Enum" optional>

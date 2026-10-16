@@ -33,7 +33,8 @@ monitors = galtea.monitors.list(
   Possible values: `ACTIVE`, `PAUSED`, `CAPPED`, `NO_CREDITS`, `FAILING`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
 <ResponseField name="metric_group_ids" type="list[string]" optional>
-  Filter by bound metric family IDs (`metric.metric_group_id`).
+  Filter by metric family IDs (`metric.metric_group_id`). A monitor matches only when it picked the family
+  directly. A family it scores only through a bound Specification does not match.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
   Filter monitors created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.
