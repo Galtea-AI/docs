@@ -1,0 +1,108 @@
+<Update label="2026-10-16" description="One Filters Menu, Per-Metric Pass Thresholds, a Human Evaluations Hub, No-Score and Webhook Alerts, Monitors by Specification, OpenTelemetry Routing, Files on Trace Inputs, and Platform Improvements">
+
+## One Filters Menu for Every Table and for Analytics
+
+Every table that has filters, the trace Spans list, the monitor alert history and the Analytics page now open them from one **Filters** button.
+
+- **One row per filter.** Each value shows as a pill that you remove with its ×. A badge on the button counts the active filters.
+- **Remove all filters** clears the filters, text searches included, and puts a filter that has a default back on that default. On alert history the default time range is **Last 7 days**, which always shows as a pill.
+- **The same 9 time ranges everywhere.** Table date filters such as **Created At**, alert history and Analytics list Last hour, 6 hours, 12 hours, 24 hours, 7 days, 30 days, 90 days, Last year and Last 2 years beside the calendar. A range moves with the clock: "Last 7 days" in a saved link means the 7 days before you open it. Dates picked in the calendar stay fixed.
+- **Analytics keeps its filters in the URL.** The time range, datasets, versions, metrics and languages survive a reload, and a shared link opens with them. **Group by** stays outside the menu.
+
+On Analytics, the default time range is **Last 2 years**. **Remove all filters** there widens it to all time, not to the default. A link with an unknown range, with dates over 5 years apart, or with the dates in reverse order opens on the default. See [Seeing production scores across the whole product](/concepts/product/monitor#seeing-production-scores-across-the-whole-product).
+
+## Set the Score That Counts as a Pass for Each Metric
+
+Every [metric](/concepts/metric#pass-threshold) now has a pass threshold: the score, from 0 to 1, at or above which an evaluation passes. Metrics without one keep 0.5, so existing results do not change.
+
+- **Set it at creation.** In the dashboard, pick the evaluation type, then set **Pass threshold (%)** under **Advanced Options**; a new metric starts at 50. In the SDK, pass `pass_threshold` to `metrics.create()`. The API takes `passThreshold`. It is fixed once the metric exists: create a revision to change it, and the revision starts with the threshold of its source.
+- **Read each verdict.** An [evaluation](/concepts/product/version/session/evaluation) now carries `passed` and the threshold it was judged at: `metric_pass_threshold` in the SDK, `metricPassThreshold` in the API. `passed` is null when the evaluation has no usable score. Score pills in the dashboard are green at or above the threshold and red below it.
+- **Filter by verdict.** The evaluation lists have a **Result** filter and a hidden **Result** column, which the CSV export includes. In the SDK, `evaluations.list(passed=True)` keeps the evaluations that passed. The API takes `passed=true|false` on `GET /evaluations`.
+- **Optimization follows the threshold.** The optimizer judges at the metric's pass threshold, and an optimized revision keeps it.
+
+## Review Human Evaluations One After Another
+
+The **Human Evaluations** page is now a hub with three tabs: **Evaluate**, **Pending** and **Submitted**. You need the human evaluation or human annotation permission, and a user group, to see it. See [Annotate in the Dashboard](/sdk/tutorials/human-evaluation#step-6-annotate-in-the-dashboard).
+
+- **Score without a dialog.** The **Evaluate** tab opens your next pending evaluation and reserves it for you. Click **Save & Next** to submit and move on, or **Skip** to give it back to the group.
+- **Pick a verdict.** The score starts on **Incorrect**, **Partially correct** or **Correct**, stored as 0, 0.5 and 1. Switch to **Percentage** or **Fraction** for any other [human evaluation](/concepts/metric/evaluation-types#human-evaluation) score.
+- **Keep the guidelines in view.** On a window at least 64rem wide and 37.5rem tall, the guidelines, score, reason and buttons stay on the right while the conversation scrolls on the left.
+- **Attach evidence.** Select a phrase in the conversation, click the evidence icon, and write a note. The **Evidence (N)** button next to **Reason** lists them for edit or removal. Evidence is saved as text at the end of the reason, so `human_reason` in the SDK returns it too. Only the **Evaluate** tab offers evidence, not the Manual Evaluation dialog.
+- **Limits.** Your reservation ends when you leave the tab or close the browser. Otherwise Galtea releases it between 2 and 2.5 hours after you took it. Through the API, releasing an evaluation that you already submitted now answers 400 and keeps you as its author.
+
+## Alert When a Monitor's Sessions Get No Score
+
+A [monitor](/concepts/product/monitor) alert rule can now warn you when evaluations stop producing scores.
+
+- **Pick "Sessions get no score"** under **Alert when** in the monitor's **Alerts** tab. The API type is `NO_SCORE_RATE`. Set **Threshold (%)**: a percent above 0 and at most 100, with a default of 20.
+- **A session counts when its latest evaluation failed or was skipped and has no score**, a classifier "Does not apply" answer included. Pending and cancelled evaluations do not count, and a human score counts as a score. On a metric where "Does not apply" is normal, set the threshold above that normal rate.
+- **The rule needs at least 5 evaluated sessions in its window** before it opens or closes an alert. Until then, an active rule shows a **Waiting** status and a note with the session count. Through the API, a `NO_SCORE_RATE` rule carries the same counts in `readiness`, which is null when Galtea cannot read the count.
+- **The alert closes** at the threshold minus its square root, rounded down: a 10% rule closes at 6%.
+- **Limit:** a failed evaluation counts in the window in which it was created, not when it failed, and an evaluation that never finishes does not count.
+
+**Action needed if you call the alert-rule API directly.** `POST /monitors/{monitorId}/alert-rules` now answers 201 with only `{ id }`; read the rule with a `GET`. Update, pause and resume now answer 204 with no body. See [Rule types](/concepts/product/monitor#rule-types).
+
+## Send Monitor Alerts to a Webhook or a Slack Channel
+
+A [monitor](/concepts/product/monitor) alert rule can now post to a webhook URL, next to or instead of its email recipients.
+
+- **Add a Webhook URL to a rule** in the monitor's Alerts tab, or send `webhookUrl` through the API and the CLI. A rule holds one URL, and now needs at least one email address or a webhook URL.
+- **Galtea sends one signed `POST` when an alert opens and one when it recovers.** The JSON body carries the same fields as the alert email, with up to 25 session links. When a delivery times out or gets a 408, 429 or 5xx answer, Galtea tries again, up to 6 attempts in about 5 minutes. Any other error stops the delivery at once.
+- **A Slack incoming-webhook URL shows a readable message**, with links to the alert and, when it opens, to up to 10 sessions. Mattermost and Rocket.Chat show the same message from the `text` property.
+- **The URL is write-only.** The dashboard and the API show only its host, and its port when it is not the default. An address in a private network is refused.
+- **Check the signature.** Each rule has a secret. In the dashboard, tick **Show the signing secret after saving** when you save the URL; on a rule that already has one, the box reads **Show a new signing secret after saving** and replaces the secret. Through the API or the CLI, `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/regenerate-webhook-secret` or `galtea monitors regenerate-alert-rule-webhook-secret` returns a new secret. See [Webhooks](/concepts/product/monitor#webhooks).
+
+## Monitor a Product by Its Specifications
+
+A [monitor](/concepts/product/monitor#binding-specifications) can now score the metrics that your Specifications link, not only metrics you pick one by one.
+
+- **Bind Specifications.** In the monitor form, select them on the **Specifications** tab. In the API, send `specificationIds` on `POST /monitors` or `PATCH /monitors/{id}`. In the SDK, pass `specification_ids` to `monitors.create` or `monitors.update`. `metric_group_ids` is now optional.
+- **The monitor scores both sources.** It scores the families you picked plus the families of each bound Specification. Read the full set in `scoredMetricGroupIds`; `metricGroupIds` keeps only your picks.
+- **It follows the Specification.** When you link or unlink a metric on a bound Specification, the monitor scores the new set from its next scan.
+- **Updates replace the list.** `specificationIds` on an update replaces the bound Specifications. When an update removes a family from the monitor, its alert rules are deleted.
+- **Policy and Capability only.** A monitor refuses an Inability or a Specification of another product, and a bound Specification cannot become an Inability.
+- **Some metrics are skipped with no error:** Self-Hosted metrics, metrics that cannot score production sessions, and Classifier metrics while they are off.
+- **The empty-scope check runs only on save.** If a bound Specification later loses its metrics, new sessions are not scored, and an alert rule on that family opens no alert.
+- **The form shows current metric revisions only**, so it can show fewer families than the monitor scores.
+
+## Route OpenTelemetry Traces to a Product and Version
+
+A collector that sends only standard resource attributes, such as `service.name` and `service.version`, now reaches the right product and version. See [How Galtea Routes a Trace](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#how-galtea-routes-a-trace).
+
+- **Find the product by its key.** The organization lists 1 to 10 resource attributes that identify a product. A new organization uses `service.name`. Each product gives its own value for each attribute (`otelProductKeyValues`), and it can use its own key instead. A trace must carry every attribute of the key, and matching is exact. When several products match, the key with the most attributes wins, and a tie routes nowhere.
+- **Find the version by its attributes.** The organization lists up to 32 resource attributes, and a product can replace that list. Galtea finds or creates the [version](/concepts/product/version) whose facts are the listed attributes that the trace carries. The list is empty until you set it.
+- **Set it** on the new **OpenTelemetry** card of the **Update Organization** page and in **Advanced Options** of the product edit form, or with `PATCH /organizations/{id}` and `PATCH /products/{id}` (`galtea organizations update` and `galtea products update` in the CLI).
+
+Limits and changes:
+
+- **`PATCH /products/{id}` and `PATCH /organizations/{id}` now refuse unknown fields** with an error, where the product route ignored them before.
+- **Two products cannot hold the same key values**, and the organization cannot change its key attributes while a product that follows the key holds values. Both answer `409`.
+- **A trace that matches no product is rejected**, with the reason in the response's `partialSuccess`.
+- **Routing happens once, at ingestion.** A later settings change moves no stored trace.
+
+## Attach Files to a Trace Input
+
+A [trace](/concepts/product/version/session/trace) you log yourself can now carry the documents your agent received. Galtea stores and keeps them like the files of a [test case input](/concepts/product/dataset/test-case#file-inputs).
+
+- **Pass `input_file_paths`** to [`traces.create`](/sdk/api/trace/create), [`traces.update`](/sdk/api/trace/update) or [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate). Each entry is a local path, which the SDK uploads, or a Galtea storage reference such as `trace.input_files[0].uri`.
+- **`input` is optional when you pass files**, except in `traces.create_and_evaluate` with `session_custom_id` and only a `product_id`.
+- **Galtea keeps the files.** On S3 storage, the cleanup of temporary uploads no longer removes them, and the stored reference does not expire.
+- **The test case rules apply.** The SDK allows at most 20 files and 20 MB in total. When an input holds a Galtea file, the API also checks the limits, the file types a test case input accepts, and that every file belongs to your organization, and refuses a trace that breaks a rule.
+
+Limits to know:
+
+- **Evaluators cannot read input files yet.** A metric that reads the input is skipped when no turn of the session has input text without a file. To have a turn scored, log the text your pipeline extracted as the input, without the file.
+- **`traces.update` replaces the whole input.**
+- **The SDK refuses a URL outside Galtea storage.** A direct API call stores such a URL as sent, with no check, unless the same input also holds a Galtea file: then the API refuses it.
+- **An OpenTelemetry turn whose input breaks a rule is dropped.**
+
+## Platform Improvements
+
+- **The Python SDK needs Python 3.10 or newer.** The `langfuse-langchain` extra now installs LangChain 1.x, which removes `AgentExecutor`: build LangChain agents with `create_agent`. See [Installation](/sdk/installation).
+- **Evaluations blocked by the judge's content filter end Skipped.** A blocked [evaluation](/concepts/product/version/session/evaluation) now gets no score and no credits charged, instead of a charged 0. Averages, pass rates and `BAD_SESSION_COUNT` alerts leave it out; a `NO_SCORE_RATE` alert counts it. To score it, use a metric with another evaluator model. An empty judge reply after all retries now ends **Failed**, and so does a block on some built-in metrics.
+- **Agent spans land on their turn in Direct Inference.** Galtea now sends `traceparent` and `baggage` headers on every turn call (not on initialization, finalization or test-connection calls), so a span your agent exports before it answers attaches to its turn. Header values now accept `{{ trace_id }}`, `{{ galtea_session_id }}`, `{{ session_id }}`, `{{ test_case_id }}`, `{{ dataset_id }}` and `{{ language_code }}`, and `{{ auth_token }}` under `BEARER` or `API_KEY` auth. **Action needed:** a connection that sets its own `traceparent` header is refused, so remove that header the next time you edit the connection. See [W3C Trace Context Propagation](/concepts/product/endpoint-connection-configuration#w3c-trace-context-propagation).
+- **Specifications at a glance.** The metrics table and the metric picker have a **Specifications** column with the [specifications](/concepts/product/specification) each metric is linked to. You see only specifications in products your user groups can read.
+- **Specifications open where the results are.** A specification page opened without a chosen tab now opens on **Evaluations** when it has evaluations in the current view mode, and on **Overview** otherwise.
+- **Ask Val stays out of the way.** The **Ask Val** launcher in the dashboard shrinks to its icon 4 seconds after it appears, so it no longer covers buttons at the bottom right.
+
+</Update>
