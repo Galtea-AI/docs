@@ -179,7 +179,7 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Human Reason" type="Text" optional>
-  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score.
+  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score. When the reviewer adds evidence from the conversation, the reason ends with an **Evidence from the conversation** footer that lists each quoted phrase and its note, and holds only that footer when no reason was typed.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Started At" type="Text" optional>

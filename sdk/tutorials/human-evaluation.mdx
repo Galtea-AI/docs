@@ -123,6 +123,8 @@ See also [Evaluating Conversations](/sdk/tutorials/evaluating-conversations) for
 
 Navigate to the **Human Evaluations** page in the sidebar. The **Evaluate** tab opens on the next pending evaluation and reserves it for you, so no one else in your group gets the same one. Review the conversation and context, submit a score, optionally add a reason, and click **Save & Next**. Pick **Incorrect**, **Partially correct** or **Correct** (stored as 0, 0.5 or 1), or switch to **Percentage** or **Fraction** for any other score from 0 to 1. **Skip** gives the evaluation back to the group; you see it again after the others.
 
+To back your score with a phrase of the conversation, select it and click the evidence icon next to it, then write a note. The evidence is saved at the end of the reason, under **Evidence from the conversation**, so `human_reason` returns it too. The **Evidence** button next to **Reason** shows how many you added and lists them, and you can edit or remove each one.
+
 Each evaluation has its own URL, so a reload or a second browser tab reopens the one you are scoring. To bring a reviewer in, send them the link to the **Human Evaluations** page: it opens on their next evaluation. The **Pending** and **Submitted** tabs list the evaluations; **Evaluate** and **Re-evaluate** open one in the **Evaluate** tab.
 
 ## Managing Groups
