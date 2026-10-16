@@ -52,7 +52,7 @@ update adds one; a family the Monitor already binds can still be resent without 
 
 ## Binding Specifications
 
-A [Specification](/concepts/product/specification) states one requirement of your product and links the metrics that measure it. A Monitor can bind one or more Specifications of its product instead of, or together with, metric families. Pass `specification_ids` in the SDK, the CLI, or the API.
+A [Specification](/concepts/product/specification) states one requirement of your product and links the metrics that measure it. A Monitor can bind one or more Specifications of its product instead of, or together with, metric families. In the dashboard, pick them on the Specifications tab of the monitor form. In the SDK, the CLI, or the API, pass `specification_ids`.
 
 - **Union rule.** The Monitor scores the metric families you picked plus the families its bound Specifications link. A family that appears twice is scored once. This is the same rule as `POST /evaluations`. You need at least one source, and the Monitor must have at least one family left to score. The API checks this only on create and on an update that changes the scope. A Monitor can end up with nothing to score later, for example when a bound Specification loses its last metric or is deleted. Sessions that close while it has nothing to score are never scored, and no `SKIPPED` evaluation is recorded for them. Scoring starts again with the sessions that close after a metric is linked again.
 - **It follows the Specification.** When you link or unlink a metric on a bound Specification, the Monitor scores the new set from its next scan. Scores already recorded do not change.
@@ -117,7 +117,7 @@ Filter the rules by metric family, status, or creation date. Click a rule to ope
 
 Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email or webhook. If it has an open alert, pausing closes it without a recovery email or webhook. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and notifies its recipients and its webhook. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
 
-A rule can use any family the monitor scores, including one that a bound Specification brings. Removing a metric family from the monitor, or unbinding the Specification that brought it, deletes the alert rules on that family unless another source still brings it. When a bound Specification stops linking a metric, the rules on its family stay but open no alert. Deleting the monitor deletes its alert rules.
+A rule can use any family the monitor scores, including one that a bound Specification brings. Removing a metric family from the monitor, or unbinding the Specification that brought it, deletes the alert rules on that family unless another source still brings it. When a bound Specification stops linking a metric, the rules on its family stay but open no alert, and the dashboard marks them as not scored. Deleting the monitor deletes its alert rules.
 
 Viewing rules needs read access to the monitor; adding, editing, pausing, resuming, or deleting them needs the permission to edit it.
 
