@@ -139,7 +139,8 @@ CORS requirements below.
 - [ ] **The network your users sit on can resolve and reach the storage endpoint.** Uploads
       go directly from the browser using a signed URL. Missing this makes file upload appear
       to hang. If your policy forbids browser-to-storage connections, raise it early: an
-      upload path through the API is on the roadmap, ask for its current status.
+      upload path through the API is available as an opt-in setting: see
+      [When your users cannot reach object storage](/deployment/installation-examples#when-your-users-cannot-reach-object-storage).
 - [ ] **CORS configured** on the storage account to allow a cross-origin `PUT` from your
       dashboard origin
 

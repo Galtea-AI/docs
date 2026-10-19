@@ -16,10 +16,6 @@ Galtea reaches your agent through [Pipecat Cloud](https://pipecat.ai). You give 
   The API key is a secret. Galtea stores it encrypted and the API never returns it. A fetched connection tells you only whether a key is set, through a `has_api_key` boolean. It never shows the key itself.
 </Note>
 
-<Warning>
-  **Coming soon.** You can create and manage WebRTC connections now, and attach one to a version. Running a voice evaluation over WebRTC is not available yet. A version whose only conversation target is a WebRTC connection cannot run until this path ships. The sections below describe how voice evaluation over WebRTC will work once it is available.
-</Warning>
-
 ## Use Cases
 
 - **Evaluate voice agents** — Galtea opens a WebRTC session with your agent for each test case, exercising the full voice stack.
