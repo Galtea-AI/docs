@@ -41,10 +41,10 @@ This method can be called in two ways:
 
 ## Parameters
 <ResponseField name="id" type="string" optional>
-  ID of an existing endpoint connection to test. When provided, stored connection data is used as the base and remaining fields act as overrides.
+  ID of an existing endpoint connection to test. When provided, stored connection data is used as the base and remaining fields act as overrides. With `id`, the call needs permission to edit that connection, because the test sends the stored credentials and secret header values and returns the answer. The API answers `403` without that permission. Without `id`, the call needs permission to create a connection.
 </ResponseField>
 <ResponseField name="url" type="string" optional>
-  The endpoint URL to test. With `id`, a URL different from the stored one needs permission to edit the connection, because the test sends the stored credentials and secret header values to it. Without that permission, the API answers `403`. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
+  The endpoint URL to test. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
 </ResponseField>
 <ResponseField name="http_method" type="string" optional>
   HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values are sent
