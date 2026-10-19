@@ -21,6 +21,7 @@ metric = galtea.metrics.create(
     tags=["custom", "accuracy"],
     description="A custom accuracy metric.",
     judge_generation_settings={"temperature": 0.3, "max_output_tokens": 512},
+    pass_threshold=0.7,
 )
 # @end ai_evaluation
 

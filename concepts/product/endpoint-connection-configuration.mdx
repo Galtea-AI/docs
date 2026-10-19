@@ -222,19 +222,42 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 
 ## Custom Headers
 
-Custom headers are sent with every request to your endpoint. Header values support placeholder substitution for injecting authentication credentials, so you can place tokens in any header — not just the standard `Authorization` or `X-API-Key` headers.
+Custom headers are sent with every request to your endpoint. Header values support placeholder substitution. You can inject authentication credentials, so you can place tokens in any header, not just the standard `Authorization` or `X-API-Key` headers. You can also inject ids of the current call, such as the session ID or the Galtea Trace ID.
 
 ### Available Placeholders
 
 | Placeholder | Resolves to | Available when auth type is |
 |-------------|------------|---------------------------|
 | `{{ auth_token }}` | The authentication token | `BEARER` or `API_KEY` |
-| `{{ api_key }}` | The authentication token | `BEARER` or `API_KEY` (alias for `{{ auth_token }}`) |
-| `{{ bearer_token }}` | The authentication token | `BEARER` or `API_KEY` (alias for `{{ auth_token }}`) |
+| `{{ api_key }}` | The authentication token | `API_KEY` (alias for `{{ auth_token }}`) |
+| `{{ bearer_token }}` | The authentication token | `BEARER` (alias for `{{ auth_token }}`) |
 | `{{ username }}` | The Basic auth username | `BASIC` |
 | `{{ password }}` | The Basic auth password | `BASIC` |
+| `{{ trace_id }}` | The id of this turn's [Trace](/concepts/product/version/session/trace), labeled "Galtea Trace ID" in the dashboard. It is not the W3C trace ID in the `traceparent` header | any |
+| `{{ galtea_session_id }}` | The Galtea session ID | any |
+| `{{ session_id }}` | The external session ID, the one your endpoint returns | any |
+| `{{ test_case_id }}` | The test case ID | any |
+| `{{ dataset_id }}` | The id of the [Dataset](/concepts/product/dataset) | any |
+| `{{ language_code }}` | Full BCP-47 language tag of the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when no language is set | any |
 
 Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and `{ placeholder }` syntax.
+
+Galtea renders all placeholders of a header value in one pass. A value that does not exist yet renders as an empty string. For example, `{{ session_id }}` is empty until your endpoint returns a session ID. A rendered value is never scanned for placeholders again.
+
+Which context placeholders hold a value depends on the call:
+
+| Call | Context placeholders with a value |
+|------|-----------------------------------|
+| Conversation turn | All six. `session_id` is empty until your endpoint returns one |
+| Initialization | `galtea_session_id`, and `session_id` when the session already has one |
+| Finalization | `galtea_session_id`, and `session_id` when the session has one |
+| Test connection | Sample values for all six |
+
+Every other context placeholder renders empty in that call.
+
+<Note>
+  Header values carry Latin-1 characters only. A value with other characters, for example a `session_id` that holds them, fails the call. A value with a line break fails the call too.
+</Note>
 
 ### Example
 
@@ -242,6 +265,7 @@ Placeholders are **case-insensitive** and work with both `{{ placeholder }}` and
 {
   "Authorization": "Bearer {{ bearer_token }}",
   "X-Custom-Api-Key": "{{ api_key }}",
+  "X-Galtea-Session": "{{ galtea_session_id }}",
   "X-Tenant-Id": "my-tenant"
 }
 ```
@@ -273,9 +297,36 @@ A `••••••••` value for a header that has no stored value is reje
 
 ### W3C Trace Context Propagation
 
-When W3C trace context propagation is enabled, Galtea adds a `traceparent` header to every request following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. This allows your endpoint to correlate requests with Galtea's spans without any code changes. You can add a `traceparent` key in your custom headers as a placeholder — Galtea will replace its value with the correct trace context at request time.
+Galtea sends a `traceparent` header on every conversation turn call, following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) specification. It does this whether or not the platform's own tracing is on, and on every retry of the turn. You do not need to set anything up. Your endpoint can correlate its spans with the turn without any code changes.
+
+- Each turn has one trace ID. Every retry of the turn sends the same trace ID.
+- Galtea stores the trace ID on the turn when the turn starts, before it calls your endpoint. A span your agent exports before it answers attaches to the turn.
+- Galtea never sends the header on initialization, finalization, or test-connection calls.
+- Galtea sets the header itself. Galtea refuses a `traceparent` header in custom headers on save (400).
+
+<Note>
+  The header is flagged as sampled. An agent with a parent-based sampler records every Galtea test call, so expect more trace volume in your own tracing backend.
+</Note>
 
 See [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for how correlated spans become Span records.
+
+### Baggage
+
+Galtea also sends a W3C `baggage` header on every conversation turn call:
+
+```
+baggage: galtea.trace.id=<turn id>
+```
+
+The value is the id of the turn, the same one as `{{ trace_id }}`. If you set your own `baggage` header, Galtea merges its member into yours. Your other members stay. A `galtea.trace.id` member you set is replaced.
+
+An agent that copies baggage onto its spans attaches every span to the turn, even when a proxy or gateway starts a new trace and changes the trace ID. To copy baggage onto spans, use the OpenTelemetry baggage span processor for [Python](https://pypi.org/project/opentelemetry-processor-baggage/) or [JavaScript](https://www.npmjs.com/package/@opentelemetry/baggage-span-processor). Both accept a key predicate. Use one that copies only keys that start with `galtea.`.
+
+<Warning>
+  An agent instrumented with OpenTelemetry forwards baggage to every service it calls, including LLM providers and other third parties. So the turn id can leave your agent. The id is opaque: nobody can read or write anything with it without a Galtea API key of your organization.
+</Warning>
+
+Python OpenTelemetry drops a `baggage` header longer than 8192 characters. Galtea's member adds about 60 characters, so keep your own baggage well below that limit.
 
 ## Timeout
 

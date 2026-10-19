@@ -26,21 +26,22 @@ Every launch you trigger creates a [Run](/concepts/product/run), and each evalua
 
 A metric revision can be excluded from analytics. Its evaluations stay available and keep their original score, reason, and status. They stop contributing to scores, coverage, insights, and monitor aggregates.
 
-The evaluation list hides these results by default. Turn on **Show excluded from analytics** to reveal them. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
+The evaluation list hides these results by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
 
 Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics.
 
 ## Filtering by Score
 
-Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Use them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The badge on the filter shows the condition, for example `≥ 70%`.
+Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Open **Filters**, then choose one of them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The pill in the filter row shows the condition, for example `≥ 70%`.
 
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
 - **Human Score** reads the reviewer's score only.
-- **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Result** (open **Filters**, then choose **Result**) keeps the evaluations that passed or failed their metric's [pass threshold](/concepts/metric#pass-threshold). Pick both options, or none, and the filter does nothing. It follows the reported score, so a human review counts, unlike the Judge Score filter. The **Result** column shows PASS, FAIL or a dash, is hidden by default, and is included in the CSV export.
 - An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
 
-The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. It also takes `confidenceGt`, `confidenceGte`, `confidenceLt` and `confidenceLte`, and can sort by `confidence`, with evaluations that have no confidence last in both directions. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. The SDK takes the score bounds as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list). It does not take the confidence bounds.
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. It also takes `confidenceGt`, `confidenceGte`, `confidenceLt` and `confidenceLte`, and can sort by `confidence`, with evaluations that have no confidence last in both directions. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. It also takes `passed=true` or `passed=false`, which sends the same verdict filter as the Result filter. The SDK takes `passed` and the score bounds as keyword arguments of [`evaluations.list()`](/sdk/api/evaluation/list). It does not take the confidence bounds.
 
 ## Evaluation Lifecycle
 
@@ -81,6 +82,7 @@ Once an evaluation completes, the following fields are available:
     - The organization ran out of credits.
     - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object.
     - The judge model was unavailable.
+    - The evaluator model's content safety filter blocked the request. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model.
     - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, or the input was too long for the classifier.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
@@ -92,6 +94,14 @@ Once an evaluation completes, the following fields are available:
 
 <ResponseField name="Score" type="Number">
   The score assigned to the output by the metric's evaluation criteria. **Example**: 0.85
+</ResponseField>
+
+<ResponseField name="Passed" type="Boolean" optional>
+  Whether the reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). Null when the evaluation has no reported score, when it is outdated or deleted, or when it is a classifier result marked **Long input**. In the SDK it is `evaluation.passed`.
+</ResponseField>
+
+<ResponseField name="Metric Pass Threshold" type="Number" optional>
+  The pass threshold of the metric revision that scored this evaluation, from 0 to 1. In the SDK it is `evaluation.metric_pass_threshold`.
 </ResponseField>
 
 <ResponseField name="Reason" type="Text">
@@ -169,7 +179,7 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Human Reason" type="Text" optional>
-  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score.
+  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score. When the reviewer adds evidence from the conversation, the reason ends with an **Evidence from the conversation** footer that lists each quoted phrase and its note, and holds only that footer when no reason was typed.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Started At" type="Text" optional>

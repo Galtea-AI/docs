@@ -22,6 +22,7 @@ metric = galtea.metrics.create(
     tags=["custom", "accuracy"],
     description="A custom accuracy metric.",
     judge_generation_settings={"temperature": 0.3, "max_output_tokens": 512},
+    pass_threshold=0.7,
 )
 ```
   </Tab>
@@ -174,6 +175,9 @@ human_transfer_metric = galtea.metrics.create(
   - `does_not_apply`: optional text of an extra level, 1 to 1000 characters. When it is the most probable answer, the evaluation is skipped.
 
   Placeholders may also appear in the yes/no criteria, the level descriptions and the `does_not_apply` text. The SDK sends the question as given, and the API checks these rules. When the API refuses it, `create` prints the API's message and returns `None`.
+</ResponseField>
+<ResponseField name="pass_threshold" type="float" optional>
+  The score, from 0 to 1, at or above which an evaluation of this metric passes. When omitted, the API uses `0.5`. It is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.pass_threshold`. See [Pass threshold](/concepts/metric#pass-threshold).
 </ResponseField>
 <ResponseField name="user_group_ids" type="list[string]" optional>
   A list of [user group](/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`. Each group must belong to your organization.

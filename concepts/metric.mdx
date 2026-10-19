@@ -71,9 +71,15 @@ After you save a revision, the dashboard shows how many results and products the
 
 You can reverse this decision from the metric's actions menu. Exclusion does not delete or change any evaluation. Each evaluation keeps its score, reason, and metric revision.
 
-The metric list hides excluded revisions by default. Use **Show excluded from analytics** to reveal them. Turn on **Include legacy** to inspect earlier revisions. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
+The metric list hides excluded revisions by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. To inspect earlier revisions, open **Filters** and turn on **Include legacy**. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
 
 When a product has excluded results, its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no scores to that page. The page's **Last Successful** date still counts their evaluations, because it reports when an evaluation last ran.
+
+## Pass threshold
+
+Every metric has a pass threshold: the score, from 0 to 1, at or above which an evaluation passes. When you do not set one, it is 0.5. Galtea's own metrics use 0.5. An evaluation with no reported score has no result, so it neither passes nor fails.
+
+You set the threshold when you create the metric. It cannot change afterwards, so to use another one, create a revision of the metric. In the dashboard, the threshold is a percent in **Advanced Options** of the create form, prefilled with 50, and it accepts decimals. A revision starts with the threshold of the revision it comes from. Score pills are green at or above the threshold and red below it.
 
 ## Optimization review
 
@@ -81,6 +87,8 @@ When a product has excluded results, its Analytics page states how many results 
 
 - **Apply optimization** marks the original revision `Legacy`. The optimized revision takes the original's name, description, and tags, and joins its specifications and user groups. Monitors use it from their next run.
 - **Keep original** leaves the original unchanged and marks the optimized revision **Not applied**. You can then optimize again.
+
+The optimizer judges each prompt at the metric's pass threshold, and the optimized revision keeps that threshold.
 
 From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
 
@@ -156,6 +164,10 @@ If the judge model becomes unavailable to Galtea on or after the retirement date
 
 <ResponseField name="Evaluator Model" type="Text" optional>
   The model used to score the metric. Does not apply to deterministic metrics. For a [Classifier (Jev)](/concepts/metric/classifier) metric, the platform sets the Jev model. **Example**: "GPT-4.1"
+</ResponseField>
+
+<ResponseField name="Pass Threshold" type="Number" optional>
+  The score, from 0 to 1, at or above which an evaluation of this metric passes. Defaults to 0.5. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.pass_threshold`. **Example**: 0.7
 </ResponseField>
 
 <ResponseField name="Tags" type="Text List" optional>

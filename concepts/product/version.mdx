@@ -54,6 +54,8 @@ You set the facts with the [REST API](/api-reference) (`POST /versions`, `PATCH 
 
 `POST /versions/get-or-create` asks for the version of one state instead of creating a row. You send a product and a facts map. Galtea answers the live version of that product whose facts are the ones you sent, and creates that version when no version holds them. So two jobs that run at the same time on one state receive the same version, and neither has to list the versions first and guess. The answer is `200` in both cases, and the key order you send does not change the match.
 
+OpenTelemetry traces can supply the facts too. Your organization, or one product, lists the resource attributes that make up a version, for example `service.version` and `app.agent.model`. Galtea builds the facts from the listed attributes a trace carries, with **the attribute name as the key**. So the facts of that trace are `{"service.version": "1.4.0", "app.agent.model": "gpt-4.1"}`. Keys that an SDK test sets, such as `{"version": "1.4.0", "model": "gpt-4.1"}`, are other keys, so the two states are two versions. A listed attribute with a blank, empty, or null value counts as absent. A value of another kind than text or an integer makes the facts invalid. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#route-to-a-product-version).
+
 The SDK can also record the commit the job runs on, under the `commit_hash` fact. See [Get or Create Version](/sdk/api/version/get-or-create).
 
 Read each fact from the same setting your agent runs with, such as an environment variable or a configuration file. Do not type the value a second time. Then a change to the agent's settings gives a new version with no other edit, and the facts always describe the state that was tested. The [GitHub Actions guide](/sdk/integrations/github-actions) shows this.
@@ -83,7 +85,7 @@ Galtea refuses two keys that become equal after the spaces around them are remov
 
 ### Model facts
 
-A model fact links the version to its [model](/concepts/model), so you do not state the model twice. A fact is a model fact when its key is `model`, `model_name`, `model-name` or `modelName`. Galtea compares the key without case, `_` and `-`, so `MODEL_NAME` counts too. Every other key links nothing.
+A model fact links the version to its [model](/concepts/model), so you do not state the model twice. A fact is a model fact when its key is `model`, `model_name`, `model-name` or `modelName`. Galtea compares the key without case, `_` and `-`, so `MODEL_NAME` counts too. Every other key links nothing, including a dotted attribute name such as `app.agent.model` that comes from the version attributes of an OpenTelemetry trace.
 
 - The value must be the exact name of a model on the **Models** page of your organization in the dashboard, provider prefix included. `gpt-4o` and `azure/gpt-4o` are two different models, so use the full name of the one you run. Upper and lower case do not matter.
 - Your organization's own model wins over a global model with the same name.

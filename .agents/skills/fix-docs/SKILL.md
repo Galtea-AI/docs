@@ -9,8 +9,6 @@ _Classify every discrepancy using code evidence. Never guess Category A/B/C: if 
 
 # Documentation Audit & Fix
 
-Audit Galtea documentation against the actual implementation and fix any issues found.
-
 ## 1. Determine Scope
 
 If `$ARGUMENTS` provides a focus area, use it as the starting scope. Otherwise, ask the user using `AskUserQuestion`:
@@ -49,8 +47,6 @@ If code snippets are in scope, also read:
 - `sdk/AGENTS.md` - SDK development guidelines, resource patterns, testing
 
 ## 3. Read Documentation and Source Code
-
-Read both sides before making any judgment:
 
 1. **Read the documentation pages** in scope. For each page, note what it claims: method names, parameters, types, defaults, behavior descriptions, code examples.
 2. **Read the corresponding source code.** The implementation is always the source of truth:
@@ -132,11 +128,11 @@ All individual metric pages (under `docs/concepts/metric/`) must follow:
 6. No `## Related` section on individual metric pages (redundant with sidebar)
 
 **Concept Overview Pages Should Not Contain SDK Code:**
-Concept overview pages explain *what* something is. SDK code (decorators, method calls, code examples) belongs in tutorials or SDK API reference pages. Concept pages should link to tutorials via `## SDK Integration` cards instead.
+SDK code (decorators, method calls, code examples) belongs in tutorials or SDK API reference pages. Concept pages link to tutorials via `## SDK Integration` cards instead.
 
-**Tutorial Grouping (Guides tab):**
-- **Core Workflows**: Writing Specs → Evaluations from Specs → Simulating Conversations → Create a Custom Dataset → Run Dataset-Based Evaluations → Direct Inferences from Platform
-- **Production & Monitoring**: Monitor Production Responses → Evaluating Conversations
+**Tutorial Grouping (Guides tab):** `docs/docs.json` is the source of truth; read it before moving a page. At the time of writing:
+- **Core Workflows**: Writing Specs → Evaluations from Specs → Simulating Conversations → Evaluating Conversations → Create a Custom Dataset → Run Dataset-Based Evaluations → Evaluate Document Inputs → Direct Inferences from Platform
+- **Production & Monitoring**: Monitor Production Responses → Send OpenTelemetry Traces → Monitor Real User Traffic with OpenTelemetry
 - **Advanced**: Judge Prompts → Custom Metrics → Tracing → Agentic Evaluation → Human Evaluation
 - Manual/advanced tutorials should have a `<Note>` at the top pointing to the spec-driven workflow as the recommended alternative
 
@@ -146,7 +142,6 @@ Videos must be placed consistently based on their type:
 - **Contextual workflow videos**: inside the relevant creation/setup section they demonstrate (e.g., endpoint connection creation video inside "Creating an Endpoint Connection", dataset generation video inside "Dataset Origin" Tab)
 - **Tutorial videos**: right after the intro paragraph or Tip, before the step-by-step content
 - Video placeholders for missing videos use `{/* <!-- VIDEO PLACEHOLDER: description ... --> */}` comment wrapping
-- Track all pending and existing videos in `docs/VIDEO_PLACEHOLDERS.md`
 
 **Long Concept Pages Should Be Split:**
 If a concept page exceeds ~200 lines due to dense reference material (e.g., configuration syntax, parameter tables), split the reference into a sub-page. Examples:
@@ -173,7 +168,7 @@ For each code snippet file in scope, check:
 - `SpanType`: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
 - `EvaluationStatus`: `PENDING`, `PENDING_HUMAN`, `SUCCESS`, `FAILED`, `SKIPPED`, `CANCELLED`, `OUTDATED`
 - `SpecificationType`: `CAPABILITY`, `INABILITY`, `POLICY`
-- Metric `source`: `"self_hosted"`, `"partial_prompt"`, `"full_prompt"`, `"human_evaluation"`
+- Metric `source`: read `MetricSource` in `sdk/galtea/domain/models/metric.py` (uppercase values; `FULL_PROMPT` is deprecated for creation)
 
 **MetricInput Format:**
 The evaluations.create `metrics` parameter accepts:
@@ -190,7 +185,7 @@ def my_agent(input_data: AgentInput) -> AgentResponse: ...  # Signature 3
 
 ## 5. Diagnose Root Cause of Each Issue
 
-**Not every failure is a stale doc or snippet.** Before fixing anything, classify the root cause:
+Before fixing anything, classify the root cause:
 
 ### Category A: Stale Documentation/Snippet (most common)
 The docs or snippet are wrong - outdated method name, wrong parameter, removed field, etc. The SDK and API are correct.
@@ -245,7 +240,7 @@ Preserve the strict code file structure:
 8. Cleanup at end
 
 **Section Marker Rules:**
-- Names: single word, descriptive `snake_case`
+- Names: descriptive `snake_case` (`docs/AGENTS.md`)
 - Markers are stripped from embedded output
 - Sections cannot overlap
 
@@ -256,13 +251,9 @@ Preserve the strict code file structure:
 - Test Case ID: `"YOUR_TEST_CASE_ID"` -> `GALTEA_TEST_CASE_ID`
 - Session ID: `"YOUR_SESSION_ID"` -> `GALTEA_SESSION_ID`
 
-**File Naming Conventions:**
-- SDK API reference: `sdk_api_<service>_<method>.py`
-- SDK tutorials: `sdk_tutorials_<topic>.py`
-- Concepts: `concepts_<topic>.py`
-- Integrations: `sdk_integrations_<platform>.py`
+**File Naming Conventions:** as in `docs/AGENTS.md`, plus `sdk_integrations_<platform>.py` for integrations.
 
-**Python Compatibility:** Target >=3.9. Prefer `Optional[T]` in library code; `T | None` is acceptable in illustrative snippets.
+**Python Compatibility:** Target >=3.10. Prefer `Optional[T]` in library code; `T | None` is acceptable in illustrative snippets.
 
 ## 7. Verify Fixes
 
@@ -287,7 +278,7 @@ Preserve the strict code file structure:
 
 ### Full Docs Validation
 ```bash
-cd docs && python scripts/run.py
+cd docs && python scripts/run.py --validate
 ```
 
 ## 8. Final Review with Git

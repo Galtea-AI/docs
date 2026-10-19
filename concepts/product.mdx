@@ -105,6 +105,26 @@ The SDK allows you to list existing products, retrieve specific products by thei
   <Info>The API default is `30`.</Info>
 </ResponseField>
 
+<ResponseField name="OpenTelemetry Product Key Values (otelProductKeyValues)" type="Map" optional>
+  One value for each attribute of the product key, for example `service.namespace` and `service.name`. An OpenTelemetry trace whose resource carries these values, and Galtea fact attributes (or attributes named in the version attributes) but no `galtea.product.id`, goes to this product. Two live products of one organization cannot hold the same values. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Route Traces to a Product by Resource Attributes](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#route-traces-to-a-product-by-resource-attributes).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Product Key (otelProductKey)" type="List of text" optional>
+  The resource attribute names that identify this product, 1 to 10 names. Leave it `null` to follow the product key of the organization. Set it to give this product its own key.
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Version Attributes (otelVersionAttributes)" type="List of text" optional>
+  The resource attribute names whose values make up the facts of a version, for example `service.version` and `app.agent.model`, 1 to 32 names. Leave it `null` to follow the version attributes of the organization, and then it follows every later change. Set it to give this product its own list, which replaces the organization list. A product list cannot be empty. An OpenTelemetry trace that carries no `galtea.version.id` and no `galtea.version.fact.*` attribute goes to the version whose facts these attributes make up. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Route to a product version](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#route-to-a-product-version).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Input Source Rule (otelInputSourceRule)" type="Object" optional>
+  Reads the input of each turn from a named non-LLM span, for a user message that no LLM span carries. It has four parts: `spanName` (the exact span name), `attribute` (the span attribute that holds the JSON), `path` (a JSONPath to the text, starting with `$`), and an optional `predicate` that applies the rule only when a value matches. Leave it `null` to follow the rule of the organization. A version rule overrides this one. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Recover the Turn Input from a Non-LLM Span](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Output Source Rule (otelOutputSourceRule)" type="Object" optional>
+  Reads the output of each turn from a named non-LLM span, for a reply that no LLM call produced. It has the same four parts as the input source rule. Leave it `null` to follow the rule of the organization. A version rule overrides this one. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Recover Replies That Do Not Come from the LLM](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-replies-that-do-not-come-from-the-llm).
+</ResponseField>
+
 <ResponseField name="Closed Session Inference Creation Policy" type="Enum" optional>
   What happens when you try to add an inference to a session that is already closed.
   Possible values:

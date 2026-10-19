@@ -13,7 +13,7 @@ import SDKMonitorServiceCard from '/snippets/cards/sdk-monitor-service-card.mdx'
 
 A Monitor is an always-on evaluation rule for a product's production sessions. The Monitor is the rule; the production sessions are the data it watches. Once you create a Monitor, Galtea keeps scoring a sampled fraction of that product's production sessions on its own, with no run to trigger by hand.
 
-Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with a set of metric families and records the result.
+Each Monitor watches one [Product](/concepts/product). You can narrow it to a single [Version](/concepts/product/version), or leave the version unset to watch every version of the product. For each production session it decides to score, the Monitor evaluates the session with the metric families it scores and records the result. You choose those families directly, through [Specifications](/concepts/product/specification), or both.
 
 <Note>A Monitor scores **production** sessions (sessions logged with `is_production=True`). It does not run your test suites and does not create new sessions. See [Monitor Production Responses](/sdk/tutorials/monitor-production-responses-to-user-queries) for how production sessions are logged. Production sessions can also be created by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry). Ingested spans that name a test case create a non-production session instead, so no Monitor scores it.</Note>
 
@@ -27,7 +27,7 @@ From there you can create a monitor, open one to see its results, and edit, paus
 
 A monitor's own page shows the results of that one monitor. To see the trend across every production evaluation of the product, open the product's **Analytics** section in **Production** view mode. It shows an **evaluation scores over time** chart: the average score per day across all production evaluations that match your current filters.
 
-The chart is only in Production view mode, because it is a production-monitoring view. One **Group by** switch at the top of the Analytics page sets how the score charts group their scores: **by specification** (the default: one line per specification, built from the metrics linked to it) or **by metric** (one line per metric). It drives this chart, the selected version's score rings, and the version comparison radar. Your choice is remembered, so the page opens the same way next time. When your metrics have evaluations but none of your specifications does, the page opens grouped by metric instead, because grouping by specification would show nothing there. Development and Production decide this separately, because they hold different evaluations. You can still switch to specification by hand. Every chart shows only the grouping you picked: if nothing has scores under that grouping, the chart says so instead of showing the other grouping's data. The chart follows the same filters as the rest of the page, so changing the version, test, metric, specification, language, or time frame updates it too. The specification filter appears only when you group by specification. Picking specifications narrows every chart to the metrics they link, and narrows the metric filter to those same metrics. It aggregates every matching production evaluation, including ones you triggered by hand, so it is a product-wide trend, not one monitor's view.
+The chart is only in Production view mode, because it is a production-monitoring view. One **Group by** switch at the top of the Analytics page sets how the score charts group their scores: **by specification** (the default: one line per specification, built from the metrics linked to it) or **by metric** (one line per metric). It drives this chart, the selected version's score rings, and the version comparison radar. Your choice is remembered, so the page opens the same way next time. When your metrics have evaluations but none of your specifications does, the page opens grouped by metric instead, because grouping by specification would show nothing there. Development and Production decide this separately, because they hold different evaluations. You can still switch to specification by hand. Every chart shows only the grouping you picked: if nothing has scores under that grouping, the chart says so instead of showing the other grouping's data. The chart follows the same filters as the rest of the page, so changing the version, test, metric, specification, language, or time frame updates it too. To change a filter, open **Filters** and select its row. The **Specifications** filter shows only when you group by specification. Picking specifications narrows every chart to the metrics they link, and narrows the **Metrics** filter to those same metrics. It aggregates every matching production evaluation, including ones you triggered by hand, so it is a product-wide trend, not one monitor's view.
 
 ## Metric families follow revisions automatically
 
@@ -49,6 +49,18 @@ update adds one; a family the Monitor already binds can still be resent without 
 `galtea.monitors.create` then returns `None`, and `galtea.monitors.update` raises the error.
 
 <Note>A **Self-Hosted** family a Monitor already binds scores nothing: every session gets a final `SKIPPED` evaluation instead. A **Human Evaluation** family is checked the same way as any other metric (missing data or a disabled metric still SKIPs); once those checks pass, it waits `PENDING_HUMAN` for a reviewer, the same as on any other evaluation path.</Note>
+
+## Binding Specifications
+
+A [Specification](/concepts/product/specification) states one requirement of your product and links the metrics that measure it. A Monitor can bind one or more Specifications of its product instead of, or together with, metric families. In the dashboard, pick them on the Specifications tab of the monitor form. In the SDK, the CLI, or the API, pass `specification_ids`.
+
+- **Union rule.** The Monitor scores the metric families you picked plus the families its bound Specifications link. A family that appears twice is scored once. This is the same rule as `POST /evaluations`. You need at least one source, and the Monitor must have at least one family left to score. The API checks this only on create and on an update that changes the scope. A Monitor can end up with nothing to score later, for example when a bound Specification loses its last metric or is deleted. Sessions that close while it has nothing to score are never scored, and no `SKIPPED` evaluation is recorded for them. Scoring starts again with the sessions that close after a metric is linked again.
+- **It follows the Specification.** When you link or unlink a metric on a bound Specification, the Monitor scores the new set from its next scan. Scores already recorded do not change.
+- **Policy and Capability only.** An Inability Specification cannot be bound, because it has no metrics to score. A Specification of another product cannot be bound either. While a monitor binds a Specification, you cannot change its type to Inability.
+- **Some metrics are left out.** A bound Specification brings a family only when the Monitor can score it. It leaves out a family whose newest revision is Self-Hosted, a family that cannot score production sessions, and a [Classifier (Jev)](/concepts/metric/classifier) family when classifier metrics are off on the deployment. The Monitor skips these without a `SKIPPED` evaluation. A family you pick directly is never left out this way.
+- **`scored_metric_group_ids`** lists the families the Monitor scores now, from both sources. `metric_group_ids` keeps only the picked ones. `specification_ids_by_metric_group_id` names the bound Specifications behind each family they bring.
+
+Deleting a Specification removes its link to the Monitor. Alert rules, results and charts use the scored families, so they follow the bound Specifications too.
 
 ## Sampling
 
@@ -87,33 +99,165 @@ Setting `status` to `ACTIVE` or `PAUSED` through an update still works. You can 
 
 ## Alert rules
 
-An alert rule describes when a monitor should warn your team: too many badly scored sessions on one metric family within a time window. Open the monitor and pick the **Alerts** tab to add, edit, or delete its rules. Rules go on a monitor that already exists; the creation form has no alert fields.
+An alert rule describes when a monitor should warn your team about one metric family within a time window. A rule is one of two types: too many badly scored sessions, or too many sessions that got no score (see [Rule types](#rule-types)). Open the monitor and pick the **Alerts** tab to add, edit, or delete its rules. Rules go on a monitor that already exists; the creation form has no alert fields.
 
+- **Alert when**: "Sessions score badly" or "Sessions get no score". This sets the rule type (see [Rule types](#rule-types)). You cannot change it when you edit the rule.
 - **Metric family**: one of the families this monitor scores. Add one rule per family to watch several.
 - **Window**: 15 minutes, 1 hour, 6 hours, or 24 hours.
-- **Bad metric score**: 0 to 1. A session is bad when its metric score is at or below it.
-- **Threshold**: a whole number of 1 or more. The number of bad sessions within the window that the rule watches for.
-- **Recipients**: 1 to 20 email addresses. The form starts with your own. Stored in lowercase, and a repeated address is kept once.
+- **Bad metric score**: 0 to 1. A session is bad when its metric score is at or below it. The form shows this field only for "Sessions score badly".
+- **Threshold**: for "Sessions score badly", a whole number of 1 or more: the number of bad sessions within the window that the rule watches for. For "Sessions get no score", the label is **Threshold (%)**: a percent above 0 and at most 100, with a default of 20.
+- **Recipients**: 0 to 20 email addresses. The form starts with your own. Stored in lowercase, and a repeated address is kept once.
+- **Webhook URL**: optional, one per rule. Galtea sends a signed POST to it when an alert opens or recovers (see [Webhooks](#webhooks)). A rule needs at least one email address or a webhook URL. For a second webhook, add a second rule.
 
-A new rule starts with a 1 hour window, a bad metric score of 0.5, and a threshold of 10, and the list shows it as "10 or more sessions with a metric score of 0.5 or lower within 1 hour".
+A new rule starts with "Sessions score badly", a 1 hour window, a bad metric score of 0.5, and a threshold of 10, and the list shows it as "10 or more sessions with a metric score of 0.5 or lower within 1 hour". A "Sessions get no score" rule shows as a percent of evaluated sessions with no score within the window.
 
-Filter the rules by metric family, status, or creation date. Click a rule to open its page. Its header shows the status, a Pause or Resume button, and a menu to edit or delete the rule. The **Overview** tab lists its condition, recipients, and recent activity. The **Alerts** tab shows the alert history of that rule only. A rule you add opens on its own page.
+While a "Sessions get no score" rule has fewer evaluated sessions in its window than it needs, the list and the rule page show a line next to its status, for example "Waiting for data: 3 evaluated sessions in the last hour (minimum 5)". Hover the line to see why. The line is not shown for a paused rule. The dashboard says "evaluated sessions" for what the API calls settled sessions.
 
-Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email. If it has an open alert, pausing closes it without a recovery email. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and emails its recipients. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
+Filter the rules by metric family, status, or creation date. Click a rule to open its page. Its header shows the status, a Pause or Resume button, and a menu to edit or delete the rule. The **Overview** tab lists its condition, recipients, webhook host, and recent activity. The **Alerts** tab shows the alert history of that rule only. A rule you add opens on its own page.
 
-Removing a metric family from the monitor deletes the alert rules on that family. Deleting the monitor deletes its alert rules.
+Pause a rule from its row menu to stop it without losing its settings. A paused rule is not checked, so it opens no alert and sends no email or webhook. If it has an open alert, pausing closes it without a recovery email or webhook. The Status column then shows **Paused**; hover it to see when. Resume the rule from the same menu: the next check evaluates it from scratch, so a window still over the threshold opens a new alert and notifies its recipients and its webhook. Through the API, call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/pause` and `/resume`.
+
+A rule can use any family the monitor scores, including one that a bound Specification brings. Removing a metric family from the monitor, or unbinding the Specification that brought it, deletes the alert rules on that family unless another source still brings it. When a bound Specification stops linking a metric, the rules on its family stay but open no alert, and the dashboard marks them as not scored. Deleting the monitor deletes its alert rules.
 
 Viewing rules needs read access to the monitor; adding, editing, pausing, resuming, or deleting them needs the permission to edit it.
 
+### Rule types
+
+Through the API, a rule has a required `type`. In the dashboard, the **Alert when** choice sets it: "Sessions score badly" is `BAD_SESSION_COUNT` and "Sessions get no score" is `NO_SCORE_RATE`. The type cannot change after you create the rule.
+
+- **`BAD_SESSION_COUNT`**: the `threshold` is a whole number of bad sessions, as described above, and `badSessionScore` is required.
+- **`NO_SCORE_RATE`**: alerts when evaluations stop producing scores, for any reason, for example because the judge model is no longer available. The `threshold` is a percent, greater than 0 and at most 100, and `badSessionScore` must be null. The rule opens an alert when the percent of settled sessions in the window that produced no score meets the threshold. An evaluation is settled when it has a score or has the status FAILED or SKIPPED. Every evaluation that settles without a score counts as "no score": FAILED, and every SKIPPED cause, including a classifier "Does not apply" answer and `max_tokens_exceeded`. A regular no-score of any cause needs a person to look. So on a classifier family where "Does not apply" is normal, set the threshold above that normal rate. A session counts once, by its latest settled evaluation in the window. Long-input classifier verdicts are not counted. The rule opens or closes nothing until the window holds at least 5 settled sessions. When you list a monitor's rules or read one rule, each `NO_SCORE_RATE` rule carries `readiness`: the settled sessions in its current window, the 5 it needs, and `isEvaluating`, which is `false` while the window holds fewer or while the rule is paused. `readiness` is also `null` when the count cannot be read right now. `BAD_SESSION_COUNT` rules carry `null`. The alert closes once the rate drops to the threshold minus its square root, rounded down and never below 0: a 10% threshold closes at 6%.
+
+`AVERAGE_SCORE` rules are not accepted yet.
+
+An alert's `observation` in the API holds what the check saw, and its `type` is the rule type. For a `NO_SCORE_RATE` alert it holds `noScoreRate`, `noScoreSessionCount`, and `settledSessionCount`, and the alert email states the rate and the session counts.
+
 ### Alerts
 
-A rule opens an alert when its threshold is reached. The alert closes once the count drops far enough below the threshold, when its rule is deleted or paused, or when the rule's metric family, bad metric score, or window changes. The **Alerts** tab shows alerts next to the rules:
+A rule opens an alert when its threshold is reached. The alert closes once its value (the bad session count, or the no-score rate) falls to its clear value or lower (the threshold minus its square root, rounded down and never below 0), when its rule is deleted or paused, or when the rule's metric family, bad metric score, or window changes. The **Alerts** tab shows alerts next to the rules:
 
-- **Status**: "Paused" when the rule is paused, "Open" with the time it opened when the rule has an open alert, or "OK".
+- **Status**: "Paused" when the rule is paused, "Open" with the time it opened when the rule has an open alert, "Waiting" when a no-score rule does not have enough evaluated sessions yet, or "OK".
 - **Alerts · 30 days**: how many alerts were open at some point in the last 30 days, and when the newest one opened.
-- **Alert history**: a timeline with one line per rule and a bar for each time an alert was open, above a table of the alerts. Filter both by state and by rule, one or more of each. Filter by time range too: the last hour, 12 hours, 24 hours, 7 days, or 30 days, or a period you pick in the calendar.
+- **Alert history**: a timeline with one line per rule and a bar for each time an alert was open, above a table of the alerts. Filter both by state and by rule, one or more of each. Filter by time range too: the last hour, 6 hours, 12 hours, 24 hours, 7 days, 30 days, 90 days, year, or 2 years, or a period you pick in the calendar. A range from that list moves with the clock, and hovering its name shows the dates it covers.
 
-Select an alert to open its page. It shows what the check saw when the alert opened: the bad session count, the scored session count, the threshold, the window, the sampling rate, and the metric revision. These values do not change later, even if a session is scored again. The page also lists the monitor's evaluations of the bad sessions the alert stored, up to 200 sessions per alert, so you can see each score.
+Select an alert to open its page. It shows what the check saw when the alert opened: the value the rule compared with its threshold (the bad session count, or the no-score rate), the number of sessions it came from, the threshold, the window, the sampling rate, and the metric revision. For a `BAD_SESSION_COUNT` alert the sessions are the scored sessions in the window. For a `NO_SCORE_RATE` alert they are the settled sessions, and the alert opens or closes only with at least 5 of them. These values do not change later, even if a session is scored again. For a `NO_SCORE_RATE` alert the page shows the no-score rate, the threshold, and the close value as percents. The page also lists the monitor's evaluations of the sessions the alert stored when it opened, up to 200 sessions per alert. For a `BAD_SESSION_COUNT` alert these are the bad sessions, and you can see each score. For a `NO_SCORE_RATE` alert these are the sessions with no score; check the status column to see why each one got no score.
+
+### Webhooks
+
+A webhook sends the alert to your own system, or to a chat channel, as a signed `POST` with a JSON body. It covers the same two events as the email: `monitor_alert.opened` and `monitor_alert.recovered`. A rule with only a webhook URL and no email address works.
+
+Set the URL in the **Webhook URL** field of the rule form, or send `webhookUrl` through the API or the CLI. The URL must use `https`, can have at most 2048 characters, and cannot hold a user name or password. A deployment can allow `http`. The URL is write-only: Galtea never returns it. The API and the dashboard show only its host and port, for example `hooks.slack.com` or `hooks.example.com:8443`. The port shows only when it is not the default. To change the URL, send a new one. To remove it, send `null`. In the dashboard, turn on **Remove the webhook** in the edit form. An empty URL field keeps the saved URL.
+
+Galtea checks the host when it saves the rule. An IP address or `localhost` in a private or reserved range is refused. A host name is checked again on every delivery. A name that points to a private network is refused at delivery, not at save, and Galtea does not retry it. Galtea does not follow redirects.
+
+**Request.** Galtea sends one `POST` with `Content-Type: application/json` and these headers:
+
+- `Galtea-Signature`: `t=<unix seconds>,v1=<hex signature>`. See [Verify a webhook](#verify-a-webhook).
+- `Galtea-Event`: `monitor_alert.opened` or `monitor_alert.recovered`.
+- `Galtea-Webhook-Id`: `<alert id>.opened` or `<alert id>.recovered`. It is the same value on every retry, so your receiver can use it to ignore a repeat.
+- `User-Agent`: `Galtea-Webhooks/1`.
+
+**Body.** The same fields as the alert email. A field that does not apply to the event is left out.
+
+```json
+{
+  "id": "7c1f0c3e.opened",
+  "event": "monitor_alert.opened",
+  "occurredAt": "2026-10-13T09:00:00.000Z",
+  "text": "**Alert opened** on monitor [Support bot](https://platform.galtea.ai/product/p1/monitor/m1) ...",
+  "monitor": { "id": "m1", "name": "Support bot", "url": "https://platform.galtea.ai/product/p1/monitor/m1" },
+  "alert": {
+    "id": "7c1f0c3e",
+    "url": "https://platform.galtea.ai/product/p1/monitor/m1/alert/7c1f0c3e",
+    "type": "BAD_SESSION_COUNT",
+    "metric": "Helpfulness",
+    "revision": null,
+    "window": "SIX_HOURS",
+    "windowEnd": "2026-10-13T09:00:00.000Z",
+    "threshold": 3,
+    "observedValue": 4,
+    "sampleSize": 18,
+    "badSessionScore": 0.4,
+    "samplingPercentage": 10,
+    "sessionCount": 4,
+    "sessions": [{ "id": "s1", "url": "https://platform.galtea.ai/product/p1/version/v1/session/s1" }]
+  }
+}
+```
+
+- `id`, `event`, `occurredAt`: the event id (the same as `Galtea-Webhook-Id`), its name, and when it happened. For `monitor_alert.opened` this is the end of the window, and for `monitor_alert.recovered` it is the close time.
+- `text`: the message in Markdown, as the chat tools below show it.
+- `monitor`: the `id`, `name` and dashboard `url` of the monitor.
+- `alert.id`, `url`, `type`, `metric`, `window`, `threshold`: the alert, its dashboard page, its [rule type](#rule-types), the metric family name, the window (`FIFTEEN_MINUTES`, `ONE_HOUR`, `SIX_HOURS` or `TWENTY_FOUR_HOURS`), and the threshold.
+- `alert.observedValue` and `alert.sampleSize`: what the check saw when the alert opened. For `BAD_SESSION_COUNT` they are the bad session count and the scored session count. For `NO_SCORE_RATE` they are the no-score rate in percent and the settled session count. `badSessionScore` is sent for `BAD_SESSION_COUNT` only.
+- Opened only: `revision` (the metric revision, `null` for the family head), `windowEnd`, `samplingPercentage`, `sessionCount` (the sessions behind the alert) and `sessions` (up to 25 session `id` and `url` pairs).
+- Recovered only: `openedAt` and `closedAt`.
+
+**Respond with a 2xx status.** Any other status counts as a failure. Galtea waits 5 seconds for the answer.
+
+**Retries.** Galtea tries up to 6 times: at once, then about 10, 30, 70, 150 and 310 seconds after the first try. A timeout, a network error, and a 408, 429 or 5xx status are tried again. Every other 4xx status, a redirect, a refused destination, and an unexpected error while Galtea sends the request stop the delivery at once. A delivery that fails after the last try is dropped, and the dashboard does not show it. A retry can reach your receiver twice when its answer is lost, so use `Galtea-Webhook-Id` to ignore a repeat. Delivery order is not guaranteed: a retried event can arrive after a later one, so order events by `occurredAt`. A webhook failure never delays or repeats the alert email. When Galtea cannot queue a delivery at all, that alert is not posted to your webhook.
+
+#### Verify a webhook
+
+Checking the signature is optional. It proves that Galtea sent the request. Each rule has one secret that starts with `whsec_`. Galtea shows it once:
+
+- **In the dashboard**, tick **Show the signing secret after saving** under the URL field. The box starts unticked. After the save, a dialog shows the secret. A new rule opens on its own page, and the dialog appears there. Copy the secret, tick the confirmation box, then click **Done**. On a rule that already has a URL, the box reads **Show a new signing secret after saving** and replaces the current secret. A secret is created with the first URL and kept when you replace or remove the URL. You can also use **Regenerate signing secret** in the rule's menu on a rule that has a webhook URL. The dashboard asks you to confirm before it replaces the secret.
+- **Through the API or the CLI**, create or update the rule, then call `POST /monitors/{monitorId}/alert-rules/{alertRuleId}/regenerate-webhook-secret` or run `galtea monitors regenerate-alert-rule-webhook-secret`. This is the only way to read a secret, and it needs a rule with a URL. Create and update never return it. The dashboard menu entry **Regenerate signing secret** does the same.
+
+A new secret replaces the old one, which stops working at once. Store the secret with your endpoint's configuration.
+
+To verify a request:
+
+1. Read the `t` and `v1` values of the `Galtea-Signature` header.
+2. Reject the request when `t` is more than 5 minutes from your clock.
+3. Compute the HMAC-SHA256 of `<t>.<raw body>` with the secret, as hex. Use the raw bytes you received, not a parsed and re-encoded body.
+4. Compare it with `v1` in constant time.
+
+<CodeGroup>
+```javascript Node.js
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+// rawBody is the request body exactly as received (a Buffer or a string).
+export function verifyGalteaSignature(rawBody, header, secret, toleranceSeconds = 300) {
+  if (!header) return false;
+  const parts = Object.fromEntries(header.split(",").map((part) => part.split("=")));
+  const timestamp = Number(parts.t);
+  if (!Number.isFinite(timestamp)) return false;
+  if (Math.abs(Date.now() / 1000 - timestamp) > toleranceSeconds) return false;
+
+  const expected = createHmac("sha256", secret).update(`${timestamp}.`).update(rawBody).digest();
+  const received = Buffer.from(parts.v1 ?? "", "hex");
+  return received.length === expected.length && timingSafeEqual(received, expected);
+}
+```
+
+```python title="Python"
+import hashlib
+import hmac
+import time
+
+
+def verify_galtea_signature(raw_body: bytes, header: str | None, secret: str, tolerance_seconds: int = 300) -> bool:
+    if not header:
+        return False
+    try:
+        parts = dict(part.split("=", 1) for part in header.split(","))
+        timestamp = int(parts["t"])
+        if abs(time.time() - timestamp) > tolerance_seconds:
+            return False
+
+        signed = f"{timestamp}.".encode() + raw_body
+        expected = hmac.new(secret.encode(), signed, hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected.encode(), parts.get("v1", "").encode())
+    except (KeyError, ValueError, OverflowError):
+        return False
+```
+</CodeGroup>
+
+#### Slack and self-hosted chat
+
+- **Slack.** Create an [incoming webhook](https://api.slack.com/messaging/webhooks) and paste its URL. A URL on `hooks.slack.com` or `hooks.slack-gov.com` gets a Slack message instead of the JSON body above: a bold title, the sentence, a link to the alert, and up to 10 session links. When an alert has more sessions, the message links to the monitor's sessions tab.
+- **Mattermost and Rocket.Chat.** Paste the URL of an incoming webhook. Both read the `text` property of the JSON body and show it as Markdown, with the same message and links.
 
 ## SDK Integration
 
@@ -140,9 +284,21 @@ The SDK lets you create, list, retrieve, update, pause, resume, and delete monit
   Changing it only affects sessions that close after the change; sessions already skipped under the old value are not picked up.
 </ResponseField>
 
-<ResponseField name="metric_group_ids" type="list[string]" required>
-  The metric family IDs (`metric.metric_group_id`) the monitor scores with. At least one is required.
+<ResponseField name="metric_group_ids" type="list[string]">
+  The metric family IDs (`metric.metric_group_id`) picked directly. Can be empty when the monitor binds a Specification.
   The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
+</ResponseField>
+
+<ResponseField name="specification_ids" type="list[string]">
+  The IDs of the Policy and Capability Specifications the monitor binds. Can be empty when the monitor picks families.
+</ResponseField>
+
+<ResponseField name="scored_metric_group_ids" type="list[string]">
+  The families the monitor scores now: the picked families plus the families its bound Specifications link, minus the Specification families it cannot score. Read-only.
+</ResponseField>
+
+<ResponseField name="specification_ids_by_metric_group_id" type="dict[string, list[string]]">
+  For each family a bound Specification brings, the IDs of the bound Specifications that bring it. Read-only.
 </ResponseField>
 
 <ResponseField name="sampling_percentage" type="number" default="10">

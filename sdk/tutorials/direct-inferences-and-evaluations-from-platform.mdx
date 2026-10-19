@@ -222,7 +222,7 @@ There are three ways to collect [spans](/concepts/product/version/session/span) 
 
 1. **Output Mapping (no code)** — Extract spans from the API response using a `traces` key in your output mapping.
 2. **SDK `set_context` (in your handler)** — Pass `{{ trace_id }}` to your endpoint and use the SDK to create spans from within the handler.
-3. **W3C Trace Context Propagation (zero code)** — Enable the `traceparent` header to automatically correlate your OTEL spans with Galtea traces.
+3. **W3C Trace Context Propagation (zero code)** — Galtea sends a `traceparent` header on every turn call, so your OTEL spans correlate with Galtea traces automatically.
 
 ### Option 1: Extract Spans via Output Mapping
 
@@ -352,21 +352,15 @@ If your service is instrumented with [OpenTelemetry](https://opentelemetry.io/),
 
 #### How it works
 
-When enabled, Galtea creates a unique [W3C trace ID](https://www.w3.org/TR/trace-context/#trace-id) for each direct inference call and injects a `traceparent` header into the outbound request to your endpoint. Your OTEL-instrumented service automatically creates child spans under that OpenTelemetry trace. Galtea stores that W3C trace ID on the Trace, in its **OpenTelemetry Trace ID** field, so a collector can correlate the two.
-
-#### 1. Enable trace context propagation on your endpoint connection
-
-In your **Conversation** endpoint connection, expand the **Advanced Options** section and scroll to **Headers**. Check the **Enable W3C trace context propagation** checkbox. This adds a `traceparent` header that Galtea will populate with the correct trace and span IDs on each inference call:
+Galtea sends a `traceparent` header on every conversation turn call. You do not need to turn anything on. The header carries one [W3C trace ID](https://www.w3.org/TR/trace-context/#trace-id) per turn, the same across retries:
 
 ```
 traceparent: 00-{trace-id}-{span-id}-01
 ```
 
-<Frame>
-  <img src="/images/w3c-traceparent-checkbox.png" alt="W3C trace context propagation checkbox in the Headers section of Advanced Options" />
-</Frame>
+Galtea stores that trace ID on the Trace, in its **OpenTelemetry Trace ID** field, when the turn starts and before it calls your endpoint. Your OTEL-instrumented service automatically creates child spans under that trace. Spans your agent exports before it answers attach to the turn. A collector can correlate the two with the stored trace ID.
 
-When the checkbox is unchecked, no `traceparent` header is sent to your endpoint, and trace context is not propagated.
+Galtea sends the header whether or not the platform's own tracing is on. Galtea refuses a `traceparent` header in your custom headers on save (400), because it sets its own. Galtea also sends a `baggage` header that names the turn. See [Baggage](/concepts/product/endpoint-connection-configuration#baggage) for what it does and how to use it.
 
 <Note>
   This option is only available for **Conversation** endpoint connections — the ones that handle inference calls. Initialization and Finalization endpoints are session lifecycle calls where trace correlation does not apply.
@@ -376,7 +370,7 @@ When the checkbox is unchecked, no `traceparent` header is sent to your endpoint
   The trace ID is stored on each trace and visible in the dashboard, so you can correlate traces even without checking your observability platform.
 </Tip>
 
-#### 2. Configure your service for OTEL
+#### 1. Configure your service for OTEL
 
 Ensure your service has OpenTelemetry instrumentation enabled. Most frameworks support [auto-instrumentation](https://opentelemetry.io/docs/zero-code/) which requires no code changes:
 
@@ -386,7 +380,7 @@ pip install opentelemetry-distro opentelemetry-exporter-otlp
 opentelemetry-bootstrap -a install
 ```
 
-#### 3. Send your spans to Galtea
+#### 2. Send your spans to Galtea
 
 Point your OTel exporter or Collector at Galtea's public OTel endpoint. [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) covers the endpoint, the `Authorization: Bearer <API key>` requirement, the exporter and Collector configuration, and a curl check to verify your key.
 

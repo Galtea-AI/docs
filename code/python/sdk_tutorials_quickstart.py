@@ -215,10 +215,9 @@ completed = galtea.evaluations.wait_for(
 )
 
 # A readable pass/fail summary.
-pass_threshold = 0.5
-scored = [e for e in completed if e.score is not None]
-passed = [e for e in scored if e.score >= pass_threshold]
-print(f"{len(passed)}/{len(scored)} evaluations scored >= {pass_threshold}")
+scored = [e for e in completed if e.passed is not None]
+passed = [e for e in scored if e.passed]
+print(f"{len(passed)}/{len(scored)} evaluations passed their metric's threshold")
 
 # Triage: list sessions whose agent run failed and produced no output to score.
 failed_sessions = galtea.sessions.list(version_id=version_id, status="FAILED")
