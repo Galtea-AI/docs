@@ -1,0 +1,26 @@
+<Update label="2026-10-19" description="Alert Rules on a Specification, Criteria Behind a Score, and Platform Improvements">
+
+## Alert Rules Can Watch a Whole Specification
+
+A monitor's [alert rule](/concepts/product/monitor#alert-rules) can now watch one [Specification](/concepts/product/specification) the monitor binds, not only one metric family.
+
+- **Pick a Specification or a metric.** The rule form's **Watches** field has **Specifications** and **Metrics** tabs. It opens on **Specifications** when the monitor binds one with a scored metric; you cannot switch tabs once the rule exists. Add one rule per target to watch several.
+- **A session fails the rule when any metric the Specification brings fails it**: a score at or below the bad metric score, or, for a "Sessions get no score" rule, an evaluation that settles with no score. A session that fails two of the Specification's metrics still counts once. See [Rules on a Specification](/concepts/product/monitor#rules-on-a-specification).
+- **The rule follows the Specification.** Link a new metric to it and the next check watches that metric too, with no rule edit.
+- **If the Specification later brings no scored metric, the rule stays and opens no new alert.** You can still edit it; the form warns and names the fix. An alert already open keeps recovering on the metrics it measured when it opened.
+- **The rule list gets a Watches column**, and the rule page names its Specification or metric in its condition. The alert and webhook payloads name the Specification and the metrics that caused it.
+
+## See the Specification and Criteria Behind a Score
+
+An evaluation's [Verdict card](/concepts/product/version/session/evaluation) now shows which Specifications the score answers and what the judge graded it on, so a reader who did not write the metric can judge the score on the same card.
+
+- **A Specification line** above the metric names the [Specifications](/concepts/product/specification) of the evaluation's product that link the metric, each linked to its page. One shows its description; several show the count and names.
+- **A Criteria panel**, closed by default, opens on the full metric description, then the classifier question with its good answer, or the judge prompt, rendered as Markdown.
+- **The panel header names the revision** that produced the score: its creation date, its metric id, and a status pill (Legacy, Disabled) when that revision is no longer active.
+
+## Platform Improvements
+
+- **Specification lists load their dataset counts past 20 rows.** A dashboard filter sent array ids as indexed query parameters (`ids[0]=a&ids[1]=b`), which the API's query-string parser silently turned into an object above 20 ids and rejected with a 400; the specifications list showed "Missing dataset" on every row once a page passed that count. Array filters now go out as repeated keys, the form the API publishes and the SDK already sends.
+- **Picker dialogs no longer hide their create button.** The Endpoint Connection, Phone Connection, WebRTC Connection and Model pickers, and the Specification and classifier Session pickers, now give their toolbar a title row, so the dialog's close button no longer sits on top of the button beside it.
+
+</Update>

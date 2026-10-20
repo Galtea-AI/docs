@@ -283,7 +283,7 @@ Galtea treats a header value as a secret unless one of these is true:
 
 Galtea encrypts each secret value when you save the connection, and sends the real value to your endpoint. The Dashboard, the API, the SDK, and the CLI show a secret value as `••••••••`.
 
-A test of a saved connection sends its stored secrets to the URL of the test. So a test against a URL different from the saved one needs permission to edit the connection, and is rejected with a `403` error otherwise. A member who can only view the connection can test it against its saved URL, but cannot read a secret value or send it anywhere else. A member who can edit the connection can change its URL, so give edit permission only to people you trust with its secrets.
+A test of a saved connection sends its stored secrets to the URL of the test, and returns what that URL answers. So every test of a saved connection needs permission to edit it, for any URL. A member who can only view the connection gets a `403` error. A member who can edit the connection can change its URL, so give edit permission only to people you trust with its secrets.
 
 In the example above, only `X-Tenant-Id` is a secret. A header imported from a cURL command, such as `CF-Access-Client-Secret`, is a secret too.
 
