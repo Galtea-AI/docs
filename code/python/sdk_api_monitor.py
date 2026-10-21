@@ -48,6 +48,7 @@ monitor = galtea.monitors.create(
     # version_id="your-version-id",
     sampling_percentage=10,  # score 10% of production sessions (default)
     monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
+    min_user_messages=1,  # skip sessions with fewer user messages (default); 0 turns the minimum off
 )
 # @end create
 
@@ -94,6 +95,11 @@ monitors = galtea.monitors.list(
 # Raise the sampling rate. Only the fields you pass change.
 galtea.monitors.update(monitor.id, sampling_percentage=25)
 # @end update
+
+# @start update_min_user_messages
+# Turn the minimum off, so a session where the user never wrote is eligible too. Pass None to go back to the default of 1.
+galtea.monitors.update(monitor.id, min_user_messages=0)
+# @end update_min_user_messages
 
 # @start update_specifications
 # Replace the bound Specifications. Pass an empty list to unbind them all.

@@ -66,13 +66,15 @@ Deleting a Specification removes its link to the Monitor and deletes the alert r
 
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
 
-Changing `sampling_percentage` only affects sessions that close after the change. Raising it does not go back and score older sessions that were already skipped.
+Changing `sampling_percentage` only affects sessions that close after the change. Raising it does not go back and score older sessions that were already skipped. Sessions with fewer user messages than the Monitor's `min_user_messages` do not count toward the sample (see [When a session gets scored](#when-a-session-gets-scored)).
 
 ## When a session gets scored
 
 A Monitor scores a production session once the session is closed. A session closes either when you explicitly finish it, or when the product's auto-close setting closes it after a period of inactivity. A closed session with no turns is treated as fully decided and never scored: there is nothing to send for evaluation, so no row is written for it. Sessions that end with an error are not scored. There is no per-Monitor inactivity setting: closing is decided by the session's own state, so every Monitor on a product agrees on when a session is ready.
 
 This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
+
+A Monitor also skips a session that has too few user messages. A user message is a turn where the user wrote or sent something: text, a file or audio. A file or audio turn counts even when evaluators cannot read it yet. A turn with no user input does not count, for example a greeting that the assistant sends before the user writes. An input of `{}` or `{"user_message": null}` also counts as no user message. Any other structured input counts as a user message. `min_user_messages` sets the minimum, from `0` to `100`. It defaults to `1`, so a session with no user message is skipped. Set it to `0` to turn the minimum off. A skipped session stays in the sessions list and spends no credits. In the dashboard, set it in **Advanced Options**, in the **Minimum user messages** field. The Monitor decides once per session. A later change does not re-decide a session the Monitor already decided, so it applies only to sessions that close after the change. A session that reopens and closes again is decided again, with the minimum set at that time. The `sampling_percentage` applies to the sessions that pass this rule, not to every closed session.
 
 A closed session can still gain a turn. When it does, the session reopens and the Monitor scores it again once it closes for good. The earlier scores move to the `Outdated` status, so they drop out of charts and averages while staying readable. The product's [Closed Session Inference Creation Policy](/concepts/product#product-properties) controls this.
 
@@ -317,6 +319,12 @@ The SDK lets you create, list, retrieve, update, pause, resume, and delete monit
 <ResponseField name="monthly_credit_cap" type="int" optional>
   Maximum credits to spend per month. Must be positive when set. `None` means uncapped.
   The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
+</ResponseField>
+
+<ResponseField name="min_user_messages" type="int" default="1">
+  Minimum number of user messages a session needs to be scored, from `0` to `100`. Defaults to `1`.
+  A user message is a turn where the user wrote or sent something (text, a file or audio). Sessions with fewer are skipped and spend no credits, and they stay in the sessions list.
+  `0` turns the minimum off. Changing it only affects sessions that close after the change.
 </ResponseField>
 
 <ResponseField name="status" type="Enum">

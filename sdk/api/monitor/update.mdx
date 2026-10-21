@@ -20,6 +20,12 @@ To change the bound Specifications:
 galtea.monitors.update(specification_monitor.id, specification_ids=[specification.id])
 ```
 
+To change the minimum number of user messages a session needs to be scored:
+```python
+# Turn the minimum off, so a session where the user never wrote is eligible too. Pass None to go back to the default of 1.
+galtea.monitors.update(monitor.id, min_user_messages=0)
+```
+
 To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) and [`monitors.resume()`](/sdk/api/monitor/resume). Setting `status` here still works. Users may set only `ACTIVE` (resume) or `PAUSED` (pause); `CAPPED`, `NO_CREDITS`, and `FAILING` are system-set and are rejected.
 
 ## Parameters
@@ -53,7 +59,11 @@ To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) a
   the monitor would be left with nothing to score. Removing a Specification deletes the alert rules on that
   Specification and on the families that only it brought.
 </ResponseField>
+<ResponseField name="min_user_messages" type="int | None" optional>
+  New minimum number of user messages a session needs to be scored, from `0` to `100`. Pass `0` to turn the minimum off.
+  Pass `None` to reset it to `1`. The change applies to sessions that close after the update.
+</ResponseField>
 
 <Note>
-  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear `version_id` or `monthly_credit_cap`, the only nullable fields. The other fields refuse `None`: leave them out to keep their value, or pass an empty list to clear `metric_group_ids` or `specification_ids`.
+  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear `version_id` or `monthly_credit_cap`, or to reset `min_user_messages` to `1`. The other fields refuse `None`: leave them out to keep their value, or pass an empty list to clear `metric_group_ids` or `specification_ids`.
 </Note>
