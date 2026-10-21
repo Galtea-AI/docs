@@ -15,7 +15,7 @@ Source repository: [`Galtea-AI/skills`](https://github.com/Galtea-AI/skills/tree
 
 - **See how your team uses Claude Code.** Read each prompt, reply, tool call and subagent step in the dashboard.
 - **Evaluate coding sessions.** Attach metrics to a monitor to score sessions when they close. A monitor scores 10% of sessions by default. Set its [sampling](/concepts/product/monitor#sampling) to 100% to score every eligible session.
-- **Track speed and token use.** Each turn carries its latency and its input, output and cache-read token counts.
+- **Track speed, tokens and cost.** Each turn carries its latency, its input, output and cache-read token counts, and a cost from the model's prices.
 
 ## Before you start
 
@@ -62,11 +62,16 @@ The plugin gets fixes only after `/plugin marketplace update galtea`, or with au
 
 ## What is sent
 
+- **Version:** each session goes to the product [version](/concepts/product/version) whose only fact is `model`: the model of the conversation's first answer, such as `claude-opus-5-5`. The plugin creates that version on first use. Galtea links it to the [model](/concepts/model) of the same name (see [Model facts](/concepts/product/version#model-facts)), so each turn gets a cost from that model's prices. A session stays on its version after `/model`.
 - **Session metadata:** the working directory, your user name, your git email, the plugin version, and the git remote, branch and commit. The session title is the name you set with `/rename`, or the name Claude Code generated.
-- **Each turn:** your prompt, Claude's final reply, the latency, and the token counts.
+- **Each turn:** your prompt, Claude's final reply, the latency, and the token counts. Galtea adds the cost.
 - **Spans of each turn:** each model call with its thinking summary, text and tool names; each tool call with its input and output; each subagent, with its own steps nested below it.
 
 Long fields are cut so that each turn fits the API's request limit. One-shot runs, such as `claude -p` and an Agent SDK `query()` call, are not logged. A long-lived Agent SDK session loads the plugin and is logged like an interactive session.
+
+<Note>
+  The cost is an estimate at the model's list prices, not what a Claude subscription bills. It prices every model call of the turn at the main model's rates, subagents included, and leaves out cache writes. A model name Galtea does not know, which can happen with Amazon Bedrock or Google Vertex AI, gets a version with no price, so its turns show no cost. When Galtea refuses the version, for example a self-hosted Galtea without `POST /versions/get-or-create`, the session goes to the product's latest version and shows no cost. Sessions sent before you updated the plugin keep their old version.
+</Note>
 
 <Note>
   Claude Code writes thinking text only when `showThinkingSummaries` is on. To log thinking, add `"showThinkingSummaries": true` to `~/.claude/settings.json`. The setup check tells you when it is off.
