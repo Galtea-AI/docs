@@ -36,7 +36,7 @@ COPY <<'EOF' package.json
     "mint": "4.2.935"
   },
   "overrides": {
-    "@modelcontextprotocol/sdk": "1.31.0",
+    "@modelcontextprotocol/sdk": "1.32.0",
     "adm-zip": "0.6.1",
     "axios": "1.20.0",
     "brace-expansion@^1": "1.1.20",

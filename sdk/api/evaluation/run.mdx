@@ -34,7 +34,7 @@ Run an evaluation pipeline for a [Version](/concepts/product/version). This reso
     </Tip>
   </Tab>
   <Tab title="Agent (SDK-side)">
-    When an `agent` is provided, the SDK runs the agent locally for each test case. For every specification, the method resolves linked datasets and test cases, creates sessions, executes the agent, and triggers server-side evaluation.
+    When an `agent` is provided, the SDK runs the agent locally for each test case. The method resolves the datasets linked to the specifications and runs each test case once: it creates a session, executes the agent, and triggers server-side evaluation with every launched specification that the dataset links to.
 
     ### Returns
     - `evaluations` — list of all Evaluation objects created

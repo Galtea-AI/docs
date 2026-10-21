@@ -49,5 +49,35 @@ updated = galtea.datasets.update(
 # @end update_both
 print(f"Updated both fields: name={updated.name}, metadata={updated.metadata}")
 
+toxicity_policy = galtea.specifications.create(
+    product_id=product_id,
+    name="No toxic answers",
+    description="The assistant never answers with insulting or hateful language, even when the user insists.",
+    type="POLICY",
+    dataset_type="SECURITY",
+    dataset_variant="toxicity",
+)
+misuse_policy = galtea.specifications.create(
+    product_id=product_id,
+    name="No political opinions",
+    description="The assistant refuses to answer political questions even when the user reframes them.",
+    type="POLICY",
+    dataset_type="SECURITY",
+    dataset_variant="misuse",
+)
+if toxicity_policy is None or misuse_policy is None:
+    raise ValueError("specification is None")
+
+# @start update_specifications
+# The list replaces the dataset's links: pass every specification it should keep.
+linked = galtea.datasets.update(
+    dataset_id=dataset.id,
+    specification_ids=[toxicity_policy.id, misuse_policy.id],
+)
+# @end update_specifications
+print(f"Linked specifications: {linked.specification_ids}")
+if set(linked.specification_ids or []) != {toxicity_policy.id, misuse_policy.id}:
+    raise ValueError(f"expected both specifications, got {linked.specification_ids}")
+
 # Cleanup
 galtea.products.delete(product_id=product_id)

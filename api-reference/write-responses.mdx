@@ -4,14 +4,14 @@ description: "What a create or an update answers, and how to ask for no body"
 icon: "reply"
 ---
 
-`POST /products`, `PATCH /products/{id}` and `PATCH /organizations/{id}` answer the same body as a read of the resource, so you do not need a second request to see the result. Other writes answer the body that their own reference page documents.
+`POST /products`, `PATCH /products/{id}`, `POST /tests`, `PATCH /tests/{id}` and `PATCH /organizations/{id}` answer the same body as a read of the resource, so you do not need a second request to see the result. Other writes answer the body that their own reference page documents.
 
 ## The default answer
 
 | Write | Status | Body |
 |-------|--------|------|
-| Create (`POST /products`) | `201`, with `Location` and `Content-Location` headers | The body of `GET /products/{id}` |
-| Update (`PATCH /products/{id}`, `PATCH /organizations/{id}`) | `200`, with a `Content-Location` header | The body of the `GET` of the resource |
+| Create (`POST /products`, `POST /tests`) | `201`, with `Location` and `Content-Location` headers | The body of the `GET` of the new resource |
+| Update (`PATCH /products/{id}`, `PATCH /tests/{id}`, `PATCH /organizations/{id}`) | `200`, with a `Content-Location` header | The body of the `GET` of the resource |
 
 The body is the one that **your own** `GET` would answer, so a field that your role cannot see is hidden in the write answer too. For example, the SAML settings of an organization are `null` unless you may update the organization or read across organizations. The `Location` header holds the path of the new resource, for example `/products/prod_123`. `Content-Location` holds the path of the resource in the body. The reference pages show the `201` of a create with a JSON body, but that body is empty on a minimal answer and after a failed read (see below).
 

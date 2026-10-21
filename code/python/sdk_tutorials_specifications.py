@@ -91,8 +91,8 @@ print(f"Linked metric '{metric.name}' to specification '{policy_security.descrip
 dataset = galtea.datasets.create(
     product_id=product_id,
     name=f"security-from-spec-{run_identifier}",
-    specification_id=policy_security.id,
-    # type is optional when specification_id is provided — auto-derived as SECURITY
+    specification_ids=[policy_security.id],
+    # type is optional when specification_ids is provided — auto-derived as SECURITY
     max_test_cases=5,
 )
 

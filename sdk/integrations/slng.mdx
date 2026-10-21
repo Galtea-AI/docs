@@ -96,7 +96,7 @@ Step 6: Ask me before you create specifications, metrics, and datasets
 - Ask: "Do you want specifications, metrics, and datasets to check that the SLNG prompt behaves as expected? This spends Galtea credits." If yes:
   - Create 3 specifications from the guardrails: two with `type: POLICY`, `testType: RED_TEAMING`, `testVariant` `data_leakage` and `misuse`; one with `type: CAPABILITY` for the agent's main task.
   - Link 2 metrics to each with `galtea specifications link-metrics <spec id>` and body `{"metricIds": [...]}`. Find ids with `galtea metrics list --include-legacy=false`. Good pairs: Data Leakage + Jailbreak Resilience; Misuse Resilience + Role Adherence; User Objective Accomplished + Conversation Completeness (this last pair only on the CAPABILITY spec).
-  - Create one dataset per specification with `galtea datasets create`: `productId`, `specificationId`, `name` (the specification name plus " test cases"), `maxTestCases: 4`, and `type` = `RED_TEAMING` for the POLICY specs or `SCENARIOS` for the CAPABILITY spec (with `maxIterations: 12`).
+  - Create one dataset per specification with `galtea datasets create`: `productId`, `specificationIds` (a one-item list with the specification id), `name` (the specification name plus " test cases"), `maxTestCases: 4`, and `type` = `RED_TEAMING` for the POLICY specs or `SCENARIOS` for the CAPABILITY spec (with `maxIterations: 12`).
   - Poll `galtea datasets list --product-ids <product id>` every 10 seconds for up to 10 minutes until every dataset is SUCCESS. Stop and report if one is FAILED or CANCELLED.
 
 Step 7: Ask me before you run the first evaluation

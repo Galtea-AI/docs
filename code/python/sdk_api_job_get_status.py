@@ -65,7 +65,7 @@ try:
         language="english",
         max_test_cases=5,
         strategies=["written"],
-        specification_id=_spec.id,
+        specification_ids=[_spec.id],
     )
     wait_for_dataset_ready(galtea, _dataset.id)
     for _ in range(120):
