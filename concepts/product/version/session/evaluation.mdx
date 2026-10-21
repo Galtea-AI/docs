@@ -146,6 +146,8 @@ Once an evaluation completes, the following fields are available:
   The part of `judgeOutputTokens` the judge model spent on reasoning, read-only and set by the API. It is a subset of the output tokens, so do not add it to the total. A judge model that does not reason reports 0, not null. Null means no reasoning count was recorded, which almost always means the whole measurement is missing and the other two fields are null too.
 </ResponseField>
 
+<Note>The API returns `creditsUsed` and the three judge token fields as `null` to a user without the `evaluation.readInference` permission, such as a Reader. See [Roles and permissions](/security/roles-and-permissions).</Note>
+
 <Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/concepts/metric/classifier) metric, these token fields count Jev's tokens.</Note>
 
 <ResponseField name="Score Breakdown" type="Object" optional>
