@@ -136,6 +136,7 @@
             "group": "Integrations",
             "pages": [
               "sdk/integrations/agent-skill",
+              "sdk/integrations/claude-code-tracing",
               {
                 "group": "Langfuse",
                 "icon": "eye",

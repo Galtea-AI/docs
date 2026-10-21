@@ -1,0 +1,123 @@
+---
+title: 'Claude Code Tracing'
+sidebarTitle: 'Claude Code Tracing'
+description: "Send each Claude Code conversation to Galtea as a production session, so your monitors can evaluate your coding sessions."
+icon: "terminal"
+---
+
+The `galtea-tracing` plugin sends each [Claude Code](https://docs.anthropic.com/en/docs/claude-code) conversation to Galtea. Each conversation becomes a production [session](/concepts/product/version/session). Each turn becomes a [trace](/concepts/product/version/session/trace), with its model calls, tool calls and subagents as [spans](/concepts/product/version/session/span).
+
+Your [monitors](/concepts/product/monitor) can then evaluate your coding sessions like any other production traffic.
+
+Source repository: [`Galtea-AI/skills`](https://github.com/Galtea-AI/skills/tree/main/plugins/galtea-tracing)
+
+## Why use it
+
+- **See how your team uses Claude Code.** Read each prompt, reply, tool call and subagent step in the dashboard.
+- **Evaluate coding sessions.** Attach metrics to a monitor to score sessions when they close. A monitor scores 10% of sessions by default. Set its [sampling](/concepts/product/monitor#sampling) to 100% to score every eligible session.
+- **Track speed and token use.** Each turn carries its latency and its input, output and cache-read token counts.
+
+## Before you start
+
+- A Galtea API key. Create one in the dashboard, under **[Settings](https://platform.galtea.ai/settings) > Generate API Key**. The key's user must be an OWNER or MEMBER of the product's organization. See [Roles and permissions](/security/roles-and-permissions).
+- A [product](/concepts/product) to receive the sessions. Copy its id from the product page. A product only for coding sessions keeps them apart from your other traffic.
+- Python 3.9 or later. The plugin uses only the standard library.
+
+## Install
+
+<Steps>
+  <Step title="Add the Galtea marketplace">
+    In Claude Code, run:
+
+    ```
+    /plugin marketplace add Galtea-AI/skills
+    ```
+
+    The [Agent Skill](/sdk/integrations/agent-skill) plugin comes from the same marketplace. If you installed it with `/plugin install galtea@galtea`, run `/plugin marketplace update galtea` instead, so the marketplace lists `galtea-tracing`.
+  </Step>
+  <Step title="Install the plugin">
+    ```
+    /plugin install galtea-tracing@galtea
+    ```
+
+    The install dialog asks for four values:
+
+    | Option | What to enter |
+    |---|---|
+    | Galtea API key | Your `gsk_` key. Claude Code keeps it in its secure storage. |
+    | Galtea product id | The product that receives your sessions. |
+    | Galtea API URL | Keep `https://api.galtea.ai`, unless you use a self-hosted Galtea. |
+    | Redact secrets | On by default. See [Redaction](#redaction). |
+
+    To change a value later, open `/plugin`, pick `galtea-tracing`, and edit its options.
+  </Step>
+  <Step title="Start a session">
+    The first session after you install runs a setup check. It confirms the key and the product, and shows one message with the result. It also writes one test turn to a development session in the product, then deletes it. When Galtea does not answer, the check can delay that session start by up to about 25 seconds.
+
+    Then each answered turn appears in the product's sessions.
+  </Step>
+</Steps>
+
+The plugin gets fixes only after `/plugin marketplace update galtea`, or with auto-update turned on for the marketplace in `/plugin`. For a self-hosted Galtea, see [Updates and self-hosted Galtea](https://github.com/Galtea-AI/skills/tree/main/plugins/galtea-tracing#updates-and-self-hosted-galtea).
+
+## What is sent
+
+- **Session metadata:** the working directory, your user name, your git email, the plugin version, and the git remote, branch and commit. The session title is the name you set with `/rename`, or the name Claude Code generated.
+- **Each turn:** your prompt, Claude's final reply, the latency, and the token counts.
+- **Spans of each turn:** each model call with its thinking summary, text and tool names; each tool call with its input and output; each subagent, with its own steps nested below it.
+
+Long fields are cut so that each turn fits the API's request limit. One-shot runs, such as `claude -p` and an Agent SDK `query()` call, are not logged. A long-lived Agent SDK session loads the plugin and is logged like an interactive session.
+
+<Note>
+  Claude Code writes thinking text only when `showThinkingSummaries` is on. To log thinking, add `"showThinkingSummaries": true` to `~/.claude/settings.json`. The setup check tells you when it is off.
+</Note>
+
+## Redaction
+
+Redaction is on by default. Before a prompt, a reply, a span or the session title leaves your machine, the plugin masks secrets with `[REDACTED]`. It covers API keys with a known prefix, tokens, `Authorization` headers, passwords in URLs, private keys, and values of names such as `PASSWORD` or `API_KEY`.
+
+Session metadata (the folder path, user name, git email, git remote, branch and commit) is sent without redaction.
+
+<Warning>
+  Redaction is best-effort and can miss a secret. Turn it off only if you are sure your sessions hold no secrets.
+</Warning>
+
+The full list of rules is in the [plugin README](https://github.com/Galtea-AI/skills/tree/main/plugins/galtea-tracing#redaction).
+
+## When a session closes
+
+`/exit` closes the Galtea session, and your monitors can then evaluate it. Auto-close also closes it after the product's inactivity time, 30 minutes by default, counted from the last turn. This happens even while Claude Code stays open. The next turn, after a pause or a `claude --resume`, reopens the session, and your monitors can evaluate it again. Galtea re-evaluates one session at most 5 times.
+
+Both rules need the default [product settings](/concepts/product#product-properties): an Auto Close Scope that includes production sessions, and the Closed Session Inference Creation Policy `REOPEN_AND_REEVALUATE`. The setup check warns you when a setting differs. See [Session lifecycle](/concepts/product/version/session#session-lifecycle).
+
+## Stop logging
+
+- `/galtea-tracing:mute` stops logging for the current repository.
+- `/galtea-tracing:unmute` starts logging it again.
+- `GALTEA_CC_DISABLE=1 claude` skips logging for that one Claude Code process.
+
+To remove the plugin, run `/plugin uninstall galtea-tracing@galtea`. Sessions already sent stay in Galtea.
+
+## Troubleshooting
+
+An error in the plugin never makes Claude Code fail. The plugin writes each error to:
+
+```
+~/.claude/plugins/data/galtea-tracing-galtea/hook.log
+```
+
+The log never holds transcript content. To report a problem, [open an issue](https://github.com/Galtea-AI/skills/issues/new?template=skill-feedback.yml) and attach the matching log lines.
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Agent Skill" icon="robot" href="/sdk/integrations/agent-skill">
+    Let Claude Code drive Galtea for you.
+  </Card>
+  <Card title="Monitors" icon="chart-line" href="/concepts/product/monitor">
+    Evaluate production sessions as they close.
+  </Card>
+  <Card title="Traces" icon="diagram-project" href="/concepts/product/version/session/trace">
+    How turns and spans are stored.
+  </Card>
+</CardGroup>
