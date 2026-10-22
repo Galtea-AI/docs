@@ -20,10 +20,10 @@ To change the bound Specifications:
 galtea.monitors.update(specification_monitor.id, specification_ids=[specification.id])
 ```
 
-To change the minimum number of user messages a session needs to be scored:
+To turn the message filter off, so a session is scored whatever its number of messages:
 ```python
-# Turn the minimum off, so a session where the user never wrote is eligible too. Pass None to go back to the default of 1.
-galtea.monitors.update(monitor.id, min_user_messages=0)
+# Turn the message filter off, so every session is eligible whatever its number of messages.
+galtea.monitors.update(monitor.id, message_conditions=[])
 ```
 
 To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) and [`monitors.resume()`](/sdk/api/monitor/resume). Setting `status` here still works. Users may set only `ACTIVE` (resume) or `PAUSED` (pause); `CAPPED`, `NO_CREDITS`, and `FAILING` are system-set and are rejected.
@@ -59,11 +59,12 @@ To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) a
   the monitor would be left with nothing to score. Removing a Specification deletes the alert rules on that
   Specification and on the families that only it brought.
 </ResponseField>
-<ResponseField name="min_user_messages" type="int | None" optional>
-  New minimum number of user messages a session needs to be scored, from `0` to `100`. Pass `0` to turn the minimum off.
-  Pass `None` to reset it to `1`. The change applies to sessions that close after the update.
+<ResponseField name="message_conditions" type="list[MonitorMessageCondition]" optional>
+  New conditions on a session's number of messages, joined by AND. The list replaces the stored conditions. Pass `[]` to turn the filter off.
+  `None` is refused. At most `10` conditions. Each `MonitorMessageCondition` has a `count` (`messages` or `user_messages`), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused).
+  The change applies to sessions that close after the update.
 </ResponseField>
 
 <Note>
-  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear `version_id` or `monthly_credit_cap`, or to reset `min_user_messages` to `1`. The other fields refuse `None`: leave them out to keep their value, or pass an empty list to clear `metric_group_ids` or `specification_ids`.
+  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear `version_id` or `monthly_credit_cap`. The other fields refuse `None`: leave them out to keep their value, or pass an empty list to clear `metric_group_ids`, `specification_ids` or `message_conditions`.
 </Note>

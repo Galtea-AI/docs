@@ -29,7 +29,7 @@ The create and edit forms group their settings in the order Galtea applies them.
 
 - **Name** and **What this monitor scores**: the Monitor's name, and the metric families and Specifications it scores.
 - **Filter sessions**: which closed production sessions the Monitor reads. The hint states when a session closes, using the product's inactivity minutes. It also links to the product settings where you change them.
-  - **Filter by number of messages** (on by default): scores only sessions with at least this many user messages. It sets `min_user_messages`, from `1` to `100`. Off sets it to `0`.
+  - **Filter by number of messages** (on by default): scores only sessions whose number of messages meets every condition. Each row is one condition: a comparison, a number from `0` to `200`, and what to count (**messages** or **user messages**). Select **Add condition** for another row, up to `10`. A new Monitor starts with one row, **is above 1 messages**. An added row starts as **is at least 1 user messages**. Off sets `message_conditions` to `[]`.
   - **Filter by words**: scores only sessions that include, or do not include, the words you choose. Separate several terms with a comma. Matching ignores case. Choose to match in the input, the output, or either.
   - **Only one version of your agent**: watches a single version. The list shows the newest version first, and turning the switch on selects it. Off watches every version.
 - **Sampling and cost**: **Sampling %** is always shown and defaults to `10`. **Monthly credit cap** is off by default, which means no monthly limit.
@@ -90,7 +90,7 @@ Deleting a Specification removes its link to the Monitor and deletes the alert r
 
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
 
-Changing `sampling_percentage` only affects sessions that close after the change. Raising it does not go back and score older sessions that were already skipped. Sessions with fewer user messages than the Monitor's `min_user_messages` do not count toward the sample (see [When a session gets scored](#when-a-session-gets-scored)).
+Changing `sampling_percentage` only affects sessions that close after the change. Raising it does not go back and score older sessions that were already skipped. Sessions that fail the Monitor's `message_conditions` do not count toward the sample (see [When a session gets scored](#when-a-session-gets-scored)).
 
 ## When a session gets scored
 
@@ -98,7 +98,7 @@ A Monitor scores a production session once the session is closed. A session clos
 
 This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
 
-A Monitor also skips a session that has too few user messages. A user message is a turn where the user wrote or sent something: text, a file or audio. A file or audio turn counts even when evaluators cannot read it yet. A turn with no user input does not count, for example a greeting that the assistant sends before the user writes. An input of `{}` or `{"user_message": null}` also counts as no user message. Any other structured input counts as a user message. `min_user_messages` sets the minimum, from `0` to `100`. It defaults to `1`, so a session with no user message is skipped. Set it to `0` to turn the minimum off. A skipped session stays in the sessions list and spends no credits. In the dashboard, set it with the **Filter by number of messages** switch, in the **Filter sessions** group. The Monitor decides once per session. A later change does not re-decide a session the Monitor already decided, so it applies only to sessions that close after the change. A session that reopens and closes again is decided again, with the minimum set at that time. The `sampling_percentage` applies to the sessions that pass this rule, not to every closed session.
+A Monitor also skips a session whose number of messages does not meet its `message_conditions`. A user message is a turn input where the user wrote or sent something: text, a file or audio. An agent message is a turn output where the agent wrote or sent something. A file or audio part counts even when evaluators cannot read it yet. An empty input or output does not count. A greeting the agent sends before the user writes has an empty input, so it adds no user message, but the greeting itself counts as one agent message. An input of `{}`, `{"user_message": null}` or `{"user_message": ""}` is empty, and so is an output of `{}` or `{"assistant_message": null}`. An output whose `assistant_message` is a blank string is also empty, whatever other keys it has, unless it holds a file or audio part. Any other structured input or output counts. Spans do not count. Each condition counts one of two things. `messages` counts every user message and every agent message. `user_messages` counts only the user messages. A condition compares that count with a number, from `0` to `200`, using `lt`, `lte`, `eq`, `gte` or `gt`. `lt` with `0` is refused, because no session has fewer than `0` messages. A Monitor holds at most `10` conditions, and a session must meet every one of them. A new Monitor starts with one condition, `messages` `gt` `1`, so a session where the agent spoke once and the user never wrote is skipped. Set `message_conditions` to `[]` to turn the filter off. A skipped session stays in the sessions list and spends no credits. In the dashboard, set the conditions with the **Filter by number of messages** switch, in the **Filter sessions** group. The Monitor decides once per session. A later change does not re-decide a session the Monitor already decided, so it applies only to sessions that close after the change. A session that reopens and closes again is decided again, with the conditions set at that time. The `sampling_percentage` applies to the sessions that pass this rule, not to every closed session.
 
 A closed session can still gain a turn. When it does, the session reopens and the Monitor scores it again once it closes for good. The earlier scores move to the `Outdated` status, so they drop out of charts and averages while staying readable. The product's [Closed Session Inference Creation Policy](/concepts/product#product-properties) controls this.
 
@@ -345,10 +345,10 @@ The SDK lets you create, list, retrieve, update, pause, resume, and delete monit
   The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
 </ResponseField>
 
-<ResponseField name="min_user_messages" type="int" default="1">
-  Minimum number of user messages a session needs to be scored, from `0` to `100`. Defaults to `1`.
-  A user message is a turn where the user wrote or sent something (text, a file or audio). Sessions with fewer are skipped and spend no credits, and they stay in the sessions list.
-  `0` turns the minimum off. Changing it only affects sessions that close after the change.
+<ResponseField name="message_conditions" type="list[MonitorMessageCondition]" default="[messages above 1]">
+  Conditions on a session's number of messages, joined by AND. A session must meet every condition to be scored. Defaults to one condition, `messages` `gt` `1`, so a session where only the agent spoke once is skipped. At most `10` conditions.
+  Each `MonitorMessageCondition` has a `count` (`messages` counts user and agent messages, `user_messages` counts only user messages), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused). A message is a non-empty turn input or output: text, a file or audio. An empty envelope does not count.
+  Sessions that fail a condition are skipped and spend no credits, and they stay in the sessions list. `[]` turns the filter off. Changing it only affects sessions that close after the change.
 </ResponseField>
 
 <ResponseField name="status" type="Enum">

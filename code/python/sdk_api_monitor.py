@@ -5,7 +5,7 @@ Demonstrates how to create, list, get, update, pause, resume, and delete monitor
 
 from datetime import datetime
 
-from galtea import Galtea
+from galtea import Galtea, MonitorMessageCondition
 
 from _test_helpers import create_test_product
 
@@ -48,7 +48,9 @@ monitor = galtea.monitors.create(
     # version_id="your-version-id",
     sampling_percentage=10,  # score 10% of production sessions (default)
     monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
-    min_user_messages=1,  # skip sessions with fewer user messages (default); 0 turns the minimum off
+    message_conditions=[
+        MonitorMessageCondition(count="messages", operator="gt", value=1)
+    ],  # the default: skip a session where only the agent spoke once
 )
 # @end create
 
@@ -96,10 +98,10 @@ monitors = galtea.monitors.list(
 galtea.monitors.update(monitor.id, sampling_percentage=25)
 # @end update
 
-# @start update_min_user_messages
-# Turn the minimum off, so a session where the user never wrote is eligible too. Pass None to go back to the default of 1.
-galtea.monitors.update(monitor.id, min_user_messages=0)
-# @end update_min_user_messages
+# @start update_message_conditions
+# Turn the message filter off, so every session is eligible whatever its number of messages.
+galtea.monitors.update(monitor.id, message_conditions=[])
+# @end update_message_conditions
 
 # @start update_specifications
 # Replace the bound Specifications. Pass an empty list to unbind them all.
