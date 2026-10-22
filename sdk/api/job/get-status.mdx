@@ -31,8 +31,8 @@ A `JobStatus` object with the following fields:
 <ResponseField name="id" type="string">
   The job ID.
 </ResponseField>
-<ResponseField name="state" type="JobState">
-  Current state of the job. One of: `waiting`, `delayed`, `prioritized`, `waiting-children`, `active`, `completed`, `failed`, `cancelled`.
+<ResponseField name="state" type="JobState | str">
+  Current state of the job: `waiting`, `delayed`, `prioritized`, `waiting-children`, `active`, `completed`, `failed`, `cancelled` or `unknown`. A state the API adds later arrives as a plain string, so handle a value outside this list.
 </ResponseField>
 <ResponseField name="progress" type="float | int | dict">
   Progress indicator published by the worker. Typically a percentage (0–100) or a custom object. Defaults to `0`.
