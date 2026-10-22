@@ -774,7 +774,18 @@
       },
       {
         "tab": "REST API",
-        "openapi": "https://api.galtea.ai/openapi.json"
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/write-responses"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "https://api.galtea.ai/openapi.json"
+          }
+        ]
       }
     ]
   },

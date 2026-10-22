@@ -147,6 +147,10 @@ The Galtea SDK allows you to create, view, and manage datasets programmatically.
   - [Behavior](/concepts/product/dataset/behavior-datasets) (`BEHAVIOR`): Datasets that use conversation simulation to evaluate multi-turn dialogue interactions
 </ResponseField>
 
+<ResponseField name="Specifications" type="List[Text]">
+  The [Specifications](/concepts/product/specification) the dataset links to. A dataset can link to several specifications of its product. An evaluation that names several of them runs the dataset once and scores it with the metrics of all of them. In the SDK this is `specification_ids`; the older `specification_id` is deprecated and holds the oldest link.
+</ResponseField>
+
 <ResponseField name="Metadata" type="Any">
   An open field where you can store any value for tracking or organizational purposes. Accepts plain text, numbers, JSON objects, arrays, or booleans.
 

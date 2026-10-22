@@ -95,7 +95,7 @@ A Monitor has a `status` that tells you whether it is scoring and, if not, why. 
 
 Pause and resume a Monitor from its row menu, from its page in the dashboard, with `galtea.monitors.pause` and `galtea.monitors.resume`, with `galtea monitors pause` and `galtea monitors resume`, or with `POST /monitors/{id}/pause` and `POST /monitors/{id}/resume`. Both work from any status, and repeating one changes nothing. If a resumed Monitor is still capped or out of credits, the next scan sets `CAPPED` or `NO_CREDITS` again.
 
-Setting `status` to `ACTIVE` or `PAUSED` through an update still works. You can set only those two values: `CAPPED`, `NO_CREDITS`, and `FAILING` are set by the system and are rejected if you try to set them yourself.
+Setting `status` to `ACTIVE` or `PAUSED` through an update still works. You can set only those two values: `CAPPED` and `NO_CREDITS` are set by the system, `FAILING` is reserved, and the API rejects all three if you try to set them yourself.
 
 ## Alert rules
 

@@ -95,9 +95,10 @@ your firewall's to control, and the destinations to allow are exactly the rows i
 ## Object storage reachability and CORS
 
 File uploads go **directly from the user's browser** to the object storage endpoint using a
-signed URL rather than through the API. An upload path through the API, for networks whose
-policy forbids a browser connection to a storage endpoint, is on the roadmap: ask for its
-current status rather than planning around it. With the direct path, two things must be
+signed URL rather than through the API. For networks whose policy forbids a browser
+connection to a storage endpoint, turn on the opt-in upload path through the API: see
+[When your users cannot reach object storage](/deployment/installation-examples#when-your-users-cannot-reach-object-storage).
+With the direct path, two things must be
 configured before go-live, on every cloud:
 
 - [ ] The network your users sit on can resolve and reach the storage endpoint over

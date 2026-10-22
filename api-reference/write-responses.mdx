@@ -1,0 +1,34 @@
+---
+title: "Write responses"
+description: "What a create or an update answers, and how to ask for no body"
+icon: "reply"
+---
+
+`POST /products`, `PATCH /products/{id}`, `POST /tests`, `PATCH /tests/{id}` and `PATCH /organizations/{id}` answer the same body as a read of the resource, so you do not need a second request to see the result. Other writes answer the body that their own reference page documents.
+
+## The default answer
+
+| Write | Status | Body |
+|-------|--------|------|
+| Create (`POST /products`, `POST /tests`) | `201`, with `Location` and `Content-Location` headers | The body of the `GET` of the new resource |
+| Update (`PATCH /products/{id}`, `PATCH /tests/{id}`, `PATCH /organizations/{id}`) | `200`, with a `Content-Location` header | The body of the `GET` of the resource |
+
+The body is the one that **your own** `GET` would answer, so a field that your role cannot see is hidden in the write answer too. For example, the SAML settings of an organization are `null` unless you may update the organization or read across organizations. The `Location` header holds the path of the new resource, for example `/products/prod_123`. `Content-Location` holds the path of the resource in the body. The reference pages show the `201` of a create with a JSON body, but that body is empty on a minimal answer and after a failed read (see below).
+
+## Ask for no body
+
+Send `Prefer: return=minimal` when you do not need the body. The API does not read the resource again, and it answers with no body:
+
+```bash
+curl -X PATCH "https://api.galtea.ai/products/prod_123" \
+  -H "Authorization: Bearer $GALTEA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=minimal" \
+  -d '{"tags": ["support"]}'
+```
+
+An update answers `204`. A create answers `201` with only the `Location` header, so take the id from it. Both carry `Preference-Applied: return=minimal`.
+
+## Always accept a write with no body
+
+The API also answers with no body when the write succeeded but the read after it failed: `201` with `Location` for a create, `204` for an update. It does not answer an error in that case, because the change is already saved and a retry would repeat it. If your client reads the body, handle this answer: take the id from `Location` (create) or from the path you called (update), and read the resource with its `GET` when you need its fields.

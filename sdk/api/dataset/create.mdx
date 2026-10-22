@@ -80,7 +80,7 @@ csv_dataset = galtea.datasets.create(
   The name of the dataset.
 </ResponseField>
 <ResponseField name="type" type="string | DatasetType" optional>
-  The type of dataset. **Required** unless `specification_id` is provided (in which case the type is auto-derived from the specification).
+  The type of dataset. **Required** unless `specification_ids` is provided (in which case the type is auto-derived from the specifications).
   - `ACCURACY`: Datasets that evaluate the quality and correctness of outputs
   - `SECURITY`: Datasets that evaluate security, safety, and bias aspects
   - `BEHAVIOR`: Datasets that use conversation simulation to evaluate multi-turn dialogue interactions
@@ -90,8 +90,11 @@ csv_dataset = galtea.datasets.create(
 <ResponseField name="product_id" type="string" required>
   The ID of the product you want to evaluate.
 </ResponseField>
+<ResponseField name="specification_ids" type="list[string]" optional>
+  The IDs of the [Specifications](/concepts/product/specification) to link the dataset to. They must belong to the same product and share one dataset type. When provided, `type` is auto-resolved from them and becomes optional. A dataset can link to several specifications. An evaluation that names several of them runs the dataset once and scores it with the metrics of all of them. Generation reads only the first specification in the list. An API version that links a dataset to one specification only creates the dataset with no link for several ids, and the SDK then raises a `RuntimeError` that names the dataset.
+</ResponseField>
 <ResponseField name="specification_id" type="string" optional>
-  The ID of a [Specification](/concepts/product/specification) to derive the dataset type from. When provided, `type` is auto-resolved and becomes optional.
+  **Deprecated**: pass `specification_ids=[id]` instead. The SDK sends it as a one-item `specification_ids`. Passing both raises a `ValueError` unless `specification_ids`, once its duplicates are removed, is `[specification_id]`.
 </ResponseField>
 <ResponseField name="ground_truth_file_path" type="string" optional>
   Path to a local file containing the knowledge base. This file is uploaded to Galtea and used to build the knowledge base for your dataset.

@@ -1,7 +1,7 @@
 ---
 title: 'Update Dataset'
 sidebarTitle: "Update"
-description: "Update the name or metadata of an existing dataset"
+description: "Update the name, metadata or specifications of an existing dataset"
 ---
 
 ## Overview
@@ -9,7 +9,7 @@ description: "Update the name or metadata of an existing dataset"
 The `update()` method allows you to modify an existing dataset after it has been created.
 
 <Warning>
-  Only `name` and `metadata` are mutable post-creation. All other fields
+  Only `name`, `metadata` and `specification_ids` are mutable post-creation. All other fields
   (`type`, `variants`, `strategies`, `uri`, `ground_truth_uri`,
   `data_catalog_uri`, `source_test_id`, `max_test_cases`, etc.) are fixed
   for the lifetime of the dataset because they drive generation, credit
@@ -31,6 +31,10 @@ The `update()` method allows you to modify an existing dataset after it has been
 
 <ResponseField name="metadata" type="Any" optional>
   Arbitrary JSON-serializable metadata for tracking purposes. Replaces the existing metadata wholesale. Pass `None` to clear.
+</ResponseField>
+
+<ResponseField name="specification_ids" type="list[string]" optional>
+  The full list of [Specifications](/concepts/product/specification) the dataset links to. It replaces the current links: a specification left out of the list is unlinked, and `[]` removes every link. Each specification must belong to the dataset's product and generate the dataset's type. To add or remove links without sending the full list, use [Link Datasets](/sdk/api/specification/link-datasets) and [Unlink Datasets](/sdk/api/specification/unlink-datasets).
 </ResponseField>
 
 ## Returns
@@ -69,12 +73,22 @@ updated = galtea.datasets.update(
 )
 ```
 
+### Replacing the Linked Specifications
+
+```python
+# The list replaces the dataset's links: pass every specification it should keep.
+linked = galtea.datasets.update(
+    dataset_id=dataset.id,
+    specification_ids=[toxicity_policy.id, misuse_policy.id],
+)
+```
+
 ## Notes
 
 <Note>
   All fields except `dataset_id` default to `PydanticUndefined` (from `pydantic_core`).
   Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
-  Pass `None` to explicitly clear an optional field.
+  Pass `None` to explicitly clear an optional field (`specification_ids` takes `[]` instead).
   Pass a value to update it.
 </Note>
 
