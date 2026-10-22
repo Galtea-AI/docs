@@ -27,7 +27,7 @@ From there you can create a monitor, open one to see its results, and edit, paus
 
 The create and edit forms group their settings in the order Galtea applies them. Every optional setting sits behind a switch. A switch that is off means the setting does not apply, and its controls stay hidden.
 
-- **Name** and **What this monitor scores**: the Monitor's name, and the metric families and Specifications it scores.
+- **Name** and **What this monitor scores**: the Monitor's name, and the Specifications and metric families it scores. The form lists only what you chose. Select **Add specifications or metrics** to open the catalog, with a Specifications tab, a Metrics tab, a search box and a type filter.
 - **Filter sessions**: which closed production sessions the Monitor reads. The hint states when a session closes, using the product's inactivity minutes. It also links to the product settings where you change them.
   - **Filter by number of messages** (on by default): scores only sessions whose number of messages meets every condition. Each row is one condition: a comparison, a number from `0` to `200`, and what to count (**messages** or **user messages**). Select **Add condition** for another row, up to `10`. A new Monitor starts with one row, **is above 1 messages**. An added row starts as **is at least 1 user messages**. Off sets `message_conditions` to `[]`.
   - **Filter by words**: scores only sessions that include, or do not include, the words you choose. Separate several terms with a comma. Matching ignores case. Choose to match in the input, the output, or either.
@@ -76,7 +76,7 @@ update adds one; a family the Monitor already binds can still be resent without 
 
 ## Binding Specifications
 
-A [Specification](/concepts/product/specification) states one requirement of your product and links the metrics that measure it. A Monitor can bind one or more Specifications of its product instead of, or together with, metric families. In the dashboard, pick them on the Specifications tab of the monitor form. In the SDK, the CLI, or the API, pass `specification_ids`.
+A [Specification](/concepts/product/specification) states one requirement of your product and links the metrics that measure it. A Monitor can bind one or more Specifications of its product instead of, or together with, metric families. In the dashboard, select **Add specifications or metrics** in the monitor form and pick them on the Specifications tab. In the SDK, the CLI, or the API, pass `specification_ids`.
 
 - **Union rule.** The Monitor scores the metric families you picked plus the families its bound Specifications link. A family that appears twice is scored once. This is the same rule as `POST /evaluations`. You need at least one source, and the Monitor must have at least one family left to score. The API checks this only on create and on an update that changes the scope. A Monitor can end up with nothing to score later, for example when a bound Specification loses its last metric or is deleted. Sessions that close while it has nothing to score are never scored, and no `SKIPPED` evaluation is recorded for them. Scoring starts again with the sessions that close after a metric is linked again.
 - **It follows the Specification.** When you link or unlink a metric on a bound Specification, the Monitor scores the new set from its next scan. Scores already recorded do not change.
