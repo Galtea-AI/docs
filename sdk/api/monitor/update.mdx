@@ -61,7 +61,7 @@ To pause or resume a monitor, use [`monitors.pause()`](/sdk/api/monitor/pause) a
 </ResponseField>
 <ResponseField name="message_conditions" type="list[MonitorMessageCondition]" optional>
   New conditions on a session's number of messages, joined by AND. The list replaces the stored conditions. Pass `[]` to turn the filter off.
-  `None` is refused. At most `10` conditions. Each `MonitorMessageCondition` has a `count` (`messages` or `user_messages`), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused).
+  `None` is refused. At most `10` conditions. Each `MonitorMessageCondition` has a `count` (`messages` or `user_messages`), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused). A list that no session can meet is refused too, such as `messages` `gt` `5` with `messages` `lte` `3`, or more user messages than the messages allow.
   The change applies to sessions that close after the update.
 </ResponseField>
 
