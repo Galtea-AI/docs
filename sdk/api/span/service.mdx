@@ -67,6 +67,10 @@ clear_context(span_context)
   Use `galtea.traces.generate()` for automatic span collection instead of manual collection.
 </Tip>
 
+<Note>
+  One process exports collected spans (from `@traced`, `start_span`, or `traces.generate()`) through one client: the most recently created `Galtea` object. `spans.create()` and `spans.create_batch()` are not affected: they always use their own object's settings. To change the API key, the [API URL or the extra headers](/sdk/installation#custom-api-url-and-headers) in a running process such as a notebook, create a new `Galtea` object. Spans then go out with the new settings, including spans not sent yet. Calling `shutdown()` on an older object only flushes pending spans; span export stops only when the latest object shuts down. Do not use two `Galtea` objects with API keys of different organizations in one process: spans of the older object's traces are sent with the newer key, the API refuses them, and they are lost.
+</Note>
+
 ## Service Methods
 
 ### Context Management
