@@ -23,6 +23,30 @@ In the dashboard, open a product, switch to **Production** view mode, then pick 
 
 From there you can create a monitor, open one to see its results, and edit, pause, resume, or delete it. Each row shows the monitor's status, its recent score, its sampling rate, and its credit spend for the month. A user without the `evaluation.readInference` permission, such as a Reader, does not see the credit spend.
 
+## Creating a monitor in the dashboard
+
+The create and edit forms group their settings in the order Galtea applies them. Every optional setting sits behind a switch. A switch that is off means the setting does not apply, and its controls stay hidden.
+
+- **Name** and **What this monitor scores**: the Monitor's name, and the metric families and Specifications it scores.
+- **Filter sessions**: which closed production sessions the Monitor reads. The hint states when a session closes, using the product's inactivity minutes. It also links to the product settings where you change them.
+  - **Filter by number of messages** (on by default): scores only sessions with at least this many user messages. It sets `min_user_messages`, from `1` to `100`. Off sets it to `0`.
+  - **Filter by words**: scores only sessions that include, or do not include, the words you choose. Separate several terms with a comma. Matching ignores case. Choose to match in the input, the output, or either.
+  - **Only one version of your agent**: watches a single version. The list shows the newest version first, and turning the switch on selects it. Off watches every version.
+- **Sampling and cost**: **Sampling %** is always shown and defaults to `10`. **Monthly credit cap** is off by default, which means no monthly limit.
+- **Preview**: see below.
+
+Select **Enable monitor** to create the Monitor as `ACTIVE`. Select **Save as paused** to create it as `PAUSED`. A paused Monitor scores no session until you resume it.
+
+### Preview
+
+Select **Preview** to see how many past sessions the Monitor would evaluate. A preview spends no credits, and it runs only when you ask. It reads the newest closed production sessions of the product, or of the chosen version, up to 500 sessions from the last 90 days. It shows one row per step:
+
+1. **Sessions with a turn**: of the sessions it read, the ones that have at least one turn.
+2. **Pass your filters**: the sessions left after the words and message filters. When both filters are on, a second line gives the count after the words filter alone.
+3. **Evaluated**: the sessions your sampling picks, as an estimate per month.
+
+Under the rows, the preview states how many closed sessions it read, with or without a turn, and the dates they cover. When it reads 500 sessions, it does not read older sessions inside the 90 days, so the dates can cover less than 90 days. The numbers are an estimate from past sessions, so the real numbers vary. If you change a setting after a preview, the card says that the settings changed since the preview. The note goes away when you select **Update preview**, or when you set the setting back. A product with no past production sessions shows an empty state. You can still enable the Monitor, and it scores new sessions as they close.
+
 ## Seeing production scores across the whole product
 
 A monitor's own page shows the results of that one monitor. To see the trend across every production evaluation of the product, open the product's **Analytics** section in **Production** view mode. It shows an **evaluation scores over time** chart: the average score per day across all production evaluations that match your current filters.
@@ -74,13 +98,13 @@ A Monitor scores a production session once the session is closed. A session clos
 
 This depends on the product's Auto Close Scope. When that scope excludes production (`None` or `Development`), open production sessions never close on inactivity, so the Monitor scores only the production sessions you explicitly finish.
 
-A Monitor also skips a session that has too few user messages. A user message is a turn where the user wrote or sent something: text, a file or audio. A file or audio turn counts even when evaluators cannot read it yet. A turn with no user input does not count, for example a greeting that the assistant sends before the user writes. An input of `{}` or `{"user_message": null}` also counts as no user message. Any other structured input counts as a user message. `min_user_messages` sets the minimum, from `0` to `100`. It defaults to `1`, so a session with no user message is skipped. Set it to `0` to turn the minimum off. A skipped session stays in the sessions list and spends no credits. In the dashboard, set it in **Advanced Options**, in the **Minimum user messages** field. The Monitor decides once per session. A later change does not re-decide a session the Monitor already decided, so it applies only to sessions that close after the change. A session that reopens and closes again is decided again, with the minimum set at that time. The `sampling_percentage` applies to the sessions that pass this rule, not to every closed session.
+A Monitor also skips a session that has too few user messages. A user message is a turn where the user wrote or sent something: text, a file or audio. A file or audio turn counts even when evaluators cannot read it yet. A turn with no user input does not count, for example a greeting that the assistant sends before the user writes. An input of `{}` or `{"user_message": null}` also counts as no user message. Any other structured input counts as a user message. `min_user_messages` sets the minimum, from `0` to `100`. It defaults to `1`, so a session with no user message is skipped. Set it to `0` to turn the minimum off. A skipped session stays in the sessions list and spends no credits. In the dashboard, set it with the **Filter by number of messages** switch, in the **Filter sessions** group. The Monitor decides once per session. A later change does not re-decide a session the Monitor already decided, so it applies only to sessions that close after the change. A session that reopens and closes again is decided again, with the minimum set at that time. The `sampling_percentage` applies to the sessions that pass this rule, not to every closed session.
 
 A closed session can still gain a turn. When it does, the session reopens and the Monitor scores it again once it closes for good. The earlier scores move to the `Outdated` status, so they drop out of charts and averages while staying readable. The product's [Closed Session Inference Creation Policy](/concepts/product#product-properties) controls this.
 
 ## Credit cap
 
-`monthly_credit_cap` is an optional ceiling on how many credits the Monitor spends per month:
+`monthly_credit_cap` is an optional ceiling on how many credits the Monitor spends per month. The month follows your organization's billing cycle:
 
 - **`None` (default)** means the Monitor is uncapped. It scores sampled sessions until the organization runs out of credits.
 - **A positive number** caps monthly spend. Only the "greater than zero" rule is enforced. The cap may be larger than the organization's monthly credit allocation; the effective budget is `min(organization balance, cap)`. So the cap protects a single Monitor's spend, and the organization balance is always the hard limit.
@@ -89,9 +113,9 @@ A closed session can still gain a turn. When it does, the session reopens and th
 
 A Monitor has a `status` that tells you whether it is scoring and, if not, why. This makes the reasons a Monitor stopped visible instead of silent:
 
-- **`ACTIVE`** — the Monitor is scoring sampled production sessions. New Monitors start here.
+- **`ACTIVE`** — the Monitor is scoring sampled production sessions. New Monitors start here, unless you create one as `PAUSED`.
 - **`PAUSED`** — a user paused the Monitor. It scores nothing until resumed. Sessions that close while it is paused are skipped for good. After a resume, the Monitor only scores sessions that close from that point on.
-- **`CAPPED`** — the monthly credit cap was reached. Sessions that close while it is capped are skipped for good, like `PAUSED`. Scoring resumes next month, or sooner if you raise the cap.
+- **`CAPPED`** — the monthly credit cap was reached. Sessions that close while it is capped are skipped for good, like `PAUSED`. Scoring resumes at your next billing cycle, or sooner if you raise the cap.
 - **`NO_CREDITS`** — the organization ran out of credits. Sessions that close in the meantime are skipped for good. Scoring resumes when credits are available.
 - **`FAILING`** — reserved for a Monitor that keeps failing to score sessions. The system does not currently set it automatically.
 
