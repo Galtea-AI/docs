@@ -16,8 +16,8 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   The full conversation history up to this turn. Each `ConversationMessage` has:
   - `role` (`str`): `"user"` or `"assistant"`
   - `content` (`str`): The message text
-  - `retrieval_context` (`Optional[str]`): Retrieved context (for RAG agents)
-  - `metadata` (`Optional[dict[str, Any]]`): Additional fields. When the test case uses structured JSON input, non-message fields (e.g. `chat_type`, `priority`) appear here on the first user message.
+  - `retrieval_context` (`str | None`): Retrieved context (for RAG agents)
+  - `metadata` (`dict[str, Any] | None`): Additional fields. When the test case uses structured JSON input, non-message fields (e.g. `chat_type`, `priority`) appear here on the first user message.
   - `input_files` (`list[AttachedFile]`): The files attached to a user message, ready for [`galtea.storage.download()`](/sdk/api/storage/download). Empty for a message that carries only text.
   - `output_files` (`list[AttachedFile]`): The files an earlier assistant message answered with, read the same way. Empty for a message that carries only text.
 </ResponseField>
@@ -26,11 +26,11 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   The current session identifier. Use this to maintain state in stateful agents.
 </ResponseField>
 
-<ResponseField name="context_data" type="Optional[dict[str, Any]]">
+<ResponseField name="context_data" type="dict[str, Any] | None">
   Structured context data from the test case. This comes from the test case's `context` / `context_data` field, not from the input. Use it to pass supplemental information like customer tier, environment, or domain context.
 </ResponseField>
 
-<ResponseField name="metadata" type="Optional[dict[str, Any]]">
+<ResponseField name="metadata" type="dict[str, Any] | None">
   Additional metadata for the current execution.
 </ResponseField>
 
@@ -38,17 +38,17 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   The files attached to the **last user message**, as `AttachedFile` objects, empty when it carries none. Derived from `messages` rather than stored, so an `input_files` keyword passed to the constructor is ignored; attach files through `ConversationMessage(input_files=...)`. For an earlier turn's files, read that message's own `input_files`. See [Reading attached files](#reading-attached-files).
 </ResponseField>
 
-<ResponseField name="trace_id" type="Optional[str]">
+<ResponseField name="trace_id" type="str | None">
   The trace ID for this execution. Forward this to remote agents so they can attach spans to the correct session via `set_context(trace_id=...)`. See [Remote Agent Tracing](/sdk/tutorials/tracing-agent-operations#remote-agent-tracing).
 </ResponseField>
 
 ## Helper Methods
 
-<ResponseField name="last_user_message_str()" type="Optional[str]">
+<ResponseField name="last_user_message_str()" type="str | None">
   Returns the `content` of the last user message, or `None` if no user message exists. This is the simplest way to get the user's message text.
 </ResponseField>
 
-<ResponseField name="last_user_message()" type="Optional[ConversationMessage]">
+<ResponseField name="last_user_message()" type="ConversationMessage | None">
   Returns the full `ConversationMessage` object for the last user message (with `role`, `content`, `retrieval_context`, `metadata`, `input_files`, and `output_files`), or `None` if not found. Use this when you need access to the message's `metadata`.
 </ResponseField>
 

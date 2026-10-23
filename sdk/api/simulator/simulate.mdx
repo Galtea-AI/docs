@@ -7,7 +7,7 @@ description: "Run a full conversation simulation between your agent and a simula
 import AgentCallables from '/snippets/agent-callables.mdx';
 
 ## Returns
-It returns a result object from the [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator#simulation-result-structure) containing the complete conversation history, status, and metadata. This is used to analyze how your agent performed in the test scenario.
+It returns a result object from the [Conversation Simulator](/concepts/product/dataset/test-case/conversation-simulator#simulation-result-structure) with the session id, the number of turns, whether the simulation finished, the stopping reason, and metadata. It does not hold the messages: read the turns with `client.traces.list()`.
 
 ## Agent Options
 
@@ -75,7 +75,7 @@ simulation_result = galtea.simulator.simulate(
 </ResponseField>
 
 <ResponseField name="include_metadata" type="bool">
-  Whether to include metadata in the simulation result. Default: False
+  <Warning>**Deprecated**: The result now always includes metadata. The parameter no longer has any effect.</Warning>
 </ResponseField>
 
 <ResponseField name="agent_goes_first" type="bool">

@@ -154,7 +154,7 @@ For each code snippet file in scope, check:
 
 **SDK Method Signatures:**
 - Parameter names match the current SDK service methods exactly
-- Parameter types are correct (e.g., `str` vs `Union[str, DatasetType]`)
+- Parameter types are correct (e.g., `str` vs `str | DatasetType`)
 - Removed parameters are no longer used
 - Return types and accessed fields are correct
 - Deprecated methods are not used when a replacement exists
@@ -253,7 +253,7 @@ Preserve the strict code file structure:
 
 **File Naming Conventions:** as in `docs/AGENTS.md`, plus `sdk_integrations_<platform>.py` for integrations.
 
-**Python Compatibility:** Target >=3.10. Prefer `Optional[T]` in library code; `T | None` is acceptable in illustrative snippets.
+**Python Compatibility:** Target >=3.10. Write `T | None` and `A | B`, never `Optional` / `Union`, and built-in generics (`list[str]`), never `typing.List`.
 
 ## 7. Verify Fixes
 

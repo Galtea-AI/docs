@@ -63,7 +63,7 @@ The SDK uploads each file and rewrites the row before it sends anything, so the 
 This is the step Galtea cannot do. It takes the question and the local file paths, and returns whatever your product would answer:
 
 ```python
-def answer_from_documents(question: Optional[str], document_paths: list[str]) -> str:
+def answer_from_documents(question: str | None, document_paths: list[str]) -> str:
     """Read the documents and answer. Galtea never reads them for you. This step is yours when you
     drive the run; Galtea can also send the files to your endpoint instead."""
     # Replace this with the call to your own model, parser or agent.
