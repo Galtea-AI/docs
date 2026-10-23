@@ -10,7 +10,7 @@ The Custom Judge metric is a [non-deterministic Metric](/concepts/metric) used b
 To compute the `custom_judge` metric, the following parameters can be considered, depending on your needs and the evaluation type:
 
 - **`input`**: The original user message.
-- **`expected_output`**: The ideal or target answer your product should have generated.
+- **`expected_output`**: The ideal or target answer your product should have generated. A [field rule](/concepts/metric/json-field-match#field-rules) in a JSON expected output reaches the judge as plain JSON text.
 - **`actual_output`**: The response actually produced by the model.
 - **`context`**: Any additional internal context passed to the model (e.g. memory, conversation history).
 - **`retrieval_context`**: External content retrieved during inference, such as from a vector store or knowledge base.

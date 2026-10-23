@@ -116,7 +116,7 @@ To have the document scored, log the text your pipeline extracted as the turn in
 Editing a test case that has files follows the usual [revision](/concepts/product/dataset/test-case#revisions) behaviour: a revision may add or replace files, and the superseded revision keeps its own. Send `input` as the whole object, including the files you want to keep. **The edit must leave at least one file.** Plain text is refused, and so is an object with an empty `content`, because either one would turn a document test case into a text one. To get the text-only test case, create it and delete this one.
 
 <ResponseField name="Expected Output" type="Text">
-  The expected output for the evaluation. This represents the ideal response you want your AI model to provide. **Example**: "The operating system of the Samsung Galaxy A8 is Android 8.1."
+  The expected output for the evaluation. This represents the ideal response you want your AI model to provide. **Example**: "The operating system of the Samsung Galaxy A8 is Android 8.1." For a JSON object, a field can hold a [field rule](/concepts/metric/json-field-match#field-rules) (`$norm`, `$regex`, `$num` or `$date`) instead of a value. Rules work only in the four JSON Field Match metrics. Every other metric reads a rule as plain JSON text.
 </ResponseField>
 
 <ResponseField name="Context" type="Text">

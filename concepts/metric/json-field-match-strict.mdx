@@ -1,6 +1,6 @@
 ---
 title: "JSON Field Match (Strict)"
-description: "Compares JSON objects field by field, checking whether all fields in the expected output exist in the actual output with matching values. An unexpected field in the actual output also lowers the score. Returns the fraction of the combined expected and actual fields that match."
+description: "Compares JSON objects field by field, checking whether all fields in the expected output exist in the actual output with matching values. An unexpected field in the actual output also lowers the score. A field can set a rule instead of a value: $norm, $regex, $num or $date. Returns the fraction of the combined expected and actual fields that match."
 ---
 
 The JSON Field Match (Strict) metric is one of the [Deterministic Metric](/concepts/metric) options in Galtea. It performs the same field-level comparison as [JSON Field Match](/concepts/metric/json-field-match), but an unexpected field in the actual output also lowers the score instead of being ignored.
@@ -24,10 +24,10 @@ The metric compares top-level fields between the expected and actual JSON output
    The two sides behave differently when parsing fails:
 
    - **`actual_output` is not a JSON object** (for example, your pipeline answered in plain text, or returned nothing): the evaluation is **skipped**, and its error message says the output could not be read. Nothing broke, so there is no score to report. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result.
-   - **`expected_output` is not a JSON object**: the evaluation **fails**. This is an error in your test case, and you have to fix the dataset.
+   - **`expected_output` cannot be used** (it is not valid JSON, it is nested too deeply or holds a number too long to read, it is not a JSON object, or a [field rule](/concepts/metric/json-field-match#field-rules) in it is invalid): the evaluation is **skipped**. This is an error in your test case, not in your agent. Fix the test case and retry the evaluation.
 
 2. **Compare Fields**
-   For each top-level key in the expected output, check whether the same key exists in the actual output with an equal value. Comparison uses strict equality — type mismatches (e.g., string `"30"` vs number `30`) count as non-matching. Nested objects are compared by deep equality. Then, for each top-level key in the actual output that the expected output never listed, that key counts as an **unexpected field** and is named in the reason.
+   For each top-level key in the expected output, check whether the same key exists in the actual output with an equal value. Comparison uses strict equality — type mismatches (e.g., string `"30"` vs number `30`) count as non-matching. Nested objects are compared by deep equality. A field whose expected value is a [field rule](/concepts/metric/json-field-match#field-rules) is checked by that rule instead of by equality. Then, for each top-level key in the actual output that the expected output never listed, that key counts as an **unexpected field** and is named in the reason.
 
 3. **Compute Score**
    The score is calculated as:
@@ -37,6 +37,10 @@ The metric compares top-level fields between the expected and actual JSON output
    ```
 
    Where `total_fields` is the size of the **union** of the top-level keys in the expected and actual outputs, and `matched_fields` is the count of keys present in both with equal values. Every missing, wrong, or unexpected field counts as one non-matching field.
+
+## Field Rules
+
+An expected field can set a rule (`$norm`, `$regex`, `$num` or `$date`) instead of a value. See [Field Rules](/concepts/metric/json-field-match#field-rules) for the four rules. A field with a rule counts once in `total_fields`, like any other expected field.
 
 ## Interpretation of Scores
 

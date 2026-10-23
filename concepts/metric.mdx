@@ -85,7 +85,7 @@ You set the threshold when you create the metric. It cannot change afterwards, s
 
 Some metrics apply to few sessions. A jailbreak metric, for example, applies only to the sessions where a user tries a jailbreak. If the judge scores every session, it scores many sessions the metric was not made for. Those sessions lower the pass rate or pass for free, and each judge call costs credits.
 
-The applicability check stops this. Before the judge runs, a decision model answers one Yes/No question: does the conversation contain what this metric evaluates? When the probability that it does is below the metric's applicability threshold, the evaluation is skipped.
+The applicability check stops this. Before the judge runs, a decision model answers one Yes/No question: does the conversation contain what this metric evaluates? When the probability that it does is below the metric's applicability threshold, the evaluation is skipped. The check runs before a JSON Field Match metric reads a test case's field rules, so a session it skips never reports an error in them. The decision model sees each rule as raw JSON.
 
 A [monitor](/concepts/product/monitor) runs the check for each production session, after the data check and before the judge. See [How a session is evaluated](/concepts/product/monitor#how-a-session-is-evaluated) for the phases and the skip rules.
 
@@ -180,10 +180,10 @@ If the judge model becomes unavailable to Galtea on or after the retirement date
 | **[Spatial Match](/concepts/metric/spatial-match)** | Deterministic | Binary evaluation of spatial alignment using IoU score. |
 | **[URL Validation](/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |
 | **[Tool Correctness](/concepts/metric/tool-correctness)** | Deterministic | Compares tools used by the agent against expected tools. |
-| **[JSON Field Match](/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. Ignores extra fields in the actual output. |
-| **[JSON Field Match (Normalized)](/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. Ignores extra fields in the actual output. |
-| **[JSON Field Match (Strict)](/concepts/metric/json-field-match-strict)** | Deterministic | Like JSON Field Match, but an unexpected field in the actual output also lowers the score. |
-| **[JSON Field Match (Normalized, Strict)](/concepts/metric/json-field-match-normalized-strict)** | Deterministic | Like JSON Field Match (Normalized), but an unexpected field in the actual output also lowers the score. |
+| **[JSON Field Match](/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. An expected field can set a [rule](/concepts/metric/json-field-match#field-rules) (`$norm`, `$regex`, `$num` or `$date`) instead of a value. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Normalized)](/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. Field rules apply as in JSON Field Match. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Strict)](/concepts/metric/json-field-match-strict)** | Deterministic | Like JSON Field Match, including field rules, but an unexpected field in the actual output also lowers the score. |
+| **[JSON Field Match (Normalized, Strict)](/concepts/metric/json-field-match-normalized-strict)** | Deterministic | Like JSON Field Match (Normalized), including field rules, but an unexpected field in the actual output also lowers the score. |
 | **[Role Adherence](/concepts/metric/role-adherence)** | Conversational | Evaluates whether the chatbot adheres to its given role throughout a conversation. |
 | **[Conversation Completeness](/concepts/metric/conversation-completeness)** | Conversational | Evaluates whether the chatbot satisfies user needs throughout a conversation. |
 | **[Conversation Relevancy](/concepts/metric/conversation-relevancy)** | Conversational | Evaluates whether the chatbot generates relevant responses throughout a conversation. |

@@ -1,6 +1,6 @@
 ---
 title: "JSON Field Match (Normalized)"
-description: "Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. Returns the fraction of expected fields that match."
+description: "Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. A field can set a rule instead of a value: $norm, $regex, $num or $date. Returns the fraction of expected fields that match."
 ---
 
 The JSON Field Match (Normalized) metric is one of the [Deterministic Metric](/concepts/metric) options in Galtea. It performs a field-level comparison between two JSON objects, just like [JSON Field Match](/concepts/metric/json-field-match), but with **case-insensitive and accent-insensitive** string comparison. This is ideal for entity extraction use cases where superficial text differences (e.g., "Sí" vs "SI") should not count as mismatches.
@@ -24,7 +24,7 @@ The metric compares top-level fields between the expected and actual JSON output
    The two sides behave differently when parsing fails:
 
    - **`actual_output` is not a JSON object** (for example, your pipeline answered in plain text, or returned nothing): the evaluation is **skipped**, and its error message says the output could not be read. Nothing broke, so there is no score to report. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result.
-   - **`expected_output` is not a JSON object**: the evaluation **fails**. This is an error in your test case, and you have to fix the dataset.
+   - **`expected_output` cannot be used** (it is not valid JSON, it is nested too deeply or holds a number too long to read, it is not a JSON object, or a [field rule](/concepts/metric/json-field-match#field-rules) in it is invalid): the evaluation is **skipped**. This is an error in your test case, not in your agent. Fix the test case and retry the evaluation.
 
 2. **Normalize and Compare Fields**
    For each top-level key in the expected output, check whether the same key exists in the actual output with a matching value. String values are **normalized** before comparison:
@@ -32,6 +32,8 @@ The metric compares top-level fields between the expected and actual JSON output
    - **Case folding**: Strings are compared case-insensitively (e.g., "SI" matches "si").
 
    This means "Sí", "SI", and "si" are all considered equal after normalization.
+
+   A field whose expected value is a [field rule](/concepts/metric/json-field-match#field-rules) is checked by that rule instead, on the actual value as written, without this normalization.
 
    For **non-string values** (numbers, booleans, `null`), strict equality is used — `30` does not match `"30"`.
 
@@ -45,6 +47,10 @@ The metric compares top-level fields between the expected and actual JSON output
    ```
 
    Where `total_fields` is the number of top-level keys in the expected output, and `non_matching_fields` is the count of keys that are missing or have different values in the actual output.
+
+## Field Rules
+
+An expected field can set a rule (`$norm`, `$regex`, `$num` or `$date`) instead of a value. See [Field Rules](/concepts/metric/json-field-match#field-rules) for the four rules. A rule sees the value exactly as the agent returned it, before case and accents are folded, so a case-sensitive `$regex` stays case-sensitive in this metric.
 
 ## Interpretation of Scores
 
