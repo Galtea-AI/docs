@@ -174,7 +174,7 @@ Each section points to a different place to look:
   </tbody>
 </table>
 
-A skipped evaluation consumes no credits. The skips listed above are decided before the evaluation reaches the evaluator. The evaluator can also skip one, for example when the metric does not apply to the session, and that skip consumes no credits either.
+A skipped evaluation consumes no credits. The skips listed above are decided before the evaluation reaches the evaluator. The evaluator can also skip one, for example a metric that does not apply to the session where the [applicability check](/concepts/metric#applicability-check) is on, and that skip consumes no credits either.
 
 Spans can reach Galtea a few seconds after the turn they belong to. So on a run, Galtea waits up to about 9 seconds for late spans before it decides. It does not wait when every turn that misses a span finished more than about 9 seconds ago, because late spans for those turns would already have arrived. When it skips after a wait, the message ends with a line such as `Waited ~9 s for late spans.` A production monitor applies the same wait rule and the same other rules as a run, including the **Cannot be read by the judge** rule and the single-turn limit of deterministic metrics. A monitor decides a session up to about two minutes after the session closes, so it rarely waits.
 

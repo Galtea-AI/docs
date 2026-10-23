@@ -39,13 +39,13 @@ Select **Enable monitor** to create the Monitor as `ACTIVE`. Select **Save as pa
 
 ### Preview
 
-Select **Preview** to see how many past sessions the Monitor would evaluate. A preview spends no credits, and it runs only when you ask. It reads the newest closed production sessions of the product, or of the chosen version, up to 500 sessions from the last 90 days. It shows one row per step:
+Select **Preview** to see how many past sessions the Monitor would evaluate, and what they would cost. A preview spends no credits, and it runs only when you ask. It reads the newest closed production sessions of the product, or of the chosen version, up to 500 sessions from the last 30 days. It shows one row per step:
 
-1. **Sessions with a turn**: of the sessions it read, the ones that have at least one turn.
-2. **Pass your filters**: the sessions left after the words and message filters. When both filters are on, a second line gives the count after the words filter alone.
-3. **Evaluated**: the sessions your sampling picks, as an estimate per month.
+1. **Closed sessions**: every closed session it read. The title names the window it read. When it reads 500 sessions, it does not read older ones, so the window is shorter, and the monthly figures below are scaled to 30 days. The same happens for a new product: when its first session is at least a week newer than the 30-day window, the figures are scaled from the days since that session.
+2. **Pass your filters**: the sessions left after the words and message filters. Sessions with no turns are left out here, because the Monitor never scores them. When both filters are on, a second line gives the count after the words filter alone.
+3. **Sessions evaluated**: the sessions your sampling picks, as an estimate per month. Under it, a line gives the credits per month: the sessions per month times the credits one session costs with the metrics you chose, the metrics of the chosen Specifications included. A metric that costs no credits, such as a Human Evaluation metric, counts as 0. When the **Monthly credit cap** is on and lower, the line adds "capped at" and the cap, because the Monitor stops there. The info icon explains that a metric that cannot score a session is skipped at no cost, so the credits shown are the most the Monitor spends at past traffic, or the cap when it is lower. Under that line, the preview lists the sessions the sampling picked, newest first. Select a session to open it in a new tab.
 
-Under the rows, the preview states how many closed sessions it read, with or without a turn, and the dates they cover. When it reads 500 sessions, it does not read older sessions inside the 90 days, so the dates can cover less than 90 days. The numbers are an estimate from past sessions, so the real numbers vary. If you change a setting after a preview, the card says that the settings changed since the preview. The note goes away when you select **Update preview**, or when you set the setting back. A product with no past production sessions shows an empty state. You can still enable the Monitor, and it scores new sessions as they close.
+The numbers are an estimate from past sessions, so the real numbers vary. If you change a setting after a preview, including the metrics and the Specifications, the card says that the settings changed since the preview. A change to the credit cap needs no new preview: the credits line follows it at once. The note goes away when you select **Update preview**, or when you set the setting back. A product with no past production sessions shows an empty state. You can still enable the Monitor, and it scores new sessions as they close.
 
 ## Seeing production scores across the whole product
 
@@ -91,6 +91,18 @@ Deleting a Specification removes its link to the Monitor and deletes the alert r
 `sampling_percentage` sets the fraction of production sessions the Monitor scores, from just above `0` up to `100`. It defaults to `10` (10%). Sampling keeps monitoring affordable on high-traffic products: you get a representative signal without scoring every single session.
 
 Changing `sampling_percentage` only affects sessions that close after the change. Raising it does not go back and score older sessions that were already skipped. Sessions that fail the Monitor's `message_conditions` do not count toward the sample (see [When a session gets scored](#when-a-session-gets-scored)).
+
+## How a session is evaluated
+
+For each production session, a Monitor works in three phases:
+
+1. **Pick the sessions.** The Monitor's session rules, such as the content filter, drop the sessions you do not want. Then sampling keeps `sampling_percentage` of the rest.
+2. **Check each metric.** For each metric family, Galtea first checks that the session has the data the metric needs. Then, where the [applicability check](/concepts/metric#applicability-check) is on, a decision model checks that the metric applies to the session.
+3. **Score.** The judge scores the metric. Only this phase spends credits.
+
+A session or a metric that an earlier step drops never reaches a later step. So a session that fails the data check gets no applicability check. An evaluation that you start yourself follows phases 2 and 3.
+
+A metric that does not apply gets a `SKIPPED` evaluation. See [A skipped evaluation](/concepts/metric#a-skipped-evaluation).
 
 ## When a session gets scored
 
