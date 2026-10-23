@@ -83,8 +83,8 @@ A constructor argument wins over its environment variable. When you pass `header
   with a warning that names the header. If `GALTEA_EXTRA_HEADERS` is not a JSON object of
   strings, a header name is not a valid HTTP name (for example it has a space), two names differ only in letter
   case, or a header value has a line break, leading whitespace or a non-Latin-1 character, `Galtea()` raises a
-  `ValueError` that does not show the value. A `GALTEA_EXTRA_HEADERS` that holds only spaces counts as unset. On a redirect to another host, the SDK does not send the extra
-  headers.
+  `ValueError` that does not show the value. A `GALTEA_EXTRA_HEADERS` that holds only spaces counts as unset. A redirect that changes the host, the scheme or the
+  port drops the extra headers. A subdomain is another host. A redirect from http to https on the default ports keeps them.
 </Note>
 
 ### Upgrading the SDK
