@@ -1,0 +1,56 @@
+<Update label="2026-10-23" description="Monitors Built Step by Step, Not Evaluated in Analytics, Scores with Their Sample Size, User Group Tabs, Gateway Headers, and Platform Improvements">
+
+## Build a Monitor Step by Step, with Its Cost in View
+
+The create and edit forms of a [monitor](/concepts/product/monitor) now follow the order a session travels through it: **Filter sessions** first, then **Sampling and cost**. The [preview](/concepts/product/monitor#preview) walks the same funnel, from the closed sessions in the read window, to the ones that pass your filters, to the sampled share, ending in `≈ N credits per month` with `capped at N` when your credit cap is lower, and the `N sessions × N credits each` behind it.
+
+- **Pick sessions by how many messages they hold.** A monitor takes up to 10 conditions, joined with AND, each comparing `messages` (user and agent) or `user_messages` using `lt`, `lte`, `eq`, `gte` or `gt` against a value from 0 to 200. In the SDK, pass `message_conditions` to [`monitors.create()`](/sdk/api/monitor/create) and [`monitors.update()`](/sdk/api/monitor/update). It replaces `min_user_messages`: a stored `0` becomes no condition, and a stored `N` becomes `user_messages gte N`. A new monitor starts at `messages gt 1`, so a session holding a single agent turn with no reply is skipped.
+- **Conditions no session can meet are refused.** `messages gt 5` together with `messages lte 3` is rejected on create, update and preview, and the dashboard disables **Enable monitor** and **Preview** while the rows contradict each other.
+- **The form lists the specifications and metrics you chose**, and the catalog opens in a dialog from **Add specifications or metrics**. The one-time **Add from Specification** metric copy is gone.
+- **Save as paused** stores a new monitor without starting it. Coverage is forward-only: a monitor never scores sessions that predate it, and resuming it does not go back over the sessions that arrived while it was paused.
+- **Turning the credit cap on prefills 15% of your organization's monthly credit plan**, instead of a flat 5000. The 5000 remains the prefill when that plan is unknown.
+
+## Analytics Shows What Has Not Been Evaluated
+
+A specification, metric or version with no score now reads **Not evaluated** on a dashed, empty track, so it no longer looks like a zero. Both the Development and Production views now list every specification that links at least one metric, and every metric, that your filters still allow, rather than only the ones that happened to be scored. The specification picker of the Metrics section offers the unscored specifications too.
+
+In the version comparison tables, a version with no score for a listed row gets its own **Not evaluated** cell instead of being dropped from the row. The tables still list only rows that at least one version scored; the bar view is where an entirely unscored specification or metric appears.
+
+The selected version's detail column adds **Coverage**: how many of its test cases were evaluated, as a count and a percentage, split into Evaluated, Not evaluated and Total, and measured against the most-evaluated version where there is one. A **Coverage by version** table below the charts gives a row per compared version it has coverage for. Both appear only for roles whose permissions include analytics coverage, so a reader or human evaluator does not see them.
+
+## Every Score Names the Evaluations Behind It
+
+Each score in the Scores panel, on the specification and metric bar charts, and in the version comparison tables now shows `passed X/Y` beside it, so you can tell a strong result from one backed by a handful of evaluations. A score built from fewer than 10 evaluations is muted, with a tooltip saying it is weak evidence. The Average Score carries no count, since it counts each metric once however many evaluations it holds.
+
+The count is one per evaluation, not per test case. A specification with 5 metrics on 2 test cases therefore counts 10 evaluations and is not muted, though it covers only 2 test cases. Read it with the [coverage](/concepts/product/monitor#seeing-production-scores-across-the-whole-product) figures above.
+
+## Manage a User Group from Its Own Tabs
+
+The **Users** and **Metrics** tabs of a [user group](/concepts/user-group) now link and unlink, instead of only creating. **New User** becomes a menu with **Link existing user** and **Create new user**. The Metrics tab gains **Link existing metric**, which offers Human Evaluation metrics only, and replaces **Delete** with **Unlink from group**, which confirms first and leaves the metric itself in place. A metric that already holds evaluations, and a Human Evaluation metric that belongs to no other group, cannot be unlinked. On the Products tab, **Link products** becomes a **Register Product** menu, and its dialog shows the products the group already has as checked and not selectable, with an **Already linked** tooltip. The group list adds a **Products** column that reads the number of linked products, or **All**.
+
+## Send Custom Headers Through an API Gateway
+
+When Galtea sits behind an API gateway that expects headers of its own, both the SDK and the CLI can now send them.
+
+In the SDK, pass `headers` to `Galtea()`, or set `GALTEA_EXTRA_HEADERS` to a JSON object, as described in [Custom API URL and headers](/sdk/installation#custom-api-url-and-headers). The argument replaces the environment variable rather than merging with it. They travel with every API call and with span exports. `authorization`, `user-agent`, `content-type`, `content-length` and `host` are dropped with a warning, a malformed name or value raises an error while the client is built rather than on the first call, and no header follows a redirect to another origin. File uploads and downloads go to signed storage URLs, which do not carry them.
+
+The CLI reads the same `GALTEA_EXTRA_HEADERS`, and keeps headers held on its `default` profile for the host you logged into, merging the two per key with the environment variable winning a clash. See [Behind an API gateway](/cli/usage#behind-an-api-gateway). Login sends them too, and a gateway that refuses the call before the API sees your key is now reported as the gateway's own rejection, apart from a rejected API key.
+
+## Documentation and Examples
+
+A new guide covers the [Claude Code tracing plugin](/sdk/integrations/claude-code-tracing): installation, its options, what each conversation sends, redaction, when a session closes and reopens, and how to stop logging. An interactive conversation arrives as a production session and each turn as a trace, with model calls, tool calls and subagents as spans, so a [monitor](/concepts/product/monitor) can score a sample of those sessions as they close. One-shot runs, such as `claude -p` and the Agent SDK's `query()`, are not logged.
+
+Each session also lands on a version named after the model of its first answer, which gives its turns a cost. That cost is an estimate at list prices: every model call of a turn, subagents included, is priced at the main model's rates, and cache writes are left out. A model name Galtea does not know gets no price, and a Galtea that refuses the version, such as an older self-hosted one, puts the session on the product's latest version with no cost at all.
+
+## Platform Improvements
+
+- **A monitor edit saves while it holds a metric that is no longer active.** Only a metric family you add needs an active metric, so renaming a monitor or changing its sampling no longer fails over a family that is retiring, disabled or deleted. The form and the monitor's own reads name each family and its state — **Retiring**, which still scores, **Disabled** or **Deleted** — instead of showing a raw id. A monitor whose families have all been deleted still reads as Active and scores nothing.
+- **The Development view of Analytics opens on the latest versions over all time.** On a product with more than five versions that have results, it compares five: the four newest, plus the version with the highest total average score, or the fifth-newest when the best is already among them. A removable **Latest versions + best** pill marks it; remove the pill to compare every version. The Production view keeps its own defaults.
+- **The Scores comparison radar card is gone from Analytics**, and the Coverage card takes its column.
+- **The Analytics Scores panel paginates**, 10 rows to a page with the page kept in the URL, instead of scrolling inside the panel. Changing the sort, grouping, filters or view returns you to the first page.
+- **The comparison tables keep their rows when you highlight a version**, instead of blanking to loading rows.
+- **The Analytics metrics filter tells same-named metrics apart.** A repeated name gains a suffix: `Galtea` for a Galtea metric, with its status when Galtea metrics share the name, or the status and creation date for one of your own. Labels that still match add the last six characters of the metric id.
+- **The Ask Val launcher lifts clear of a button at the end of a page** instead of covering it, by up to half the window height. A control it covers mid-page still needs a scroll.
+- **A deprecated SDK call names its removal date in the warning it raises**, so you can plan the upgrade. One with no date set yet says `Removal: not scheduled.` Deprecations the platform owns, such as legacy metrics, carry no date.
+
+</Update>
