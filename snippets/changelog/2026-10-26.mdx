@@ -1,0 +1,27 @@
+<Update label="2026-10-26" description="Creating From a User Group Tab Links the Entity, JSON Field Match Checks Fields by Rule, and Clearer Voice and File Inputs">
+
+## Creating From a User Group Tab Links the New Entity
+
+A user, metric or product you create from inside a [user group's](/concepts/user-group) own tab now joins that group automatically, instead of landing unlinked.
+
+- **Users tab:** the invite form opens with the group pre-selected, in the Advanced options.
+- **Metrics tab:** a blank metric starts as Human Evaluation with the group selected. The form clears the group when you switch to any other metric type, and puts the tab's group back when you return to Human Evaluation — a different group you picked before switching away is not kept. Starting from a template or revision keeps that source's own groups and adds this one.
+- **Products tab:** the name field notes which group the new product will join.
+
+This only happens when you have the right to link that group (`userGroup.update`), and it is dropped the moment you navigate to a plain creation page instead of the group tab. The [SDK's `metrics.create`](/sdk/api/metric/create) also takes an optional list of group ids to link on creation; there is still no `products.create` in the SDK. Creating a metric from the AI generation tab of the metric creation page does not link a group yet.
+
+## JSON Field Match Checks a Field by Rule
+
+A [JSON Field Match](/concepts/metric/json-field-match) test case can now give a field a rule instead of an exact expected value, by writing an object with a `$` key: `$norm` (same text once accents, case, spaces and every other character that is not a letter or digit are dropped), `$regex` (an RE2 pattern, case-insensitive by default), `$num` (a decimal comparison within a `tol` tolerance) or `$date` (reads common date formats, with an `order` of `DMY`, `MDY` or `any`). The same four rules work the same way across the [strict](/concepts/metric/json-field-match-strict), [normalized](/concepts/metric/json-field-match-normalized) and [normalized-strict](/concepts/metric/json-field-match-normalized-strict) variants.
+
+A rule field shows as a neutral "Rule" row in the evaluation details, rather than a red mismatch, and it isn't counted as a difference. A test case with a broken rule (an invalid pattern, an unknown option, or a pattern too large to run) skips the evaluation instead of failing it, with no retry.
+
+This release also changes what happens when the expected or actual output itself can't be read, for every JSON Field Match evaluation, rule or not: an expected output that isn't valid JSON, or output nested too deeply, now skips the evaluation instead of failing it as a platform error. If you track pass rates against past FAILED counts for this metric, expect some of those to move to skipped going forward.
+
+## See and Open Voice and File Inputs the Same Way
+
+The sessions table's First Input column, and the evaluations table's session-wide Input column, now show the caller's first turn instead of the agent's opening greeting, scanning up to the first three turns of the [session](/concepts/product/version/session). In the evaluations table, an input with nothing to show — including a single-turn evaluation whose input is an empty envelope — now leaves the cell blank, matching the Output column, instead of showing a dash. The same empty input exports as an empty CSV cell.
+
+Audio inputs get the same voice icon [files](/concepts/product/version/session/trace) already had, shown even next to a transcript, and alone when there is none. A cell holding only audio or only a file, in the sessions, evaluations or test case tables, now carries the same hover button a long text cell has, so one click opens the player or the file instead of the cell being a dead end. Long file names are truncated with an ellipsis instead of spilling into the next column.
+
+</Update>
