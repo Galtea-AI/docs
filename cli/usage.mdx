@@ -51,6 +51,8 @@ galtea login --host https://galtea-gateway.example.com
 
 The CLI sends these headers on the `galtea login` key check and on every later command. It never writes them to `apis.json`. A profile that names its own auth handler in `apis.json` does not get them.
 
+The `--host` URL can include the path the gateway publishes Galtea under, such as `https://galtea-gateway.example.com/my-org/galtea`.
+
 You can also save a header on the `default` profile in `apis.json`:
 
 - The CLI sends a profile header only while that profile is active. With `GALTEA_API_KEY` set, the CLI uses another profile, so use `GALTEA_EXTRA_HEADERS`. Without it, `galtea login` fails at the key check.
