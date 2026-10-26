@@ -384,10 +384,10 @@ opentelemetry-bootstrap -a install
 
 Point your OTel exporter or Collector at Galtea's public OTel endpoint. [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) covers the endpoint, the `Authorization: Bearer <API key>` requirement, the exporter and Collector configuration, and a curl check to verify your key.
 
-Once configured, spans from your service will be automatically linked to the corresponding Galtea traces via the shared trace ID. When a proxy or gateway starts a new trace, the trace ID no longer matches. Then copy `galtea.trace.id` from the [`baggage` header](/concepts/product/endpoint-connection-configuration#baggage) onto your spans.
+Once configured, spans from your service will be automatically linked to the corresponding Galtea traces via the shared trace ID.
 
 <Warning>
-  The trace ID match works only for **Direct Inference** (where Galtea initiates the call to your endpoint). For a Trace your own code created with the SDK, use the SDK's [span context](/sdk/api/span/set-context) mechanism, or set `galtea.trace.id` on your OTel spans. [Spans of a Trace that already exists](/sdk/tutorials/send-opentelemetry-traces-to-galtea#spans-of-a-trace-that-already-exists) lists both ways.
+  This approach only works for **Direct Inference** (where Galtea initiates the call to your endpoint). For SDK-based connections where your code calls the Galtea API, use the SDK's [span context](/sdk/api/span/set-context) mechanism instead.
 </Warning>
 
 <Info>
