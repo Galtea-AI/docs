@@ -36,8 +36,8 @@ Outside a `with` block the handle stays open until you call `close()` on it, or
 </Warning>
 
 <Note>
-  A real session cannot belong to a run, and `sessions.create()` treats a session with no
-  `test_case_id` as real. So a plain `galtea.sessions.create(version_id=...)` inside the
+  A production session cannot belong to a run, and `sessions.create()` treats a session with no
+  `test_case_id` as production. So a plain `galtea.sessions.create(version_id=...)` inside the
   block joins no run; pass `is_production=False` or a `test_case_id` to join it.
 </Note>
 

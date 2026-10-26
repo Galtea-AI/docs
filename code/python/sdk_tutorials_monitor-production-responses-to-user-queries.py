@@ -261,7 +261,7 @@ galtea.sessions.finish(session.id)
 # @end finish_session
 
 
-print(f"Logged and evaluated real session {session.id}")
+print(f"Logged and evaluated production session {session.id}")
 
 
 # === Cleanup ===

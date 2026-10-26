@@ -1,7 +1,7 @@
 ---
 title: 'Create Single-Turn Evaluation'
 sidebarTitle: "Create Single-Turn"
-description: "Create an evaluation for a single-turn interaction, either from a test case or real-session data."
+description: "Create an evaluation for a single-turn interaction, either from a test case or production data."
 ---
 
 <Warning>
@@ -18,9 +18,9 @@ Returns a list of [Evaluation](/concepts/product/version/session/evaluation) obj
 ## Usage
 This method is versatile and can be used for two main scenarios:
 1.  **Test-Based Evaluation**: When you provide a `test_case_id`, Galtea evaluates your product's performance against a predefined challenge.
-2.  **Real Sessions**: When you set `is_production=True` and provide an `input`, Galtea logs and evaluates a real session of your product, from any environment.
+2.  **Production Monitoring**: When you set `is_production=True` and provide an `input`, Galtea logs and evaluates your product's performance in a live environment.
 
-### Simulated Sessions
+### Development Testing
 
 **For non self-hosted metrics**
 ```python
@@ -42,8 +42,8 @@ evaluations = galtea.evaluations.create_single_turn(
 )
 ```
 
-### Real Sessions
-To evaluate real sessions (your agent in real use, in any environment), you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag to `True`.
+### Production Monitoring
+In order to monitor your product in a production environment, you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag to `True`.
 ```python
 evaluations = galtea.evaluations.create_single_turn(
     version_id=version_id,
@@ -125,13 +125,13 @@ evaluations = galtea.evaluations.create_single_turn(
   The actual output produced by the product.
 </ResponseField>
 <ResponseField name="test_case_id" type="string" optional>
-  The ID of the test case to be evaluated. Required for evaluations of simulated sessions.
+  The ID of the test case to be evaluated. Required for non-production evaluations.
 </ResponseField>
 <ResponseField name="input" type="string" optional>
-  The input text/prompt. Required for evaluations of real sessions, where no `test_case_id` is provided.
+  The input text/prompt. Required for production evaluations where no `test_case_id` is provided.
 </ResponseField>
 <ResponseField name="is_production" type="boolean" optional>
-  Set to `True` when the evaluation is of a [real session](/concepts/product/version/session#simulated-and-real-sessions) (your agent in real use, in any environment). Defaults to `False`.
+  Set to `True` to indicate the evaluation is from a production environment. Defaults to `False`.
 </ResponseField>
 <ResponseField name="retrieval_context" type="string" optional>
   The context retrieved by your RAG system that was used to generate the `actual_output`.

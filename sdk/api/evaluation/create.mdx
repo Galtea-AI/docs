@@ -18,7 +18,7 @@ This method evaluates traces using the specified metrics. It supports both Galte
   You must provide **either** `session_id` **or** `trace_id`, but not both. For single-turn evaluations, you can also use `galtea.traces.create_and_evaluate()` which combines creating a trace and evaluating it in one call.
 </Note>
 
-### Simulated Sessions
+### Development Testing
 
 Evaluate by passing [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or by listing metric names explicitly.
 
@@ -73,12 +73,12 @@ evaluations = galtea.evaluations.create(
   </Tab>
 </Tabs>
 
-### Real Sessions
-To evaluate real sessions (your agent in real use, in any environment), you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag of the [Session](/concepts/product/version/session) to `True`. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+### Production Monitoring
+In order to monitor your product in a production environment, you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag of the [Session](/concepts/product/version/session) to `True`. Pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
 <Tabs>
   <Tab title="Using specification IDs">
 ```python
-# Create a real session and a trace, then evaluate it by
+# Create a production session and a trace, then evaluate it by
 # resolving metrics from linked specifications (no need to list metrics)
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
@@ -98,7 +98,7 @@ evaluations = galtea.evaluations.create(
 ```python
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-# Create a trace for the real session first
+# Create a trace for the production session first
 production_trace = galtea.traces.create(
     session_id=production_session.id,
     input="Production user query",
@@ -116,7 +116,7 @@ evaluations = galtea.evaluations.create(
 ### Advanced Usage
 You can also create evaluations using self-hosted metrics with dynamically calculated scores by utilizing the `CustomScoreEvaluationMetric` class, which allows for more complex evaluation scenarios.
 ```python 
-# First, create a session, in this case it is a real session, so we do not need a test case
+# First, create a session, in this case it is a production session, so we do not need a test case
 session = galtea.sessions.create(version_id=version_id, is_production=True)
 
 # Then, add some traces to the session

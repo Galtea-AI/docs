@@ -183,8 +183,8 @@ human_transfer_metric = galtea.metrics.create(
 </ResponseField>
 <ResponseField name="applicability_scope" type="string | MetricApplicabilityScope" optional>
   Which sessions get the [applicability check](/concepts/metric#applicability-check) before the metric is judged. A session where the metric does not apply is skipped, with no judge call and no credits spent. Possible values, in any case:
-  - `"production"`: only real sessions. This is the default for a metric the check covers: `partial_prompt`, `classifier`, deterministic, and the DeepEval-based metrics of Galtea.
-  - `"development"`: only simulated sessions, which are the sessions that are not real.
+  - `"production"`: only production sessions. This is the default for a metric the check covers: `partial_prompt`, `classifier`, deterministic, and the DeepEval-based metrics of Galtea.
+  - `"development"`: only development sessions, which are the sessions that are not production.
   - `"all"`: every session.
   - `"none"`: no check. This is the default for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric.
 

@@ -638,7 +638,7 @@ if evaluations is None or len(evaluations) == 0:
 # @start evaluation_create_production
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 
-# Create a trace for the real session first
+# Create a trace for the production session first
 production_trace = galtea.traces.create(
     session_id=production_session.id,
     input="Production user query",
@@ -654,7 +654,7 @@ if evaluations is None or len(evaluations) == 0:
     raise ValueError("evaluations from create is None or empty")
 
 # @start evaluation_create_production_with_specification_ids
-# Create a real session and a trace, then evaluate it by
+# Create a production session and a trace, then evaluate it by
 # resolving metrics from linked specifications (no need to list metrics)
 production_session = galtea.sessions.create(version_id=version_id, is_production=True)
 

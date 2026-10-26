@@ -8,7 +8,7 @@ import OtelRoutingAttributes from '/snippets/otel-routing-attributes.mdx';
 
 Galtea exposes a public [OpenTelemetry](https://opentelemetry.io/) (OTel) endpoint. OTel is the open standard for emitting traces. The endpoint is an OTLP collector, where OTLP is the OTel export protocol. Send your traces there to enable two use cases:
 
-- **Create real sessions from real traffic.** Uncorrelated spans become real [Sessions](/concepts/product/version/session) that [Monitors](/concepts/product/monitor) evaluate automatically. Spans that name a test case become a simulated session instead, which no Monitor scores. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+- **Create production sessions from real traffic.** Uncorrelated spans become production [Sessions](/concepts/product/version/session) that [Monitors](/concepts/product/monitor) evaluate automatically. Spans that name a test case become a non-production session instead, which no Monitor scores. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
 - **Enrich existing Galtea Traces.** Spans correlated to a [Trace](/concepts/product/version/session/trace) become [Span](/concepts/product/version/session/span) records on it. [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists) explains how a span names its Trace.
 
 The endpoint, authentication, and exporter configuration on this page are the same for both.
@@ -246,7 +246,7 @@ curl -sS -w 'HTTP %{http_code}\n' -X POST \
 
 ## How span content maps to Span records
 
-When a span becomes a [Span](/concepts/product/version/session/span) record — whether it **enriches an existing trace** or is **assembled into a real session's conversation** — its input and output are filled **per field**, using the first source that provides a value:
+When a span becomes a [Span](/concepts/product/version/session/span) record — whether it **enriches an existing trace** or is **assembled into a production conversation** — its input and output are filled **per field**, using the first source that provides a value:
 
 1. **`galtea.span.*` explicit attributes** — full control, always wins.
 2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
@@ -354,7 +354,7 @@ The keys above, except `galtea.trace.id`, fill a Span record. The keys below dec
 
 <CardGroup cols={2}>
   <Card title="Monitor Real User Traffic via OpenTelemetry" icon="satellite-dish" href="/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry">
-    Turn your live traffic's traces into real sessions that Monitors evaluate.
+    Turn your live traffic's traces into production sessions that Monitors evaluate.
   </Card>
   <Card title="W3C Trace Context Propagation" icon="tower-broadcast" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation">
     Attach OTel spans to the test runs Galtea triggers via Direct Inference.

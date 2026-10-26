@@ -6,7 +6,7 @@ icon: "users"
 
 You can use Galtea to log and evaluate real user interactions from your production environment. This helps you monitor your product's performance over time.
 
-<Tip>This tutorial evaluates real sessions on demand, one call at a time. To score real sessions automatically and continuously, create a [Monitor](/concepts/product/monitor) instead: an always-on rule that samples and scores a product's real sessions with metric families, Specifications, or both, with no run to trigger by hand.</Tip>
+<Tip>This tutorial evaluates production sessions on demand, one call at a time. To score production sessions automatically and continuously, create a [Monitor](/concepts/product/monitor) instead: an always-on rule that samples and scores a product's production sessions with metric families, Specifications, or both, with no run to trigger by hand.</Tip>
 
 ### Recommended: Use Your Own Conversation IDs
 
@@ -84,11 +84,11 @@ for question in [
 
 <Note>Sessions are created only through the sessions API. If no session matches your `session_custom_id` and anchor, the call returns a `400` error. Create the session first with `galtea.sessions.create(custom_id=...)`.</Note>
 
-<Tip>If your system already emits OpenTelemetry traces, you can create real sessions without any SDK calls. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Tip>
+<Tip>If your system already emits OpenTelemetry traces, you can create production sessions without any SDK calls. See [Monitor Real User Traffic via OpenTelemetry](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Tip>
 
 ### Single-Turn Production Monitoring
 
-For simple, single-turn interactions, create a real session and use `galtea.traces.create_and_evaluate()` to log and evaluate the interaction in a single call.
+For simple, single-turn interactions, create a production session and use `galtea.traces.create_and_evaluate()` to log and evaluate the interaction in a single call.
 
 You can pass [Specification](/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
 
@@ -247,7 +247,7 @@ When the user's conversation ends, finish the session with [`finish()`](/sdk/api
 galtea.sessions.finish(session.id)
 ```
 
-Finishing matters most when you use a [Monitor](/concepts/product/monitor) to score real sessions automatically: a monitor scores only closed sessions. An explicit finish makes the session eligible on the next scan, instead of waiting for the product's inactivity auto-close window (30 minutes by default). Call `finish()` only once the conversation is truly over. A turn that arrives later follows the product's closed-session policy: by default the session opens again and the monitor scores it again, but the policy can also drop or reject the turn.
+Finishing matters most when you use a [Monitor](/concepts/product/monitor) to score production sessions automatically: a monitor scores only closed sessions. An explicit finish makes the session eligible on the next scan, instead of waiting for the product's inactivity auto-close window (30 minutes by default). Call `finish()` only once the conversation is truly over. A turn that arrives later follows the product's closed-session policy: by default the session opens again and the monitor scores it again, but the policy can also drop or reject the turn.
 </Step>
 </Steps>
 
@@ -257,13 +257,13 @@ For more details on evaluating multi-turn conversations, see the [Evaluating Con
 
 ## Late Turns on a Closed Session
 
-A real session does not stay open forever. Galtea's auto-close sweep closes a session once it has been quiet for the product's **auto-close inactivity window** (default 30 minutes), and an explicit finish closes it at once. A [session](/concepts/product/version/session#session-lifecycle) is then closed (`COMPLETED` or `FAILED`).
+A production session does not stay open forever. Galtea's auto-close sweep closes a session once it has been quiet for the product's **auto-close inactivity window** (default 30 minutes), and an explicit finish closes it at once. A [session](/concepts/product/version/session#session-lifecycle) is then closed (`COMPLETED` or `FAILED`).
 
 <Note>The product's auto-close window is the only inactivity window: it closes the session (its `Status` changes). A [Monitor](/concepts/product/monitor) has no window of its own; it scores a session once the session is closed, whether by an explicit finish or by the auto-close sweep.</Note>
 
 So a turn that arrives after the session closes (for example, a user who replies an hour later) is handled by the product's **Closed Session Inference Creation Policy**:
 
-- `REOPEN_AND_REEVALUATE` (the default): the turn is **stored** and the session opens again with status `PENDING`. Its existing monitor evaluations move to the `OUTDATED` status, and the monitor scores the session again once it closes. Nothing is lost. A simulated session reopens the same way; it has no monitor evaluations, so only the turn is stored and the status changes.
+- `REOPEN_AND_REEVALUATE` (the default): the turn is **stored** and the session opens again with status `PENDING`. Its existing monitor evaluations move to the `OUTDATED` status, and the monitor scores the session again once it closes. Nothing is lost. A development (test) session reopens the same way; it has no monitor evaluations, so only the turn is stored and the status changes.
 - `IGNORE`: the log call returns success, but the turn is **not stored**. The late reply is silently dropped.
 - `REJECT`: the log call **fails with an error**. Your code must handle it (for example, start a new session for the reply).
 
@@ -272,13 +272,13 @@ So a turn that arrives after the session closes (for example, a user who replies
 The default keeps late replies. If you set the policy to `IGNORE` or `REJECT`, a late reply is lost or raises an error. Two settings help in that case. Both are set per product from the API or the dashboard (the SDK reads these fields but does not set them):
 
 - **Raise the inactivity window.** Increase **Auto Close Inactivity Minutes** so sessions stay open longer before the sweep closes them.
-- **Turn off auto-close for these sessions.** Set **Auto Close Scope** to `NONE` (or `DEVELOPMENT`, a scope that excludes real sessions) so the sweep never closes them; they then close only on an explicit finish.
+- **Turn off auto-close for these sessions.** Set **Auto Close Scope** to `NONE` (or a scope that excludes production) so the sweep never closes them; they then close only on an explicit finish.
 
 See the [Product properties](/concepts/product#product-properties) for the three auto-close fields and their defaults, and the [Session Lifecycle](/concepts/product/version/session#session-lifecycle) for the full open/closed model.
 
 ## Reading Monitor Results
 
-If you have set up a [Monitor](https://platform.galtea.ai/) on the Galtea dashboard to continuously evaluate a sample of your real sessions, you can pull its results with a single call:
+If you have set up a [Monitor](https://platform.galtea.ai/) on the Galtea dashboard to continuously evaluate a sample of your production sessions, you can pull its results with a single call:
 
 ```bash
 curl -sS -H "Authorization: Bearer ${GALTEA_API_KEY}" \
@@ -297,7 +297,7 @@ The response is built to give you an honest read of your product's quality, not 
 - **The worst metric family drives the headline, never an average.** `worstMetric` is the lowest-scoring family over the whole range, not a blended score across families. Use it to see which quality dimension needs attention first.
 - **Markers flag context changes.** `markers.metricRevisions` marks when a metric family the monitor scores was edited, and `markers.samplingChanges` marks when the sampling rate changed. Both can explain a shift in the score series that isn't a real quality change. An evaluation the judge never timestamped is dated by the time it ran, so a review never moves a marker.
 - **Spend shows your current billing cycle.** `spend.spentCredits` and `spend.pendingCredits` are the credits already used and reserved for evaluations still running this cycle; `spend.capCredits` is the monthly cap you configured for the monitor (`null` if you did not set one). A user without the `evaluation.readInference` permission, such as a Reader, gets `spentCredits` and `pendingCredits` as `null`. If spend reaches the cap, the monitor's status becomes `CAPPED` and it pauses scoring. Sessions that close while the monitor is capped are skipped for good, like when it is paused: scoring resumes for sessions that close after the next cycle resets the cap, or after you raise it. The monitor never lowers its own sampling rate to fit the budget.
-- **Sessions are listed, not just counted.** `sessions.scored` lists the most recently evaluated sessions (capped at 200), each with the turn count it was scored at. `sessions.waiting` lists real sessions that have not closed yet (capped at 100); a session is scored only once it closes. A session closes when it is explicitly finished, or when the product's auto-close setting closes it after inactivity.
+- **Sessions are listed, not just counted.** `sessions.scored` lists the most recently evaluated sessions (capped at 200), each with the turn count it was scored at. `sessions.waiting` lists production sessions that have not closed yet (capped at 100); a session is scored only once it closes. A session closes when it is explicitly finished, or when the product's auto-close setting closes it after inactivity.
 
 ## Next Steps
 

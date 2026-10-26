@@ -93,11 +93,11 @@ The SDK allows you to list existing products, retrieve specific products by thei
 <ResponseField name="Auto Close Scope" type="Enum" optional>
   Which sessions Galtea closes automatically after they stay inactive too long. Set it through the API; the SDK only reads it.
   Possible values:
-  - `NONE` (shown as **None**): never close sessions automatically.
-  - `DEVELOPMENT` (shown as **Simulated sessions**): only close simulated sessions.
-  - `PRODUCTION` (shown as **Real sessions**): only close real sessions.
-  - `ALL` (shown as **All sessions**): close both simulated and real sessions.
-  <Info>The API default is `ALL`. See [Simulated and Real sessions](/concepts/product/version/session#simulated-and-real-sessions).</Info>
+  - `None`: never close sessions automatically.
+  - `Development`: only close development (test) sessions.
+  - `Production`: only close production sessions.
+  - `All`: close both development and production sessions.
+  <Info>The API default is `All`.</Info>
 </ResponseField>
 
 <ResponseField name="Auto Close Inactivity Minutes" type="Number" optional>
@@ -128,7 +128,7 @@ The SDK allows you to list existing products, retrieve specific products by thei
 <ResponseField name="Closed Session Inference Creation Policy" type="Enum" optional>
   What happens when you try to add an inference to a session that is already closed.
   Possible values:
-  - `Reopen And Reevaluate` (the default): keep the inference and open the session again. The session's monitor evaluations move to the `Outdated` status, so a [Monitor](/concepts/product/monitor) scores the session again once it closes for good. A simulated session reopens the same way and only stores the turn, because it has no monitor evaluations.
+  - `Reopen And Reevaluate` (the default): keep the inference and open the session again. The session's monitor evaluations move to the `Outdated` status, so a [Monitor](/concepts/product/monitor) scores the session again once it closes for good. A development (test) session reopens the same way and only stores the turn, because it has no monitor evaluations.
   - `Reject`: refuse the inference and return an error.
   - `Ignore`: silently drop the inference.
   <Info>The API default is `Reopen And Reevaluate`.</Info>

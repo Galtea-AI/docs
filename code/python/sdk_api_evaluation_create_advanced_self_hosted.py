@@ -25,7 +25,7 @@ if version is None:
 version_id = version.id
 
 # @start tutorial
-# First, create a session, in this case it is a real session, so we do not need a test case
+# First, create a session, in this case it is a production session, so we do not need a test case
 session = galtea.sessions.create(version_id=version_id, is_production=True)
 
 # Then, add some traces to the session

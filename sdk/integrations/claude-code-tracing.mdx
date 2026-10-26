@@ -1,7 +1,7 @@
 ---
 title: 'Claude Code Tracing'
 sidebarTitle: 'Claude Code Tracing'
-description: "Send each Claude Code conversation to Galtea as a real session, so your monitors can evaluate your coding sessions."
+description: "Send each Claude Code conversation to Galtea as a production session, so your monitors can evaluate your coding sessions."
 icon: "terminal"
 ---
 
@@ -93,7 +93,7 @@ The full list of rules is in the [plugin README](https://github.com/Galtea-AI/sk
 
 `/exit` closes the Galtea session, and your monitors can then evaluate it. Auto-close also closes it after the product's inactivity time, 30 minutes by default, counted from the last turn. This happens even while Claude Code stays open. The next turn, after a pause or a `claude --resume`, reopens the session, and your monitors can evaluate it again. Galtea re-evaluates one session at most 5 times.
 
-Both rules need the default [product settings](/concepts/product#product-properties): an Auto Close Scope that includes real sessions, and the Closed Session Inference Creation Policy `REOPEN_AND_REEVALUATE`. The setup check warns you when a setting differs. See [Session lifecycle](/concepts/product/version/session#session-lifecycle).
+Both rules need the default [product settings](/concepts/product#product-properties): an Auto Close Scope that includes production sessions, and the Closed Session Inference Creation Policy `REOPEN_AND_REEVALUATE`. The setup check warns you when a setting differs. See [Session lifecycle](/concepts/product/version/session#session-lifecycle).
 
 ## Stop logging
 
@@ -120,7 +120,7 @@ The log never holds transcript content. To report a problem, [open an issue](htt
     Let Claude Code drive Galtea for you.
   </Card>
   <Card title="Monitors" icon="chart-line" href="/concepts/product/monitor">
-    Evaluate real sessions as they close.
+    Evaluate production sessions as they close.
   </Card>
   <Card title="Traces" icon="diagram-project" href="/concepts/product/version/session/trace">
     How turns and spans are stored.
