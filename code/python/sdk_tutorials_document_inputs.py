@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from typing import Optional
 
 from galtea import AgentInput, AgentResponse, Galtea
 
@@ -31,7 +30,7 @@ dataset = galtea.datasets.create(
 
 
 # @start pipeline
-def answer_from_documents(question: Optional[str], document_paths: list[str]) -> str:
+def answer_from_documents(question: str | None, document_paths: list[str]) -> str:
     """Read the documents and answer. Galtea never reads them for you. This step is yours when you
     drive the run; Galtea can also send the files to your endpoint instead."""
     # Replace this with the call to your own model, parser or agent.

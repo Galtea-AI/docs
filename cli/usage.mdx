@@ -40,6 +40,30 @@ The CLI supports both an interactive flow for local use and a non-interactive fl
   </Tab>
 </Tabs>
 
+#### Behind an API gateway
+
+If your company puts an API gateway in front of Galtea, the gateway may ask for its own headers. Set them in `GALTEA_EXTRA_HEADERS` as a JSON object of header names to string values. The Python SDK uses the same variable and format.
+
+```bash
+export GALTEA_EXTRA_HEADERS='{"X-IBM-Client-Id":"<your-client-id>"}'
+galtea login --host https://galtea-gateway.example.com
+```
+
+The CLI sends these headers on the `galtea login` key check and on every later command. It never writes them to `apis.json`. A profile that names its own auth handler in `apis.json` does not get them.
+
+You can also save a header on the `default` profile in `apis.json`:
+
+- The CLI sends a profile header only while that profile is active. With `GALTEA_API_KEY` set, the CLI uses another profile, so use `GALTEA_EXTRA_HEADERS`. Without it, `galtea login` fails at the key check.
+- When you paste the key, `galtea login` sends the saved headers if they belong to the login host: the `base` in `apis.json` is that host, or you have not logged in yet.
+- A login to another host does not send the saved headers. It removes them from `apis.json` and prints their names. To rotate the key, pass the same `--host` again.
+
+Rules for both:
+
+- When both set the same header, `GALTEA_EXTRA_HEADERS` wins.
+- They cannot replace `Authorization`, `User-Agent`, `Content-Type`, `Content-Length` or `Host`. The CLI drops those with a warning.
+- A value must be ASCII text with no leading or trailing space or tab.
+- A redirect that changes the host, the scheme or the port drops these headers, as the Python SDK does. A subdomain is another host. A redirect from http to https on the default ports keeps them.
+
 ### Your first command
 
 Once you're authenticated, list your products to validate end-to-end auth and connectivity:

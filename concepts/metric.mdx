@@ -81,6 +81,54 @@ Every metric has a pass threshold: the score, from 0 to 1, at or above which an 
 
 You set the threshold when you create the metric. It cannot change afterwards, so to use another one, create a revision of the metric. In the dashboard, the threshold is a percent in **Advanced Options** of the create form, prefilled with 50, and it accepts decimals. A revision starts with the threshold of the revision it comes from. Score pills are green at or above the threshold and red below it.
 
+## Applicability check
+
+Some metrics apply to few sessions. A jailbreak metric, for example, applies only to the sessions where a user tries a jailbreak. If the judge scores every session, it scores many sessions the metric was not made for. Those sessions lower the pass rate or pass for free, and each judge call costs credits.
+
+The applicability check stops this. Before the judge runs, a decision model answers one Yes/No question: does the conversation contain what this metric evaluates? When the probability that it does is below the metric's applicability threshold, the evaluation is skipped.
+
+A [monitor](/concepts/product/monitor) runs the check for each production session, after the data check and before the judge. See [How a session is evaluated](/concepts/product/monitor#how-a-session-is-evaluated) for the phases and the skip rules.
+
+### Settings
+
+Two settings control the check. Both are fixed when you create the metric. To change one, create a revision of the metric. A revision starts with the values of the revision it comes from, when the check runs for both revisions.
+
+- **Run the check on** (`applicability_scope`) sets which sessions get the check. The options are `PRODUCTION` (production sessions), `DEVELOPMENT` (development sessions), `ALL` and `NONE` (no check). The default is `PRODUCTION`. Development is off by default, because a skip inside a regression suite can hide a test that should run.
+- **Minimum certainty** (`applicability_threshold`) is the lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A higher value skips more sessions. The default is 0.5. A session at the threshold is judged. A session below it is skipped.
+
+In the dashboard, both settings are in **Advanced Options** of the create form. Setting **Run the check on** to **Off** hides **Minimum certainty**. The form hides both settings for a metric that has no check. The dashboard shows **Minimum certainty** as a percent from 0 to 100, prefilled with 50. The SDK and the API take a probability from 0 to 1.
+
+The check covers four kinds of metric: AI Evaluation, Classifier, deterministic, and the DeepEval-based metrics of Galtea. A Self-Hosted, Human Evaluation or G-Eval (deprecated) metric has no check: the scope is `NONE`, and the API refuses any other value. A metric that scores `traces` has no check either, because the decision model never reads traces. Its scope is also `NONE`, and the API refuses any other scope and any threshold. For a classifier metric, the fields it scores are the placeholders of its question. Metrics that existed before the check got `PRODUCTION` when the check covers their kind and they do not score `traces`. The others kept `NONE`.
+
+<Note>
+  The check runs only where your deployment enables it. Where it is off, every session is judged and the two settings have no effect. On an on-premise deployment, set the environment variable `METRIC_APPLICABILITY_CHECK` of the API to `off` (the default), `shadow` or `enforce`, and set `VITE_METRIC_APPLICABILITY_CHECK_ENABLED` of the dashboard to `true` to show the two settings. The check needs the LLM gateway (LiteLLM) to route to the decision model. Without that route, every session is judged as if there were no check. In `shadow` mode, the check runs and writes what it would skip to the evaluator logs, but every session is still judged. Use it to measure the skip rate of a metric before you enforce.
+</Note>
+
+### What the check reads
+
+The decision model reads the `input` and the `actual_output` of each turn, the other fields the metric scores (for example `retrieval_context`, `tools_used` or `expected_output`), and the name and description of the metric. It also reads the metric's criteria: the judge prompt, or the question of a [classifier](/concepts/metric/classifier) metric. For an AI Evaluation metric whose judge prompt names a field, such as tool calls, that field counts as scored. It never reads traces: one turn's traces can be longer than everything the decision model reads at once. It has no size limit of its own. When a session is too long for the decision model, the metric is judged. Galtea sends this data to the same provider as for classifier metrics. See [Data processing](/concepts/metric/classifier#data-processing).
+
+The check never blocks an evaluation by failing. The metric is judged as if there were no check when:
+
+- the decision model is not available, or it does not answer in time,
+- the conversation is too long for the decision model,
+- the probability is below the threshold, but the conversation is longer than about 2,000 tokens. The answer is less reliable on a long conversation, so Galtea does not skip on it.
+
+The check costs no credits.
+
+### A skipped evaluation
+
+A skipped evaluation has no score and no judge call, and it costs no credits. Its error message gives the reason, for example: "The metric does not apply to this session: the probability that it applies is 12%, below its applicability threshold of 50%."
+
+A retry would ask the same question about the same session, so `canRetry` is `false`. When the skip is a session's latest evaluation in its metric family, the session stays out of that family's count in the monitor's alert rules, unless a reviewer scored the evaluation. See [Alert rules](/concepts/product/monitor#rule-types). Analytics still count the skip in its skipped total.
+
+For a metric that applies to few sessions, raise the monitor's sampling percentage, so that enough sessions reach the check.
+
+To correct a skip, use one of these:
+
+- A reviewer scores the evaluation. The [human score](/concepts/product/version/session/evaluation#param-human-score) turns the skipped row into a scored one.
+- Create a revision of the metric with **Off** as the scope, and evaluate the session again with it.
+
 ## Optimization review
 
 **Optimize** writes an improved judge prompt into a new revision named `<name> (Optimized)`. While it runs, that revision's page shows its progress, and you can leave the page. Unlike other revisions, it does not mark the original `Legacy`. When the optimizer returns a different prompt, the revision shows **Ready for review**, and its page shows the changes and both prompts.
@@ -168,6 +216,14 @@ If the judge model becomes unavailable to Galtea on or after the retirement date
 
 <ResponseField name="Pass Threshold" type="Number" optional>
   The score, from 0 to 1, at or above which an evaluation of this metric passes. Defaults to 0.5. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.pass_threshold`. **Example**: 0.7
+</ResponseField>
+
+<ResponseField name="Applicability Scope" type="Enum" optional>
+  Which sessions get the [applicability check](#applicability-check): `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE`. Defaults to `PRODUCTION` for a metric the check covers, and to `NONE` for a Self-Hosted, Human Evaluation or G-Eval (deprecated) metric. A metric that scores `traces` never gets the check: it defaults to `NONE` and refuses any other value. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.applicability_scope`. **Example**: "PRODUCTION"
+</ResponseField>
+
+<ResponseField name="Applicability Threshold" type="Number" optional>
+  The lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. Defaults to 0.5, and reads `None` in the SDK until you set it. A metric with no check refuses it: a Self-Hosted, Human Evaluation or G-Eval (deprecated) metric, or one that scores `traces`. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.applicability_threshold`. **Example**: 0.3
 </ResponseField>
 
 <ResponseField name="Tags" type="Text List" optional>

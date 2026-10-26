@@ -5,7 +5,7 @@ description: "Create an evaluation for a single-turn interaction, either from a 
 ---
 
 <Warning>
-  **Deprecated**: This method is deprecated and will be removed in a future version.
+  **Deprecated**: This method is deprecated.
   
   Use one of the following alternatives instead:
   - `galtea.traces.create_and_evaluate()` - Creates a trace and evaluates it in a single call
@@ -107,7 +107,7 @@ evaluations = galtea.evaluations.create_single_turn(
 
   <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored.</Note>
 </ResponseField>
-<ResponseField name="metrics" type="List[Union[str, CustomScoreEvaluationMetric, Dict]]" required>
+<ResponseField name="metrics" type="list[str | CustomScoreEvaluationMetric | dict]" required>
   A list of metrics to use for the evaluation. 
   
   The `MetricInput` dictionary supports the following keys:

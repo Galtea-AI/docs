@@ -20,6 +20,9 @@ monitor = galtea.monitors.create(
     # version_id="your-version-id",
     sampling_percentage=10,  # score 10% of production sessions (default)
     monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
+    message_conditions=[
+        MonitorMessageCondition(count="messages", operator="gt", value=1)
+    ],  # the default: skip a session where only the agent spoke once
 )
 ```
 
@@ -63,4 +66,9 @@ specification_monitor = galtea.monitors.create(
   The monitor scores the metric families the Specifications link, and follows a change to those links from its next scan.
   Only Policy and Capability Specifications can be bound: an Inability, or a Specification of another product, is refused,
   and `create` returns `None`. The monitor scores the union of the bound Specifications and the picked families.
+</ResponseField>
+<ResponseField name="message_conditions" type="list[MonitorMessageCondition]" optional>
+  Conditions on a session's number of messages, joined by AND. A session must meet every condition to be scored. At most `10` conditions.
+  Omit it, or pass `None`, to use the API default: `messages` above `1`, so a session where only the agent spoke once is skipped. Pass `[]` to score every session.
+  Each `MonitorMessageCondition` has a `count` (`messages` counts user and agent messages, `user_messages` counts only user messages), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused). A list that no session can meet is refused too, such as `messages` `gt` `5` with `messages` `lte` `3`, or more user messages than the messages allow. A message is a non-empty turn input or output: text, a file or audio. Sessions that fail a condition are skipped and spend no credits.
 </ResponseField>

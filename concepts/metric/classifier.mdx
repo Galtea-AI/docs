@@ -194,6 +194,8 @@ A new revision can also change the judge, to try the classifier in place of an L
 
 To score a classifier metric, Galtea sends the question and the fields it names to TypeSafe, which processes them in the United States. Files are never sent. See [TypeSafe legal](https://typesafe.ai/legal).
 
+Where the deployment enables the [applicability check](/concepts/metric#applicability-check), the same provider also receives data for every metric that gets the check, not only for classifier metrics. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
+
 ## Create a classifier metric with the SDK
 
 ```python

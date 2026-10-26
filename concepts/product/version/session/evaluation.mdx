@@ -80,10 +80,11 @@ Once an evaluation completes, the following fields are available:
   - **Skipped**: The evaluation could not produce a score. The error message names the cause. Common causes are:
     - Metric validation failed, for example a required parameter is missing.
     - The organization ran out of credits.
-    - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object.
+    - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object. `canRetry` is `true`, but a retry reads the same stored output.
     - The judge model was unavailable.
     - The evaluator model's content safety filter blocked the request. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model. For G-Eval based built-in metrics, a blocked request also ends as Skipped, and a filtered reply can end as Failed. Neither shows this advice. [Classifier](/concepts/metric/classifier) metrics do not detect a block yet.
     - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, or the input was too long for the classifier.
+    - The [applicability check](/concepts/metric#applicability-check) found that the metric does not apply to the session. The message gives the probability that it applies and the metric's threshold. No credits are charged, and `canRetry` is `false`, because a retry asks the same question about the same session.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
 
@@ -145,6 +146,8 @@ Once an evaluation completes, the following fields are available:
 <ResponseField name="Judge Reasoning Tokens" type="Number" optional>
   The part of `judgeOutputTokens` the judge model spent on reasoning, read-only and set by the API. It is a subset of the output tokens, so do not add it to the total. A judge model that does not reason reports 0, not null. Null means no reasoning count was recorded, which almost always means the whole measurement is missing and the other two fields are null too.
 </ResponseField>
+
+<Note>The API returns `creditsUsed` and the three judge token fields as `null` to a user without the `evaluation.readInference` permission, such as a Reader. See [Roles and permissions](/security/roles-and-permissions).</Note>
 
 <Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/concepts/metric/classifier) metric, these token fields count Jev's tokens.</Note>
 

@@ -1,0 +1,16 @@
+---
+title: "Enum values"
+description: "Why a response field can hold a value its reference page does not list"
+icon: "list"
+---
+
+A response field with a fixed set of values, such as the `status` of an evaluation or the `state` of a job, can gain a new value in any release. The reference pages list the values known when you read them.
+
+Write your client so that a value it does not know is data, not an error:
+
+- Do not reject the whole response when one field holds an unlisted value.
+- Give an unlisted value a default branch, for example "show it as it is" or "keep waiting".
+
+The Python SDK keeps an unlisted value as a plain string. Two cases still reject the whole response on an unlisted value, so upgrade the SDK: any version older than 4.38.0, and the `state` of a job in version 5.11.0 and older.
+
+A value in a request field is different: a value that the API does not accept answers `400`.

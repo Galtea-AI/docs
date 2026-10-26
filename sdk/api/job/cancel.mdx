@@ -53,7 +53,7 @@ A `JobCancelResponse` object:
   The job ID.
 </ResponseField>
 <ResponseField name="state" type="string">
-  Always `"cancelled"` on a successful response, whether this was the first or a repeated cancel request.
+  `"cancelled"` on a successful response, whether this was the first or a repeated cancel request. A state the API adds later arrives as a plain string.
 </ResponseField>
 
 ## Errors

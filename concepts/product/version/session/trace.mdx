@@ -90,15 +90,15 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </Note>
 
 <ResponseField name="Latency" type="float" optional>
-  The latency in milliseconds for the model's response.
+  The latency in milliseconds for the model's response. `null` for a user without the `evaluation.readInference` permission.
 </ResponseField>
 
 <ResponseField name="Usage Info" type="dict" optional>
-  Token usage information for the trace.
+  Token usage information for the trace. The token counts are `null` for a user without the `evaluation.readInference` permission.
 </ResponseField>
 
 <ResponseField name="Cost Info" type="dict" optional>
-  Cost information for the trace.
+  Cost information for the trace. The cost values and `creditsUsed` are `null` for a user without the `evaluation.readInference` permission. See [Roles and permissions](/security/roles-and-permissions).
 </ResponseField>
 
 <ResponseField name="Dropped Span Count" type="int" optional>

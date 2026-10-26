@@ -105,7 +105,7 @@ print(f"Created {len(result['evaluations'])} evaluations")
 
   When omitted, the server-side endpoint connection pipeline is used. When provided, requires `version_id` (not `product_id`).
 </ResponseField>
-<ResponseField name="specification_ids" type="List[str]" optional>
+<ResponseField name="specification_ids" type="list[str]" optional>
   A list of [Specification](/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and datasets are used.
 
   <Note>

@@ -23,6 +23,8 @@ metric = galtea.metrics.create(
     description="A custom accuracy metric.",
     judge_generation_settings={"temperature": 0.3, "max_output_tokens": 512},
     pass_threshold=0.7,
+    applicability_scope="production",
+    applicability_threshold=0.3,
 )
 ```
   </Tab>
@@ -83,7 +85,7 @@ human_transfer_metric = galtea.metrics.create(
 </ResponseField>
 <ResponseField name="test_type" type="string" optional>
   <Warning>
-    **Deprecated.** This parameter is ignored and will be removed in a future release.
+    **Deprecated.** This parameter is ignored.
   </Warning>
 </ResponseField>
 <ResponseField name="evaluator_model_name" type="string" optional>
@@ -178,6 +180,18 @@ human_transfer_metric = galtea.metrics.create(
 </ResponseField>
 <ResponseField name="pass_threshold" type="float" optional>
   The score, from 0 to 1, at or above which an evaluation of this metric passes. When omitted, the API uses `0.5`. It is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.pass_threshold`. See [Pass threshold](/concepts/metric#pass-threshold).
+</ResponseField>
+<ResponseField name="applicability_scope" type="string | MetricApplicabilityScope" optional>
+  Which sessions get the [applicability check](/concepts/metric#applicability-check) before the metric is judged. A session where the metric does not apply is skipped, with no judge call and no credits spent. Possible values, in any case:
+  - `"production"`: only production sessions. This is the default for a metric the check covers: `partial_prompt`, `classifier`, deterministic, and the DeepEval-based metrics of Galtea.
+  - `"development"`: only development sessions, which are the sessions that are not production.
+  - `"all"`: every session.
+  - `"none"`: no check. This is the default for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric.
+
+  The API refuses any other value than `"none"` for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and `create` returns `None`. A metric that scores `traces` never gets the check: it defaults to `"none"` and refuses any other value. For a classifier metric, the fields it scores are the placeholders of its question, so a `traces` placeholder turns the check off. The check runs only where your deployment enables it. The scope is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.applicability_scope`.
+</ResponseField>
+<ResponseField name="applicability_threshold" type="float" optional>
+  The lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A session below it is skipped. When omitted, the API uses `0.5`, and `metric.applicability_threshold` reads `None`. The API refuses it for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and for a metric that scores `traces`. It is fixed when you create the metric: to use another one, create a revision of the metric. See [Applicability check](/concepts/metric#applicability-check).
 </ResponseField>
 <ResponseField name="user_group_ids" type="list[string]" optional>
   A list of [user group](/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`. Each group must belong to your organization.

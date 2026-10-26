@@ -32,16 +32,15 @@ The strategy is set on the [Test Case](/concepts/product/dataset/test-case) (via
 
 ## Simulation Result Structure
 
-The `simulate()` method returns a `SimulationResult` object containing the complete conversation history and metadata:
+The `simulate()` method returns a `SimulationResult` object with the outcome of the simulation:
 
 | Field             | Type                  | Description                                                           |
 |-------------------|-----------------------|-----------------------------------------------------------------------|
 | `session_id`      | `str`                 | The identifier for the simulation session.                            |
 | `total_turns`     | `int`                 | Total number of conversation turns in the simulation.                 |
-| `messages`        | `List[ConversationMessage]` | The full message history. Each message has `role`, `content`, and optional `retrieval_context` and `metadata`. |
 | `finished`        | `bool`                | Whether the simulation ended naturally (`True`) or was stopped (`False`). |
-| `stopping_reason` | `Optional[str]`       | If stopped, the reason why the simulation ended.                      |
-| `metadata`        | `Optional[Dict]`      | Additional simulation metadata (when `include_metadata=True`).        |
+| `stopping_reason` | `str \| None`      | If stopped, the reason why the simulation ended.                      |
+| `metadata`        | `dict \| None`     | Additional simulation metadata.                                       |
 
 ### Example Output
 
@@ -49,12 +48,6 @@ The `simulate()` method returns a `SimulationResult` object containing the compl
 {
   "session_id": "abc123",
   "total_turns": 5,
-  "messages": [
-    {"role": "user", "content": "I need to book a flight."},
-    {"role": "assistant", "content": "Where are you flying to?"},
-    {"role": "user", "content": "New York, next Tuesday."},
-    {"role": "assistant", "content": "I found several options for SFO to JFK next Tuesday..."}
-  ],
   "finished": true,
   "stopping_reason": "goal_achieved",
   "metadata": null

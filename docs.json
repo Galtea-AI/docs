@@ -136,6 +136,7 @@
             "group": "Integrations",
             "pages": [
               "sdk/integrations/agent-skill",
+              "sdk/integrations/claude-code-tracing",
               {
                 "group": "Langfuse",
                 "icon": "eye",
@@ -778,7 +779,8 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/write-responses"
+              "api-reference/write-responses",
+              "api-reference/enum-values"
             ]
           },
           {

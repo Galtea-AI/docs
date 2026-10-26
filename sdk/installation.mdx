@@ -45,6 +45,48 @@ galtea = Galtea(api_key="YOUR_API_KEY")
 print("Galtea SDK installed successfully!")
 ```
 
+### Custom API URL and headers
+
+By default, the SDK calls `https://api.galtea.ai`. When your network reaches Galtea through an API gateway, set
+the gateway URL and the extra headers the gateway needs. The SDK sends those headers on every request to the Galtea
+API, including the span exports. File uploads and downloads do not carry them yet.
+
+Pass them to the `Galtea` constructor:
+
+```python
+galtea = Galtea(
+    api_key="YOUR_API_KEY",
+    base_url=os.environ["GALTEA_API_URL"],  # for example, your API gateway URL
+    headers={"X-IBM-Client-Id": "YOUR_CLIENT_ID"},
+)
+```
+
+- `base_url`: the API URL to call.
+- `headers`: a dictionary of header names to string values.
+
+Or set them once as environment variables:
+
+```bash
+export GALTEA_API_URL="https://your-gateway.example.com/galtea"
+export GALTEA_EXTRA_HEADERS='{"X-IBM-Client-Id": "your-client-id", "X-IBM-Client-Secret": "your-client-secret"}'
+```
+
+- `GALTEA_API_URL`: the API URL to call.
+- `GALTEA_EXTRA_HEADERS`: a JSON object of header names to string values. Every value must be a string.
+
+A constructor argument wins over its environment variable. When you pass `headers`, the SDK ignores
+`GALTEA_EXTRA_HEADERS` completely and does not merge the two.
+
+<Note>
+  The SDK always sets `Authorization` (your API key, as `Bearer gsk_...`), `User-Agent`, `Content-Type`,
+  `Content-Length` and `Host` itself. A configured header with one of these names, in any letter case, is ignored
+  with a warning that names the header. If `GALTEA_EXTRA_HEADERS` is not a JSON object of
+  strings, a header name is not a valid HTTP name (for example it has a space), two names differ only in letter
+  case, or a header value has a line break, leading whitespace or a non-Latin-1 character, `Galtea()` raises a
+  `ValueError` that does not show the value. A `GALTEA_EXTRA_HEADERS` that holds only spaces counts as unset. A redirect that changes the host, the scheme or the
+  port drops the extra headers. A subdomain is another host. A redirect from http to https on the default ports keeps them.
+</Note>
+
 ### Upgrading the SDK
 
 To upgrade to the latest version of the Galtea SDK, use the following command:

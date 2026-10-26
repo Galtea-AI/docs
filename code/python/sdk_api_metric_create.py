@@ -22,11 +22,15 @@ metric = galtea.metrics.create(
     description="A custom accuracy metric.",
     judge_generation_settings={"temperature": 0.3, "max_output_tokens": 512},
     pass_threshold=0.7,
+    applicability_scope="production",
+    applicability_threshold=0.3,
 )
 # @end ai_evaluation
 
 if metric is None:
     raise ValueError("metric is None")
+if metric.applicability_scope != "PRODUCTION" or metric.applicability_threshold != 0.3:
+    raise ValueError("the applicability check was not stored")
 galtea.metrics.delete(metric_id=metric.id)
 
 # @start self_hosted
