@@ -211,7 +211,7 @@ human_transfer_metric = galtea.metrics.create(
   The generation settings the judge runs with, instead of the platform defaults. Only these four keys are accepted, and any you omit keep the provider's own default:
   - `temperature`
   - `top_p`
-  - `max_output_tokens`
+  - `max_output_tokens`: at least 256, so the judge's structured answer fits. If the judge's answer is still cut off at this limit, the evaluation is skipped with a message that names it.
   - `reasoning_effort` — a level the model accepts, such as `low`, `medium` or `high`. The set differs per model, so read the settings your evaluator model publishes before choosing one.
 
   Only applicable to AI Evaluation metrics, which are the only ones with an LLM judge. The settings cannot be changed later: create a revision of the metric to use different ones.
