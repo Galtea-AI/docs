@@ -82,6 +82,17 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   The storage URI of the full-call recording for telephony sessions, returned under the deployment's public file base when one is set, otherwise as stored. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
 </ResponseField>
 
+## Import Sessions from a Trace Export
+
+You can bring conversations you already traced elsewhere into a version without writing code. In the dashboard, open a version, choose **New Session**, then **Import traces**, pick the format of the export, upload the file, and pick whether the sessions are production or development. The import reads the file only as the format you picked. The same import is available as `POST /sessions/import`, where the `format` field is optional: without it, the format is detected from the content. The file can be up to 25 MB.
+
+Two export formats are accepted:
+
+- **Langfuse:** a trace export from the Langfuse UI, as JSON, JSONL or CSV. Each Langfuse session becomes a session, and each trace a turn.
+- **LangSmith:** a dataset export downloaded as JSONL, one example per line. Examples that share a conversation id in their metadata (`thread_id`, else `session_id`, else `conversation_id`) become one session, one turn per example. Turns follow the time in their `run_id`; examples without a time-ordered `run_id` come after, in file order. An example with no conversation id becomes a session of its own. A turn shows the last user message as its input and the agent's last text reply as its output. User identifiers in the metadata (`owner`, `user_id`, `created_by`, `user_groups`) are not stored.
+
+Each imported session is closed once its turns are stored, so you can evaluate it at once. A turn with no input and no output is skipped, and the import reports how many were skipped.
+
 ## Session Lifecycle
 
 A session is either **open** or **closed**, and its `Status` is the single source of truth for which one it is:
