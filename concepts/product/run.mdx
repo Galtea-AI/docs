@@ -22,7 +22,7 @@ A Run belongs to one [product](/concepts/product). It usually also names the [ve
   That method starts a launch. The Run is the record that the launch leaves behind.
 </Note>
 
-A Run is the development counterpart of a [Monitor](/concepts/product/monitor). A Monitor scores production sessions on its own, with no launch. A Run records a launch you triggered.
+A Run is the simulated counterpart of a [Monitor](/concepts/product/monitor). A Monitor scores real sessions on its own, with no launch. A Run records a launch you triggered.
 
 The record survives the queue. Before Runs, a launch was visible only as a queue job, and the queue drops old jobs. A Run stays, so you can still read last week's launch.
 
@@ -35,7 +35,7 @@ Every launch response carries the id. A launch that returns evaluations gives it
 These launches create a Run:
 
 - An evaluation of a version against its test cases.
-- An evaluation of one session, or of several sessions, production sessions included. One call creates one Run per product, because a Run belongs to a single product.
+- An evaluation of one session, or of several sessions, real sessions included. One call creates one Run per product, because a Run belongs to a single product.
 - An evaluation of a single inference result.
 - A single-turn evaluation.
 - An inference generation, with or without metrics.
@@ -140,7 +140,7 @@ Open a row to reach the run's own page. It has three tabs:
 
 The **What it ran** card carries the actions. **Cancel** is shown while the run is still running and the platform queued a job for it. Otherwise **Run again** is shown, for a run Galtea can repeat. The two are never shown together.
 
-Evaluation tables and session tables both show a **Run** column and a **Runs** filter in the **Filters** menu, so you can narrow either list down to one run. In both, the column links to the run's page. Session tables hide both in the Production view, because production traffic never belongs to a Run.
+Evaluation tables and session tables both show a **Run** column and a **Runs** filter in the **Filters** menu, so you can narrow either list down to one run. In both, the column links to the run's page. Session tables hide both in the Real view, because real traffic never belongs to a Run.
 
 ## API and CLI
 
@@ -152,7 +152,7 @@ evaluations you create inside a `with` block join the run, and leaving the block
 
 The [REST API](/api-reference) offers `POST /runs`, `POST /runs/{id}/close`, `POST /runs/{id}/relaunch`, `POST /runs/{id}/cancel`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/metric-summary` and `DELETE /runs/{id}`. `GET /evaluations` accepts a `runIds` filter, so you can read every evaluation of a run.
 
-Three session operations name a Run. `POST /sessions` accepts an optional `runId`, so you can add a session to a Run you opened. It is refused on a production session. `GET /sessions?runIds=` returns the sessions a Run created. `GET /sessions?involvedInRunIds=` returns the sessions a Run created or scored.
+Three session operations name a Run. `POST /sessions` accepts an optional `runId`, so you can add a session to a Run you opened. It is refused on a real session. `GET /sessions?runIds=` returns the sessions a Run created. `GET /sessions?involvedInRunIds=` returns the sessions a Run created or scored.
 
 The SDK write methods take the same id as `run_id`: [`sessions.create`](/sdk/api/session/create), [`sessions.get_or_create`](/sdk/api/session/get-or-create), [`evaluations.create`](/sdk/api/evaluation/create), [`evaluations.create_single_turn`](/sdk/api/evaluation/create-single-turn), [`evaluations.run`](/sdk/api/evaluation/run) (only when you pass an `agent`, because the queued mode performs its own launch) and [`traces.create_and_evaluate`](/sdk/api/trace/create-and-evaluate). [`evaluations.list`](/sdk/api/evaluation/list) reads them back with the same `run_id` filter, and each `Session` and `Evaluation` carries its own `run_id`.
 

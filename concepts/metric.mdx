@@ -87,13 +87,13 @@ Some metrics apply to few sessions. A jailbreak metric, for example, applies onl
 
 The applicability check stops this. Before the judge runs, a decision model answers one Yes/No question: does the conversation contain what this metric evaluates? When the probability that it does is below the metric's applicability threshold, the evaluation is skipped. The check runs before a JSON Field Match metric reads a test case's field rules, so a session it skips never reports an error in them. The decision model sees each rule as raw JSON.
 
-A [monitor](/concepts/product/monitor) runs the check for each production session, after the data check and before the judge. See [How a session is evaluated](/concepts/product/monitor#how-a-session-is-evaluated) for the phases and the skip rules.
+A [monitor](/concepts/product/monitor) runs the check for each real session, after the data check and before the judge. See [How a session is evaluated](/concepts/product/monitor#how-a-session-is-evaluated) for the phases and the skip rules.
 
 ### Settings
 
 Two settings control the check. Both are fixed when you create the metric. To change one, create a revision of the metric. A revision starts with the values of the revision it comes from, when the check runs for both revisions.
 
-- **Run the check on** (`applicability_scope`) sets which sessions get the check. The options are `PRODUCTION` (production sessions), `DEVELOPMENT` (development sessions), `ALL` and `NONE` (no check). The default is `PRODUCTION`. Development is off by default, because a skip inside a regression suite can hide a test that should run.
+- **Run the check on** (`applicability_scope`) sets which sessions get the check. The options are `PRODUCTION` (real sessions), `DEVELOPMENT` (simulated sessions), `ALL` and `NONE` (no check). The default is `PRODUCTION`. Development is off by default, because a skip inside a regression suite can hide a test that should run.
 - **Minimum certainty** (`applicability_threshold`) is the lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A higher value skips more sessions. The default is 0.5. A session at the threshold is judged. A session below it is skipped.
 
 In the dashboard, both settings are in **Advanced Options** of the create form. Setting **Run the check on** to **Off** hides **Minimum certainty**. The form hides both settings for a metric that has no check. The dashboard shows **Minimum certainty** as a percent from 0 to 100, prefilled with 50. The SDK and the API take a probability from 0 to 1.

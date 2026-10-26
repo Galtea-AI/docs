@@ -67,7 +67,7 @@ A fact key such as `model` or `model_name` also links a model to a Version that 
 | Attribute | How Galtea uses it |
 |---|---|
 | `galtea.session.custom_id` | Set it on the span. Your own conversation ID. Spans that share it become one session, and each OTel trace becomes one turn of it. When it is absent, Galtea uses a key it derives from a supported managed platform, then the standard `gen_ai.conversation.id`, then `session.id`. |
-| `galtea.test_case.id` | Optional. Set it on the resource or on the span. The [Test Case](/concepts/product/dataset/test-case) the conversation exercises. Galtea creates the session as non-production and links it to that test case, so no [Monitor](/concepts/product/monitor) scores it. A span value wins over the resource value. An empty or non-text value counts as absent, so the session is production. Leave it out for real user traffic. During Direct Inference, the session already links its test case. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists). |
+| `galtea.test_case.id` | Optional. Set it on the resource or on the span. The [Test Case](/concepts/product/dataset/test-case) the conversation exercises. Galtea creates the session as a simulated session and links it to that test case, so no [Monitor](/concepts/product/monitor) scores it. A span value wins over the resource value. An empty or non-text value counts as absent, so the session is real. Leave it out for real user traffic. During Direct Inference, the session already links its test case. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists). |
 
 [Set a conversation key](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#set-a-conversation-key) names the managed platforms whose key Galtea derives. A span that carries no key waits for a later batch of its trace that does, up to a size limit. Past that limit, Galtea rejects it at once. See [Batched Exporters and the Conversation Key](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#batched-exporters-and-the-conversation-key).
 
@@ -95,7 +95,7 @@ It rejects one conversation, and the rest of the payload still ingests, in these
 
 - The test case does not exist, or it belongs to another product than the Version.
 - Two spans of one conversation name different test case IDs, or two resources do.
-- The conversation names a test case, and its key already holds another session on that Version: a production session, or one linked to another test case.
+- The conversation names a test case, and its key already holds another session on that Version: a real session, or one linked to another test case.
 - The conversation is new, and the payload already opened 100 new conversations, the default limit.
 - The session is closed, and the product's [Closed Session Inference Creation Policy](/concepts/product#product-properties) is `REJECT`. Only the spans of the new turn are rejected.
 

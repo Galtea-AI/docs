@@ -165,7 +165,7 @@ Repeat the loop until you stop seeing obvious failures. Each pass is the same fo
 
 We drove this loop from a small set of existing sessions, but the same approach works with other sources of signal:
 
-- **Production sessions.** If you log real traffic to Galtea, point the loop at production sessions instead of a hand-made set. Be selective — not every production failure is one you want to optimize for.
+- **Real sessions.** If you log real traffic to Galtea, point the loop at real sessions instead of a hand-made set. Be selective — not every production failure is one you want to optimize for.
 - **Specification-driven datasets.** Drive the whole loop from specifications: describe the behavior you expect, let Galtea generate the metrics and datasets, and evaluate against them. This keeps "what good looks like" explicit and reusable across versions.
 - **Human annotations feeding the metrics optimizer.** Annotate a subset of evaluations yourself to define what a correct judgment looks like, then use the agent to apply that standard across a larger corpus — the input the metrics optimizer needs to make your LLM-as-a-judge metrics more reliable.
 

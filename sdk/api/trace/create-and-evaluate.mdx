@@ -141,7 +141,7 @@ trace, evaluations = galtea.traces.create_and_evaluate(
 <ResponseField name="input_file_paths" type="list[str]" optional>
   Files the turn received, for a product that reads documents. Each entry is a local path the SDK uploads, or a storage URI from an earlier upload, which is attached without uploading it again.
 
-  On a dataset session with no `input`, the files are added to the test case input. A production session accepts files with no `input`: the input is then the files alone. A production session with neither raises a `ValueError`. With `session_custom_id` and only a `product_id`, also pass `input`.
+  On a dataset session with no `input`, the files are added to the test case input. A real session accepts files with no `input`: the input is then the files alone. A real session with neither raises a `ValueError`. With `session_custom_id` and only a `product_id`, also pass `input`.
 
   One input accepts at most 20 files, 20 MB in total, of the same types a test case input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list.
 

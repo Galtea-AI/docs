@@ -28,7 +28,7 @@ monitor = galtea.monitors.create(
     metric_group_ids=[metric_group_id],
     # Optional: watch a single version. Omit to watch every version of the product.
     # version_id="your-version-id",
-    sampling_percentage=10,  # score 10% of production sessions (default)
+    sampling_percentage=10,  # score 10% of real sessions (default)
     monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
     message_conditions=[
         MonitorMessageCondition(count="messages", operator="gt", value=1)

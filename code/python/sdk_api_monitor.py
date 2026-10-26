@@ -21,9 +21,9 @@ product_id: str = create_test_product(
     inabilities="Cannot process payments",
 )
 
-# A monitor scores production sessions with metric FAMILIES, not specific metric revisions.
+# A monitor scores real sessions with metric FAMILIES, not specific metric revisions.
 # The family key is `metric.metric_group_id` — pass that, not `metric.id`.
-# A monitor cannot bind a self-hosted metric: it evaluates production sessions with no caller
+# A monitor cannot bind a self-hosted metric: it evaluates real sessions with no caller
 # to supply a score, and a self-hosted metric's score always comes from the caller.
 metric = galtea.metrics.create(
     name=f"monitor-demo-metric-{run_identifier}",
@@ -46,7 +46,7 @@ monitor = galtea.monitors.create(
     metric_group_ids=[metric_group_id],
     # Optional: watch a single version. Omit to watch every version of the product.
     # version_id="your-version-id",
-    sampling_percentage=10,  # score 10% of production sessions (default)
+    sampling_percentage=10,  # score 10% of real sessions (default)
     monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
     message_conditions=[
         MonitorMessageCondition(count="messages", operator="gt", value=1)
@@ -115,7 +115,7 @@ paused_monitor = galtea.monitors.pause(monitor.id)
 # @end pause
 
 # @start resume
-# Score new production sessions again.
+# Score new real sessions again.
 resumed_monitor = galtea.monitors.resume(monitor.id)
 # @end resume
 

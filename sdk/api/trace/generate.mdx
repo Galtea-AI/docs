@@ -40,7 +40,7 @@ The `generate()` method is the recommended way to execute your agent when you wa
 </ParamField>
 
 <ParamField path="input" type="str | dict" optional>
-  The input to send to the agent. Accepts a plain string or a dict with structured fields (e.g. `{"user_message": "hello", "chat_type": "support"}`). Stored in the trace as sent, except a Galtea file in a `content` array: it is stored without its upload signature and checked like a test case input file. To attach local files to a turn you log yourself, use `input_file_paths` on [`traces.create()`](/sdk/api/trace/create). If not provided and the session is test-based, the test case input is used automatically. Required for production/monitoring sessions. See [Input Schema](/concepts/product/endpoint-connection-input-schema) for how to define the expected field structure on your endpoint connection.
+  The input to send to the agent. Accepts a plain string or a dict with structured fields (e.g. `{"user_message": "hello", "chat_type": "support"}`). Stored in the trace as sent, except a Galtea file in a `content` array: it is stored without its upload signature and checked like a test case input file. To attach local files to a turn you log yourself, use `input_file_paths` on [`traces.create()`](/sdk/api/trace/create). If not provided and the session is test-based, the test case input is used automatically. Required for real sessions. See [Input Schema](/concepts/product/endpoint-connection-input-schema) for how to define the expected field structure on your endpoint connection.
 </ParamField>
 
 <ParamField path="throw_if_empty_agent_response" type="bool" optional>
