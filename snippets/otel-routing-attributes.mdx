@@ -1,0 +1,104 @@
+{/* Use root-relative links only: a relative link in a snippet resolves against the page that imports it. */}
+
+Galtea stores each conversation under a [Product](/concepts/product) and one of its [Versions](/concepts/product/version). Your telemetry answers three questions:
+
+1. **Which product?** A resource attribute names it.
+2. **Which version of that product?** A resource attribute names it, or describes it so that Galtea finds or creates it.
+3. **Which conversation?** A span attribute groups spans into one [Session](/concepts/product/version/session).
+
+A resource attribute describes the whole telemetry source, not one span. So you can set it once, for example on your OTel Collector, even when a managed platform emits the spans.
+
+<Note>
+  A span that names an existing [Trace](/concepts/product/version/session/trace) skips the three questions. That is the usual case when Galtea calls your endpoint during Direct Inference. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists). Every other span needs all three answers, even when its conversation key joins a session that already exists.
+</Note>
+
+These are the three common setups. Pick one:
+
+<CodeGroup>
+```bash Version ID
+# An existing Version. Each agent change needs a new ID here.
+export OTEL_RESOURCE_ATTRIBUTES="galtea.version.id=<version-id>"
+```
+
+```bash Product ID and facts
+# Galtea finds or creates the Version. No setup in Galtea.
+export OTEL_RESOURCE_ATTRIBUTES="galtea.product.id=<product-id>,galtea.version.fact.model=gpt-4o,galtea.version.fact.release=1.4.2"
+```
+
+```bash Standard attributes
+# Set the product key values and version attributes first.
+export OTEL_RESOURCE_ATTRIBUTES="service.name=checkout-agent,service.version=1.4.2"
+```
+</CodeGroup>
+
+The conversation key is a span attribute, so your code sets it on each turn. See [Which conversation](#3-which-conversation).
+
+### 1. Which product
+
+Send one of these on the resource. Skip this step when you send `galtea.version.id`, because a Version ID already names its product.
+
+| Attribute | How Galtea uses it |
+|---|---|
+| `galtea.product.id` | The ID of the product. It must belong to the organization of your API key. |
+| Product key attributes, `service.name` by default | Galtea picks the product whose key values the resource carries. Your organization chooses the attribute names (the product key), and each product stores its own values. The resource must carry every attribute of the key. See [Route Traces to a Product by Resource Attributes](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#route-traces-to-a-product-by-resource-attributes). |
+
+When the resource carries both, `galtea.product.id` wins. A `galtea.product.id` that is empty or not text is rejected, and Galtea does not try the key values.
+
+### 2. Which version
+
+Send one of these on the resource. Galtea uses the first one present, in the order of the table. When that one fails, Galtea does not try the next one.
+
+| Attribute | How Galtea uses it |
+|---|---|
+| `galtea.version.id` | The ID of a Version you already created. Galtea uses a non-empty text value as it is, and then reads no other product or version attribute. An empty value counts as absent. |
+| `galtea.version.fact.<key>` | One [fact](/concepts/product/version#version-facts) of your agent state per attribute, for example `galtea.version.fact.model`. The text after the prefix is the fact key. |
+| Version attributes, such as `service.version` | Standard attributes that your organization lists. A product can replace the list with its own. Galtea builds the facts from the listed attributes the resource carries, with the full attribute name as the fact key. At least one must be present. A blank or null value counts as absent. |
+
+With facts, Galtea finds the Version of the product that holds exactly these facts, or creates it, with the rules of [Get or Create Version](/sdk/api/version/get-or-create). The same facts reuse one Version, whatever the order of the attributes. One changed value creates a new Version, so a new release needs no change in Galtea. A fact value is text or an integer.
+
+A fact key such as `model` or `model_name` also links a model to a Version that Galtea creates, with the rules of [Model facts](/concepts/product/version#model-facts). So `galtea.version.fact.model` can link the model, and a version attribute such as `app.agent.model` never does.
+
+<Warning>
+  Never use a value that changes per request or per pod as a fact, such as a request ID, a trace ID, a timestamp, `host.name`, `k8s.pod.name` or `service.instance.id`. Every distinct value creates a new Version, and Galtea does not limit how many.
+</Warning>
+
+### 3. Which conversation
+
+| Attribute | How Galtea uses it |
+|---|---|
+| `galtea.session.custom_id` | Set it on the span. Your own conversation ID. Spans that share it become one session, and each OTel trace becomes one turn of it. When it is absent, Galtea uses a key it derives from a supported managed platform, then the standard `gen_ai.conversation.id`, then `session.id`. |
+| `galtea.test_case.id` | Optional. Set it on the resource or on the span. The [Test Case](/concepts/product/dataset/test-case) the conversation exercises. Galtea creates the session as non-production and links it to that test case, so no [Monitor](/concepts/product/monitor) scores it. A span value wins over the resource value. An empty or non-text value counts as absent, so the session is production. Leave it out for real user traffic. During Direct Inference, the session already links its test case. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists). |
+
+[Set a conversation key](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#set-a-conversation-key) names the managed platforms whose key Galtea derives. A span that carries no key waits for a later batch of its trace that does, up to a size limit. Past that limit, Galtea rejects it at once. See [Batched Exporters and the Conversation Key](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#batched-exporters-and-the-conversation-key).
+
+### Spans of a Trace that already exists
+
+A Trace already exists when Galtea calls your endpoint during [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform), or when your code created it with the SDK, the CLI or the API. Its Session already has its Version, and a Direct Inference session also has its Test Case. Your spans only need to name the Trace. Galtea then ignores the product, version, conversation and test case attributes.
+
+| How the span names the Trace | Where the value comes from |
+|---|---|
+| Its OTel trace ID | Direct Inference only. Galtea sends the trace ID in the `traceparent` header of each turn. A service instrumented with OpenTelemetry continues that trace with no code. |
+| `galtea.trace.id` | The ID of the Trace. During Direct Inference, Galtea sends it in the `X-Galtea-Inference-Id` header and in the `baggage` header, which a [baggage span processor](/concepts/product/endpoint-connection-configuration#baggage) can copy onto each span. With the SDK, use the ID of the Trace your code created. Set it when the trace ID does not match, for example when a proxy starts a new trace. Galtea reads it from each span, so set it on every span of the turn. Unlike the conversation key, the root span alone is not enough. |
+
+Galtea tries the trace ID first, then `galtea.trace.id`. A `galtea.trace.id` that names no Trace your API key can see is rejected, and Galtea does not route the span by product, version or conversation. A span with neither goes through the three questions, unless its trace ID matches a Direct Inference turn that was removed.
+
+### What Galtea rejects
+
+Galtea never guesses where your data belongs. It rejects the spans of one resource, and the rest of the payload still ingests, in these cases:
+
+- **No version.** The resource carries no `galtea.version.id`, no `galtea.version.fact.*` attribute, and no attribute of the version attribute list in force for its product: the product's own list, or else the organization list.
+- **No product.** The resource carries `galtea.version.fact.*` attributes or listed version attributes, and no `galtea.product.id`, and its product key attributes match no single product of your organization. That means no product holds those key values, or two products with keys of the same size do. A resource that routes by version attributes gets this reason only when it carries an attribute of the organization list. Otherwise the reason is no version.
+- **Invalid facts.** A value is not text or an integer, a key after the `galtea.version.fact.` prefix is empty, all `galtea.version.fact.*` values are blank, or the facts have more than 32 keys or more than 2000 bytes in all. For version attributes, a blank or null value counts as absent instead.
+- **Unknown version or product.** The Version or the product does not exist, or your API key cannot see it. With `galtea.product.id`, this also covers an API key whose role cannot create a Version, when no Version holds the facts yet. When the key values found the product, Galtea reports that case as no product.
+
+It rejects one conversation, and the rest of the payload still ingests, in these cases:
+
+- The test case does not exist, or it belongs to another product than the Version.
+- Two spans of one conversation name different test case IDs, or two resources do.
+- The conversation names a test case, and its key already holds another session on that Version: a production session, or one linked to another test case.
+- The conversation is new, and the payload already opened 100 new conversations, the default limit.
+- The session is closed, and the product's [Closed Session Inference Creation Policy](/concepts/product#product-properties) is `REJECT`. Only the spans of the new turn are rejected.
+
+Galtea also rejects a span whose trace ID matches a Direct Inference turn that was removed, unless its `galtea.trace.id` names a live Trace. It does not assemble that span into a new session.
+
+The export response counts the rejected spans in `partialSuccess.rejectedSpans`. Its `partialSuccess.errorMessage` names each reason that applied, so your collector log says what to change.

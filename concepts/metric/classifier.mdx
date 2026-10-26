@@ -19,6 +19,7 @@ In the metric form, pick **AI Evaluation**, then **Judge: Classifier (Jev)**. Th
 - **Classifier**: a clear rule that a reply must follow or must never break, or a graded quality whose levels you can describe as concrete situations.
 - **LLM judge**: the check needs reasoning, a written explanation of the score, or files.
 - **Deterministic metric**: exact text or JSON matching. Use one of Galtea's metrics, such as [Text Similarity](/concepts/metric/text-similarity) or [JSON Field Match](/concepts/metric/json-field-match).
+- **Regex, number or date checks on a JSON field**: use the `$regex`, `$num` and `$date` [field rules](/concepts/metric/json-field-match#field-rules) of JSON Field Match.
 - **Counting, arithmetic, dates or time limits**: use an LLM judge metric or a [Self-Hosted](/concepts/metric/evaluation-types#self-hosted) metric.
 
 ## Question types
@@ -136,7 +137,7 @@ To see each condition's result on its own, create one metric per condition in bo
   </Accordion>
 
   <Accordion title="Do not ask Jev to count, do arithmetic, compare dates or match exact text">
-    Jev cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching.
+    Jev cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching. For a pattern, a number or a date in a JSON field, use the [field rules](/concepts/metric/json-field-match#field-rules) of JSON Field Match.
   </Accordion>
 
   <Accordion title="Test the question before you save it">

@@ -1,6 +1,6 @@
 ---
 title: "JSON Field Match"
-description: "Compares JSON objects field by field, checking whether all fields in the expected output exist in the actual output with matching values. Returns the fraction of expected fields that match."
+description: "Compares JSON objects field by field, checking whether all fields in the expected output exist in the actual output with matching values. A field can set a rule instead of a value: $norm, $regex, $num or $date. Returns the fraction of expected fields that match."
 ---
 
 The JSON Field Match metric is one of the [Deterministic Metric](/concepts/metric) options in Galtea. It performs a field-level comparison between two JSON objects, giving a more granular and interpretable score than text-based matching when the expected output is structured JSON.
@@ -26,10 +26,10 @@ The metric compares top-level fields between the expected and actual JSON output
    The two sides behave differently when parsing fails:
 
    - **`actual_output` is not a JSON object** (for example, your pipeline answered in plain text, or returned nothing): the evaluation is **skipped**, and its error message says the output could not be read. Nothing broke, so there is no score to report. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result.
-   - **`expected_output` is not a JSON object**: the evaluation **fails**. This is an error in your test case, and you have to fix the dataset.
+   - **`expected_output` cannot be used** (it is not valid JSON, it is nested too deeply or holds a number too long to read, it is not a JSON object, or a [field rule](#field-rules) in it is invalid): the evaluation is **skipped**, and its error message names the field and the problem. This is an error in your test case, not in your agent. Fix the test case and retry the evaluation: a retry reads the current test case. The error message never repeats a value, because expected outputs can hold personal data.
 
 2. **Compare Fields**
-   For each top-level key in the expected output, check whether the same key exists in the actual output with an equal value. Comparison uses strict equality — type mismatches (e.g., string `"30"` vs number `30`) count as non-matching. Nested objects are compared by deep equality.
+   For each top-level key in the expected output, check whether the same key exists in the actual output with an equal value. Comparison uses strict equality — type mismatches (e.g., string `"30"` vs number `30`) count as non-matching. Nested objects are compared by deep equality. A field whose expected value is a [field rule](#field-rules) is checked by that rule instead of by equality.
 
 3. **Compute Score**
    The score is calculated as:
@@ -39,6 +39,89 @@ The metric compares top-level fields between the expected and actual JSON output
    ```
 
    Where `total_fields` is the number of top-level keys in the expected output, and `non_matching_fields` is the count of keys that are missing or have different values in the actual output.
+
+## Field Rules
+
+Use a field rule when a field should not be compared by equality. An expected value that is an object with a key starting with `$` is a rule. Four rules exist: `$norm`, `$regex`, `$num` and `$date`. A plain value keeps the comparison described above. You can mix plain values and rules in one expected output.
+
+```json
+{
+  "nombre": "MARIA LOPEZ GARCIA",
+  "curp": {"$regex": "^[A-Z]{4}\\d{6}[HM][A-Z]{5}[A-Z0-9]\\d$"},
+  "rfc": {"$regex": "^[A-Z&Ñ]{3,4}\\d{6}[A-Z0-9]{3}$"},
+  "domicilio": {"$norm": "C L ATONA 102 COL PRI CHACON"},
+  "fecha_nacimiento": {"$date": "1986-08-31"},
+  "ingreso_declarado": {"$num": 25000, "tol": 0.5}
+}
+```
+
+This example is for an agent that extracts data from identity documents. `nombre` is a plain value, so it must match exactly. The other fields use one rule each.
+
+<Warning>
+  The patterns above are already escaped for JSON: each backslash is written twice (`\\d`). A single backslash (`\d`) is not valid JSON, and the evaluation is skipped. Inside a CSV cell, each `"` is also doubled.
+</Warning>
+
+A rule holds one rule key and that rule's own options. Any other key makes the rule invalid. Rules work on top-level fields only.
+
+| Rule | Passes when | Options |
+|------|-------------|---------|
+| `$norm` | The actual value and the rule text are equal after both lose accents and case and keep only letters and digits | None |
+| `$regex` | The pattern is found anywhere in the actual value | `case_sensitive` (default `false`) |
+| `$num` | The actual value is within the tolerance of the rule number | `tol` (default `0`) |
+| `$date` | The actual value reads to the same calendar date as the rule date | `order`: `"DMY"` (default), `"MDY"` or `"any"` |
+
+A rule sees the value exactly as the agent returned it. The Normalized variants do not fold case or accents before a rule runs, so a `$regex` with `case_sensitive` set to `true` is case-sensitive in every variant.
+
+### `$norm`: same text, ignoring spaces and punctuation
+
+`{"$norm": "C L ATONA 102 COL PRI CHACON"}` matches `"C.L. Atoná 102, col. Pri Chacón"`. Both sides lose accents and case and keep only letters and digits, then must be equal. Use it for addresses, names with variable punctuation, and enum-like labels. An actual number is read as its JSON text. `null`, a boolean, a list or an object fails the field.
+
+### `$regex`: a pattern
+
+The pattern passes when it is found anywhere in the actual value, so `{"$regex": "\\d{3}"}` passes for `"ID 123 X"`. Anchor it with `^` and `$` for a full match. The pattern ignores case unless you set `"case_sensitive": true`. An actual number is read as its JSON text, so `123` passes the pattern `\d{3}`. `null`, a boolean, a list or an object fails the field.
+
+The pattern syntax is [RE2](https://github.com/google/re2/wiki/Syntax). It has no lookahead, lookbehind or backreference, and it runs in linear time. In RE2, `\w` and `\d` match ASCII characters only. To match letters with accents, use `\pL`. In a rule, `{"$regex": "^\\pL+$"}` matches `"José"`, and `{"$regex": "^\\w+$"}` does not.
+
+To compare exactly but allow spaces, write the text as an anchored `$regex` with `"case_sensitive": true`, allow `\s*` where spaces may appear, and escape each special character such as `.` or `(` with a backslash. For example, `{"$regex": "^AB\\s*12\\.5$", "case_sensitive": true}`.
+
+### `$num`: a number with a tolerance
+
+A value passes when `|a - b| <= max(1e-9 × max(|a|, |b|), tol)`. The check reads both sides as decimals from their text, so `100.01` against `100.00` with `"tol": 0.01` passes, and so does a value exactly at the tolerance. The rule number can be a number, a numeric string or `null`. The actual value can be a number or a string holding a plain number such as `"1250.4"`. A formatted number such as `"1,250"` is not a plain number.
+
+"No number" is `null`, a blank string, or an actual value that does not read as a plain number (`"abc"`, a boolean, a list or an object). When both sides are "no number", the field passes. When only one is, it fails.
+
+### `$date`: a calendar date
+
+Both sides are read to a calendar date. Surrounding text is allowed and the time is ignored, so `"Fecha 2026-10-21T10:00:00Z"` reads as 21 October 2026. Spanish and English month names work, with or without an ordinal day (`"1 de febrero de 1980"`, `"1º de febrero de 1980"`, `"Feb 1, 1980"`, `"February 1st, 1980"`).
+
+Write the rule date as ISO, year-month-day, for example `"1986-08-31"`. ISO is always year-month-day in the actual value too. For a numeric date such as `01/02/1980`, `order` decides the reading:
+
+- **`"DMY"`** (default): day first. `01/02/1980` is 1 February 1980.
+- **`"MDY"`**: month first. `01/02/1980` is 2 January 1980.
+- **`"any"`**: both readings of the actual value pass. A numeric rule date is still read day first, so write the rule date as ISO.
+
+`DMY` and `MDY` are preferences. When the preferred reading is impossible, the other one is used: `02/13/1980` is 13 February 1980 under `DMY`.
+
+"No date" is `null`, a blank string, or an actual value that does not read to exactly one full date: a two-digit year, a missing part, two dates in one text, or a value that is not a string. When both sides are "no date", the field passes. When only one is, it fails.
+
+`$date` accepts any of these formats, so it cannot check that the agent used a given format. To require an exact format, use a plain value, for example `"01/02/1980"`.
+
+### Missing fields, scores and reasons
+
+A field with a rule counts as one field in the score, like any other. A rule field the actual output does not return fails as missing, whatever the rule. The reason names each failing field, the rule and the value that was read.
+
+### What is skipped
+
+The evaluation is skipped, as a test-case error, when the expected output holds:
+
+- an unknown rule, more than one rule key, or an option the rule does not have;
+- an invalid rule value: a `$norm` value or a `$regex` pattern that is not a string, an empty `$regex` pattern, a `$regex` pattern RE2 cannot compile, a `$regex` pattern too large to run fast (a long counted repeat such as `(a|b){1000}` or `\p{Han}{1000}`), a `$regex` with a backspace character (what a single-backslash `\b` becomes in JSON; write `\\b`), a `$regex` with an unpaired surrogate escape (`\ud800` in the JSON text), a `tol` that is negative, too large for a float, or not a number, a `case_sensitive` that is not `true` or `false`, an `order` other than the three above, or a `$date` or `$num` value that cannot be read;
+- a rule inside a nested object or a list;
+- a number too long to read, or JSON nested too deeply, anywhere in the expected output.
+
+### Where rules apply
+
+Rules work only in the four JSON Field Match metrics. Any other metric, such as an LLM-judged one, and the generation of test data see a rule as plain JSON text. Under any other metric, the **Expected vs Actual Output** table of an evaluation shows a rule as raw JSON, so that field reads as a type mismatch there.
 
 ## Interpretation of Scores
 

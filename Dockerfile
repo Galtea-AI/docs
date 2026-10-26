@@ -25,28 +25,33 @@ FROM node:24.21.0-alpine3.24 AS runtime
 WORKDIR /app
 
 # Install Mint CLI (the renamed Mintlify CLI). Even the newest mint pins
-# @modelcontextprotocol/sdk, adm-zip, axios, js-yaml and sharp below the
-# releases that fix their CVEs, so the overrides lift them; drop each one once
-# mint ships it. The other overrides hold the version every other Galtea image
+# @modelcontextprotocol/sdk, adm-zip, axios, body-parser, esbuild, image-size,
+# js-yaml, sharp and zod 4 below the releases that fix their CVEs, so the
+# overrides lift them; drop each one once mint ships it. The other overrides hold the version every other Galtea image
 # uses for that package, since this install has no lockfile.
 COPY <<'EOF' package.json
 {
   "private": true,
   "dependencies": {
-    "mint": "4.2.935"
+    "mint": "4.2.1125"
   },
   "overrides": {
     "@modelcontextprotocol/sdk": "1.32.0",
     "adm-zip": "0.6.1",
     "axios": "1.20.0",
+    "body-parser@^1": "1.20.9",
+    "body-parser@^2": "2.4.0",
     "brace-expansion@^1": "1.1.20",
+    "esbuild": "0.28.2",
     "express-rate-limit@^8": "8.5.1",
+    "image-size@^2": "2.0.4",
     "ip-address@^10": "10.3.1",
     "js-yaml@^4": "4.3.2",
     "minimatch@^3": "3.1.4",
     "nanoid@^3": "3.3.18",
     "picomatch@^4": "4.0.4",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "zod@^4": "4.6.7"
   }
 }
 EOF
@@ -66,7 +71,7 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 # page"). With --client-version the CLI re-downloads exactly this version on
 # start, and falls back to the copy baked here if the download fails. That
 # baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000.
-ENV MINT_CLIENT_VERSION=0.0.3687
+ENV MINT_CLIENT_VERSION=0.0.3965
 RUN mkdir -p /root/.mintlify/previews/3000 \
   && wget -qO- "https://releases.mintlify.com/mint-${MINT_CLIENT_VERSION}.tar.gz" \
     | tar -xz -C /root/.mintlify/previews/3000 \
@@ -80,4 +85,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
   CMD wget -q --spider http://localhost:3000/ || exit 1
 
-CMD ["sh", "-c", "node_modules/.bin/mint dev --port 3000 --client-version \"$MINT_CLIENT_VERSION\" < /dev/null"]
+# Without --host, mint dev listens on ::1 only and the Service cannot reach the pod.
+CMD ["sh", "-c", "node_modules/.bin/mint dev --host --port 3000 --client-version \"$MINT_CLIENT_VERSION\" < /dev/null"]

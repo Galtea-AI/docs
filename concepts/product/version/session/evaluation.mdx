@@ -81,6 +81,7 @@ Once an evaluation completes, the following fields are available:
     - Metric validation failed, for example a required parameter is missing.
     - The organization ran out of credits.
     - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object. `canRetry` is `true`, but a retry reads the same stored output.
+    - A [JSON Field Match](/concepts/metric/json-field-match) metric could not use the test case's expected output: it is not valid JSON, it is nested too deeply or holds a number too long to read, it is not a JSON object, or a [field rule](/concepts/metric/json-field-match#field-rules) in it is invalid. The error message names the field and the problem. Fix the test case and retry: a retry reads the current test case.
     - The judge model was unavailable.
     - The evaluator model's content safety filter blocked the request. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model. For G-Eval based built-in metrics, a blocked request also ends as Skipped, and a filtered reply can end as Failed. Neither shows this advice. [Classifier](/concepts/metric/classifier) metrics do not detect a block yet.
     - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, or the input was too long for the classifier.
