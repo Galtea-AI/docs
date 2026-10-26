@@ -67,7 +67,7 @@ flowchart TD
 
 Creating a revision marks the previous metric revision as `Legacy`. Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it.
 
-After you save a revision, the dashboard shows how many results and products the earlier revision affects. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
+After you save a revision, the dashboard shows how many results and products the earlier revision affects. A user limited to the products their user groups grant sees counts that cover only those products, but the exclusion applies to every product. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
 
 You can reverse this decision from the metric's actions menu. Exclusion does not delete or change any evaluation. Each evaluation keeps its score, reason, and metric revision.
 
@@ -138,7 +138,7 @@ To correct a skip, use one of these:
 
 The optimizer judges each prompt at the metric's pass threshold, and the optimized revision keeps that threshold.
 
-From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
+From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. A user limited to the products their user groups grant sees counts that cover only those products. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
 
 Expand **Advanced Options** in the **Optimize** confirmation to narrow a run. **Strategies** sets which rewrites the optimizer tries: **Fix false passes**, **Fix false failures**, **Add a scoring rubric**, **Simplify the prompt** and **Broaden the wording**. Each step asks for one rewrite per selected strategy and keeps the best one. **Maximum steps** sets how many steps the run may take, from 1 to 10, and defaults to 10. A run stops earlier when the prompt stops improving. With every strategy selected and 10 steps, the run is the same as one without options. The review card, the No improvement notice and the page of a declined or applied revision show the steps the run used out of its maximum and the strategies it ran. An attempt that did not report them shows **Not reported**.
 

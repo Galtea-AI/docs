@@ -88,7 +88,7 @@ After SAML is configured, users sign in using the **Team Slug** assigned to your
 On first sign-in, Galtea creates a new user account linked to the SAML identity. On later sign-ins, the same account is reused. Matching happens only inside the organization the sign-in targets: Galtea matches accounts by **email** and by **SAML NameID**, and on first sign-in the two get linked, so an existing account found by one gets the other attached. If the email belongs to an active account in a different organization, Galtea refuses the sign-in instead of matching, reusing, or changing that account. If the email and the SAML NameID already belong to two different accounts in the same organization, sign-in fails and the accounts must be reconciled manually.
 
 <Note>
-  In this SAML setup, users are created with the default **Member** role. Galtea does **not** read group or role claims from your IdP — the IdP controls *who* can sign in, not *what* role they receive in Galtea. To grant **Owner** or **Admin**, change the user's role manually in Galtea after their first sign-in.
+  In this SAML setup, users are created with the default **Member** role and in no user group, so they see no product until an Owner adds them to a [user group](/concepts/user-group). Galtea does **not** read group or role claims from your IdP — the IdP controls *who* can sign in, not *what* role they receive in Galtea. To grant **Owner** or **Admin**, change the user's role manually in Galtea after their first sign-in.
 </Note>
 
 ## Provider-specific guides
