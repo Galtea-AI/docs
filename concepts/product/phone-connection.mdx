@@ -90,6 +90,8 @@ Both sides of every turn are recorded and stored on the `Trace` for that turn:
 
 This means the full phone conversation — both the synthetic user side and the agent side — can be played back turn by turn in the dashboard's audio player and read programmatically via the SDK. See [Trace](/concepts/product/version/session/trace) for the envelope shapes.
 
+When your agent starts to speak while the synthetic caller is talking, the caller stops within about one second, as a person would. It takes about 0.2 seconds of continuous speech-level sound, so an "mm-hm" that long stops the caller, but a click or a cough does not. Sound that began before the caller's line does not stop it. The turn's `input` then holds only the part of the line that played, and what your agent said becomes the reply to it. When your agent made sound but said no recognized words, the turn is stored with no reply and the conversation goes on. On the last turn, words your agent was still saying when the call ends are kept as the reply.
+
 ## Best Practices
 
 <AccordionGroup>
