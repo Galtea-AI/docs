@@ -39,7 +39,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </ResponseField>
 
 <ResponseField name="Input" type="string | object" optional>
-  The input text or prompt for the trace. For most runs this is a plain string. For phone (voice) runs, when the simulated user's audio was captured, this is a content-parts envelope `{"user_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `user_message` field is the canonical scored scalar. Access the envelope via the SDK's `.input_data` field and the spoken transcript via `.input`. A document turn adds `file` parts to `content`, which the Input Files field below lists.
+  The input text or prompt for the trace. For most runs this is a plain string. For phone (voice) runs, when the simulated user's audio was captured, this is a content-parts envelope `{"user_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `user_message` field is the canonical scored scalar. Evaluations score the `user_message` together with any other key you add beside `content`. When `user_message` is empty, the audio transcript takes its place. The judge cannot hear a turn whose audio has no transcript and no `user_message`, so a metric that reads the input is skipped when no turn of the session has text. Access the envelope via the SDK's `.input_data` field and the spoken transcript via `.input`. A document turn adds `file` parts to `content`, which the Input Files field below lists.
 </ResponseField>
 
 <ResponseField name="Input Files" type="AttachedFile[]" optional>
