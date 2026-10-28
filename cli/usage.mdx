@@ -4,7 +4,7 @@ description: "Authenticate the Galtea CLI and explore the command surface"
 icon: "terminal"
 ---
 
-The `galtea` CLI is a terminal-native client for the Galtea AI testing & evaluation platform. Every [REST API](/api-reference) operation ships as a `galtea <noun> <verb>` command, auto-generated from the live OpenAPI spec.
+The `galtea` CLI is a terminal-native client for the Galtea AI testing & evaluation platform. Every [REST API](/api-reference) operation ships as a `galtea <noun> <verb>` command, auto-generated from the OpenAPI spec of the Galtea API release it was built with.
 
 ### What it can do
 
@@ -78,17 +78,23 @@ If this returns a list (even an empty one) instead of a `401 Unauthorized`, you'
 
 ### Discovering all commands
 
-These are the available OpenAPI commands that were downloaded to your machine.
-
-<Info>
-Run `galtea sync` after a new [Galtea API](/api-reference) release to refresh the command tree.
-</Info>
+These are the commands your CLI version ships with.
 
 ```bash
 galtea help
 ```
 
 For parameter, request body, and response shape details, see the [**REST API**](/api-reference) tab.
+
+### Getting new commands
+
+The CLI does not download its commands from the API. Each CLI version has the commands of the [Galtea API](/api-reference) release it was built with. So one CLI version always offers the same commands, and a script that works today keeps working until you upgrade.
+
+When the API adds an operation, the operation reaches the CLI in the next CLI release. If a command from the REST API is missing in your CLI, [update the CLI](/cli/installation#update) with the tool you installed it with.
+
+<Warning>
+`galtea sync` is deprecated. It does nothing, prints how to update the CLI, and will be removed. Remove it from your scripts.
+</Warning>
 
 ### Hand it to your coding agent
 
