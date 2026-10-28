@@ -13,6 +13,11 @@ specifications = galtea.specifications.list(
     product_id=product_id,
     type="CAPABILITY",
 )
+
+critical_specifications = galtea.specifications.list(
+    product_id=product_id,
+    is_critical=True,
+)
 ```
 
 ## Parameters
@@ -29,6 +34,9 @@ specifications = galtea.specifications.list(
 </ResponseField>
 <ResponseField name="name" type="string" optional>
   Filter by specification name (partial, case-insensitive match).
+</ResponseField>
+<ResponseField name="is_critical" type="bool" optional>
+  `True` lists only critical specifications, `False` only the others. Omit it to list both.
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
   Filter specifications created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.

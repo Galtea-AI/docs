@@ -48,6 +48,8 @@ Specifications are at the center of Galtea's recommended evaluation flow:
   The **Specifications** section also warns you when some of the product's datasets belong to no specification, since those datasets are left out when you generate from specifications. A dataset counts as unlinked when it never had a specification, or when every specification it had was deleted. The warning's **Review datasets** link opens the product's Datasets list already filtered to those datasets, where you can select them and link them to a specification in one action.
 
   If your description does not match the scope you are in, the form says so and will not save it. Describe something the product cannot do while in the positive scope and it tells you a thing a product cannot do should not be set as a specification; describe a capability or a rule while in the negative scope and it tells you a thing a product can do cannot be set as an inability. In the positive scope you can also correct a wrong classification yourself: **Advanced Options** holds a Capability/Policy choice, pre-filled by the AI. Inability is never offered there, because it belongs to the other scope.
+
+  A Capability or Policy form also has a **Critical** switch, for a specification whose failure is serious for the business. An Inability has no such switch, because it cannot be critical. The specifications table shows a **Critical** pill on each critical row, and its **Critical** filter (Yes or No) lists only one kind.
 </Note>
 
 <Card title="Specification-Driven Evaluations Tutorial" icon="rocket" href="/sdk/tutorials/specification-driven-evaluations">
@@ -128,6 +130,11 @@ The SDK allows you to create, list, retrieve, and delete specifications, as well
 
 <ResponseField name="metric_ids" type="list[string]" optional>
   List of metric IDs linked to this specification.
+</ResponseField>
+
+<ResponseField name="is_critical" type="bool" default="False">
+  Whether a failure of this specification is serious for the business, for example a missing legal text or a figure the product must not give.
+  Must not be `True` for `INABILITY` specifications.
 </ResponseField>
 
 <ResponseField name="created_at" type="string">
