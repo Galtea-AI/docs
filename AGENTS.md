@@ -57,7 +57,7 @@ No hand-written page is the API contract: the wire-level contract is the generat
 
 `run.py` builds the changelog page from `docs/changelog/entries/`, newest file name first, into `.build/` only. Never write a `changelog.mdx` page by hand.
 
-- **One entry per user-facing change, written by a person** in the PR that makes the change visible in production. Never copy a PR title. A refactor, a CI change or an internal fix gets no entry.
+- **One entry per user-facing change**, written for users in the PR that makes the change visible in production, by its author or by the agent that opens it. Never copy a PR title. A refactor, a CI change or an internal fix gets no entry.
 - **A feature behind a flag** gets its entry in the PR that turns the flag on for everyone, usually the PR that deletes the flag.
 - **Name:** `YYYYMMDD-HHMM-short-name.mdx`, with the time you write it (UTC). `run.py` refuses any other name, because the name sets the order.
 - **Body:** a `## Title` heading, with no frontmatter (`run.py` refuses it), then what the user can now do, rarely more than 3 sentences or 5 lines. A large feature can be longer. Link the docs pages; add code, an image or a table only when it helps.
