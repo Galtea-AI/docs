@@ -53,6 +53,16 @@ No hand-written page is the API contract: the wire-level contract is the generat
 1. Create the MDX file with frontmatter (`title`, `description`, `icon`)
 2. Add the page path to `docs.json` navigation
 
+## Changelog Entries
+
+`run.py` builds the changelog page from `docs/changelog/entries/`, newest file name first, into `.build/` only. Never write a `changelog.mdx` page by hand.
+
+- **One entry per user-facing change, written by a person** in the PR that makes the change visible in production. Never copy a PR title. A refactor, a CI change or an internal fix gets no entry.
+- **A feature behind a flag** gets its entry in the PR that turns the flag on for everyone, usually the PR that deletes the flag.
+- **Name:** `YYYYMMDD-HHMM-short-name.mdx`, with the time you write it (UTC). `run.py` refuses any other name, because the name sets the order.
+- **Body:** a `## Title` heading, with no frontmatter (`run.py` refuses it), then what the user can now do, rarely more than 3 sentences or 5 lines. A large feature can be longer. Link the docs pages; add code, an image or a table only when it helps.
+- **Edit an entry until a release ships it**, for example for a later part of a split feature. After that, a change gets a new entry ("You can now also do X in the dashboard").
+
 ## Component and Template Reference
 
 Component usage (Callouts, Tabs, Cards), SDK API reference page template, redirects, and image conventions are documented in `docs/component_reference.md`.
@@ -61,13 +71,13 @@ Component usage (Callouts, Tabs, Cards), SDK API reference page template, redire
 
 | ADR | Topic |
 |-----|-------|
-| `0001-docs-file-renames-and-redirects.md` | Docs page rename process: `docs.json` nav, permanent redirect, internal links; never delete a redirect; leave old changelogs untouched |
+| `0001-docs-file-renames-and-redirects.md` | Docs page rename process: `docs.json` nav, permanent redirect, internal links; never delete a redirect; leave shipped changelog entries untouched |
 
 ## Local Development
 
 Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`python scripts/run.py` to preview, `--validate` to validate). It also covers the Node version Mint needs and why the preview port is fixed.
 
-**After editing any MDX file, run `mint validate` from `docs/` (Node 22).** It is the fast local stand-in for the CI docs build and the only check that reports MDX parse errors. `mint broken-links` does **not**: it reports 0 parse errors on a file the build rejects, so a green run there proves nothing about syntax.
+**After editing any MDX file, run `mint validate` from `docs/` (Node 22).** It is the fast local stand-in for the CI docs build and the only check that reports MDX parse errors. It still exits 0 on one, so read its output for `parsing error`; `python scripts/run.py --validate` (the CI step) fails on that line. `mint broken-links` does **not**: it reports 0 parse errors on a file the build rejects, so a green run there proves nothing about syntax.
 
 **Write a component tag as a block, never with body text on the opening-tag line.** `<Warning>text` followed by a blank line makes MDX close the paragraph and fail with `Expected a closing tag for <Warning> ... before the end of paragraph`. Put the tag on its own line, indent the body, and close on its own line, as the `<Note>` blocks already do.
 
