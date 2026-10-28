@@ -76,6 +76,8 @@ WebRTC connections run **any** dataset type. No extra configuration is required 
   For single-turn (Accuracy/Security) datasets scored by **deterministic metrics**, leave **Agent Speaks First** unchecked (the default). When the agent speaks first, the call has two turns (the agent's greeting plus the scripted line), which deterministic metrics, designed for a single turn, cannot score correctly. Multi-turn (Behavior) datasets are unaffected.
 </Note>
 
+When your agent starts to speak while the simulated caller is talking, the caller stops within about one second, as it does on a [phone connection](/concepts/product/phone-connection). The turn's `input` then holds only the part of the line that played.
+
 The API automatically transcribes the agent's audio responses using speech-to-text, so no manual transcript preparation is required. Each recorded agent turn is transcribed before evaluation runs, and the written transcript is what metrics score. Your agent's voice output is evaluated as accurately as any text-based agent.
 
 Both sides of every turn are recorded and stored on the `Trace` for that turn:

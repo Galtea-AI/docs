@@ -78,6 +78,10 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
 </ResponseField>
 
+<ResponseField name="Turn Count" type="Integer" optional>
+  How many traces the session holds, not counting deleted ones. Read-only, and computed by the API on each request. Only the session list (`GET /sessions`) returns it: a read of one session leaves it out. Sort the list by it with `sort=turnCount` followed by `asc` or `desc`. Such a sort is refused with a 400 when more than 50,000 sessions match the filters, so narrow the list first, for example by `fromCreatedAt` and `toCreatedAt`.
+</ResponseField>
+
 <ResponseField name="Recording URI" type="Text" optional>
   The storage URI of the full-call recording for telephony sessions, returned under the deployment's public file base when one is set, otherwise as stored. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
 </ResponseField>
