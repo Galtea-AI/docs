@@ -96,6 +96,25 @@ When the API adds an operation, the operation reaches the CLI in the next CLI re
 `galtea sync` is deprecated. It does nothing, prints how to update the CLI, and will be removed. Remove it from your scripts.
 </Warning>
 
+### Deprecation warnings
+
+When you use a command, flag, or request body field that Galtea plans to remove, the CLI prints one line on stderr. The command still runs, and stdout holds only the response, so `galtea ... -o json > out.json` keeps working.
+
+Every warning has the same shape: what goes, when, and what to do next. These examples use made-up commands:
+
+```text
+warning: deprecated: `galtea products list` will be removed on 2027-04-30. Use `galtea products search` instead.
+warning: deprecated: the `--tags` flag of `galtea products list` will be removed on 2027-03-31. Use `--labels` instead.
+warning: deprecated: the `specificationId` field of `galtea datasets create` will be removed on 2027-04-30. It has no replacement: remove it from your scripts.
+warning: deprecated: `galtea products get` will be removed on 2027-05-01. Update the CLI to see what replaces it.
+```
+
+- **"Use ... instead"**: change your script to the replacement before the date.
+- **"It has no replacement"**: the feature is retired. Remove the call or the option before the date.
+- **"Update the CLI"**: the API deprecated this after your CLI version was released. [Update the CLI](/cli/installation#update), then run the command with `--help` to see its replacement.
+
+A deprecated command or flag no longer shows in `--help`, but it keeps working until its removal date. A command that was renamed keeps working under its old name until that date, and the warning names the new one.
+
 ### Hand it to your coding agent
 
 The CLI is a great fit for AI coding assistants. Install the [Galtea Agent Skill](/sdk/integrations/agent-skill) and Claude Code, Cursor, Windsurf, or any other Agent-Skills-compatible client will reach for `galtea` on your behalf — picking the right command, handling authentication, and following the workflows our team has already validated, so you don't have to brief your agent on Galtea first.
