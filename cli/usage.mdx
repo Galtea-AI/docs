@@ -119,7 +119,7 @@ A deprecated command or flag no longer shows in `--help`, but it keeps working u
 
 The CLI asks the Galtea platform if it serves your CLI version. It asks at `galtea login`, and before a command at most once a day. It also asks again right after you update the CLI.
 
-- **The platform cannot serve your CLI version.** This happens when the CLI is newer than the platform, or when the platform no longer supports its major version. The command stops with exit code `10` before it sends its request. The message names a pip command that installs a matching CLI, for example `pip install "galtea-cli==5.4.0"`. Only pip can install an older version.
+- **The platform cannot serve your CLI version.** This happens when the CLI is newer than the platform, or when the platform no longer supports its major version. The command stops with exit code `10` before it sends its request. The message names the command of each install tool (Homebrew, APT, DNF and pip) that installs a matching CLI, and links to [Install an older version](/cli/installation#install-an-older-version).
 - **Your CLI version has an end date.** A warning names the date and the update command of each install method. The command runs.
 - **A newer CLI is available.** A notice names the new version and the update commands. The command runs.
 

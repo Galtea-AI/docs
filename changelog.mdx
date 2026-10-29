@@ -4,13 +4,21 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Install an Older CLI With Any Package Manager
+
+APT and DNF now keep every CLI release from 4.24.0, as PyPI already did, and Homebrew keeps the newest patch of each minor version. You can install the CLI that matches an older Galtea platform with the tool you already use. When a CLI is too new for its platform, it now prints the install command for every tool. See [Install an older version](/cli/installation#install-an-older-version).
+
+## Text Content Parts Count as Text
+
+When a turn's input or output holds `{"type": "text", "text": ...}` content parts, the judge, monitors, `past_turns` and the dashboard now read their text, next to `user_message` or `assistant_message` and any other fields. Before, that text could be lost, or the judge got the whole value as JSON. In the SDK, `.input`, `.actual_output` and the message `traces.generate` sends now include this text, and an audio-only value gives its transcript instead of `None`. An output's other fields are now scored beside `assistant_message`. Every CSV export of an input or output now writes the stored value as it is, so you can import the file again. See the **Input** field of a [trace](/concepts/product/version/session/trace#trace-properties).
+
 ## Only owners manage billing
 
 Only an organization owner can now change the plan, open the billing portal or buy extra credits. Members still see the plan. See [Roles and permissions](/security/roles-and-permissions).
 
 ## See Which Product Needs Attention
 
-The organization's products page is now a table that shows, for each [product](/concepts/product), how many sessions came in, how many were evaluated, how many failed a [critical specification](/concepts/product/specification), and whether that rate got worse than in the period before. It also shows the estimated cost per session. Pick the period at the top right, sort by most columns, filter by name or tag, and pin the products you follow so they stay first. Click a row to open the product's analytics. The same numbers are available with `galtea analytics list-products`.
+The organization's products page is now a table that shows, for each [product](/concepts/product), how many sessions came in, how many were evaluated, how many failed a [critical specification](/concepts/product/specification), and whether that rate got worse than in the period before. It also shows the estimated cost per session. Pick the period at the top right: by default it covers the last 30 whole days, today included. Sort by most columns, filter by name or tag, and pin the products you follow so they stay first. Click a row to open the product's analytics. The same numbers are available with `galtea analytics list-products`.
 
 ## Mark a Specification as Critical
 

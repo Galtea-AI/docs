@@ -101,6 +101,53 @@ pip install --upgrade galtea-cli
 </Tab>
 </Tabs>
 
+### Install an older version
+
+A CLI runs only against a Galtea platform of the same version or newer. If your platform is older than the newest CLI, for example a self-hosted platform, install a CLI with the same major and minor version as the platform, or an older one. When the CLI is too new, it stops and prints the version to install.
+
+APT, DNF and pip keep every release from 4.24.0. Homebrew keeps the newest patch of each minor version. The examples install 5.4.0:
+
+<Tabs>
+<Tab title="macOS & Linux (Homebrew)">
+```bash
+# List the versions: one formula per minor version
+brew search galtea-ai/tap/galtea@
+
+# The formulas install the same `galtea` command, so remove the current one first
+brew uninstall galtea
+brew install galtea-ai/tap/galtea@5.4
+```
+
+`galtea@5.4` installs the newest 5.4.x release, and `brew upgrade` moves it only to newer 5.4.x releases.
+</Tab>
+<Tab title="Linux (Debian/Ubuntu)">
+```bash
+sudo apt update
+apt list -a galtea                 # list the versions
+
+sudo apt install galtea=5.4.0      # also downgrades a newer installed CLI
+sudo apt-mark hold galtea          # keep 5.4.0 on `apt upgrade`
+```
+</Tab>
+<Tab title="Linux (Fedora/RHEL)">
+```bash
+dnf list --showduplicates galtea   # list the versions
+
+sudo dnf install galtea-5.4.0      # also downgrades a newer installed CLI
+# Keep 5.4.0 on `dnf upgrade`. On dnf 4 (RHEL 8 and 9), first run:
+#   sudo dnf install python3-dnf-plugin-versionlock
+sudo dnf versionlock add galtea
+```
+</Tab>
+<Tab title="Python (any OS)">
+```bash
+pip install "galtea-cli==5.4.0"
+```
+
+The [galtea-cli PyPI page](https://pypi.org/project/galtea-cli/#history) lists the versions.
+</Tab>
+</Tabs>
+
 ### Uninstall
 
 <Tabs>
