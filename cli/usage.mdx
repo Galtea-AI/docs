@@ -115,6 +115,18 @@ warning: deprecated: `galtea products get` will be removed on 2027-05-01. Update
 
 A deprecated command or flag no longer shows in `--help`, but it keeps working until its removal date. A command that was renamed keeps working under its old name until that date, and the warning names the new one.
 
+### Version checks
+
+The CLI asks the Galtea platform if it serves your CLI version. It asks at `galtea login`, and before a command at most once a day. It also asks again right after you update the CLI.
+
+- **The platform cannot serve your CLI version.** This happens when the CLI is newer than the platform, or when the platform no longer supports its major version. The command stops with exit code `10` before it sends its request. The message names a pip command that installs a matching CLI, for example `pip install "galtea-cli==5.4.0"`. Only pip can install an older version.
+- **Your CLI version has an end date.** A warning names the date and the update command of each install method. The command runs.
+- **A newer CLI is available.** A notice names the new version and the update commands. The command runs.
+
+The warning and the notice print only on the run that asks, so you see them at most once a day. If the platform cannot answer, the command runs.
+
+If `galtea login` finds a CLI version the platform cannot serve, it does not save the key and exits with code `10`. Install a matching CLI, then log in again. The commands that report on the platform itself, such as `galtea health`, `galtea build-info` and `galtea platform-compatibility`, skip the check, so they still run on a blocked CLI.
+
 ### Hand it to your coding agent
 
 The CLI is a great fit for AI coding assistants. Install the [Galtea Agent Skill](/sdk/integrations/agent-skill) and Claude Code, Cursor, Windsurf, or any other Agent-Skills-compatible client will reach for `galtea` on your behalf — picking the right command, handling authentication, and following the workflows our team has already validated, so you don't have to brief your agent on Galtea first.
