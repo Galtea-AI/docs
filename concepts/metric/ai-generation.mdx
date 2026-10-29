@@ -72,7 +72,7 @@ Complete with AI is available for **AI Evaluation** and **Human Evaluation** met
 - For **AI Evaluation**, it produces a binary LLM-judge prompt and sets the platform's default evaluator model, which you can change before saving.
 - For **Human Evaluation**, it produces annotator guidelines on a 0–100 scoring scale (no evaluator model, since a human assigns the score).
 
-For **AI Evaluation** with the **Classifier (Jev)** judge, it builds the metric's one question from the description:
+For **AI Evaluation** with the **Classifier** judge, it builds the metric's one question from the description:
 
 - One condition that always applies gets a Yes/No question with its **Good answer**, or a Scale question for a graded quality.
 - One condition that applies only sometimes gets a Scale question with a **Does not apply** level.
@@ -80,7 +80,7 @@ For **AI Evaluation** with the **Classifier (Jev)** judge, it builds the metric'
 - Several conditions where some do not always apply get no question. Create one metric per condition.
 - Any part it could not turn into a question (counting, dates, exact text) is listed with a suggested alternative.
 
-The question is a draft for you to review. See [Classifier (Jev)](/concepts/metric/classifier#complete-with-ai).
+The question is a draft for you to review. See [Classifier](/concepts/metric/classifier#complete-with-ai).
 
 **Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/concepts/metric/evaluation-types) for the differences between these scoring methods.
 

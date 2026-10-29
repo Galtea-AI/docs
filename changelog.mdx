@@ -20,6 +20,10 @@ Only an organization owner can now change the plan, open the billing portal or b
 
 The organization's products page is now a table that shows, for each [product](/concepts/product), how many sessions came in, how many were evaluated, how many failed a [critical specification](/concepts/product/specification), and whether that rate got worse than in the period before. It also shows the estimated cost per session. Pick the period at the top right: by default it covers the last 30 whole days, today included. Sort by most columns, filter by name or tag, and pin the products you follow so they stay first. Click a row to open the product's analytics. The same numbers are available with `galtea analytics list-products`.
 
+## Retirement Emails Name the Evaluator Model
+
+The retirement warning now arrives as "Action needed: an evaluator model used by your metrics is retiring", and the notice after the date speaks of evaluator models too. Each email suggests other [models](/concepts/model) of the same kind you can move to. To list the models of one kind, pass `kind` to `GET /evaluatorModels` (`LLM_JUDGE` by default); each model now also returns its `kind`.
+
 ## Mark a Specification as Critical
 
 You can now mark a Capability or Policy [specification](/concepts/product/specification) as critical, when its failure is serious for your business. Use the **Critical** switch in the dashboard, `is_critical` in [`specifications.create()`](/sdk/api/specification/create), or `galtea specifications update` for an existing one. Critical specifications show a red **Critical** pill, and the **Critical** filter lists only them or only the others. [`specifications.list()`](/sdk/api/specification/list) filters the same way.

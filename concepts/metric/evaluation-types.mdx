@@ -31,16 +31,16 @@ An LLM scores responses using a scoring rubric you define. You provide the core 
   The non-deterministic metrics, powered by Large Language Models that act as Judges, utilize models that have demonstrated the best performance in our internal benchmarks and testing. We are committed to continuously evolving and improving these evaluator models to ensure the highest quality assessments over time.
 </Note>
 
-### Choose the judge: LLM judge or Classifier (Jev)
+### Choose the judge: LLM judge or Classifier
 
 The **Judge** field picks what scores the metric.
 
 - **LLM judge**: an evaluator model reads your judge prompt and parameters and returns a score with its reasoning; the cost depends on the model.
-- **Classifier (Jev)**: TypeSafe's Jev answers one typed question (Yes/No or Scale) with probabilities. It writes no reasoning and costs 1 credit. It is available only where the deployment enables it; SDK `source="classifier"`.
+- **Classifier**: a classifier model answers one typed question (Yes/No or Scale) with probabilities. It writes no reasoning and costs 1 credit. It is available only where the deployment enables it; SDK `source="classifier"`.
 
 The steps below describe the LLM judge.
 
-<Card title="Classifier (Jev)" icon="bolt" href="/concepts/metric/classifier">
+<Card title="Classifier" icon="bolt" href="/concepts/metric/classifier">
   Score a metric with one typed question instead of a judge prompt.
 </Card>
 

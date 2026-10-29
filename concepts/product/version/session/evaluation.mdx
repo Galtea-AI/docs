@@ -36,7 +36,7 @@ Every evaluation list has a **Judge Score** filter and a **Human Score** filter.
 
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
 - **Human Score** reads the reviewer's score only.
-- **Confidence** reads the confidence of a [Classifier (Jev)](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Confidence** reads the confidence of a [Classifier](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
 - **Result** (open **Filters**, then choose **Result**) keeps the evaluations that passed or failed their metric's [pass threshold](/concepts/metric#pass-threshold). Pick both options, or none, and the filter does nothing. It follows the reported score, so a human review counts, unlike the Judge Score filter. The **Result** column shows PASS, FAIL or a dash, is hidden by default, and is included in the CSV export.
 - An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
@@ -83,9 +83,9 @@ Once an evaluation completes, the following fields are available:
     - The metric could not read the actual output, for example plain text where [JSON Field Match](/concepts/metric/json-field-match) expects a JSON object. `canRetry` is `true`, but a retry reads the same stored output.
     - A [JSON Field Match](/concepts/metric/json-field-match) metric could not use the test case's expected output: it is not valid JSON, it is nested too deeply or holds a number too long to read, it is not a JSON object, or a [field rule](/concepts/metric/json-field-match#field-rules) in it is invalid. The error message names the field and the problem. Fix the test case and retry: a retry reads the current test case.
     - The judge model was unavailable.
-    - The evaluator model's content safety filter blocked the request. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model. For G-Eval based built-in metrics, a blocked request also ends as Skipped, and a filtered reply can end as Failed. Neither shows this advice. [Classifier](/concepts/metric/classifier) metrics do not detect a block yet.
+    - The evaluator model's content safety filter blocked the request. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model. For G-Eval based built-in metrics, a blocked request also ends as Skipped, and a filtered reply can end as Failed. Neither shows this advice.
     - The judge's answer was cut off by the metric's own `max_output_tokens`. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same metric and the same limit, so create a revision of the metric with a higher `max_output_tokens`, or none, and evaluate the session again with that revision.
-    - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, or the input was too long for the classifier.
+    - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, the input was too long for the classifier, or the classifier model's content safety filter blocked the request. After a block, a retry uses the same model, so evaluate the session with a metric that uses a different classifier model.
     - The [applicability check](/concepts/metric#applicability-check) found that the metric does not apply to the session. The message gives the probability that it applies and the metric's threshold. No credits are charged, and `canRetry` is `false`, because a retry asks the same question about the same session.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
@@ -151,13 +151,13 @@ Once an evaluation completes, the following fields are available:
 
 <Note>The API returns `creditsUsed` and the three judge token fields as `null` to a user without the `evaluation.readInference` permission, such as a Reader. See [Roles and permissions](/security/roles-and-permissions).</Note>
 
-<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/concepts/metric/classifier) metric, these token fields count Jev's tokens.</Note>
+<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/concepts/metric/classifier) metric, these token fields count the classifier model's tokens.</Note>
 
 <ResponseField name="Score Breakdown" type="Object" optional>
   How a [classifier](/concepts/metric/classifier) metric reached its score, read-only and set by the API. Present only for `CLASSIFIER` metrics. The fields depend on the question type:
 
   - `version`: the breakdown schema version, `2`.
-  - `model`: the classifier model that answered, such as `jev-1.13.0`.
+  - `model`: the classifier model that answered, such as `jev-1.13.0`. A gateway decision model answers with its base group name, so a metric on `eu.microsoft-decision-1` records `microsoft-decision-1`.
   - `type`: `yes_no` or `scale`.
   - `value`: the score.
   - `confidence`: the same value as the evaluation's **Confidence**.

@@ -1,18 +1,26 @@
 ---
-title: "Classifier (Jev)"
-sidebarTitle: "Classifier (Jev)"
-description: "Score an AI Evaluation metric with one typed question that TypeSafe's Jev answers with probabilities, for 1 credit"
+title: "Classifier"
+sidebarTitle: "Classifier"
+description: "Score an AI Evaluation metric with one typed question that a classifier model answers with probabilities, for 1 credit"
 icon: "bolt"
 ---
 
 ## What the classifier is
 
-The classifier is a judge for an **AI Evaluation** metric. It uses Jev, a decision model from TypeSafe. Jev answers one typed question about the conversation and returns a probability for each answer. It writes no reasoning.
+The classifier is a judge for an **AI Evaluation** metric. A classifier model answers one typed question about the conversation and returns a probability for each answer. It writes no reasoning.
 
 - It is fast: an answer usually takes less than a second.
-- It costs 1 credit per evaluation.
+- It costs 1 credit per evaluation, whatever the classifier model.
 
-In the metric form, pick **AI Evaluation**, then **Judge: Classifier (Jev)**. The classifier is available only where your deployment enables it. In the SDK, the metric source is `"classifier"`.
+In the metric form, pick **AI Evaluation**, then **Judge: Classifier**. The classifier is available only where your deployment enables it. In the SDK, the metric source is `"classifier"`.
+
+## Choose the classifier model
+
+A classifier model is a decision model that the LLM gateway of your deployment serves. It is either a TypeSafe Jev version, such as `jev-1.13.0`, or another decision model, such as `microsoft-decision-1`. Each deployment decides which classifier models it offers. A Jev version is offered only where the gateway of the deployment serves it.
+
+- **In the dashboard**, the metric form and the **Convert to classifier** page show a **Classifier Model** picker when your deployment offers several classifier models, and you must pick one. With one model, there is no picker, and the metric uses that model. **Test on a sample** runs with the same model.
+- **In the SDK and the API**, send the model as `evaluator_model_name` (`evaluatorModelName` in the API). With one selectable classifier model, you can leave it out and the API uses that model. With several, the API answers 400 until you name one. A name that is not a selectable classifier model also gets a 400. `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true` lists them.
+- **A metric keeps its model.** To change it, create a revision with another classifier model.
 
 ## When to use it
 
@@ -69,29 +77,29 @@ A Scale question has 2 to 10 levels, or 2 to 9 levels when it has a Does not app
 
 ## How the score is calculated
 
-The score is the expected value of Jev's answer, not only its most probable answer.
+The score is the expected value of the classifier's answer, not only its most probable answer.
 
-- **Yes/No**: the probability of the good answer. When Jev gives "yes" a probability of 0.99 and the good answer is No, the score is 0.01.
-- **Scale**: the level scores, each weighted by its probability, divided by the total probability of the scored levels. So the Does not apply probability does not lower the score. Jev answers 0.1 for "Does not offer a transfer" (score 0) and 0.9 for "Offers a transfer" (score 1), so the score is 0.9.
+- **Yes/No**: the probability of the good answer. When the classifier gives "yes" a probability of 0.99 and the good answer is No, the score is 0.01.
+- **Scale**: the level scores, each weighted by its probability, divided by the total probability of the scored levels. So the Does not apply probability does not lower the score. The classifier answers 0.1 for "Does not offer a transfer" (score 0) and 0.9 for "Offers a transfer" (score 1), so the score is 0.9.
 
 ### Yes/No or a 2-level Scale
 
-The same rule can give different numbers in the two forms. A Yes/No score is the probability of the good answer, so a borderline reply shows doubt. In a test of five card-number checks, both forms gave the same answer, but Yes/No scored 0.99 or 0.01 and the 2-level Scale scored exactly 0 or 1. So a 2-level Scale can hide doubt that Yes/No shows.
+The same rule can give different numbers in the two forms. A Yes/No score is the probability of the good answer, so a borderline reply shows doubt. In a test of five card-number checks on Jev, both forms gave the same answer, but Yes/No scored 0.99 or 0.01 and the 2-level Scale scored exactly 0 or 1. So a 2-level Scale can hide doubt that Yes/No shows.
 
-- **Prefer Yes/No** when the rule applies in every conversation. The score then tells you how sure Jev is.
+- **Prefer Yes/No** when the rule applies in every conversation. The score then tells you how sure the classifier is.
 - **Prefer a Scale** when the rule applies only sometimes, because only a Scale has a Does not apply level. Also use it for a graded quality with three or more levels.
 - **With a 2-level Scale**, read the confidence next to the score to see doubt that the score hides.
 
-Each result shows a **confidence** next to the score, from 0 to 1. For a Yes/No question, it is the probability of the more probable answer. For a Scale question, Jev reports it. Confidence values do not compare across question types.
+Each result shows a **confidence** next to the score, from 0 to 1. For a Yes/No question, it is the probability of the more probable answer. For a Scale question, the classifier model reports it. Confidence values do not compare across question types.
 
-The reason is a fixed sentence, for example `Jev answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` The metric applies no threshold to the score. An evaluation passes when its reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/concepts/product/version/session/evaluation)).
+The reason is a fixed sentence, for example `The classifier answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` The metric applies no threshold to the score. An evaluation passes when its reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/concepts/product/version/session/evaluation)).
 
 ## One question per metric
 
 A metric asks one question, so its result tells you about one thing. When your description has several conditions:
 
 - **Every condition always applies**: you can list them all in one Yes/No question ("Does `{{ actual_output }}` do A and B?"). The result cannot show which condition failed.
-- **Some conditions apply only sometimes**: create one metric per condition. A question that merges them needs conditional wording, which Jev answers less reliably.
+- **Some conditions apply only sometimes**: create one metric per condition. A question that merges them needs conditional wording, which the classifier answers less reliably.
 
 To see each condition's result on its own, create one metric per condition in both cases.
 
@@ -99,7 +107,7 @@ To see each condition's result on its own, create one metric per condition in bo
 
 <AccordionGroup>
   <Accordion title="Ask about the property itself, and set Good answer">
-    Jev answers positive questions more reliably than negated ones.
+    The classifier answers positive questions more reliably than negated ones.
 
     **Avoid:** "Is `{{ actual_output }}` free of card number requests?"
 
@@ -107,7 +115,7 @@ To see each condition's result on its own, create one metric per condition in bo
   </Accordion>
 
   <Accordion title="Use concrete words">
-    Jev answers better when the question names what to look for.
+    The classifier answers better when the question names what to look for.
 
     **Avoid:** "Does `{{ actual_output }}` share another customer's personal data?"
 
@@ -125,7 +133,7 @@ To see each condition's result on its own, create one metric per condition in bo
   </Accordion>
 
   <Accordion title="Name the field in the Does not apply text">
-    Jev receives only the fields that your question names, in any of its texts. A placeholder in the Does not apply text sends that field too. Do not name more fields than the question needs: extra data lowers Jev's accuracy.
+    The classifier receives only the fields that your question names, in any of its texts. A placeholder in the Does not apply text sends that field too. Do not name more fields than the question needs: extra data lowers the classifier's accuracy.
 
     **Avoid:** "Does not apply: the user did not ask for a human."
 
@@ -133,11 +141,11 @@ To see each condition's result on its own, create one metric per condition in bo
   </Accordion>
 
   <Accordion title="Write the question in English">
-    Jev answers English questions best, also for conversations in Spanish or Catalan. Keep the question, the levels and the Does not apply text in English.
+    The classifier answers English questions best, also for conversations in Spanish or Catalan. Keep the question, the levels and the Does not apply text in English.
   </Accordion>
 
-  <Accordion title="Do not ask Jev to count, do arithmetic, compare dates or match exact text">
-    Jev cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching. For a pattern, a number or a date in a JSON field, use the [field rules](/concepts/metric/json-field-match#field-rules) of JSON Field Match.
+  <Accordion title="Do not ask the classifier to count, do arithmetic, compare dates or match exact text">
+    The classifier cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching. For a pattern, a number or a date in a JSON field, use the [field rules](/concepts/metric/json-field-match#field-rules) of JSON Field Match.
   </Accordion>
 
   <Accordion title="Test the question before you save it">
@@ -157,12 +165,12 @@ Read the draft and test it before you save. See [Generate Metrics with AI](/conc
 
 ## Convert an LLM judge metric
 
-**Convert to classifier** turns an LLM judge metric into classifier metrics. It is a button on the metric's page. The AI reads the judge prompt and writes one question for each condition in it. Each question becomes its own **Classifier (Jev)** metric.
+**Convert to classifier** turns an LLM judge metric into classifier metrics. It is a button on the metric's page. The AI reads the judge prompt and writes one question for each condition in it. Each question becomes its own **Classifier** metric.
 
 The button shows only for an LLM judge metric that has a judge prompt, where classifier metrics are on and your role can create metrics. The source can be a metric of your organization or a Galtea metric. The new metrics always belong to your organization. It is off while an optimization of the metric runs or waits for review, and for a metric with too many revisions to check for one.
 
 1. **Generate questions.** The AI splits the judge prompt. This takes 10 to 40 seconds. Nothing is saved and no credits are charged.
-2. **Check the proposals.** Pick how many metrics to create. Edit a question or leave it out.
+2. **Check the proposals.** Pick how many metrics to create, and the classifier model they all use. Edit a question or leave it out.
 3. **Create.** Galtea creates all the metrics you kept in one step. If one is refused, for example because its name is taken, none is created.
 
 You can pick one of two options when at least two conditions became questions:
@@ -185,17 +193,20 @@ A new revision can also change the judge, to try the classifier in place of an L
 ## Limits
 
 - **Text only**: images, audio, PDFs and other files are left out.
-- **Input size**: Jev accepts about 32,000 tokens of conversation plus the question. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
-- **Long input**: when Jev reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
+- **Input size**: the classifier model accepts about 32,000 tokens of conversation plus the question. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
+- **Long input**: when the classifier model reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
 - **Skipped evaluations**: analytics show how many evaluations were skipped, next to the passed and not passed counts.
-- **Model version**: the metric stores the Jev version it runs with, such as `jev-1.13.0`. Every result records it in `score_breakdown.model`.
-- **Prompt injection**: the conversation itself can try to steer Jev. Clear questions reduce the risk but do not remove it.
+- **Classifier model**: the metric stores its classifier model, such as `jev-1.13.0`. To change it, create a revision with another classifier model. Every result records the model that answered in `score_breakdown.model`. A gateway decision model answers with its base group name, so a metric on `eu.microsoft-decision-1` records `microsoft-decision-1`.
+- **Prompt injection**: the conversation itself can try to steer the classifier. Clear questions reduce the risk but do not remove it.
 
 ## Data processing
 
-To score a classifier metric, Galtea sends the question and the fields it names to TypeSafe, which processes them in the United States. Files are never sent. See [TypeSafe legal](https://typesafe.ai/legal).
+To score a classifier metric, Galtea sends the question and the fields it names to the provider of the metric's classifier model. Files are never sent.
 
-Where the deployment enables the [applicability check](/concepts/metric#applicability-check), the same provider also receives data for every metric that gets the check, not only for classifier metrics. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
+- **A `jev-*` model**: the data goes to TypeSafe, which processes it in the United States. See [TypeSafe legal](https://typesafe.ai/legal).
+- **Any other decision model**: the data goes to the provider that serves that model on your deployment.
+
+Where the deployment enables the [applicability check](/concepts/metric#applicability-check), the provider of the deployment's decision model also receives data for every metric that gets the check, not only for classifier metrics. That decision model is the evaluator setting `DECISION_MODEL`: a Jev version by default, or another decision model. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
 
 ## Create a classifier metric with the SDK
 
@@ -224,4 +235,4 @@ human_transfer_metric = galtea.metrics.create(
 )
 ```
 
-The API derives `evaluation_params` from the placeholders in every text of the question: here `actual_output` for the first metric, and `actual_output` and `input` for the second. Leave out `evaluator_model_name`: the API picks the classifier model. The API checks every rule of the question, including the placeholder names, and refuses a question that breaks one. See [Create a metric](/sdk/api/metric/create).
+The API derives `evaluation_params` from the placeholders in every text of the question: here `actual_output` for the first metric, and `actual_output` and `input` for the second. The snippet leaves out `evaluator_model_name`, which works when your deployment has one selectable classifier model. With several, pass one as `evaluator_model_name`. The API checks every rule of the question, including the placeholder names, and refuses a question that breaks one. See [Create a metric](/sdk/api/metric/create).

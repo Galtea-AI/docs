@@ -51,7 +51,7 @@ metric = galtea.metrics.create(
 )
 ```
   </Tab>
-  <Tab title="Classifier (Jev)">
+  <Tab title="Classifier">
 ```python
 from galtea import ClassifierScaleQuestion, ClassifierYesNoQuestion, evenly_spaced_levels
 
@@ -140,7 +140,7 @@ human_transfer_metric = galtea.metrics.create(
   Model names are case-insensitive.
 
   <Note>
-    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `classifier`: leave it out, and the API picks the classifier model (such as `jev-1.13.0`). A name you send must be a classifier model of your deployment.
+    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `classifier` and your deployment has one selectable classifier model (such as `jev-1.13.0`): leave it out, and the API uses that model. With several selectable classifier models, the API answers 400 until you name one. A name you send must be a selectable classifier model of your deployment.
   </Note>
 </ResponseField>
 <ResponseField name="judge_prompt" type="string" optional>
@@ -151,7 +151,7 @@ human_transfer_metric = galtea.metrics.create(
   - `"partial_prompt"` — [AI Evaluation](/concepts/metric#creating-custom-metrics-via-ai-evaluation): You provide the core evaluation criteria and rubric. Galtea dynamically constructs the final prompt by prepending selected evaluation parameters to your criteria.
   - `"human_evaluation"` — **Human Evaluation**: Human annotators manually review and score evaluations using the annotation criteria you define. Evaluations enter a `PENDING_HUMAN` status and are completed when an annotator submits a score.
   - `"self_hosted"` — [Self-Hosted](/concepts/metric#self-hosted): For deterministic metrics scored locally using the SDK's `CustomScoreEvaluationMetric`. Your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform.
-  - `"classifier"` — [Classifier (Jev)](/concepts/metric/classifier): TypeSafe's Jev answers one typed question, which requires `classifier_question`. On a deployment without the classifier, the API answers 400 and `create` returns `None`.
+  - `"classifier"` — [Classifier](/concepts/metric/classifier): a classifier model answers one typed question, which requires `classifier_question`. On a deployment without the classifier, the API answers 400 and `create` returns `None`.
 
   Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
