@@ -4,6 +4,10 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Only owners manage billing
+
+Only an organization owner can now change the plan, open the billing portal or buy extra credits. Members still see the plan. See [Roles and permissions](/security/roles-and-permissions).
+
 ## Mark a Specification as Critical
 
 You can now mark a Capability or Policy [specification](/concepts/product/specification) as critical, when its failure is serious for your business. Use the **Critical** switch in the dashboard, `is_critical` in [`specifications.create()`](/sdk/api/specification/create), or `galtea specifications update` for an existing one. Critical specifications show a red **Critical** pill, and the **Critical** filter lists only them or only the others. [`specifications.list()`](/sdk/api/specification/list) filters the same way.
