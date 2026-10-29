@@ -4,6 +4,10 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## SDK Creates Say When the Record Was Stored
+
+When the platform stores a new record but cannot return it, an SDK `create` now raises `WrittenResourceUnreadableException` instead of returning `None`. The record exists, so do not create it again: read it with the service's `get` or `list` method. See [Errors](/sdk/api/galtea#errors).
+
 ## Install an Older CLI With Any Package Manager
 
 APT and DNF now keep every CLI release from 4.24.0, as PyPI already did, and Homebrew keeps the newest patch of each minor version. You can install the CLI that matches an older Galtea platform with the tool you already use. When a CLI is too new for its platform, it now prints the install command for every tool. See [Install an older version](/cli/installation#install-an-older-version).

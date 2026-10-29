@@ -33,4 +33,6 @@ An update answers `204`. A create answers `201` with only the `Location` header,
 
 The API also answers with no body when the write succeeded but the read after it failed: `201` with `Location` for a create, `204` for an update. It does not answer an error in that case, because the change is already saved and a retry would repeat it. If your client reads the body, handle this answer: take the id from `Location` (create) or from the path you called (update), and read the resource with its `GET` when you need its fields.
 
+The Galtea SDK and dashboard already do this for a single-resource write: they read the resource with its `GET`. When that read also fails, the SDK raises `WrittenResourceUnreadableException`.
+
 `POST /metrics/bulk` and `POST /metrics/batch` answer the created ids instead of the rows in that case: `{ "metrics": [{ "id": "..." }] }` and `[{ "id": "..." }]`. Read the metrics by id when you need their fields.

@@ -5,7 +5,7 @@ description: "Create a new endpoint connection for a product."
 ---
 
 ## Returns
-Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given parameters, or `None` if an error occurs.
+Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given parameters, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
 
 ## Example
 ```python

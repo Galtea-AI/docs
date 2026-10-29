@@ -8,7 +8,7 @@ Only an OWNER or ADMIN can create a user group.
 
 ## Returns
 
-Returns a [User Group](/concepts/user-group) object, or `None` if an error occurs.
+Returns a [User Group](/concepts/user-group) object, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
 
 ## Example
 ```python

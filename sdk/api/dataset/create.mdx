@@ -5,7 +5,7 @@ description: "Create a dataset for your product."
 ---
 
 ## Returns
-Returns a [Dataset](/concepts/product/dataset) object for the given parameters.
+Returns a [Dataset](/concepts/product/dataset) object for the given parameters. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
 
 ## Examples
 <Tabs>

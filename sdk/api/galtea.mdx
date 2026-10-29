@@ -50,7 +50,7 @@ products = galtea.products.list(limit=10)
 
 ### Errors
 
-Every call reaches the platform over HTTP, so a failure arrives as a `requests` exception.
+Every call reaches the platform over HTTP, so most failures arrive as a `requests` exception. The errors below are the ones the SDK raises itself.
 
 When the platform holds nothing under the id or name you passed, the SDK raises
 `EntityNotFoundException`. It covers every service: `products.get`, `versions.get_by_name`,
@@ -82,6 +82,14 @@ product, [`versions.get_by_name`](/sdk/api/version/get-by-name) raises `Ambiguou
 instead of picking one. Import it with `from galtea import AmbiguousVersionNameException`. The
 message lists each match, so you can call [`galtea.versions.get`](/sdk/api/version/get) with the ID
 you want. No other service raises it.
+
+A write can also succeed and still fail to return its result. When the platform stores a create or
+an update but cannot send the stored record back, the SDK reads it once more itself. If that read
+fails too, or the platform does not say where the record is, the SDK raises
+`WrittenResourceUnreadableException`, a `RuntimeError` and not a `requests` exception. The record
+exists, so do not write it again: a second create with the same name fails as a duplicate. When the
+SDK knows the id of the stored record, the message names it and `resource_id` holds it: read it with
+the service's `get` method. Otherwise `resource_id` is `None`: find it with the service's `list` method. Import it with `from galtea import WrittenResourceUnreadableException`.
 
 <Note>
   Only a 404 that names an entity becomes `EntityNotFoundException`. A 404 for a path the API does
