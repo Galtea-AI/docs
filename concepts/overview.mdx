@@ -38,6 +38,10 @@ flowchart TD
     M[Metrics]
     R[Runs]
 
+    %% Declared first so Versions sits left of Test Cases and its edge into Sessions does not cross theirs
+    P --> |Iterated with| V
+    V --> |Linked to| EC
+    V --> |Evaluated in| S
     P --> |Defined by| Spec
     Spec -.-> |Challenged by| T
     T -.-> |Groups| TC
@@ -47,10 +51,6 @@ flowchart TD
     S --> |Judged in| E
     Spec --> |Evaluated with| M
     E --> |Scored by| M
-
-    P --> |Iterated with| V
-    V --> |Linked to| EC
-    V --> |Evaluated in| S
 
     P --> |Launched in| R
     R --> |Groups| E
