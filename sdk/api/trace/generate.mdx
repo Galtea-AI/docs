@@ -76,7 +76,7 @@ The `generate()` method automatically captures and saves:
 |------|--------|-------------|
 | **Input** | `input` parameter | The user's input (string or structured dict) |
 | **Output** | `AgentResponse.content` | The agent's response |
-| **Output Files** | `AgentResponse.output_file_paths` | Files the agent answers with. Each entry is a local path the SDK uploads, or a storage URI from an earlier upload. `content` may be empty when the files carry the whole answer, and the turn is still recorded as generated. Evaluators cannot read these files yet, so a metric that reads the output is skipped unless some turn of the session answered with text of its own. See [Upload Output File](/sdk/api/trace/upload-output-file). |
+| **Output Files** | `AgentResponse.output_file_paths` | Files the agent answers with. Each entry is a local path the SDK uploads, or a storage URI from an earlier upload. `content` may be empty when the files carry the whole answer, and the turn is still recorded as generated. Evaluators cannot read these files yet, so the API skips a metric that reads the output unless some turn of the session answered with text of its own. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones when any turn they read carries an output file. See [Upload Output File](/sdk/api/trace/upload-output-file). |
 | **Retrieval Context** | `AgentResponse.retrieval_context` | Context used (for RAG). Stored as a `RETRIEVER` span, not a readable field on the returned trace. |
 | **Latency** | Measured | End-to-end execution time in ms |
 | **Usage Info** | `AgentResponse.usage_info` | Token counts (if provided) |

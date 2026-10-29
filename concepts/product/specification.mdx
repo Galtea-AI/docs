@@ -49,7 +49,7 @@ Specifications are at the center of Galtea's recommended evaluation flow:
 
   If your description does not match the scope you are in, the form says so and will not save it. Describe something the product cannot do while in the positive scope and it tells you a thing a product cannot do should not be set as a specification; describe a capability or a rule while in the negative scope and it tells you a thing a product can do cannot be set as an inability. In the positive scope you can also correct a wrong classification yourself: **Advanced Options** holds a Capability/Policy choice, pre-filled by the AI. Inability is never offered there, because it belongs to the other scope.
 
-  A Capability or Policy form also has a **Critical** switch, for a specification whose failure is serious for the business. An Inability has no such switch, because it cannot be critical. The specifications table shows a **Critical** pill on each critical row, and its **Critical** filter (Yes or No) lists only one kind.
+  A Capability or Policy form also has a **Critical** switch, for a specification whose failure is serious for the business. An Inability has no such switch, because it cannot be critical. The specifications table shows a **Critical** pill on each critical row, and its **Critical** filter (Yes or No) lists only one kind. When the AI writes a specification for you (**Fill with AI**, **Complete with AI**, or the specifications it proposes while you create a product), it also suggests the Critical flag. It marks a rule critical only when its failure would break a legal duty, lose or misstate money, expose personal data, put someone's safety at risk, take an action that cannot be undone (a payment, a deletion), or seriously damage the brand (illegal, hateful, or discriminatory content). When unsure, it suggests not critical. A critical suggestion turns the switch on, and you can turn it off before saving. A suggestion that is not critical turns the switch off only when an earlier AI suggestion turned it on; a switch you turned on yourself stays on. The form for your first product, right after sign-up, has no Critical switch: it saves every specification it generates as not critical, and you can mark one critical later in its edit form.
 </Note>
 
 <Card title="Specification-Driven Evaluations Tutorial" icon="rocket" href="/sdk/tutorials/specification-driven-evaluations">
@@ -72,10 +72,12 @@ Each suggestion carries a `status`:
 - `updated` — a candidate that refines or extends an existing specification (includes a reference to the existing spec).
 - `contradictory` — a candidate that conflicts with an existing specification (includes a reference to the existing spec).
 
+Each suggestion also carries `isCritical`, the suggested Critical flag. It applies only when you create a specification from a `new` suggestion. Applying an `updated` or `contradictory` suggestion keeps the flag the existing specification has.
+
 The endpoint **persists nothing**. Applying a suggestion — creating a new specification, updating an existing one, or removing a contradicted one — is a separate, explicit step using the standard specification endpoints in the [REST API](/api-reference). This means nothing changes without your confirmation and unaffected specifications remain untouched.
 
 <Info>
-  The dashboard flow for reviewing and applying suggestions is tracked in a follow-up. In the meantime the endpoint is available via the [REST API](/api-reference) and the CLI (`galtea products regenerate-config`).
+  In the dashboard, the product's **Update specifications from document** action uploads the document and opens a review of the suggestions, where you accept, edit, or discard each one. The endpoint is also available via the [REST API](/api-reference) and the CLI (`galtea products regenerate-config`).
 </Info>
 
 ## SDK Integration
