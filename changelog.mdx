@@ -20,6 +20,10 @@ APT and DNF now keep every CLI release from 4.24.0, as PyPI already did, and Hom
 
 On deployments that do not send files to the judge, an LLM-as-a-judge metric, custom judge metrics included, now ends **Skipped** when a turn it reads carries an attached file, and the reason names the file. Before, the judge scored the turn's text alone, so the score could describe a document the judge never saw. DeepEval-based and classifier metrics still score the text. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 
+## See How a Product Is Going and What Fails Most
+
+A product's Analytics has a new **Summary** view next to **Details**, which still opens by default and shows the charts as before. Once you pick Summary, Analytics keeps opening on it. Summary shows the product's sessions and estimated cost for one period, and lists the [specifications](/concepts/product/specification) that failed most, critical failures first. Each specification shows its share of failed sessions, and whether it got worse or better than in the previous period. Its name opens the specification, and a click on its row opens the sessions that failed it on the specification's **Sessions** tab, where a new **Evaluations** filter keeps only the failed ones. The same list is available with `galtea analytics list-failing-specifications`.
+
 ## See and Open Voice and File Outputs the Same Way
 
 The [agent's answer](/concepts/product/version/session/trace) now gets the same file and voice marks as the input. The evaluations table's Output column, the sessions table's Last Output column and the evaluation conversation summary show a file or voice icon beside the answer's text, and name the file when the answer is only a file, instead of an empty cell. The full-text dialog lists the answer's files and plays its audio.
