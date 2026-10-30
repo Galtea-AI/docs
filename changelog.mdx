@@ -42,7 +42,9 @@ The retirement warning now arrives as "Action needed: an evaluator model used by
 
 ## Limit What a User Group May Do on Its Products
 
-You can now give a user group a [permission list](/concepts/user-group#permission-lists): the product actions its users may do on the products the group links, for example only reading analytics. A group with no list keeps every action its members' role allows, and the role still caps every list. Set a list with [`user_groups.update`](/sdk/api/user-group/update) or `PATCH /userGroups/{id}`. The dashboard does not edit lists yet.
+You can now give a user group a [permission list](/concepts/user-group#permission-lists): the product actions its users may do on the products the group links, for example only reading analytics. A group with no list keeps every action its members' role allows, and the role still caps every list. Set a list with [`user_groups.update`](/sdk/api/user-group/update), `PATCH /userGroups/{id}`, or the new **Permissions** tab of the group page.
+
+In the tab, an owner or admin starts from the Reader or Human evaluator preset, ticks or unticks each action, and saves. The grid uses the dashboard's names, so the Trace row covers traces and the Span row covers spans. Ticking an action also ticks the reads it needs. **Reset to default**, or the Member preset, gives the group back every action its members' role allows.
 
 ## Mark a Specification as Critical
 
