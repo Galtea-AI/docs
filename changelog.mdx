@@ -20,6 +20,10 @@ On deployments that do not send files to the judge, an LLM-as-a-judge metric, cu
 
 The [agent's answer](/concepts/product/version/session/trace) now gets the same file and voice marks as the input. The evaluations table's Output column, the sessions table's Last Output column and the evaluation conversation summary show a file or voice icon beside the answer's text, and name the file when the answer is only a file, instead of an empty cell. The full-text dialog lists the answer's files and plays its audio.
 
+## See All Your Products at a Glance
+
+The top of the organization's products page now sums up the products the table shows: how many sessions came in, how many were evaluated, and how many of those had no issues, minor issues or a critical failure. It also shows the estimated AI model cost per session and in total, and lists the products whose share of critical failures went up the most, each linking to its analytics. The boxes follow the period, the view mode and the name and tag filters. The same numbers are available with `galtea analytics get-sessions-overview`, `get-cost-overview` and `list-changes`.
+
 ## Text Content Parts Count as Text
 
 When a turn's input or output holds `{"type": "text", "text": ...}` content parts, the judge, monitors, `past_turns` and the dashboard now read their text, next to `user_message` or `assistant_message` and any other fields. Before, that text could be lost, or the judge got the whole value as JSON. In the SDK, `.input`, `.actual_output` and the message `traces.generate` sends now include this text, and an audio-only value gives its transcript instead of `None`. An output's other fields are now scored beside `assistant_message`. Every CSV export of an input or output now writes the stored value as it is, so you can import the file again. See the **Input** field of a [trace](/concepts/product/version/session/trace#trace-properties).
