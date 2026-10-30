@@ -18,6 +18,22 @@ user_group = galtea.user_groups.update(
 )
 ```
 
+### Set a permission list
+```python
+# Give the group a list of product permissions: its members can do exactly these actions
+# on the group's products, as far as their role allows.
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    permissions=["product.read", "analytics.read", "analytics.readCoverage"],
+)
+```
+
+### Remove the permission list
+```python
+# None removes the custom list. Leaving `permissions` out keeps the current list.
+user_group = galtea.user_groups.update(user_group_id=user_group_id, permissions=None)
+```
+
 ## Parameters
 <ResponseField name="user_group_id" type="string" required>
   The ID of the user group to update.
@@ -30,4 +46,7 @@ user_group = galtea.user_groups.update(
 </ResponseField>
 <ResponseField name="all_products" type="boolean" optional>
   Links the group to every product of the organization, current and future. A MEMBER, READER or HUMAN_EVALUATOR in the group then reaches every product.
+</ResponseField>
+<ResponseField name="permissions" type="list[string] | None" optional>
+  The product permissions the group grants on its products, each written `entity.action`, for example `analytics.readCoverage`. A list replaces the current list, and an empty list grants nothing. Pass `None` to remove the custom list, so the group grants every permission the role of its members allows. Leave it out to keep the current list. The API answers 400 for an entry that cannot be granted, for an action without the `read` of its entity, for `evaluation.readInference` without `inferenceResult.read`, and for a non-empty list without `product.read`. See [permission lists](/concepts/user-group#permission-lists).
 </ResponseField>

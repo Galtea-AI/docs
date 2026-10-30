@@ -101,7 +101,7 @@ When an evaluation is created for a human-evaluated metric, it enters a `PENDING
 ### Key Features
 
 - **User Groups**: Link [user groups](/concepts/user-group) to a metric to control which users can annotate evaluations for it. Any user who may edit the metric can link a group of the organization to it.
-- **Group Membership**: Users in a linked group see pending evaluations for that metric in the Human Evaluations page. A MEMBER, READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. A metric with no linked group reaches nobody.
+- **Group Membership**: Users in a linked group see pending evaluations for that metric in the Human Evaluations page. A MEMBER, READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. For a group with a [permission list](/concepts/user-group#permission-lists), the list must hold `evaluation.humanEvaluation`. A metric with no linked group reaches nobody.
 - **Claim & Submit**: Evaluators can claim pending evaluations to prevent concurrent editing, then submit their score with an optional reason. The UI opens on **Results** (Incorrect, Partially correct or Correct, stored as 0, 0.5 or 1), and also accepts a **Percentage** (0-100) or a **Fraction**. Every score is stored from 0 to 1.
 
 ### Use Cases

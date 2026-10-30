@@ -39,7 +39,7 @@ You can also create groups from the dashboard: navigate to your organization's *
 
 ## Step 2: Add Users to the Group
 
-Link users by their user IDs. Users in the group will see pending evaluations for linked metrics in their **Human Evaluations** dashboard page. A MEMBER, READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant.
+Link users by their user IDs. Users in the group will see pending evaluations for linked metrics in their **Human Evaluations** dashboard page. A MEMBER, READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. For a group with a [permission list](/concepts/user-group#permission-lists), the list must hold `evaluation.humanEvaluation`.
 
 ```python
 galtea.user_groups.link_users(
@@ -54,7 +54,7 @@ galtea.user_groups.link_users(
 
 ## Step 3: Link Products to the Group
 
-A MEMBER, READER or HUMAN_EVALUATOR reaches only the products that one of its groups links. Link the products that the group must review. You can also create the group with `all_products=True` to link every product of the organization, current and future.
+A MEMBER, READER or HUMAN_EVALUATOR reaches only the products that one of its groups links. Link the products that the group must review. For a group with a [permission list](/concepts/user-group#permission-lists), the list must hold `evaluation.humanEvaluation`. You can also create the group with `all_products=True` to link every product of the organization, current and future.
 
 ```python
 galtea.user_groups.link_products(

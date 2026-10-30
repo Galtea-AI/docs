@@ -14,11 +14,31 @@ User Groups serve three key purposes:
 
 1. **Assigning evaluators**: Group users who should review and annotate AI outputs for specific metrics.
 2. **Scoping metrics**: Link metrics to groups so that only users in those groups see pending evaluations for those metrics.
-3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A MEMBER, READER or HUMAN_EVALUATOR reaches the union of the products that all its groups link. When one of its groups links all products, it reaches every product, including a product that no other group links. A MEMBER, READER or HUMAN_EVALUATOR in no group sees no product. A MEMBER creates and edits only inside those products, and creates a product only when one of its groups links all products. Unless one of its groups links all products, a READER or HUMAN_EVALUATOR sees only the metrics that its products evaluate, link to a specification, or monitor. A MEMBER sees and edits every metric of the organization. OWNER and ADMIN users see every product and every metric of the organization, whatever their groups.
+3. **Linking products**: Link products to a group, or mark a group as linked to **all products** of the organization, current and future. A MEMBER, READER or HUMAN_EVALUATOR reaches the union of the products that all its groups link. When one of its groups links all products, it reaches every product, including a product that no other group links. A MEMBER, READER or HUMAN_EVALUATOR in no group sees no product. A MEMBER creates and edits only inside those products, and creates a product only when one of its groups links all products and its list allows `product.create` (a group with no list does). Unless one of its groups links all products and allows `product.read`, a READER or HUMAN_EVALUATOR sees only the metrics that its products evaluate, link to a specification, or monitor. A MEMBER sees and edits every metric of the organization. OWNER and ADMIN users see every product and every metric of the organization, whatever their groups.
 
 A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric is routed strictly: only users in a group linked to that metric see its pending evaluations in the **Human Evaluations** page of the dashboard. A MEMBER, READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant. A metric with no linked group reaches nobody, and its metric page shows a warning.
 
 A new organization gets an empty **"all products"** group. Organizations created before this feature also got this group, filled with their READER and HUMAN_EVALUATOR users. Every existing MEMBER was added to an all-products group, so members kept the products they had. A MEMBER in no group reaches no product until an OWNER or ADMIN adds a group. A member who signs up through SSO, or is invited with no group, starts that way. More than one group can be linked to all products.
+
+## Permission lists
+
+An OWNER or ADMIN can give a group a **permission list**: the product actions its users may do on the products the group links. A permission is one action on one entity, written `entity.action`, for example `product.read` or `analytics.readCoverage`. A group with a list allows only the actions on it. [Permission list ids](/security/roles-and-permissions#permission-list-ids) lists every id a list may hold.
+
+- **The role caps the list.** A MEMBER, READER or HUMAN_EVALUATOR may do an action on a product when their role allows it and at least one of their groups that reaches the product lists it. A list entry above the role does nothing. A list never limits an OWNER or ADMIN. For example, a READER never writes, whatever a list says.
+- **Groups add up.** A user in two groups on one product may do an action when either group lists it. A list never removes an action that another group allows.
+- **No list means every action.** A group with no list allows every action its members' role allows. An empty list grants nothing. A user in no group reaches no product, and lists answer 200 with an empty page.
+- **A list needs reads.** A list that holds any entry holds `product.read`, and an action on an entity needs the `read` of that entity. A list that holds `evaluation.readInference` also holds `inferenceResult.read`. The API answers 400 otherwise. It also answers 400 for an entry that no list can grant.
+- **An all-products group with no list still applies.** A member who is also in one keeps every action their role allows. A narrower group binds that user only after an OWNER removes them from the all-products group or gives it a list.
+- **A list without a read refuses some lists.** When every group of a user leaves out `test.read`, `GET /tests` answers 403. The same holds for `monitor.read` and `GET /monitors`. Other lists, such as `GET /sessions` and `GET /runs`, answer 200 with an empty page.
+- **Some actions stay with the role.** Only actions on entities that belong to a product come from lists. Every other action stays with the role. Datasets with no product (Galtea-wide datasets) stay readable by id whatever the list says. `GET /tests` lists one only when `ids` or `testCaseIds` names it. `product.softDelete` in a list means the user's own products only. Creating a product needs an all-products group whose list allows `product.create`.
+- **Analytics follows `analytics.read`.** Without `analytics.read` on a product, a route for that one product answers 403. The dashboard hides the product's Analytics section and opens the first section the user may see. The two routes for many products keep the product: `GET /analytics/summary` answers an empty row for it, and `GET /analytics/products` answers its row with no stats. The summary boxes of the organization products page count only the products with `analytics.read`, and answer 403 when the request names another. Without `analytics.readCoverage`, the dashboard hides the Coverage section.
+- **The insights narrative summarizes evaluation reasons.** It is written from the reasons the judge gave in evaluations. A group with `analytics.read` but without `evaluation.read` can still read text drawn from those reasons.
+
+A **Business** group is a typical example. List `product.read`, `version.read`, `specification.read`, `analytics.read` and `analytics.readCoverage`, and link the products. Its users see the analytics views of those products, including the version filter and the insights, which read the versions and specifications. They see no tests, sessions or evaluations: the dataset and monitor lists answer 403, and the other lists are empty.
+
+A list change takes effect on the next API request. The dashboard shows it when the user returns to the tab or reloads. The API decides: a dashboard control can still show an action that the API then refuses with 403. In a frozen organization, a custom list never grants a write: the freeze keeps users read-only.
+
+To set a list, an OWNER or ADMIN calls `PATCH /userGroups/{id}` or [`user_groups.update`](/sdk/api/user-group/update). `null` removes the list, and leaving `permissions` out keeps it. The endpoint answers 400 for a body key it does not know. `POST /userGroups` answers 400 for a body that holds `permissions`, and creates no group.
 
 ## Managing User Groups
 
@@ -64,6 +84,10 @@ User groups can be managed in two places:
 <ResponseField name="all_products" type="boolean">
   When `true`, the group is linked to every product of the organization, current and future,
   regardless of `product_ids`. A MEMBER, READER or HUMAN_EVALUATOR in the group then reaches every product.
+</ResponseField>
+
+<ResponseField name="permissions" type="list[string] | None">
+  The group's [permission list](#permission-lists), sorted. `None` means the group has no custom list and allows every action the role of its members allows. An empty list grants nothing.
 </ResponseField>
 
 ## Related
