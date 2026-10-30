@@ -4,6 +4,10 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Invitation Links Stay Valid for 14 Days
+
+When you invite someone to your organization, the invitation link in the email now stays valid for 14 days instead of 12 hours, so they have time to accept it.
+
 ## SDK Creates Say When the Record Was Stored
 
 When the platform stores a new record but cannot return it, an SDK `create` now raises `WrittenResourceUnreadableException` instead of returning `None`. The record exists, so do not create it again: read it with the service's `get` or `list` method. See [Errors](/sdk/api/galtea#errors).
