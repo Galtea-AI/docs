@@ -4,9 +4,17 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Products Stand Out in the Products Table
+
+Each product now has its own color and icon tile, the same every time you see it. The organization's products table lists the products that received sessions in the period first, each with a small chart of its sessions over the period; hover a point to see the dates and the count. The products with no session follow behind a row that counts them and opens or folds them, and each one offers a link to set up its evaluation. Charts that compare versions or metrics also use a new set of colors that are easier to tell apart.
+
 ## Invitation Links Stay Valid for 14 Days
 
 When you invite someone to your organization, the invitation link in the email now stays valid for 14 days instead of 12 hours, so they have time to accept it.
+
+## See Whether a Product Gets Better or Worse
+
+The product Analytics **Summary** now shows the share of evaluated sessions with a critical failure and with minor issues by day, week or month, with a band that shows how sure each point is: the band is thin when most received sessions were evaluated and wide when few were. A second period selector widens the chart, and the page period stays tinted, so you can compare it with what came before. The same data is available with `galtea analytics get-session-outcomes-over-time`.
 
 ## SDK Creates Say When the Record Was Stored
 
@@ -30,7 +38,7 @@ The [agent's answer](/concepts/product/version/session/trace) now gets the same 
 
 ## See All Your Products at a Glance
 
-The top of the organization's products page now sums up the products the table shows: how many sessions came in, how many were evaluated, and how many of those had no issues, minor issues or a critical failure. It also shows the estimated AI model cost per session and in total, and, when any got worse, lists the products whose share of critical failures went up the most, each linking to its analytics. The boxes follow the period, the view mode and the name and tag filters. The same numbers are available with `galtea analytics get-sessions-overview`, `get-cost-overview` and `list-changes`.
+The top of the organization's products page now sums up the products the table shows: how many sessions came in, how many were evaluated, and how many of those had no issues, minor issues or a critical failure. It also shows the estimated AI model cost per session and in total, and, when any got worse, lists the products whose share of critical failures went up the most, each linking to its analytics. The boxes follow the period, the view mode and the product and tag filters. The same numbers are available with `galtea analytics get-sessions-overview`, `get-cost-overview` and `list-changes`.
 
 ## Text Content Parts Count as Text
 
@@ -42,7 +50,7 @@ Only an organization owner can now change the plan, open the billing portal or b
 
 ## See Which Product Needs Attention
 
-The organization's products page is now a table that shows, for each [product](/concepts/product), how many sessions came in, how many were evaluated, how many failed a [critical specification](/concepts/product/specification), and whether that rate got worse than in the period before. It also shows the estimated cost per session. Pick the period at the top right: by default it covers the last 30 whole days, today included. Sort by most columns, filter by name or tag, and pin the products you follow so they stay first. Click a row to open the product's analytics. The same numbers are available with `galtea analytics list-products`.
+The organization's products page is now a table that shows, for each [product](/concepts/product), how many sessions came in, how many were evaluated, how many failed a [critical specification](/concepts/product/specification), and whether that rate got worse than in the period before. It also shows the estimated cost per session. Pick the period at the top right: by default it covers the last 30 whole days, today included. Sort by most columns, pick the products or tags to show from searchable lists, and pin the products you follow so they stay first. Click a row to open the product's analytics. The same numbers are available with `galtea analytics list-products`.
 
 ## Retirement Emails Name the Evaluator Model
 
