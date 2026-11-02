@@ -4,6 +4,8 @@ sidebarTitle: "Overview"
 description: "A single turn in a conversation between a user and an AI system"
 ---
 
+import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import SDKTraceServiceCard from '/snippets/cards/sdk-trace-service-card.mdx';
 
@@ -43,13 +45,11 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </ResponseField>
 
 <ResponseField name="Input Files" type="AttachedFile[]" optional>
-  The files attached to the input. They come from the test case, or from `input_file_paths` on a trace you log yourself with [Create Trace](/sdk/api/trace/create), [Update Trace](/sdk/api/trace/update) or [Create and Evaluate Trace](/sdk/api/trace/create-and-evaluate). Galtea stores each file without its upload signature. Read them with the SDK's `.input_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read). An agent callback receives the same objects as [`input_data.input_files`](/sdk/api/agent/input#reading-attached-files).
+  The files attached to the input. They come from the test case, or from `input_file_paths` on a trace you log yourself with [Create Trace](/sdk/api/trace/create), [Update Trace](/sdk/api/trace/update) or [Create and Evaluate Trace](/sdk/api/trace/create-and-evaluate). Galtea stores each file without its upload signature. Read them with the SDK's `.input_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read), except a [file part of your own](/concepts/product/version/session/content-parts#your-own-parts). An agent callback receives the same objects as [`input_data.input_files`](/sdk/api/agent/input#reading-attached-files).
 
-  One input accepts at most 20 files, 20 MB in total, of the same types a test case input accepts. Galtea refuses a file that breaks a rule.
+  One input accepts at most 20 Galtea files, 20 MB in total, of the same types a test case input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
 
-  <Warning>
-    Evaluators cannot read input files yet. A metric that reads the input is **skipped** when no turn of the session has input text without a file, with the reason `Evaluators cannot read input files yet.` One turn with text of its own is enough for this API check. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones. It does so when any turn the metric reads carries an input file, and the reason names the file. Log the text your pipeline extracted from the document as the turn input, without the file, to have it scored. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
-  </Warning>
+  <JudgeFileRule />
 
   <Note>
     `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
@@ -65,17 +65,15 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </ResponseField>
 
 <ResponseField name="Output Files" type="AttachedFile[]" optional>
-  The files the turn answered with, for a product whose reply is a document: a generated report, a filled form, a redacted contract. Read them with the SDK's `.actual_output_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read).
+  The files the turn answered with, for a product whose reply is a document: a generated report, a filled form, a redacted contract. Read them with the SDK's `.actual_output_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read), except a [file part of your own](/concepts/product/version/session/content-parts#your-own-parts).
 
   Attach them by naming local paths in `output_file_paths` on [Create Trace](/sdk/api/trace/create), [Update Trace](/sdk/api/trace/update) or [Create and Evaluate Trace](/sdk/api/trace/create-and-evaluate). An agent callback answers with files through `AgentResponse.output_file_paths`. To reuse one upload across turns, call [`galtea.traces.upload_output_file()`](/sdk/api/trace/upload-output-file) and build the envelope yourself.
 
   On a run Galtea makes through an endpoint connection, the files come from the response instead: the connection's `output_files` key names them, and Galtea stores a copy of each, or links a file already in Galtea. See [Files in the Response](/concepts/product/endpoint-connection-configuration#files-in-the-response).
 
-  One output accepts at most 20 files, 20 MB in total, of the same types an input accepts.
+  One output accepts at most 20 Galtea files, 20 MB in total, of the same types an input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
 
-  <Warning>
-    Evaluators cannot read output files yet. A metric that reads the output is **skipped** when no turn of the session answered with text of its own, counting neither a file nor a note sent beside one, with the reason `Evaluators cannot read output files yet.` One turn carrying text of its own is enough for this API check. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones. It does so when any turn the metric reads carries an output file, and the reason names the file. Log the text your pipeline produced as the turn output, without the file, to have it scored. This mirrors the input side; see [File inputs](/concepts/product/dataset/test-case#file-inputs).
-  </Warning>
+  Output files follow the same rule as [Input Files](#param-input-files): a metric scores a file only when its judge model reads that kind of file.
 </ResponseField>
 
 <Note>

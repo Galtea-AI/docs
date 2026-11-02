@@ -18,7 +18,7 @@ When a test case has structured JSON input (e.g. `{"user_message": "hello", "cha
   - `content` (`str`): The message text
   - `retrieval_context` (`str | None`): Retrieved context (for RAG agents)
   - `metadata` (`dict[str, Any] | None`): Additional fields. When the test case uses structured JSON input, non-message fields (e.g. `chat_type`, `priority`) appear here on the first user message.
-  - `input_files` (`list[AttachedFile]`): The files attached to a user message, ready for [`galtea.storage.download()`](/sdk/api/storage/download). Empty for a message that carries only text.
+  - `input_files` (`list[AttachedFile]`): The files attached to a user message, ready for [`galtea.storage.download()`](/sdk/api/storage/download), except a [file part of your own](/concepts/product/version/session/content-parts#your-own-parts), which you fetch with your own client. Empty for a message that carries only text.
   - `output_files` (`list[AttachedFile]`): The files an earlier assistant message answered with, read the same way. Empty for a message that carries only text.
 </ResponseField>
 
@@ -117,7 +117,7 @@ def my_context_agent(input_data: AgentInput) -> AgentResponse:
 
 ## Reading attached files
 
-A test case can [attach files](/concepts/product/dataset/test-case#file-inputs) to its input. When your agent runs through `evaluations.run()`, `simulator.simulate()` or `traces.generate()`, those files reach it as `input_data.input_files`: one `AttachedFile` per attached file, with the same `uri`, `filename` and `mime_type` as `test_case.input_files`. Pass each one to [`galtea.storage.download()`](/sdk/api/storage/download) to get the bytes:
+A test case can [attach files](/concepts/product/dataset/test-case#file-inputs) to its input. When your agent runs through `evaluations.run()`, `simulator.simulate()` or `traces.generate()`, those files reach it as `input_data.input_files`: one `AttachedFile` per attached file, with the same `uri`, `filename` and `mime_type` as `test_case.input_files`. Pass each one to [`galtea.storage.download()`](/sdk/api/storage/download) to get the bytes, except a [file part of your own](/concepts/product/version/session/content-parts#your-own-parts), which `download()` cannot fetch:
 
 ```python
 def my_document_agent(input_data: AgentInput) -> AgentResponse:

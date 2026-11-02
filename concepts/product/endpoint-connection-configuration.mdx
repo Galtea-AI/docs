@@ -5,6 +5,8 @@ description: "Configure how Galtea formats requests to your endpoint, extracts v
 icon: "code"
 ---
 
+import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+
 This page covers the detailed configuration for [Endpoint Connection](/concepts/product/endpoint-connection) request formatting, response extraction, retry behavior, and conversation end rules.
 
 ## Input Template
@@ -28,7 +30,7 @@ The Input Template is a [Jinja2](https://jinja.palletsprojects.com/) template st
 | `{{ trace_id }}` | The id of this turn's [Trace](/concepts/product/version/session/trace), labeled "Galtea Trace ID" in the dashboard. Also sent automatically as the `X-Galtea-Inference-Id` HTTP header -- useful for [span collection](/sdk/tutorials/tracing-agent-operations) |
 | `{{ language_code }}` | Full BCP-47 language tag of the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when no language is set. |
 | `{{ language_name }}` | English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when no language is set. |
-| `input_files` | [Files and audio attached to the test case input](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), one entry per attachment. Each exposes `url`, `base64`, `filename` and `mime_type`, e.g. `{{ input_files[0].url }}` |
+| `input_files` | [Files and audio uploaded to Galtea and attached to the test case input](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), one entry per Galtea file or audio part. Each exposes `url`, `base64`, `filename` and `mime_type`, e.g. `{{ input_files[0].url }}` |
 | Any metadata key | Any field stored in session metadata (e.g., `{{ sessionId }}`, `{{ tenant }}`, `{{ conversation_token }}`) |
 
 <Note>
@@ -147,7 +149,7 @@ Each file the path matches can take one of three forms:
 
 - **Bytes:** an object with `base64` and optional `mime_type` and `filename`, or a `data:` URI string. The standard and the URL-safe base64 alphabets both work. Galtea decodes the bytes and makes no extra request.
 - **URL:** an `http(s)` URL string, or an object with `url` (or `uri`) and optional `mime_type` and `filename`. Galtea downloads the file once, during the run.
-- **Galtea file:** the storage URI of a file already uploaded to Galtea, as a string or in `url` or `uri`. It is the signature-free `uri` a written trace or test case reads back with, as stored or under the deployment's public file base when one is set. Galtea links the file on the turn, with no download and no copy. A signed link is a URL, not a Galtea file: it is downloaded and copied. That covers the `uri` an SDK upload returns and the `url` of an `input_files` item.
+- **Galtea file:** the storage URI of a file already uploaded to Galtea, as a string or in `url` or `uri`. It is the signature-free `uri` a written trace or test case reads back with, as stored or under the deployment's public file base when one is set. Galtea links the file on the turn, with no download and no copy. A signed link is read as a URL here, even when it names a Galtea file: it is downloaded and copied. That covers the `uri` an SDK upload returns and the `url` of an `input_files` item.
 
 <CodeGroup>
 ```json Endpoint Response
@@ -183,9 +185,7 @@ The rules:
 
 The **Test Connection** panel lists the files it finds and shows why a file would be refused. It previews a bytes file and a Galtea file, and it never downloads a URL file. It refuses a Galtea file of another organization, but a Galtea file that no longer exists fails only when a run reads it.
 
-<Warning>
-  Evaluators cannot read output files yet. The API skips a metric that reads the output unless at least one turn of the session has text and no file. Text sent beside a file does not count, so a single-turn run whose answer carries a file always skips it. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones when any turn they read carries an output file. See [Output Files](/concepts/product/version/session/trace#param-output-files).
-</Warning>
+<JudgeFileRule />
 
 ### State Management
 
