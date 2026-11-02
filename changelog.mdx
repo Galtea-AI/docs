@@ -12,6 +12,8 @@ Charts that compare versions or metrics now draw each series in two tones of its
 
 Each product now has its own color and icon tile, the same every time you see it. The organization's products table lists the products that received sessions in the period first, each with a small chart of its sessions over the period; hover a point to see the dates and the count. The products with no session follow behind a row that counts them and opens or folds them, and each one offers a link to set up its evaluation to users who can create or edit specifications. Charts that compare versions or metrics also use a new set of colors that are easier to tell apart.
 
+Pinned products still come first, in the sort you pick. The API and the CLI (`galtea analytics list-products`) now also lead with the products that received a session, return each product's sessions per slice of the period with the dates of each slice, and send the count of those leading products in the `X-Active-Total` header.
+
 ## Invitation Links Stay Valid for 14 Days
 
 When you invite someone to your organization, the invitation link in the email now stays valid for 14 days instead of 12 hours, so they have time to accept it.
