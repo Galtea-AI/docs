@@ -93,7 +93,7 @@ The CLI does not download its commands from the API. Each CLI version has the co
 When the API adds an operation, the operation reaches the CLI in the next CLI release. If a command from the REST API is missing in your CLI, [update the CLI](/cli/installation#update) with the tool you installed it with.
 
 <Warning>
-`galtea sync` is deprecated. It does nothing, prints how to update the CLI, and will be removed. Remove it from your scripts.
+`galtea sync` is deprecated. It does nothing, prints how to update the CLI, and will be removed on 2028-01-17. Remove it from your scripts.
 </Warning>
 
 ### Deprecation warnings
@@ -105,7 +105,7 @@ Every warning has the same shape: what goes, when, and what to do next. These ex
 ```text
 warning: deprecated: `galtea products list` will be removed on 2028-01-17. Use `galtea products search` instead.
 warning: deprecated: the `--tags` flag of `galtea products list` will be removed on 2028-01-17. Use `--labels` instead.
-warning: deprecated: the `specificationId` field of `galtea datasets create` will be removed on 2028-07-17. It has no replacement: remove it from your scripts.
+warning: deprecated: the `legacyTag` field of `galtea products create` will be removed on 2028-07-17. It has no replacement: remove it from your scripts.
 warning: deprecated: `galtea products get` will be removed on 2028-07-17. Update the CLI to see what replaces it.
 ```
 
