@@ -21,7 +21,7 @@ downloaded_path = galtea.storage.download(test_case.input_files[0], output_direc
 ## Parameters
 
 <ResponseField name="file" type="string | AttachedFile" required>
-  The file to fetch: an [`AttachedFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files`, `trace.input_files` or `trace.actual_output_files`, or the URI of any file this organization uploaded.
+  The file to fetch: an [`AttachedFile`](/sdk/api/test-case/upload-input-file) read from `test_case.input_files`, `trace.input_files` or `trace.actual_output_files`, or the URI of any file this organization uploaded. Those lists also hold a [file part of your own](/concepts/product/version/session/content-parts#your-own-parts), which this call cannot fetch: fetch it with your own client.
 </ResponseField>
 <ResponseField name="output_directory" type="string" default="the current directory" optional>
   Directory to write into, created when it does not exist. Defaults to the current directory.
@@ -35,7 +35,7 @@ downloaded_path = galtea.storage.download(test_case.input_files[0], output_direc
 | Error | Cause |
 |-------|-------|
 | `ValueError` | No URI was given. |
-| `Exception` | The link expired, the file belongs to another organization, the platform returned no link, or the transfer failed. |
+| `Exception` | The link expired, the platform did not find the file (a file of another organization, or a file part of your own), the platform returned no link, or the transfer failed. |
 
 <Note>
   A failed download raises instead of returning `None`, and the message never contains the

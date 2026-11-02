@@ -48,6 +48,8 @@ No hand-written page is the API contract: the wire-level contract is the generat
 - **Absolute claims.** Before writing "every", "always", or "never", check the field in `api/prisma/schema.prisma` and `api/src/bootstrap/swagger.ts`, not only the SDK method. The API often accepts what the SDK does not expose: `SessionInput.status` lets a caller create an already-closed session, while `session_service.create()` has no such parameter.
 - **Contrasting two settings.** Confirm **both** still exist. A removed field is easy to describe from memory and yields prose that contradicts the page it links to.
 
+**A term that one page defines keeps that meaning on every page that links to it** (root `AGENTS.md`, "One word, one meaning"). A page that treats a case differently says so in plain words and does not redefine the term.
+
 ## Adding a New Page
 
 1. Create the MDX file with frontmatter (`title`, `description`, `icon`)

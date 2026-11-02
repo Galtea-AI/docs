@@ -45,7 +45,7 @@ For example, `{{ context.topic }}`, `{{ context.system_prompt }}`, or `{{ contex
 | `{{ language_code }}` | Full BCP-47 language tag from the test case, region included (e.g. `"es"` or `"es-MX"`). Empty string when the test case has no language set. |
 | `{{ language_name }}` | Full English name of the test case language, with the region when the tag has one (e.g. `"Spanish"` or `"Spanish (Mexico)"`). Empty string when the test case has no language set. |
 | `past_turns` | Conversation history loop collection. Use with `{% for turn in past_turns %}`. See [Conversation History](#conversation-history). |
-| `input_files` | Files and audio attached to the test case input, one entry per attachment. Address one by index (`{{ input_files[0].url }}`) or loop over the collection. Each entry exposes `url`, `base64`, `filename` and `mime_type`. See [Attached Files and Audio](#attached-files-and-audio). |
+| `input_files` | Files and audio uploaded to Galtea and attached to the test case input, one entry per attachment. Address one by index (`{{ input_files[0].url }}`) or loop over the collection. Each entry exposes `url`, `base64`, `filename` and `mime_type`. See [Attached Files and Audio](#attached-files-and-audio). |
 | Any metadata key | Fields extracted via [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) and stored in session metadata (e.g., `{{ tenant_id }}`) |
 
 <Note>
@@ -157,7 +157,7 @@ Each turn exposes two properties:
 
 ### Attached Files and Audio
 
-A test case input can carry [attached files](/concepts/product/dataset/test-case#file-inputs). The `input_files` collection is how they reach your endpoint: one entry per attachment, in the order the input lists them. Each entry exposes four properties:
+A test case input can carry [attached files](/concepts/product/dataset/test-case#file-inputs). The `input_files` collection is how they reach your endpoint: one entry per Galtea file or audio part, in the order the input lists them. A file part on your own host is left out: see [Your Own Parts](/concepts/product/version/session/content-parts#your-own-parts). Each entry exposes four properties:
 
 - `url` - a signed download URL your endpoint fetches the file from
 - `base64` - the bytes of the file, base64-encoded
@@ -212,16 +212,16 @@ An audio attachment on a voice test case appears in `input_files` too. Its trans
   - **A failed fetch is your endpoint's error.** If your endpoint cannot download the file, its own error response is what Galtea records for the run.
   - **The turn fails when Galtea cannot deliver a file.** Galtea never sends the request without the attachment, so a file it cannot sign or read stops that turn with an error.
   - **The file itself never reaches the template through `{{ input }}`.** That object never carries a download URL, so `input_files` is the only way to read a file. An audio transcript stays readable there.
-  - **A run that sends files skips the Conversation step of the pre-run health check.** Galtea normally probes your endpoints with sample values before a run. The probe sends an empty file list, which is what a run carrying no attachment sends, so a text-only run against a file-aware template is probed as any other. When a test case attaches a file and the Conversation template uses `input_files`, the Conversation step is not probed: its turns carry a real file the probe cannot stand in for, so a broken endpoint shows up as failed turns instead. Initialization and Finalization never receive files, so they are always probed. The **Test connection** button in the dashboard still sends a placeholder attachment, so a failed download there is expected.
+  - **A run that sends files skips the Conversation step of the pre-run health check.** Galtea normally probes your endpoints with sample values before a run. The probe sends an empty file list, which is what a run carrying no attachment sends, so a text-only run against a file-aware template is probed as any other. When a test case attaches a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) and the Conversation template uses `input_files`, the Conversation step is not probed: its turns carry a real file the probe cannot stand in for, so a broken endpoint shows up as failed turns instead. Initialization and Finalization never receive files, so they are always probed. The **Test connection** button in the dashboard still sends a placeholder attachment, so a failed download there is expected.
   - **A test case with no attachment is not refused.** `{{ input_files[0].url }}` renders an empty value for it, and a loop over `input_files` renders nothing.
 </Note>
 
 <Warning>
   When the template names no `input_files` variable, Galtea cannot send the attachment, and what happens next depends on the test case.
 
-  A test case that attaches files **and carries no other content** is refused, and the whole run stops. There is nothing left to send, so Galtea would ask your endpoint about an empty message. Add `{{ input_files[0].url }}` (or `{{ input_files[0].base64 }}`) to the template, or run those test cases through your own pipeline.
+  A test case that attaches Galtea files **and carries no other content** is refused, and the whole run stops. There is nothing left to send, so Galtea would ask your endpoint about an empty message. Add `{{ input_files[0].url }}` (or `{{ input_files[0].base64 }}`) to the template, or run those test cases through your own pipeline.
 
-  A test case that also carries text still runs. Galtea sends the text alone and warns you that the files were left behind.
+  A test case that also carries text still runs. Galtea sends the text alone and warns you that the files were left behind. A test case whose only files are your own runs too: those files are never sent.
 </Warning>
 
 ### Anthropic Claude Format

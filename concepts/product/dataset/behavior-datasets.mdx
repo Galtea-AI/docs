@@ -117,8 +117,8 @@ Here are examples of behavior dataset content and structure:
     </Tabs>
     <Note>
       The third row leaves `input` empty because `conversation_history` supplies the opening. A row
-      that sets `conversation_history` must not attach files to its `input`, because the platform
-      supports file inputs on single-turn runs only and a seeded run is multi-turn. Only a
+      that sets `conversation_history` must not attach [Galtea files](/concepts/product/version/session/content-parts#galtea-files) to its `input`, because the platform
+      supports them on single-turn runs only and a seeded run is multi-turn. Only a
       text run reads `conversation_history`. A voice run (a phone or WebRTC connection) ignores the
       column and still opens the conversation from `input`, so fill `input` for a voice product.
     </Note>
@@ -214,7 +214,7 @@ Behavior datasets have a specific structure designed to enable realistic convers
 <ResponseField name="conversation_history" type="Text" optional>
   A conversation that already happened, which the simulation continues from instead of starting empty. The cell holds a JSON array of turns, each one `{"role": "user"|"assistant", "content": "..."}`. A turn carrying `retrieval_context` is refused. Only Behavior datasets accept this column; an Accuracy or Security dataset with a value in this column is refused.
 
-  When a row sets this column, its `input` is ignored: the simulation continues from the turns you gave, and the simulator writes the next user message. Such a row must not attach files to its `input`, because the platform supports file inputs on single-turn runs only and a seeded run is multi-turn.
+  When a row sets this column, its `input` is ignored: the simulation continues from the turns you gave, and the simulator writes the next user message. Such a row must not attach [Galtea files](/concepts/product/version/session/content-parts#galtea-files) to its `input`, because the platform supports them on single-turn runs only and a seeded run is multi-turn.
 
   This applies to a text run. A voice run (a phone or WebRTC connection) ignores this column and still opens the conversation from `input`, so keep `input` filled for a voice product.
   **Example**: `[{"role": "user", "content": "I need to book a flight"}, {"role": "assistant", "content": "Sure, where to?"}]`

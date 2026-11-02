@@ -1,0 +1,74 @@
+---
+title: "Content Parts"
+description: "How Galtea stores the files and other parts in the content list of a trace or test case input"
+icon: "paperclip"
+---
+
+## What are Content Parts?
+
+A trace input, a trace output and a test case input can be an object with a `content` list. Each element of that list is a **content part**: a text, an image, a file or an audio clip. A part names its kind in its `type` field.
+
+```json
+{
+  "user_message": "Summarize this contract",
+  "content": [
+    { "type": "text", "text": "Focus on the payment terms." },
+    { "type": "file", "uri": "s3://bucket/files/org_123/2f6c0a9e41b84d7f9c3e5a1b2d4f6e80.pdf" },
+    { "type": "file", "uri": "https://cdn.example.com/files/acme/report.pdf" }
+  ]
+}
+```
+
+Galtea decides for each element of the list on its own whether it is a Galtea file, and checks and stores each element on its own.
+
+## Galtea Files
+
+A **Galtea file** is a file you uploaded to Galtea. Galtea knows it by its **key**, the storage name that the upload gives it. The key has this shape: `files/<organization id>/<32 lowercase hex characters>.<extension>`.
+
+A `file` part is a Galtea file when the path of its `uri` is that key. The path can also start with one extra segment, the storage bucket or container. Galtea reads the key on any host, and also in a signed URL. The URI that [`galtea.storage.upload()`](/sdk/api/storage/upload) returns with the default `file_type` is a Galtea file. So is any URL that Galtea returns for a Galtea file, even when its path has more segments before the key. In the example above, the second part is a Galtea file and the third part is not. See [Audio Parts](#audio-parts) for audio, which follows its own rules.
+
+To get a key, upload the file with the SDK or attach it in the dashboard. The SDK `input_file_paths` and `output_file_paths` parameters upload a local file for you. See [Upload File](/sdk/api/storage/upload).
+
+When you attach a Galtea `file` part of your organization, Galtea does these things:
+
+- It stores the `uri` without its upload signature, so the reference you read back never expires.
+- It fills `mimeType` from the stored file when you leave it out, and `filename` too where the storage keeps the name. It always reads `sizeBytes` from the stored file.
+- It checks the file type. A type that is not accepted fails with the message `"<name>" is not an accepted file type.` The accepted types are listed in [File inputs](/concepts/product/dataset/test-case#file-inputs).
+- It checks the limits: at most 20 files and 20 MB in total for one input or one output.
+
+## Your Own Parts
+
+Every element that is not a Galtea file is yours. Galtea stores it exactly as you sent it. This includes:
+
+- A `text` part.
+- An `image_url` part.
+- A `file` part that names an OpenAI `file_id`.
+- An element with no `type`.
+- A file URL on your own host, such as `https://cdn.example.com/files/acme/report.pdf`.
+
+Galtea does not fetch a URL on your own host when it stores one of these elements. A run sends only Galtea files to your endpoint, through `input_files`. Your own `file` parts are left out of `input_files`, and the turn runs without them. A file that an endpoint connection returns in its response follows other rules: see [Files in the Response](/concepts/product/endpoint-connection-configuration#files-in-the-response).
+
+The SDK lists every `file` part that has a `uri` in `.input_files` and `.actual_output_files`, your own included. Only a Galtea file can be fetched with [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read). For any other URL the platform answers that the file is not found, so fetch it with your own client.
+
+## What Happens to Each Element
+
+| Element | Test case input | Trace input | Trace output |
+|---|---|---|---|
+| Galtea `file` part of your organization | Stored without its signature, details filled, checked | Same | Same |
+| Galtea `file` part of another organization | Refused with a `400` | Refused with a `400` | Refused with a `400` |
+| Galtea `file` part that no longer exists in storage | Refused with a `400` | Stored without its signature or its `sizeBytes` | Stored without its signature or its `sizeBytes` |
+| Your own part | Stored as sent | Stored as sent | Stored as sent |
+
+An edit that keeps a Galtea file unchanged does not read storage again. So the edit succeeds even when someone deleted the file after you attached it.
+
+## Audio Parts
+
+Galtea does not apply the file checks above to an `audio` part. It does not check its type, its size or the file count. On a test case input, an `audio` part needs a `transcript`.
+
+## Files and Evaluation
+
+Only a Galtea file is sent to the judge, the model that scores a metric. A file on your own host is never sent, so it never makes the evaluator skip a metric. The API check that a metric has text to read is separate: it counts every `file` part as a file, yours included. Most deployments do not send files to the judge yet: see [File inputs](/concepts/product/dataset/test-case#file-inputs) for which metrics Galtea skips when a turn carries a Galtea file.
+
+## SDK Checks
+
+In the SDK, each entry of `input_file_paths` and `output_file_paths` is a local path or a Galtea file reference, such as the `uri` of a Galtea file in `trace.input_files`. A URL whose path does not end in a Galtea key, such as `https://cdn.example.com/files/acme/report.pdf`, raises a `ValueError` before the SDK uploads anything. To keep a file on your own host, put its URL in a `file` part of `input` or `output` yourself.

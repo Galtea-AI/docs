@@ -475,6 +475,7 @@
                 "icon": "arrow-right-from-bracket",
                 "pages": [
                   "concepts/product/version/session/trace",
+                  "concepts/product/version/session/content-parts",
                   {
                     "group": "SDK",
                     "icon": "code",
