@@ -42,9 +42,9 @@ It's important to distinguish between a **Model** and an **Evaluator Model** in 
 
 - **Model (This Page):** Represents the AI model your product is using. Its primary purpose in Galtea is for **cost estimation and tracking**. You link a Version to a Model to calculate the cost of its traces. A version with a [model fact](/concepts/product/version#model-facts) such as `model: azure/gpt-4o` is linked to the model with that name, ignoring case, when no model is set.
 
-- **Evaluator Model:** This is an LLM used by Galtea to perform "LLM-as-a-judge" evaluations for non-deterministic [Metrics](/concepts/metric). You select an Evaluator Model when creating a custom metric with a `judge_prompt`.
+- **Evaluator Model:** This is the model Galtea uses to score non-deterministic [Metrics](/concepts/metric). You select an Evaluator Model when creating a custom metric: an LLM judge for a metric with a `judge_prompt`, or a classifier model for a [Classifier](/concepts/metric/classifier) metric.
 
-While both are LLMs, their roles within the Galtea platform are distinct: one is being tested, and the other is doing the testing.
+While both are AI models, their roles within the Galtea platform are distinct: one is being tested, and the other is doing the testing.
 
 ## Model Properties
 

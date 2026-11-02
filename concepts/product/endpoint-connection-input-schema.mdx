@@ -249,7 +249,7 @@ For conversation history, access previous turns using `{{ turn.input }}` and `{{
 ```
 
 <Note>
-  `past_turns.input` is always a serialized string -- the full input collapsed to text. Only the current turn supports structured field access (`{{ input.field_name }}`). Use `{{ turn.input }}` for past turn content, not `{{ turn.input.field_name }}`.
+  `past_turns.input` is always a serialized string -- the full input collapsed to text. A lone `user_message` gives its text and other fields give their JSON. The text of each `{"type": "text"}` part in `content` follows, one space apart, unless it repeats `user_message`. `past_turns.output` follows the same rule with `assistant_message`. Only the current turn supports structured field access (`{{ input.field_name }}`). Use `{{ turn.input }}` for past turn content, not `{{ turn.input.field_name }}`.
 </Note>
 
 <Note>

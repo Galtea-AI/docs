@@ -87,7 +87,7 @@ def my_structured_agent(input_data: AgentInput) -> AgentResponse:
     if last_msg is None:
         return AgentResponse(content="No user message received.")
 
-    # The message content (the user_message field from structured input)
+    # The message content (the user_message, then the text of any text part)
     user_message = last_msg.content  # e.g. "hello"
 
     # Structured fields from the test case are in the first user message's metadata
@@ -184,7 +184,7 @@ def my_multi_turn_agent(input_data: AgentInput) -> AgentResponse:
 galtea_client = Galtea(api_key="YOUR_API_KEY")
 test_case = galtea_client.test_cases.get(test_case_id=test_case_id)
 
-# .input gives the user_message as a plain string
+# .input gives the user_message, then the text of any text part
 print(test_case.input)  # "hello"
 
 # .input_data gives the full structured dict

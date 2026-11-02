@@ -45,7 +45,7 @@ if dataset is None:
 dataset_id: str = dataset.id
 
 # @start create
-# POLICY specification — dataset_type and test_variant are required for ACCURACY and SECURITY
+# Critical POLICY specification — dataset_type and test_variant are required for ACCURACY and SECURITY
 specification = galtea.specifications.create(
     product_id=product_id,
     name="No political opinions",
@@ -53,6 +53,7 @@ specification = galtea.specifications.create(
     type="POLICY",
     dataset_type="SECURITY",
     test_variant="misuse",
+    is_critical=True,
 )
 
 # CAPABILITY specification — dataset_type is assigned automatically (always BEHAVIOR), so it's omitted here
@@ -88,6 +89,11 @@ specification = galtea.specifications.get(specification_id=specification.id)
 specifications = galtea.specifications.list(
     product_id=product_id,
     type="CAPABILITY",
+)
+
+critical_specifications = galtea.specifications.list(
+    product_id=product_id,
+    is_critical=True,
 )
 # @end list
 

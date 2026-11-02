@@ -26,7 +26,7 @@ WORKDIR /app
 
 # Install Mint CLI (the renamed Mintlify CLI). Even the newest mint pins
 # @modelcontextprotocol/sdk, adm-zip, axios, body-parser, esbuild, image-size,
-# js-yaml, sharp and zod 4 below the releases that fix their CVEs, so the
+# js-yaml, re2js, sharp and zod 4 below the releases that fix their CVEs, so the
 # overrides lift them; drop each one once mint ships it. The other overrides hold the version every other Galtea image
 # uses for that package, since this install has no lockfile.
 COPY <<'EOF' package.json
@@ -50,6 +50,7 @@ COPY <<'EOF' package.json
     "minimatch@^3": "3.1.4",
     "nanoid@^3": "3.3.18",
     "picomatch@^4": "4.0.4",
+    "re2js": "2.8.7",
     "sharp": "0.35.5",
     "zod@^4": "4.6.7"
   }

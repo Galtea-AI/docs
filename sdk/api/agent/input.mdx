@@ -8,7 +8,7 @@ icon: "inbox"
 
 `AgentInput` is the input object your agent receives when using the **Structured** signature (`(input_data: AgentInput) -> AgentResponse`). It provides the conversation history, session context, and helper methods for accessing user messages.
 
-When a test case has structured JSON input (e.g. `{"user_message": "hello", "chat_type": "support"}`), the SDK splits it: `user_message` becomes the message content, and the remaining fields (like `chat_type`) are placed in the first user message's `metadata`.
+When a test case has structured JSON input (e.g. `{"user_message": "hello", "chat_type": "support"}`), the SDK splits it: `user_message` becomes the message content, followed by the text of any `{"type": "text"}` part in `content`, and the remaining fields (like `chat_type`) are placed in the first user message's `metadata`.
 
 ## Fields
 
@@ -68,7 +68,7 @@ def my_basic_agent(input_data: galtea.AgentInput) -> galtea.AgentResponse:
 
 ## Accessing Structured Input Fields
 
-When your test case input is a JSON object (e.g. uploaded via CSV with `{"user_message": "hello", "chat_type": "support"}` in the input column), the SDK places `user_message` as the message content and remaining fields in `messages[0].metadata`:
+When your test case input is a JSON object (e.g. uploaded via CSV with `{"user_message": "hello", "chat_type": "support"}` in the input column), the SDK places `user_message`, followed by the text of any `{"type": "text"}` part, as the message content and remaining fields in `messages[0].metadata`:
 
 ```python
 def my_structured_agent(input_data: AgentInput) -> AgentResponse:
@@ -77,7 +77,7 @@ def my_structured_agent(input_data: AgentInput) -> AgentResponse:
     if last_msg is None:
         return AgentResponse(content="No user message received.")
 
-    # The message content (the user_message field from structured input)
+    # The message content (the user_message, then the text of any text part)
     user_message = last_msg.content  # e.g. "hello"
 
     # Structured fields from the test case are in the first user message's metadata
@@ -184,13 +184,13 @@ The metadata split is unchanged: `messages[0].metadata["content"]` still holds t
 
 Outside of `AgentInput`, the `TestCase` and `Trace` models provide three fields for accessing input:
 
-- `.input` (`str`): The `user_message` value as a plain string
+- `.input` (`str`): The `user_message` value as a plain string, followed by the text of any `{"type": "text"}` part in `content`
 - `.input_data` (`dict`): The full structured input object with all fields
 - `.input_files` (`list[AttachedFile]`): The files attached to the input, empty for text
 
 `Trace` also provides three symmetric fields for the agent output:
 
-- `.actual_output` (`str | None`): The scored output as a plain string. For voice turns this is the `assistant_message` transcript unwrapped from the content-parts envelope. `None` when the turn answered with files and no text.
+- `.actual_output` (`str | None`): The output text as a plain string. For an envelope this is `assistant_message`, then the text of any `{"type": "text"}` part, or the audio transcript when there is no `assistant_message`. Other fields stay in `.actual_output_data`. `None` when the turn answered with files and no text.
 - `.actual_output_data` (`dict | None`): The full output envelope when present (e.g. `{"assistant_message": "...", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}`), otherwise `None` for plain-text output.
 - `.actual_output_files` (`list[AttachedFile]`): The files attached to the output, empty for text-only. See [Output Files](/concepts/product/version/session/trace#trace-properties).
 
@@ -203,7 +203,7 @@ Outside of `AgentInput`, the `TestCase` and `Trace` models provide three fields 
 galtea_client = Galtea(api_key="YOUR_API_KEY")
 test_case = galtea_client.test_cases.get(test_case_id=test_case_id)
 
-# .input gives the user_message as a plain string
+# .input gives the user_message, then the text of any text part
 print(test_case.input)  # "hello"
 
 # .input_data gives the full structured dict

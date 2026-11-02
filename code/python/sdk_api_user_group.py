@@ -74,6 +74,22 @@ user_group = galtea.user_groups.update(
 )
 # @end update
 
+# @start update_permissions
+# Give the group a list of product permissions: its members can do exactly these actions
+# on the group's products, as far as their role allows.
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    permissions=["product.read", "analytics.read", "analytics.readCoverage"],
+)
+# @end update_permissions
+assert user_group.permissions == ["analytics.read", "analytics.readCoverage", "product.read"]
+
+# @start remove_permissions
+# None removes the custom list. Leaving `permissions` out keeps the current list.
+user_group = galtea.user_groups.update(user_group_id=user_group_id, permissions=None)
+# @end remove_permissions
+assert user_group.permissions is None
+
 # @start link_users
 galtea.user_groups.link_users(
     user_group_id=user_group_id,

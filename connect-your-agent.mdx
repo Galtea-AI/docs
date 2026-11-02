@@ -1,0 +1,217 @@
+---
+title: "Ways to Connect Your Agent"
+sidebarTitle: "Connect Your Agent"
+description: "Every way to connect your AI agent to Galtea, with no-code and code options, and links to the full guide for each one."
+icon: "plug"
+---
+
+Galtea can test and monitor your AI agent in several ways. Pick the one that matches how your agent runs today. You can combine them: for example, run tests through an Endpoint Connection and monitor production with OpenTelemetry.
+
+The ways to connect your agent fall into four groups:
+
+1. **Galtea calls your agent.** You tell Galtea where your agent lives. Galtea sends the test messages and records the answers. No code on your side.
+2. **Your code calls your agent.** You run a short Python script. The SDK sends the test messages to your agent function and sends the answers to Galtea.
+3. **You send the traces your agent already produces.** Galtea receives the real traffic of your agent and evaluates it, or adds the internal steps of your agent to a test run.
+4. **Use any language or tool.** The REST API, the CLI, and an Agent Skill for AI coding assistants.
+
+[Other integrations](#other-integrations), at the end of this page, lists tools that send other data to Galtea, such as your team's own Claude Code sessions.
+
+## Which option should I pick?
+
+| Your situation | Use |
+|---|---|
+| Your agent has an HTTP API (a URL you can call) | [Endpoint Connection](#endpoint-connection) |
+| Your agent answers the phone | [Phone Connection](#phone-connection) |
+| Your voice agent runs on Pipecat Cloud | [WebRTC Connection](#webrtc-connection) |
+| Your voice agent runs on SLNG.ai | [SLNG.ai](/sdk/integrations/slng) |
+| Your agent is not deployed, or you want to test it inside CI | [Python SDK](#python-sdk) |
+| Your agent already emits OpenTelemetry traces | [OpenTelemetry](#opentelemetry) |
+| Your agent already uses Langfuse, and you want its steps in your test runs | [Langfuse](#langfuse) |
+| You have a Langfuse or LangSmith export of past conversations | [Import a trace export](#import-a-trace-export) |
+| You want to log production conversations from your own code | [Log production traffic with the SDK](#log-production-traffic-with-the-sdk) |
+| You use a language other than Python, or you want scripts | [REST API and CLI](#rest-api-and-cli) |
+| You want an AI coding assistant to do the setup | [Agent Skill](#agent-skill) |
+
+## At a glance
+
+| Option | Who calls the agent | Code needed | Test runs | Production monitoring | Voice |
+|---|---|---|---|---|---|
+| Endpoint Connection | Galtea | No | Yes | No | No |
+| Phone Connection | Galtea | No | Yes | No | Yes |
+| WebRTC Connection | Galtea | No | Yes | No | Yes |
+| SLNG.ai | Galtea | No | Yes | No | Text layer only |
+| Python SDK | Your code | Yes (Python) | Yes | No | No |
+| SDK production logging | Your code | Yes (Python) | No | Yes | No |
+| OpenTelemetry | Your agent | Configuration, plus a conversation ID per span | Spans only | Yes | No |
+| Langfuse | Your agent | One import, plus the Galtea trace ID | Spans only | No | No |
+| Trace export import | Nobody: you upload past conversations | No | No | Past traffic, from a file | No |
+| REST API and CLI | Your code, or Galtea | Yes (any language) | Yes | Yes | No |
+| Agent Skill | Your coding assistant, through the options above | No | Yes | Yes | No |
+
+"Spans only" means the option adds the internal steps of your agent (tool calls, retrieval, model calls) to the test runs of another option. It does not run the tests by itself.
+
+## 1. Galtea calls your agent (no code)
+
+Galtea sends each test message to your agent, reads the answer, and evaluates it. This is called **Direct Inference**. You can start a run from the [Galtea Dashboard](https://platform.galtea.ai/), the SDK (`galtea.evaluations.run()` with no agent function), or the CLI (`galtea evaluations create-from-version`), and watch it in the Dashboard. It also works for multi-turn conversations: Galtea simulates the user and talks to your agent turn by turn.
+
+### Endpoint Connection
+
+**For:** any agent with an HTTP API, such as a chat endpoint, an OpenAI-compatible endpoint, or your own backend.
+
+You give Galtea the URL, the authentication, the shape of the request body, and where to find the answer in the response. The fastest path: paste a `cURL` command of a real request and Galtea fills in the form for you. Optional initialization and finalization calls let Galtea open and close a session on your side.
+
+<CardGroup cols={2}>
+  <Card title="Run tests from the Dashboard" icon="gauge" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
+    Step-by-step guide: create the connection, attach it to a version, run an evaluation.
+  </Card>
+  <Card title="Endpoint Connection reference" icon="plug" href="/concepts/product/endpoint-connection">
+    All properties, the input template, and the response mapping.
+  </Card>
+</CardGroup>
+
+<Tip>
+  You can add the internal steps of your agent to these runs. Galtea sends a W3C `traceparent` header on each conversation turn call, so your OpenTelemetry spans join the right turn. Initialization and finalization calls send none. See [Collecting Spans During Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform#collecting-spans-during-direct-inference).
+</Tip>
+
+### Phone Connection
+
+**For:** voice agents that answer a phone number.
+
+You give Galtea the phone number of your agent. Galtea dials it and holds a real voice call for each test case. It tests your full telephony stack, as a real caller does.
+
+<Card title="Phone Connection" icon="phone" href="/concepts/product/phone-connection">
+  Set up the number and the call options.
+</Card>
+
+### WebRTC Connection
+
+**For:** voice agents hosted on [Pipecat Cloud](https://pipecat.ai). WebRTC is a standard for real-time audio over the internet.
+
+You give Galtea a Pipecat Cloud public API key and the agent name. Galtea opens a live voice session with your agent for each test case.
+
+<Card title="WebRTC Connection" icon="tower-broadcast" href="/concepts/product/webrtc-connection">
+  Set up the Pipecat Cloud key and the agent name.
+</Card>
+
+### SLNG.ai
+
+**For:** voice agents hosted on [SLNG.ai](https://slng.ai).
+
+Galtea reaches the text layer of your SLNG agent (its prompt and guardrails) through an Endpoint Connection. Nothing runs on your side.
+
+<Card title="SLNG.ai integration" icon="phone-volume" href="/sdk/integrations/slng">
+  Set it up by hand or with a coding assistant.
+</Card>
+
+## 2. Your code calls your agent (Python SDK)
+
+### Python SDK
+
+**For:** agents that are not deployed yet, agents you can call only from inside your network, and tests that run in CI.
+
+You write one Python function that calls your agent. The SDK gives it each test message and sends the answers to Galtea for scoring. One call, `galtea.evaluations.run()`, runs a full evaluation. The SDK also simulates multi-turn conversations with your agent.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install the SDK and run your first evaluation.
+  </Card>
+  <Card title="Evaluations from Specs" icon="play" href="/sdk/tutorials/specification-driven-evaluations">
+    The recommended workflow with `evaluations.run()`.
+  </Card>
+  <Card title="Simulate conversations" icon="user-group" href="/sdk/tutorials/simulating-conversations">
+    Test multi-turn behavior with simulated users.
+  </Card>
+  <Card title="GitHub Actions" icon="github" href="/sdk/integrations/github-actions">
+    Run the evaluation on every push or pull request.
+  </Card>
+</CardGroup>
+
+To record the internal steps of your agent (tool calls, retrieval, model calls), add the `@traced` decorator. See [Tracing Agent Operations](/sdk/tutorials/tracing-agent-operations).
+
+### Log production traffic with the SDK
+
+**For:** sending real user conversations to Galtea from your own application code.
+
+Your application calls the SDK after each answer. You can keep your own conversation IDs. Galtea stores the conversation as a production session. If you create a [Monitor](/concepts/product/monitor) for the product, it scores a sample of these sessions.
+
+<Card title="Monitor Production Responses" icon="users" href="/sdk/tutorials/monitor-production-responses-to-user-queries">
+  Log and evaluate production conversations with the SDK.
+</Card>
+
+## 3. Send the traces your agent already produces
+
+### OpenTelemetry
+
+**For:** agents in any language that already emit [OpenTelemetry](https://opentelemetry.io/) (OTel) traces. OTel is the open standard for traces.
+
+Point your OTel exporter or Collector at the Galtea endpoint, add your Galtea API key, and name the product and version in resource attributes. Each span also needs a conversation ID, such as `session.id`. If your agent does not set one, add it in code. Galtea turns the real traffic into production sessions. If you create a Monitor for the product, it scores a sample of these sessions. The same endpoint also adds spans to Direct Inference test runs.
+
+<CardGroup cols={2}>
+  <Card title="Send OTel traces to Galtea" icon="tower-cell" href="/sdk/tutorials/send-opentelemetry-traces-to-galtea">
+    Endpoint, authentication, and exporter setup.
+  </Card>
+  <Card title="Monitor real user traffic" icon="satellite-dish" href="/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry">
+    Turn production traces into sessions that Monitors evaluate.
+  </Card>
+</CardGroup>
+
+### Langfuse
+
+**For:** Python agents already instrumented with [Langfuse](https://langfuse.com).
+
+Change one import and pass the Galtea trace ID to your agent. During Direct Inference, Galtea sends this ID in the `X-Galtea-Inference-Id` header of each turn call to an Endpoint Connection. The SDK `generate()` and `simulate()` methods set it for you. The spans of those calls then go to both Langfuse and Galtea, and show in the Galtea test run. Spans with no Galtea trace ID go only to Langfuse. Nothing changes in Langfuse.
+
+The live integration does not create production sessions. To monitor production traffic, use [OpenTelemetry](#opentelemetry) or [log it with the SDK](#log-production-traffic-with-the-sdk). To evaluate past conversations, [import a trace export](#import-a-trace-export).
+
+<Card title="Langfuse integration" icon="eye" href="/sdk/integrations/langfuse/overview">
+  Install, swap the import, and link your traces.
+</Card>
+
+### Import a trace export
+
+**For:** conversations you already traced in Langfuse or LangSmith.
+
+Upload the export file in the Dashboard: open a version, choose **New Session**, then **Import traces**. Each conversation becomes a session that you can evaluate at once. In the Dashboard, the Production or Development switch of the sidebar decides the session type. The same import is available as `POST /sessions/import` and `galtea sessions import`, which make production sessions by default.
+
+<Card title="Import Sessions from a Trace Export" icon="file-import" href="/concepts/product/version/session#import-sessions-from-a-trace-export">
+  The supported formats and how each one maps to sessions.
+</Card>
+
+## 4. Use any language or tool
+
+### REST API and CLI
+
+**For:** teams that do not use Python, and scripts or pipelines.
+
+The Dashboard and the SDK use the Galtea REST API. The API reference lists every public operation, and the `galtea` CLI (command-line tool) gives you each one as a terminal command.
+
+<CardGroup cols={2}>
+  <Card title="REST API" icon="code" href="/api-reference">
+    Every endpoint, parameter, and response.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/cli/installation">
+    Install the `galtea` command and log in.
+  </Card>
+</CardGroup>
+
+### Agent Skill
+
+**For:** teams that use an AI coding assistant such as Claude Code, Cursor, or Windsurf.
+
+Install the Galtea Agent Skill. Your assistant then knows how to use Galtea: it can create products, connect your agent, run evaluations, and read the results for you.
+
+<Card title="Agent Skill" icon="robot" href="/sdk/integrations/agent-skill">
+  Install the skill in your coding assistant.
+</Card>
+
+## Other integrations
+
+### Claude Code Tracing
+
+**For:** teams that want to evaluate their own Claude Code sessions.
+
+A Claude Code plugin sends each conversation to Galtea as a production session.
+
+<Card title="Claude Code Tracing" icon="terminal" href="/sdk/integrations/claude-code-tracing">
+  Install the `galtea-tracing` plugin.
+</Card>

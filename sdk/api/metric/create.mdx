@@ -6,7 +6,7 @@ description: "Create a metric for evaluating your products."
 
 ## Returns
 
-Returns a [Metric](/concepts/metric) object for the given parameters, or `None` if an error occurs.
+Returns a [Metric](/concepts/metric) object for the given parameters, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
 
 ## Examples
 
@@ -51,7 +51,7 @@ metric = galtea.metrics.create(
 )
 ```
   </Tab>
-  <Tab title="Classifier (Jev)">
+  <Tab title="Classifier">
 ```python
 from galtea import ClassifierScaleQuestion, ClassifierYesNoQuestion, evenly_spaced_levels
 
@@ -140,7 +140,7 @@ human_transfer_metric = galtea.metrics.create(
   Model names are case-insensitive.
 
   <Note>
-    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `classifier`: leave it out, and the API picks the classifier model (such as `jev-1.13.0`). A name you send must be a classifier model of your deployment.
+    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `classifier` and your deployment has one selectable classifier model (such as `jev-1.13.0`): leave it out, and the API uses that model. With several selectable classifier models, the API answers 400 until you name one. A name you send must be a selectable classifier model of your deployment.
   </Note>
 </ResponseField>
 <ResponseField name="judge_prompt" type="string" optional>
@@ -151,7 +151,7 @@ human_transfer_metric = galtea.metrics.create(
   - `"partial_prompt"` — [AI Evaluation](/concepts/metric#creating-custom-metrics-via-ai-evaluation): You provide the core evaluation criteria and rubric. Galtea dynamically constructs the final prompt by prepending selected evaluation parameters to your criteria.
   - `"human_evaluation"` — **Human Evaluation**: Human annotators manually review and score evaluations using the annotation criteria you define. Evaluations enter a `PENDING_HUMAN` status and are completed when an annotator submits a score.
   - `"self_hosted"` — [Self-Hosted](/concepts/metric#self-hosted): For deterministic metrics scored locally using the SDK's `CustomScoreEvaluationMetric`. Your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform.
-  - `"classifier"` — [Classifier (Jev)](/concepts/metric/classifier): TypeSafe's Jev answers one typed question, which requires `classifier_question`. On a deployment without the classifier, the API answers 400 and `create` returns `None`.
+  - `"classifier"` — [Classifier](/concepts/metric/classifier): a classifier model answers one typed question, which requires `classifier_question`. On a deployment without the classifier, the API answers 400 and `create` returns `None`.
 
   Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
@@ -211,7 +211,7 @@ human_transfer_metric = galtea.metrics.create(
   The generation settings the judge runs with, instead of the platform defaults. Only these four keys are accepted, and any you omit keep the provider's own default:
   - `temperature`
   - `top_p`
-  - `max_output_tokens`
+  - `max_output_tokens`: at least 256, so the judge's structured answer fits. If the judge's answer is still cut off at this limit, the evaluation is skipped with a message that names it.
   - `reasoning_effort` — a level the model accepts, such as `low`, `medium` or `high`. The set differs per model, so read the settings your evaluator model publishes before choosing one.
 
   Only applicable to AI Evaluation metrics, which are the only ones with an LLM judge. The settings cannot be changed later: create a revision of the metric to use different ones.
@@ -245,7 +245,7 @@ human_transfer_metric = galtea.metrics.create(
     or `unreachable`. `accepted` tells you only that the provider took the values, never that they
     changed how the judge answers.
 
-    The CLI builds its command tree from the API specification, so this command appears only after
-    the API release that carries it. Run `galtea sync` to pick it up.
+    Each CLI version ships with the commands of the API at its release, so this command appears only
+    in a CLI version built from an API release that carries it. Update the CLI to get it.
   </Note>
 </ResponseField>

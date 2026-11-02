@@ -11,10 +11,10 @@ Call this before [excluding a metric revision](/sdk/api/metric/set-analytics-exc
 A `MetricAnalyticsExclusionImpact` object with the following fields:
 
 <ResponseField name="result_count" type="int">
-  Total number of results produced by this metric revision.
+  Total number of results produced by this metric revision. For a caller limited to the products its user groups grant, this counts only the results of those products.
 </ResponseField>
 <ResponseField name="products" type="list[MetricAnalyticsExclusionImpactProduct]">
-  The products with results from this metric revision. Each `MetricAnalyticsExclusionImpactProduct` has:
+  The products with results from this metric revision. A caller limited to the products its user groups grant sees only those products. The exclusion itself applies to every product of the organization. Each `MetricAnalyticsExclusionImpactProduct` has:
   - `id` (`str`): The product ID.
   - `name` (`str`): The product name.
   - `result_count` (`int`): Number of results this metric revision produced for this product.

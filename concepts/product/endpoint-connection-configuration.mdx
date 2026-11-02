@@ -184,7 +184,7 @@ The rules:
 The **Test Connection** panel lists the files it finds and shows why a file would be refused. It previews a bytes file and a Galtea file, and it never downloads a URL file. It refuses a Galtea file of another organization, but a Galtea file that no longer exists fails only when a run reads it.
 
 <Warning>
-  Evaluators cannot read output files yet. A metric that reads the output is skipped unless at least one turn of the session has text and no file. Text sent beside a file does not count, so a single-turn run whose answer carries a file always skips it. See [Output Files](/concepts/product/version/session/trace#param-output-files).
+  Evaluators cannot read output files yet. The API skips a metric that reads the output unless at least one turn of the session has text and no file. Text sent beside a file does not count, so a single-turn run whose answer carries a file always skips it. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones when any turn they read carries an output file. See [Output Files](/concepts/product/version/session/trace#param-output-files).
 </Warning>
 
 ### State Management
