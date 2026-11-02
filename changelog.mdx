@@ -8,6 +8,10 @@ icon: "newspaper"
 
 When the API skips an evaluation before it runs, the reason now says which file, on which turn, and what refused it: the judge model, the model catalog, a file type no judge reads, a metric with no judge model, or a metric that reads text only. DeepEval and classifier metrics now end Skipped when any turn carries a file on a side they read, even if another turn has text. An LLM-as-a-judge metric whose judge model reads images or PDFs gets the file on deployments that send files to the judge, and a human-evaluation metric is no longer skipped for a file. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 
+## Resend a Pending Invitation
+
+The users list and the user page now mark a member who has not accepted their invitation with an **Invitation pending** status; hover it to see when they were invited. An owner or admin can send them a new invitation email from the row menu with **Resend invitation**, with the same role and groups, instead of deleting the member and inviting them again.
+
 ## Charts Draw Each Series in a Soft Fill and a Strong Line
 
 Charts that compare versions or metrics now draw each series in two tones of its color: a soft fill for bars and bands, and a stronger tone for lines and outlines. A series keeps its place in the palette; in the dark theme its lines now draw in the lighter tone and its bars in a softer one. This covers the version comparison bars and their legend dots, the scores over time chart and the monitor score chart.
