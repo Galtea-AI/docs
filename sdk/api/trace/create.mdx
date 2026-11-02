@@ -4,6 +4,8 @@ sidebarTitle: "Create"
 description: "Create a new trace log in a session."
 ---
 
+import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+
 ## Returns
 Returns a [Trace](/concepts/product/version/session/trace) object.
 
@@ -89,10 +91,10 @@ document_only = galtea.traces.create(
 </Accordion>
 
 <ResponseField name="input" type="string | object" optional>
-  The input text/prompt. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
+  The input text/prompt. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/concepts/product/version/session/content-parts).
 </ResponseField>
 <ResponseField name="output" type="string | object" optional>
-  The generated output/response. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
+  The generated output/response. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/concepts/product/version/session/content-parts).
 </ResponseField>
 <ResponseField name="input_file_paths" type="list[str]" optional>
   Files the turn received, for a product that reads documents. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, such as `trace.input_files[0].uri`, which is attached without uploading it again. Any other URL raises a `ValueError` before anything is uploaded.
@@ -101,9 +103,7 @@ document_only = galtea.traces.create(
 
   One input accepts at most 20 files, 20 MB in total, of the same types a test case input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list.
 
-  <Warning>
-    Evaluators cannot read input files yet. A metric that reads the input is **skipped** when no turn of the session has input text without a file, with the reason `Evaluators cannot read input files yet.` One turn with text of its own is enough for this API check. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones. It does so when any turn the metric reads carries a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) in its input, and the reason names the file. Log the text your pipeline extracted from the document as the turn input, without the file, to have it scored.
-  </Warning>
+  <JudgeFileRule />
 </ResponseField>
 <ResponseField name="output_file_paths" type="list[str]" optional>
   Files the turn answers with, for a product whose reply is a document. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, which is attached without uploading it again. Any other URL raises a `ValueError` before anything is uploaded.
@@ -112,9 +112,7 @@ document_only = galtea.traces.create(
 
   One output accepts at most 20 files, 20 MB in total, of the same types an input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list and for reusing one upload across turns.
 
-  <Warning>
-    Evaluators cannot read output files yet. A metric that reads the output is **skipped** when no turn of the session answered with text of its own, counting neither a file nor a note sent beside one, with the reason `Evaluators cannot read output files yet.` One turn carrying text of its own is enough for this API check. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones. It does so when any turn the metric reads carries a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) in its output, and the reason names the file. Log the text your pipeline produced as the turn output, without the file, to have it scored.
-  </Warning>
+  Output files follow the same rule as `input_file_paths` above.
 </ResponseField>
 <ResponseField name="retrieval_context" type="string" optional>
   Context retrieved for RAG systems.

@@ -4,15 +4,17 @@ description: "Attach documents to test cases, fetch them back with the SDK, and 
 icon: "file-lines"
 ---
 
+import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+
 Some products read documents: a scanned contract, an invoice, a report. You attach the document to the [test case](/concepts/product/dataset/test-case#file-inputs), and Galtea stores it.
 
-**Galtea does not read the document for you.** Reading it is your product's job. This page walks the round trip your own pipeline drives: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+**Galtea does not answer from the document for you.** Reading it is your product's job. This page walks the round trip your own pipeline drives: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
 
 Galtea can also deliver the documents to your endpoint and run the inference for you. Name the files in the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) with `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}`, then run the dataset the usual way. Use the pipeline below when your product is not reachable over HTTP.
 
-<Info>
-  Evaluators cannot read files yet. A metric that reads the input is **skipped** while no turn carries text of its own. A file test case runs as a single turn, so a run of one always skips those metrics. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones when any turn the metric reads carries a [Galtea file](/concepts/product/version/session/content-parts#galtea-files). The manual `create_and_evaluate(..., input=...)` loop below can log your pipeline's extracted text as the turn input, and the metric scores that text; `evaluations.run()` cannot override the input at all, so it keeps skipping those metrics for a document-only row. Otherwise score the output only, with a metric such as [JSON Field Match](/concepts/metric/json-field-match). See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
-</Info>
+<JudgeFileRule />
+
+A file test case runs as a single turn, so the rule above applies to every metric that reads the input. The manual `create_and_evaluate(..., input=...)` loop below can log your pipeline's extracted text as the turn input, without the file, and the metric scores that text. `evaluations.run()` cannot override the input, so the turn keeps the file and the rule above decides whether the metric scores it or skips. Otherwise score the output only, with a metric such as [JSON Field Match](/concepts/metric/json-field-match).
 
 ### Workflow
 

@@ -1,0 +1,23 @@
+{/* Use root-relative links only: a relative link in a snippet resolves against the page that imports it. */}
+
+<Note>
+  **A metric scores a file only when its judge model reads that kind of file.** Only a [Galtea file](/concepts/product/version/session/content-parts#galtea-files), one you uploaded to Galtea, is sent to a judge. A file on your own host is stored as sent and never reaches a judge, so it never skips an evaluation: the judge reads the text beside it. The kinds a judge reads depend on its model, and the model picker of the metric form shows them for each model. A judge is sent PNG, JPEG, WebP, GIF and PDF files only. The other accepted types are stored, and a Galtea input file of those types still reaches your endpoint, but no judge reads them. The rule is the same for the input and the output, and a metric that reads `conversation_turns` reads both sides of every turn.
+
+  Before an evaluation runs, Galtea checks every Galtea file on each side the metric reads. One file the judge would not read skips the evaluation, whatever text sits beside it. A skipped evaluation costs no credits, and its reason names the file, its turn and what refused it:
+
+  - The judge model cannot read that kind of file.
+  - The model catalog does not say whether the judge model reads it.
+  - The metric names no judge model.
+  - The metric is DeepEval-based: those judges are sent text only.
+  - The metric is deterministic: it compares text without a model.
+  - The metric is a [classifier](/concepts/metric/classifier) metric: it is sent text only.
+  - The file is a type no judge reads, such as DOCX, CSV or TIFF, or an audio file: a judge reads audio only through its transcript.
+
+  When the evaluator then reads a Galtea file to send it, it skips the evaluation if the file no longer exists in storage, is empty, or is larger than the 20 MB a judge can receive. The reason names the file.
+
+  Audio input with no transcript is a separate case. A metric that reads the input is skipped when no turn of the session has input text or a Galtea input file, and a turn's audio carries no transcript. Text or a Galtea file on another turn is enough, and the reason, `Evaluators read an audio input through its transcript, and no turn carries one.`, names no file.
+
+  Human evaluation and self-hosted metrics are never skipped for a file or for audio. On deployments that do not send files to the judge, the evaluator also skips a metric whose judge would read the file, and the reason names the file.
+
+  To have the content scored, pick a metric whose judge model reads that kind of file, or log the text your pipeline extracted as the turn input or output, without the file. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
+</Note>

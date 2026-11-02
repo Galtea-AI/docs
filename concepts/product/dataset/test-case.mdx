@@ -4,6 +4,8 @@ sidebarTitle: "Overview"
 description: "A single challenge for evaluating product performance"
 ---
 
+import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import SDKTestCaseServiceCard from '/snippets/cards/sdk-test-case-service-card.mdx';
 
@@ -111,9 +113,11 @@ These limits apply to Galtea files, and each one is refused with a clear error r
 - **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
 - **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each uploaded file to your endpoint. Your own `file` parts, such as a URL on your own host, are not delivered (see [Content Parts](/concepts/product/version/session/content-parts#your-own-parts)). Without it, the run is refused rather than sent without the document.
 
-**Evaluators cannot read files yet.** The API skips a metric that reads the input when no turn is left with text of its own, and it costs no credits. Text sent beside the file does not count: it is usually a prompt about the document, so scoring it would give you a confident number about a document the judge never read. A file test case runs as a single turn, so a run of one always skips those metrics. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones, custom judge metrics included, when a turn it reads carries a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) on a side it reads. A file on your own host never reaches the judge, so it never causes this skip. A predefined Galtea metric reads only the first turn, unless it reads `conversation_turns`. A metric that reads `conversation_turns` reads both sides of every turn. DeepEval-based and classifier metrics score the text and ignore the file.
+A file test case runs as a single turn, so a metric that reads the input reads the file.
 
-To have the document scored, log the text your pipeline extracted as the turn input, without the file. A later turn that carries text of its own also passes the API check, but an LLM-as-a-judge metric that is not DeepEval-based still skips while any turn it reads carries a Galtea file. You can also score the run with a metric that reads only the output, such as a JSON Field Match metric comparing your output field by field. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
+<JudgeFileRule />
+
+You can also score the run with a metric that reads only the output, such as a JSON Field Match metric comparing your output field by field.
 
 Editing a test case that has files follows the usual [revision](/concepts/product/dataset/test-case#revisions) behaviour: a revision may add or replace files, and the superseded revision keeps its own. Send `input` as the whole object, including the files you want to keep. **The edit must leave at least one `file` part.** Your own `file` parts count; an `image_url` part does not. Plain text is refused, and so is an object with an empty `content`, because either one would turn a document test case into a text one. To get the text-only test case, create it and delete this one. A Galtea file you keep unchanged is not read from storage again, so the edit succeeds even when the file was deleted after you attached it.
 

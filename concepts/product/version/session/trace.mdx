@@ -4,6 +4,8 @@ sidebarTitle: "Overview"
 description: "A single turn in a conversation between a user and an AI system"
 ---
 
+import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+
 import ConceptsOverviewCard from '/snippets/cards/concepts-overview-card.mdx';
 import SDKTraceServiceCard from '/snippets/cards/sdk-trace-service-card.mdx';
 
@@ -47,9 +49,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 
   One input accepts at most 20 Galtea files, 20 MB in total, of the same types a test case input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
 
-  <Warning>
-    Evaluators cannot read input files yet. A metric that reads the input is **skipped** when no turn of the session has input text without a file, with the reason `Evaluators cannot read input files yet.` One turn with text of its own is enough for this API check. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones. It does so when any turn the metric reads carries a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) in its input, and the reason names the file. Log the text your pipeline extracted from the document as the turn input, without the file, to have it scored. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
-  </Warning>
+  <JudgeFileRule />
 
   <Note>
     `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
@@ -73,9 +73,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 
   One output accepts at most 20 Galtea files, 20 MB in total, of the same types an input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
 
-  <Warning>
-    Evaluators cannot read output files yet. A metric that reads the output is **skipped** when no turn of the session answered with text of its own, counting neither a file nor a note sent beside one, with the reason `Evaluators cannot read output files yet.` One turn carrying text of its own is enough for this API check. On deployments that do not send files to the judge, the evaluator also skips LLM-as-a-judge metrics other than the DeepEval-based ones. It does so when any turn the metric reads carries a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) in its output, and the reason names the file. Log the text your pipeline produced as the turn output, without the file, to have it scored. This mirrors the input side; see [File inputs](/concepts/product/dataset/test-case#file-inputs).
-  </Warning>
+  Output files follow the same rule as [Input Files](#param-input-files): a metric scores a file only when its judge model reads that kind of file.
 </ResponseField>
 
 <Note>
