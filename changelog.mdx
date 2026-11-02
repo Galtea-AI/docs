@@ -4,6 +4,10 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Users of a Frozen Organization Keep Their Role
+
+When Galtea freezes an organization, the users it keeps now keep their role instead of becoming Reader. The organization is read-only for them while it is frozen: they can see everything their role allows, but they cannot create, edit or delete anything except their own account settings. When the organization is unfrozen, they can write again with the same role.
+
 ## Model Pickers Show Which Files a Model Reads
 
 Each judge model in the metric form, in AI metric generation and in the classifier model picker now carries a tag: Reads text, images and PDFs, Reads text and images, Reads text and PDFs, Text only, or File support unknown when the model catalog does not say. A note under the picker states what the picked model does with a turn that carries a file, and the metric page shows the tag beside its model. Every classifier model shows Text only, because a classifier metric skips any turn with a file uploaded to Galtea on a side it reads. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
