@@ -16,6 +16,10 @@ Apps instrumented with Traceloop's OpenLLMetry now send complete spans with no G
 
 The color and icon tile that a product has in the Products table now also marks it in the sidebar product selector, at the top of its pages, and in the breadcrumb of pages under it. The open product is easier to recognize at a glance, and the same product has the same color everywhere, in light and dark mode.
 
+## See the Cost per Session Over Time
+
+The product Analytics **Summary** now shows the estimated cost of one session by day, week or month, under the failure trend and on the same range. A band shows the usual range of session cost, from the 10th to the 90th percentile, and the tooltip gives the cheapest and the most expensive session, so you can match a cost jump to a date. The same data is available with `galtea analytics get-session-cost-over-time`.
+
 ## Users of a Frozen Organization Keep Their Role
 
 When Galtea freezes an organization, the users it keeps now keep their role instead of becoming Reader. The organization is read-only for them while it is frozen: they can see everything their role allows, but they cannot create, edit or delete anything except their own account settings. When the organization is unfrozen, they can write again with the same role.
