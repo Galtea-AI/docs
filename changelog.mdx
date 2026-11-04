@@ -12,6 +12,10 @@ A user group's [permission list](/concepts/user-group#permission-lists) now also
 
 Apps instrumented with Traceloop's OpenLLMetry now send complete spans with no Galtea attribute. The `@workflow`, `@agent`, `@task` and `@tool` spans show their input, output and type, so a turn's input is the message your workflow received, not an LLM prompt. LLM-call spans from older OpenLLMetry releases now show their messages and token counts, and turns that share a session ID set with `Traceloop.set_association_properties` group into one session. See [Send OpenTelemetry traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records).
 
+## See Each Product's Color Beyond the Products Table
+
+The color and icon tile that a product has in the Products table now also marks it in the sidebar product selector, at the top of its pages, and in the breadcrumb of pages under it. The open product is easier to recognize at a glance, and the same product has the same color everywhere, in light and dark mode.
+
 ## Users of a Frozen Organization Keep Their Role
 
 When Galtea freezes an organization, the users it keeps now keep their role instead of becoming Reader. The organization is read-only for them while it is frozen: they can see everything their role allows, but they cannot create, edit or delete anything except their own account settings. When the organization is unfrozen, they can write again with the same role.
