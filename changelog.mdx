@@ -28,6 +28,10 @@ When the API skips an evaluation before it runs, the reason now says which file,
 
 Galtea now reads each element of a `content` list on its own, in a trace input, a trace output and a test case input. Your own file URLs, `image_url` parts and other parts are stored exactly as sent, even beside a file uploaded to Galtea. Galtea recognizes its own files by their storage key on any host. An edit that keeps a Galtea file unchanged no longer fails when the file was deleted, and a trace keeps a missing Galtea file, stored without its signature or its `sizeBytes`. The SDK now refuses a URL that is not a Galtea file in `input_file_paths` or `output_file_paths` before it uploads anything. See [Content Parts](/concepts/product/version/session/content-parts).
 
+## Reader and Human Evaluator Roles Retire
+
+From this release, a new or edited user can no longer get the READER or HUMAN_EVALUATOR role. Give them the MEMBER role and add them to a [user group](/concepts/user-group#permission-lists) with the **Reader** or **Human evaluator** preset instead. Users who already hold one of these roles keep it and keep their access.
+
 ## Resend a Pending Invitation
 
 The users list and the user page now mark a member who has not accepted their invitation with an **Invitation pending** status; hover it to see when they were invited. An owner or admin can send them a new invitation email from the row menu with **Resend invitation**, with the same role and groups, instead of deleting the member and inviting them again.

@@ -13,8 +13,8 @@ Galtea uses role-based access control. Every member of your organization has one
 
 - **OWNER**: Manages users and resources in their own organization. Can permanently delete only Sessions and User Groups; every other entity is soft delete at most. Only OWNER may create, edit, or delete a User Group, or change its users or products.
 - **MEMBER**: Day-to-day access in the products their user groups grant: view and contribute, with limited edits. Creates a product only with a user group that grants all products and allows `product.create`. Can permanently delete only Sessions; every other entity is soft delete at most. Reads and edits metrics, models and comments across the organization as their user groups' lists allow, and reads every User Group of the organization. Cannot create, edit, or delete a User Group, or change its users or products. May link or unlink a group of the organization to a metric it may edit.
-- **HUMAN_EVALUATOR**: Read-only on the products their user groups grant, plus may annotate AI metrics and submit human evaluations on them. Can also update their own account settings (name, consents and MFA method).
-- **READER**: Read-only on the products their user groups grant. Cannot create, update, or delete anything except their own account settings (name, consents and MFA method).
+- **HUMAN_EVALUATOR**: Read-only on the products their user groups grant, plus may annotate AI metrics and submit human evaluations on them. Can also update their own account settings (name, consents and MFA method). From this release Galtea refuses this role when it invites a user or changes a role: give MEMBER and a user group with the Human evaluator preset instead. Users who hold it keep it.
+- **READER**: Read-only on the products their user groups grant. Cannot create, update, or delete anything except their own account settings (name, consents and MFA method). From this release Galtea refuses this role when it invites a user or changes a role: give MEMBER and a user group with the Reader preset instead. Users who hold it keep it.
 
 <Note>
   Each cell shows what a role can do for that action. ✅ means allowed and ❌ means not allowed. A short rule (for example, "If product in own org") means the action is allowed only when that rule is true at the time, checked against your organization and the record's ownership.
@@ -39,7 +39,7 @@ Galtea uses role-based access control. Every member of your organization has one
 | Assign Human Evaluator role | ✅ | ❌ | ❌ | ❌ |
 | Assign Reader role | ✅ | ❌ | ❌ | ❌ |
 
-*An Assign action applies only together with Create or Update: a role gives a role only to a user it may invite or edit. A MEMBER invites no one and edits only itself, so its Assign Member role has no effect.*
+*An Assign action applies only together with Create or Update: a role gives a role only to a user it may invite or edit. A MEMBER invites no one and edits only itself, so its Assign Member role has no effect. From this release the API refuses Assign Human Evaluator role and Assign Reader role: give MEMBER and a user group with the matching preset instead.*
 
 **Organization**
 
