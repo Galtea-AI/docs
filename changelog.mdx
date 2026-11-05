@@ -4,6 +4,10 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Spans Show the Model They Ran On
+
+Each LLM span you send to the OpenTelemetry endpoint (`/otel/traces`), and each generation in a Langfuse file import, now shows the model that answered the call. Galtea reads it from `gen_ai.response.model` or `gen_ai.request.model`, and from MLflow and Mistral spans. When one of your Models, or a global Model, has that name, the span links to it, and the span page opens that Model. The span API answers the same as `modelName` and `modelId`. See [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model).
+
 ## User Groups Now Also Limit Metrics, Models and Comments
 
 A user group's [permission list](/concepts/user-group#permission-lists) now also covers metrics, models and comments, for example a group of metric authors. These entries sit under **Shared across products** in the **Permissions** tab, and its **Reaches** column shows what each **See** entry shows. A Member, Reader or Human evaluator in no user group no longer works with metrics, models or comments: add them to a group to give these actions back. Galtea metrics now stay visible to anyone whose group can see metrics, whatever products the group covers, so a team can pick a Galtea metric that its products do not use yet.
@@ -43,6 +47,10 @@ From this release, a new or edited user can no longer get the READER or HUMAN_EV
 ## Resend a Pending Invitation
 
 The users list and the user page now mark a member who has not accepted their invitation with an **Invitation pending** status; hover it to see when they were invited. An owner or admin can send them a new invitation email from the row menu with **Resend invitation**, with the same role and groups, instead of deleting the member and inviting them again.
+
+## Inline file bytes stay out of judge prompts
+
+An image or a compressed PDF logged inline as a `data:` URI no longer reaches an LLM-as-a-judge as base64: the judge sees `[inline bytes dropped: <type>, <size> bytes]` in its place. A text file logged the same way, such as a CSV or a JSON file, now reaches the judge as its text, which costs fewer tokens than base64. Metrics that compare values exactly, such as JSON Field Match, still read the stored value. To have an image or a PDF scored, upload it to Galtea as a file. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
 
 ## Charts Draw Each Series in a Soft Fill and a Strong Line
 

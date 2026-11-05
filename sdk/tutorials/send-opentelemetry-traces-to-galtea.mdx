@@ -339,6 +339,21 @@ Galtea also recognizes the usage a managed platform reports in its own format. M
 
 A reported count replaces one Galtea estimated earlier: your own figure is the accurate one. A cost you reported yourself is kept, and the new counts do not replace it: Galtea recomputes only a cost it derived from the counts and the Model price, never a different figure you set. Spans of a turn may arrive in several export batches, and each batch raises the turn's total instead of replacing it. Re-sending the same spans changes nothing.
 
+## Model
+
+Galtea records which model answered each LLM call. It reads the first of these keys that the span carries:
+
+| Attribute Key | Type | Description |
+|---|---|---|
+| `gen_ai.response.model` | `string` | The model the provider says answered the call. |
+| `gen_ai.request.model` | `string` | The model the call asked for. |
+
+MLflow Tracing's `mlflow.llm.model` and the Mistral `llm_call_details` event work with no Galtea attribute. A Langfuse file import reads each generation's model too.
+
+The span shows that name as its model. When a [Model](/concepts/model) of your organization, or a global Model, has the same name (case does not matter), Galtea also links the span to it. Your organization's Model wins over a global one. The link is made when the span is stored, so a Model you add later does not link spans that are already stored. Deleting a Model keeps the link, so a span can link to a deleted Model. The span page then shows the name with no link. A name that matches no Model is still shown.
+
+The turn's cost still uses the Model linked to the Version.
+
 <Note>
   **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.
 </Note>
