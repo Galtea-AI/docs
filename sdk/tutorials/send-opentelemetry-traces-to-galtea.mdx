@@ -335,7 +335,9 @@ A turn's `inputTokens`, `outputTokens` and `tokens` are the sum over every span 
 
 Galtea also recognizes the usage a managed platform reports in its own format. MLflow Tracing's `mlflow.chat.tokenUsage` works with no Galtea attribute. When a span carries both, the `gen_ai.usage.*` keys win, field by field.
 
-**Cost** is derived from those counts and the per-token price of the [Model](/concepts/model) linked to the Version. Link a Model with a known price and the turn's `cost` is filled. With no Model, or with no price for it, `cost` stays empty rather than zero.
+**Cost** is set per span. Each LLM span is priced at the per-token price of the [Model](/concepts/model) that answered the call (see [Model](#model) below), and keeps that price if the Model price changes later. A span that names no model is priced at the Model linked to the Version. A span whose model matches no Model, or a Model with no price, has no cost rather than a cost of zero. The turn's `cost` is the sum of its span costs, so a turn that calls two models costs each call at its own price. When the turn's spans use different prices, the turn shows no per-token price. Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn, so send `cost` to keep your own figure.
+
+Two spans that report the same LLM call, for example a framework span around the provider span, are both counted. Send the usage on one of them.
 
 A reported count replaces one Galtea estimated earlier: your own figure is the accurate one. A cost you reported yourself is kept, and the new counts do not replace it: Galtea recomputes only a cost it derived from the counts and the Model price, never a different figure you set. Spans of a turn may arrive in several export batches, and each batch raises the turn's total instead of replacing it. Re-sending the same spans changes nothing.
 
@@ -351,8 +353,6 @@ Galtea records which model answered each LLM call. It reads the first of these k
 MLflow Tracing's `mlflow.llm.model` and the Mistral `llm_call_details` event work with no Galtea attribute. A Langfuse file import reads each generation's model too.
 
 The span shows that name as its model. When a [Model](/concepts/model) of your organization, or a global Model, has the same name (case does not matter), Galtea also links the span to it. Your organization's Model wins over a global one. The link is made when the span is stored, so a Model you add later does not link spans that are already stored. Deleting a Model keeps the link, so a span can link to a deleted Model. The span page then shows the name with no link. A name that matches no Model is still shown.
-
-The turn's cost still uses the Model linked to the Version.
 
 <Note>
   **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.

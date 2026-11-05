@@ -8,6 +8,10 @@ icon: "newspaper"
 
 On an evaluation scored by a JSON Field Match metric, the output comparison table now uses that metric's matching rules. A field checked by a [field rule](/concepts/metric/json-field-match#field-rules) shows as a "Rule" row and no longer counts as a difference, and the strict variants mark a field found only in the actual output as failed. The metric API response now includes `definition`, the evaluator implementation that the metric runs.
 
+## Each LLM Call Is Priced at Its Own Model
+
+The span API and the SDK now return each LLM span's token counts, per-token prices and cost, priced at the Model that answered the call. A turn's tokens and cost are the sums of its spans, so a turn that calls two models costs each call at its own price, even when no Model is linked to the Version. A span that names no model is priced at the Version's Model. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+
 ## Spans Show the Model They Ran On
 
 Each LLM span you send to the OpenTelemetry endpoint (`/otel/traces`), and each generation in a Langfuse file import, now shows the model that answered the call. Galtea reads it from `gen_ai.response.model` or `gen_ai.request.model`, and from MLflow and Mistral spans. When one of your Models, or a global Model, has that name, the span links to it, and the span page opens that Model. The span API answers the same as `modelName` and `modelId`. See [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model).
