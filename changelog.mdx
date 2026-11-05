@@ -12,6 +12,10 @@ Each LLM span you send to the OpenTelemetry endpoint (`/otel/traces`), and each 
 
 A user group's [permission list](/concepts/user-group#permission-lists) now also covers metrics, models and comments, for example a group of metric authors. These entries sit under **Shared across products** in the **Permissions** tab, and its **Reaches** column shows what each **See** entry shows. A Member, Reader or Human evaluator in no user group no longer works with metrics, models or comments: add them to a group to give these actions back. Galtea metrics now stay visible to anyone whose group can see metrics, whatever products the group covers, so a team can pick a Galtea metric that its products do not use yet.
 
+## A Metric Always Has One Active Revision
+
+When you start a new revision from an older revision of a metric, the metric's active revision now becomes `Legacy`. Before, the metric kept two active revisions, and it was not clear which judge was in use. At release, we also fixed existing metrics that had several active revisions: each keeps one active revision, usually the newest, and the others become `Legacy`. Their evaluations are kept. See [Revisions and Analytics](/concepts/metric#revisions-and-analytics).
+
 ## OpenLLMetry Spans Show Their Input, Output, Type, Tokens and Session
 
 Apps instrumented with Traceloop's OpenLLMetry now send complete spans with no Galtea attribute. The `@workflow`, `@agent`, `@task` and `@tool` spans show their input, output and type, so a turn's input is the message your workflow received, not an LLM prompt. LLM-call spans from older OpenLLMetry releases now show their messages and token counts, and turns that share a session ID set with `Traceloop.set_association_properties` group into one session. See [Send OpenTelemetry traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records).

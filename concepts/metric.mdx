@@ -65,7 +65,7 @@ flowchart TD
 
 ## Revisions and Analytics
 
-Creating a revision marks the previous metric revision as `Legacy`. Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it.
+A metric has one active revision. Creating a revision marks the active revision as `Legacy`, also when you start the new revision from an older one. Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it.
 
 After you save a revision, the dashboard shows how many results and products the earlier revision affects. A user limited to the products their user groups grant sees counts that cover only those products, but the exclusion applies to every product. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
 
@@ -138,7 +138,7 @@ To correct a skip, use one of these:
 
 The optimizer judges each prompt at the metric's pass threshold, and the optimized revision keeps that threshold.
 
-To optimize a metric, a user needs both `metric.create` and `metric.update` in their user group lists, because **Apply optimization** and **Keep original** each need `metric.update`, and a result that nobody can settle blocks every new revision of the metric.
+To optimize a metric, a user needs both `metric.create` and `metric.update` in their user group lists, because **Apply optimization** and **Keep original** each need `metric.update`, and while an optimization waits for review, you cannot optimize the original again. You also cannot start a new revision from the optimized revision while it is running or waiting for review. A result that nobody settles keeps blocking the next optimization of the original.
 
 From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. A user limited to the products their user groups grant sees counts that cover only those products. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
 
