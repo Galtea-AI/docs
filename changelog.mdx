@@ -8,6 +8,10 @@ icon: "newspaper"
 
 On an evaluation scored by a JSON Field Match metric, the output comparison table now uses that metric's matching rules. A field checked by a [field rule](/concepts/metric/json-field-match#field-rules) shows as a "Rule" row and no longer counts as a difference, and the strict variants mark a field found only in the actual output as failed. The metric API response now includes `definition`, the evaluator implementation that the metric runs.
 
+## Simulated callers speak in short turns
+
+In a voice test, the simulated caller now says one short line per turn and no longer pauses mid-line, so your agent does not cut in on a monologue or a long silence. Every call over a [phone](/concepts/product/phone-connection) or [WebRTC](/concepts/product/webrtc-connection) connection uses the spoken strategy, whatever the test case sets.
+
 ## `galtea sync` No Longer Shows in the CLI Help
 
 The deprecated `galtea sync` command no longer appears in `galtea --help`, like every other deprecated command. It still runs, does nothing, and prints how to [update the CLI](/cli/installation#update) until its removal on 2028-01-17. Take it out of your scripts.

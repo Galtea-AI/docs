@@ -69,7 +69,7 @@ WebRTC Connections power **voice evaluation**: because Galtea drives a real voic
 
 WebRTC connections run **any** dataset type. No extra configuration is required beyond attaching the WebRTC connection to the version:
 
-- **Behavior** test cases run multi-turn: the conversation simulator drives each user turn from the test case's persona, goal, and scenario.
+- **Behavior** test cases run multi-turn: the conversation simulator drives each user turn from the test case's persona, goal, and scenario. The caller always uses the spoken [strategy](/concepts/product/dataset/test-case/conversation-simulator), whatever the test case sets.
 - **Accuracy** and **Security** test cases run single-turn: Galtea speaks the test case's input line into the call and evaluates the agent's reply.
 
 <Note>

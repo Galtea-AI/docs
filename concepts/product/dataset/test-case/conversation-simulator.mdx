@@ -26,9 +26,9 @@ Each simulation is guided by a [Behavior Test Case](/concepts/product/dataset/te
 The simulator supports two communication strategies that control how the simulated user messages are generated:
 
 - **Written** (default) — Concise, text-based messages mimicking real chat or messaging interactions
-- **Spoken** — Natural speech patterns with filler words, hesitations, and a conversational tone
+- **Spoken** — Short lines in a conversational tone, as a caller says them on a phone call
 
-The strategy is set on the [Test Case](/concepts/product/dataset/test-case) (via CSV upload or SDK) and is passed to the simulator automatically.
+The strategy is set on the [Test Case](/concepts/product/dataset/test-case) (via CSV upload or SDK) and is passed to the simulator automatically. A run over a [phone](/concepts/product/phone-connection) or [WebRTC](/concepts/product/webrtc-connection) connection always uses the spoken strategy, whatever the test case sets.
 
 ## Simulation Result Structure
 
