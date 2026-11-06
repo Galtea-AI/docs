@@ -6,7 +6,7 @@ Demonstrates how to create, list, get, update, delete user groups, and link/unli
 from datetime import datetime
 
 from _test_helpers import create_test_product, list_users
-from galtea import Galtea
+from galtea import Galtea, UserGroupPermissionPreset
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
@@ -83,12 +83,25 @@ user_group = galtea.user_groups.update(
 )
 # @end update_permissions
 assert user_group.permissions == ["analytics.read", "analytics.readCoverage", "metric.read", "product.read"]
+assert user_group.permission_preset is None
 
 # @start remove_permissions
-# None removes the custom list. Leaving `permissions` out keeps the current list.
+# None removes the custom list: the group follows the EDITOR preset.
+# Leaving `permissions` out keeps the current list.
 user_group = galtea.user_groups.update(user_group_id=user_group_id, permissions=None)
 # @end remove_permissions
 assert user_group.permissions is None
+assert user_group.permission_preset == UserGroupPermissionPreset.EDITOR
+
+# @start update_permission_preset
+# The group follows the READER preset. When Galtea changes the preset, the group changes with it.
+# Do not send a `permissions` list together with a preset: the API answers 400.
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    permission_preset=UserGroupPermissionPreset.READER,
+)
+# @end update_permission_preset
+assert user_group.permission_preset == UserGroupPermissionPreset.READER
 
 # @start link_users
 galtea.user_groups.link_users(
