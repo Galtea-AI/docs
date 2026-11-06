@@ -167,17 +167,14 @@ If the evaluator model becomes unavailable to Galtea on or after the retirement 
 | Metric | Category | Description |
 | --- | --- | --- |
 | **[Factual Accuracy](/concepts/metric/factual-accuracy)** | RAG | Evaluates whether the actual_output factually aligns with the expected_output. |
-| **[Resilience To Noise](/concepts/metric/resilience-to-noise)** | RAG | Evaluates whether the output is resilient to noisy input (typos, OCR/ASR errors). |
+| **[Resilience to Noise](/concepts/metric/resilience-to-noise)** | RAG | Evaluates whether the output is resilient to noisy input (typos, OCR/ASR errors). |
 | **[Answer Relevancy](/concepts/metric/answer-relevancy)** | RAG | Evaluates how relevant the actual_output is compared to the provided input. |
 | **[Faithfulness](/concepts/metric/faithfulness)** | RAG | Evaluates whether the actual_output factually aligns with the retrieval_context. |
-| **[Contextual Precision](/concepts/metric/contextual-precision)** | RAG | Evaluates whether relevant retrieval_context nodes are ranked higher than irrelevant ones. |
-| **[Contextual Recall](/concepts/metric/contextual-recall)** | RAG | Evaluates whether the retrieval_context sufficiently covers the expected_output. |
 | **[Contextual Relevancy](/concepts/metric/contextual-relevancy)** | RAG | Evaluates the overall relevance of the retrieval_context for a given input. |
 | **[BLEU](/concepts/metric/bleu)** | Deterministic | Measures n-gram overlap between actual and expected output. |
 | **[ROUGE](/concepts/metric/rouge)** | Deterministic | Measures longest common subsequence between actual and expected output. |
 | **[METEOR](/concepts/metric/meteor)** | Deterministic | Aligns words using exact matches, stems, or synonyms. |
 | **[Text Similarity](/concepts/metric/text-similarity)** | Deterministic | Quantifies textual resemblance using character-level fuzzy matching. |
-| **[Text Match](/concepts/metric/text-match)** *(deprecated)* | Deterministic | Binary match using character-level fuzzy matching with a threshold. Use [Text Similarity](/concepts/metric/text-similarity) instead. |
 | **[IOU](/concepts/metric/iou)** | Deterministic | Measures spatial overlap between predicted and reference bounding boxes. |
 | **[Spatial Match](/concepts/metric/spatial-match)** | Deterministic | Binary evaluation of spatial alignment using IoU score. |
 | **[URL Validation](/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |

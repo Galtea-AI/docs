@@ -9,10 +9,11 @@ This is especially important in enterprise and safety-sensitive applications, wh
 
 ## Evaluation Parameters
 
-To compute the `role_adherence` metric, the following inputs are required in every turn of the conversation:
+To compute the `role_adherence` metric, the following parameters are required:
 
-- **`input`**: The current user message.
-- **`actual_output`**: The corresponding chatbot response.
+- **`input`**: The current user message, in every turn.
+- **`actual_output`**: The corresponding chatbot response, in every turn.
+- **`product_description`**: A high-level description of what your product does (set on the [Product](/concepts/product)).
 
 This metric will evaluate the whole conversation, including all turns, to evaluate consistency with the assigned role over time.
 
