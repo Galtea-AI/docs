@@ -548,8 +548,6 @@
                       "concepts/metric/resilience-to-noise",
                       "concepts/metric/answer-relevancy",
                       "concepts/metric/faithfulness",
-                      "concepts/metric/contextual-precision",
-                      "concepts/metric/contextual-recall",
                       "concepts/metric/contextual-relevancy"
                     ]
                   },
@@ -584,7 +582,6 @@
                       "concepts/metric/rouge",
                       "concepts/metric/meteor",
                       "concepts/metric/text-similarity",
-                      "concepts/metric/text-match",
                       "concepts/metric/iou",
                       "concepts/metric/spatial-match",
                       "concepts/metric/url-validation",
@@ -1001,12 +998,24 @@
       "destination": "/concepts/metric/bleu"
     },
     {
+      "source": "/concepts/metric/contextual-precision",
+      "destination": "/concepts/metric"
+    },
+    {
+      "source": "/concepts/metric/contextual-recall",
+      "destination": "/concepts/metric"
+    },
+    {
+      "source": "/concepts/metric/text-match",
+      "destination": "/concepts/metric/text-similarity"
+    },
+    {
       "source": "/concepts/metric-type/contextual-precision",
-      "destination": "/concepts/metric/contextual-precision"
+      "destination": "/concepts/metric"
     },
     {
       "source": "/concepts/metric-type/contextual-recall",
-      "destination": "/concepts/metric/contextual-recall"
+      "destination": "/concepts/metric"
     },
     {
       "source": "/concepts/metric-type/contextual-relevancy",
@@ -1090,7 +1099,7 @@
     },
     {
       "source": "/concepts/metric-type/text-match",
-      "destination": "/concepts/metric/text-match"
+      "destination": "/concepts/metric/text-similarity"
     },
     {
       "source": "/concepts/metric-type/text-similarity",

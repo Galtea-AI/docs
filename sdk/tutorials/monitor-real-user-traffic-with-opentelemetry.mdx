@@ -180,6 +180,8 @@ Galtea stores each conversation under a Product and one of its Versions. So afte
         Some platforms cannot attach `galtea.session.custom_id` to their spans. For these, Galtea derives the conversation key from a recognized vendor attribute, so you do not change the platform's instrumentation.
 
         Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key, and splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
+
+        [OpenLLMetry](https://github.com/traceloop/openllmetry) (Traceloop's SDK) writes the conversation ID you pass to `Traceloop.set_association_properties` as `traceloop.association.properties.<name>`. Galtea reads it when the name is `session_id`, `conversation_id`, `chat_id` or `thread_id`, or their camelCase form, and one OTel trace becomes one conversation turn. When a trace carries several of these names, they rank in the order listed, and each camelCase form ranks right after its snake_case name. So `sessionId` wins over `conversation_id`. The standard keys win over it. Call `set_association_properties` before the workflow starts, so every span of the trace carries it.
       </Tab>
     </Tabs>
   </Step>

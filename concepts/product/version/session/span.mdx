@@ -86,7 +86,7 @@ Send the type your own system uses. Galtea never drops a span for a type it does
 Galtea reads the type you sent and never the span name, so a step you called `search_tool` is only a **TOOL** if you typed it as one. The rules, in order:
 
 - A value matching one of the types above is kept as it is, in any capitalization.
-- A word for a type Galtea spells differently maps to it: `LLM`, `CHAT_MODEL`, `chat`, `text_completion` and `generate_content` become **GENERATION**, `embeddings` becomes **EMBEDDING**, and `create_agent` and `invoke_agent` become **AGENT**.
+- A word for a type Galtea spells differently maps to it: `LLM`, `CHAT_MODEL`, `chat`, `text_completion`, `completion` and `generate_content` become **GENERATION**, `embeddings` becomes **EMBEDDING**, `create_agent` and `invoke_agent` become **AGENT**, and OpenLLMetry's `workflow` and `task` become **CHAIN**.
 - A label that names a handoff or a transfer to an agent becomes **AGENT**.
 - A label that ends in `tool` becomes **TOOL**.
 - Everything else becomes **SPAN**.
@@ -180,7 +180,47 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 <ResponseField name="Metadata" type="any" optional>
   Additional custom metadata about the span. Maximum size: 10MB.
 
-  Five keys are reserved for Galtea and removed from anything you send, on every path and without an error: `galtea.synthetic`, `galtea.span.original_name`, `galtea.span.input_from_source_rule`, `galtea.span.output_from_source_rule` and `galtea.span.usage`. Galtea writes them itself, to record what it changed or recovered, and, for `galtea.span.usage`, the [token counts](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost) it read off the span. A sixth, `galtea.span.original_type`, is removed from a direct span write and kept on OpenTelemetry ingest, where a replayed export legitimately carries your original label in it.
+  Six keys are reserved for Galtea and removed from anything you send, on every path and without an error: `galtea.synthetic`, `galtea.span.original_name`, `galtea.span.input_from_source_rule`, `galtea.span.output_from_source_rule`, `galtea.span.usage` and `galtea.span.model`. Galtea writes all but `galtea.span.usage` itself, to record what it changed or recovered, and, for `galtea.span.model`, the [model name](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) it read off the span. Galtea no longer writes `galtea.span.usage`: the key holds the token counts only on a span stored before spans had their own token fields. A seventh, `galtea.span.original_type`, is removed from a direct span write and kept on OpenTelemetry ingest, where a replayed export legitimately carries your original label in it.
+</ResponseField>
+
+<ResponseField name="Model Name" type="string" optional>
+  The model the LLM call ran on, as the span reported it. Galtea sets it for spans it ingests through OpenTelemetry and for Langfuse file imports. Spans you create with the SDK or the span endpoints do not have it. See [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model). Read-only.
+</ResponseField>
+
+<ResponseField name="Model ID" type="string" optional>
+  The [Model](/concepts/model) the span is linked to: a Model of your organization, or a global one, with the reported name. Empty when no Model had that name when the span was stored. Deleting the Model keeps the link, so it can name a deleted Model. Read-only.
+</ResponseField>
+
+<ResponseField name="Input Tokens" type="int" optional>
+  Input tokens this LLM call reported. Galtea sets this and the seven fields below when it stores the span; see [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost). The counts and cost of a trace are the sums over its spans. All eight are read-only, and `null` for a user without the `evaluation.readInference` permission (see [Roles and permissions](/security/roles-and-permissions)).
+</ResponseField>
+
+<ResponseField name="Output Tokens" type="int" optional>
+  Output tokens this LLM call reported.
+</ResponseField>
+
+<ResponseField name="Cache Read Input Tokens" type="int" optional>
+  Input tokens this LLM call read from the model cache.
+</ResponseField>
+
+<ResponseField name="Tokens" type="int" optional>
+  The sum of the three counts above.
+</ResponseField>
+
+<ResponseField name="Cost Per Input Token" type="float" optional>
+  The input price the call was charged at. Galtea prices the call when it stores the span, at the [Model](/concepts/model) that answered it, and keeps that price if the Model price changes later. A span that names no model is priced at the Model linked to the Version. A span whose model has no price in your organization has no prices and no cost.
+</ResponseField>
+
+<ResponseField name="Cost Per Output Token" type="float" optional>
+  The output price the call was charged at.
+</ResponseField>
+
+<ResponseField name="Cost Per Cache Read Input Token" type="float" optional>
+  The price of a cached input token the call was charged at.
+</ResponseField>
+
+<ResponseField name="Cost" type="float" optional>
+  The cost of this LLM call: each count times its price.
 </ResponseField>
 
 ## Related

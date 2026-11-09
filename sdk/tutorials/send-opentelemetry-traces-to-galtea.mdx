@@ -260,8 +260,8 @@ If you set no attributes, spans are still ingested. A span type Galtea does not 
 The **span type** follows its own order, because only `galtea.span.type` is a Galtea attribute:
 
 1. **`galtea.span.type`** — always wins.
-2. **The span kind your platform already declares** — MLflow's `mlflow.spanType`, or a span shape that names the kind by itself.
-3. **`gen_ai.operation.name`** — the OpenTelemetry GenAI operation, such as `chat` or `embeddings`.
+2. **The span kind your platform already declares** — MLflow's `mlflow.spanType`, OpenLLMetry's `traceloop.span.kind`, or a span shape that names the kind by itself.
+3. **`gen_ai.operation.name`** — the OpenTelemetry GenAI operation, such as `chat` or `embeddings`. With none, OpenLLMetry's older `llm.request.type`, such as `chat` or `completion`.
 4. **`SPAN`** — when nothing above names a kind.
 
 So a span imported from an instrumented platform is typed without any Galtea attribute: an MLflow `RETRIEVER` span becomes a `RETRIEVER` span, which is what Galtea reads retrieval context from. A vendor word Galtea spells differently still maps, so MLflow's `LLM` becomes `GENERATION`.
@@ -290,10 +290,11 @@ So a span imported from an instrumented platform is typed without any Galtea att
     - `gen_ai.input.messages` / `gen_ai.output.messages` (the current conventions)
     - the legacy `gen_ai.prompt` / `gen_ai.completion` attributes
     - the GenAI content span events
+    - the flattened `gen_ai.prompt.<N>.role` / `.content` / `.tool_calls.<M>.*` and `gen_ai.completion.<N>.*` attributes, rebuilt into a message list in index order
 
-    `gen_ai.operation.name` sets the span type when you send no `galtea.span.type`: `chat`, `text_completion` and `generate_content` become `GENERATION`, `embeddings` becomes `EMBEDDING`, `execute_tool` becomes `TOOL`, and `create_agent` / `invoke_agent` become `AGENT`.
+    `gen_ai.operation.name` sets the span type when you send no `galtea.span.type`: `chat`, `text_completion` and `generate_content` become `GENERATION`, `embeddings` becomes `EMBEDDING`, `execute_tool` becomes `TOOL`, and `create_agent` / `invoke_agent` become `AGENT`. With no `gen_ai.operation.name`, OpenLLMetry's older `llm.request.type` sets it: `chat` and `completion` become `GENERATION`, and `embedding` becomes `EMBEDDING`.
 
-    On an `execute_tool` span, send `gen_ai.tool.name` as well. The conventions name that span `execute_tool get_weather`, and Galtea stores the span name as the tool name. So without the attribute the tool reads as `execute_tool get_weather`, and a `tool_correctness` metric never matches it against `get_weather`.
+    On an `execute_tool` span, or any span typed `TOOL`, send `gen_ai.tool.name` as well. The conventions name that span `execute_tool get_weather`, and Galtea stores the span name as the tool name. So without the attribute the tool reads as `execute_tool get_weather`, and a `tool_correctness` metric never matches it against `get_weather`. With it, the span takes the tool name, and the original span name stays in `metadata` under `galtea.span.original_name`.
 
     `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` give Galtea the call's token counts. See [Token usage and cost](#token-usage-and-cost) below.
 
@@ -302,9 +303,11 @@ So a span imported from an instrumented platform is typed without any Galtea att
     </Tip>
   </Tab>
   <Tab title="Managed platforms">
-    For managed platforms, Galtea recognizes some span shapes automatically, with no configuration needed: platforms whose telemetry carries the abraxas span-event format (such as Mistral's agent platform), and platforms instrumented with [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) (recognized from MLflow's own `mlflow.*` span attributes).
+    For managed platforms, Galtea recognizes some span shapes automatically, with no configuration needed: platforms whose telemetry carries the abraxas span-event format (such as Mistral's agent platform), platforms instrumented with [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) (recognized from MLflow's own `mlflow.*` span attributes), and apps instrumented with [OpenLLMetry](https://github.com/traceloop/openllmetry) (recognized from its `traceloop.*` span attributes).
 
-    These shapes also set the **span type**. MLflow's `mlflow.spanType` maps onto the Galtea span type (`RETRIEVER`, `TOOL`, `CHAIN`, `AGENT` and `EMBEDDING` map directly; `LLM` and `CHAT_MODEL` become `GENERATION`), and an abraxas LLM-call span becomes a `GENERATION`. MLflow's `UNKNOWN` names no kind, so a span carrying it falls through to the next source in the order above.
+    OpenLLMetry's `@workflow`, `@agent`, `@task` and `@tool` decorators record the function's arguments and return value in `traceloop.entity.input` and `traceloop.entity.output`, which Galtea stores as the span's input and output. A call with one positional argument and no keyword argument, such as `chat(message)`, stores that argument. A call with no argument, or whose one argument is `None` or an empty string, stores no input, so the turn reads its input from a child span. Any other call, including one with a single keyword argument such as `chat(message="hi")`, stores the `{"args": [...], "kwargs": {...}}` object as OpenLLMetry wrote it. So when the workflow receives the user message and returns its reply as text, the root `@workflow` span supplies the turn's input and output. For any other return value, see [What you get](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#what-you-get) for the span the turn reads instead. A `@tool` span is named after its tool, from `gen_ai.tool.name` or, on an older SDK, `traceloop.entity.name`.
+
+    These shapes also set the **span type**. MLflow's `mlflow.spanType` maps onto the Galtea span type (`RETRIEVER`, `TOOL`, `CHAIN`, `AGENT` and `EMBEDDING` map directly; `LLM` and `CHAT_MODEL` become `GENERATION`), and an abraxas LLM-call span becomes a `GENERATION`. OpenLLMetry's `traceloop.span.kind` maps `agent` to `AGENT`, `tool` to `TOOL`, and `workflow` and `task` to `CHAIN`. MLflow's `UNKNOWN` and OpenLLMetry's `unknown` name no kind, so a span carrying one falls through to the next source in the order above.
   </Tab>
 </Tabs>
 
@@ -326,20 +329,37 @@ Galtea reads the token counts your spans report and adds them up per turn. Send 
 | `gen_ai.usage.input_tokens` | `int` | Input (prompt) tokens the call consumed. |
 | `gen_ai.usage.output_tokens` | `int` | Output (completion) tokens the call produced. |
 
+The older names `gen_ai.usage.prompt_tokens` and `gen_ai.usage.completion_tokens` work too. When a span carries both names, the current one wins.
+
 A turn's `inputTokens`, `outputTokens` and `tokens` are the sum over every span of that turn, so a turn that makes three LLM calls reports the three calls added together. A span that reports no usage adds nothing. Send no usage at all and the turn keeps what Galtea already had: nothing when no Model is linked to the Version, or the estimate Galtea derived from the turn text when one is.
 
 Galtea also recognizes the usage a managed platform reports in its own format. MLflow Tracing's `mlflow.chat.tokenUsage` works with no Galtea attribute. When a span carries both, the `gen_ai.usage.*` keys win, field by field.
 
-**Cost** is derived from those counts and the per-token price of the [Model](/concepts/model) linked to the Version. Link a Model with a known price and the turn's `cost` is filled. With no Model, or with no price for it, `cost` stays empty rather than zero.
+**Cost** is set per span. Each LLM span is priced at the per-token price of the [Model](/concepts/model) that answered the call (see [Model](#model) below), and keeps that price if the Model price changes later. A span that names no model is priced at the Model linked to the Version. A span whose model matches no Model, or a Model with no price, has no cost rather than a cost of zero. The turn's `cost` is the sum of its span costs, so a turn that calls two models costs each call at its own price. When the turn's spans use different prices, the turn shows no per-token price. Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn, so send `cost` to keep your own figure.
+
+Two spans that report the same LLM call, for example a framework span around the provider span, are both counted. Send the usage on one of them.
 
 A reported count replaces one Galtea estimated earlier: your own figure is the accurate one. A cost you reported yourself is kept, and the new counts do not replace it: Galtea recomputes only a cost it derived from the counts and the Model price, never a different figure you set. Spans of a turn may arrive in several export batches, and each batch raises the turn's total instead of replacing it. Re-sending the same spans changes nothing.
+
+## Model
+
+Galtea records which model answered each LLM call. It reads the first of these keys that the span carries:
+
+| Attribute Key | Type | Description |
+|---|---|---|
+| `gen_ai.response.model` | `string` | The model the provider says answered the call. |
+| `gen_ai.request.model` | `string` | The model the call asked for. |
+
+MLflow Tracing's `mlflow.llm.model` and the Mistral `llm_call_details` event work with no Galtea attribute. A Langfuse file import reads each generation's model too.
+
+The span shows that name as its model. When a [Model](/concepts/model) of your organization, or a global Model, has the same name (case does not matter), Galtea also links the span to it. Your organization's Model wins over a global one. The link is made when the span is stored, so a Model you add later does not link spans that are already stored. Deleting a Model keeps the link, so a span can link to a deleted Model. The span page then shows the name with no link. A name that matches no Model is still shown.
 
 <Note>
   **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.
 </Note>
 
 <Warning>
-  Some common instrumentation styles do **not** populate input/output yet: Traceloop / OpenLLMetry (`gen_ai.prompt.0.content`-style flattened attributes) and OpenInference (`input.value`). Their data is still stored in the span's `metadata` field, so nothing is lost, but evaluations that read the span input and output will not see it.
+  OpenInference (`input.value`) does **not** populate input/output yet. Its data is still stored in the span's `metadata` field, so nothing is lost, but evaluations that read the span input and output will not see it.
 </Warning>
 
 ## Attributes that route a conversation

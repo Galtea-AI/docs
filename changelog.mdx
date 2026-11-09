@@ -4,6 +4,54 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Simulated callers read IDs out in groups
+
+In a voice test, the simulated caller now says an order number, phone number or ID in short groups, as a person does, instead of text-to-speech reading it as millions. Amounts, lists of amounts and numbers the caller already grouped stay as written.
+
+## Evaluation Comparison Follows the JSON Field Match Rules
+
+On an evaluation scored by a JSON Field Match metric, the output comparison table now uses that metric's matching rules. A field checked by a [field rule](/concepts/metric/json-field-match#field-rules) shows as a "Rule" row and no longer counts as a difference, and the strict variants mark a field found only in the actual output as failed. The metric API response now includes `definition`, the evaluator implementation that the metric runs.
+
+## Simulated callers speak in short turns
+
+In a voice test, the simulated caller now says one short line per turn and no longer pauses mid-line, so your agent does not cut in on a monologue or a long silence. Every call over a [phone](/concepts/product/phone-connection) or [WebRTC](/concepts/product/webrtc-connection) connection uses the spoken strategy, whatever the test case sets.
+
+## `galtea sync` No Longer Shows in the CLI Help
+
+The deprecated `galtea sync` command no longer appears in `galtea --help`, like every other deprecated command. It still runs, does nothing, and prints how to [update the CLI](/cli/installation#update) until its removal on 2028-01-17. Take it out of your scripts.
+
+## Each LLM Call Is Priced at Its Own Model
+
+The span API and the SDK now return each LLM span's token counts, per-token prices and cost, priced at the Model that answered the call. A turn's tokens and cost are the sums of its spans, so a turn that calls two models costs each call at its own price, even when no Model is linked to the Version. A span that names no model is priced at the Version's Model. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+
+## Spans Show the Model They Ran On
+
+Each LLM span you send to the OpenTelemetry endpoint (`/otel/traces`), and each generation in a Langfuse file import, now shows the model that answered the call. Galtea reads it from `gen_ai.response.model` or `gen_ai.request.model`, and from MLflow and Mistral spans. When one of your Models, or a global Model, has that name, the span links to it, and the span page opens that Model. The span API answers the same as `modelName` and `modelId`. See [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model).
+
+## User Groups Now Also Limit Metrics, Models and Comments
+
+A user group's [permission list](/concepts/user-group#permission-lists) now also covers metrics, models and comments, for example a group of metric authors. These entries sit under **Shared across products** in the **Permissions** tab, and its **Reaches** column shows what each **See** entry shows. A Member, Reader or Human evaluator in no user group no longer works with metrics, models or comments: add them to a group to give these actions back. Galtea metrics now stay visible to anyone whose group can see metrics, whatever products the group covers, so a team can pick a Galtea metric that its products do not use yet.
+
+## A Metric Always Has One Active Revision
+
+When you start a new revision from an older revision of a metric, the metric's active revision now becomes `Legacy`. Before, the metric kept two active revisions, and it was not clear which judge was in use. At release, we also fixed existing metrics that had several active revisions: each keeps one active revision, usually the newest, and the others become `Legacy`. Their evaluations are kept. See [Revisions and Analytics](/concepts/metric#revisions-and-analytics).
+
+## OpenLLMetry Spans Show Their Input, Output, Type, Tokens and Session
+
+Apps instrumented with Traceloop's OpenLLMetry now send complete spans with no Galtea attribute. The `@workflow`, `@agent`, `@task` and `@tool` spans show their input, output and type, so a turn's input is the message your workflow received, not an LLM prompt. LLM-call spans from older OpenLLMetry releases now show their messages and token counts, and turns that share a session ID set with `Traceloop.set_association_properties` group into one session. See [Send OpenTelemetry traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records).
+
+## See Each Product's Color Beyond the Products Table
+
+The color and icon tile that a product has in the Products table now also marks it in the sidebar product selector, at the top of its pages, and in the breadcrumb of pages under it. The open product is easier to recognize at a glance, and the same product has the same color everywhere, in light and dark mode.
+
+## See the Cost per Session Over Time
+
+The product Analytics **Summary** now shows the estimated cost of one session by day, week or month, under the failure trend and on the same range. A band shows the usual range of session cost, from the 10th to the 90th percentile, and the tooltip gives the cheapest and the most expensive session, so you can match a cost jump to a date. The same data is available with `galtea analytics get-session-cost-over-time`.
+
+## Users of a Frozen Organization Keep Their Role
+
+When Galtea freezes an organization, the users it keeps now keep their role instead of becoming Reader. The organization is read-only for them while it is frozen: they can see everything their role allows, but they cannot create, edit or delete anything except their own account settings. When the organization is unfrozen, they can write again with the same role.
+
 ## Model Pickers Show Which Files a Model Reads
 
 Each judge model in the metric form, in AI metric generation and in the classifier model picker now carries a tag: Reads text, images and PDFs, Reads text and images, Reads text and PDFs, Text only, or File support unknown when the model catalog does not say. A note under the picker states what the picked model does with a turn that carries a file, and the metric page shows the tag beside its model. Every classifier model shows Text only, because a classifier metric skips any turn with a file uploaded to Galtea on a side it reads. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
@@ -12,13 +60,27 @@ Each judge model in the metric form, in AI metric generation and in the classifi
 
 When the API skips an evaluation before it runs, the reason now says which file, on which turn, and what refused it: the judge model, the model catalog, a file type no judge reads, a metric with no judge model, or a metric that reads text only. DeepEval and classifier metrics now end Skipped when any turn carries a file on a side they read, even if another turn has text. An LLM-as-a-judge metric whose judge model reads images or PDFs gets the file on deployments that send files to the judge, and a human-evaluation metric is no longer skipped for a file. The dashboard file row no longer carries a judge tag, and the evaluation page warns only about audio with no transcript. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 
+## User Groups Can Follow a Preset, and the User Forms Show Group Access
+
+A user group now either follows a preset or holds its own list. A group that follows **Editor**, **Human evaluator** or **Reader** changes with it when Galtea changes what the preset grants. Pick **Custom**, or **Customize** under a preset, to keep today's permissions as the group's own list and edit it. Set this in the group's create and edit forms, or with **Edit permissions** in its **Permissions** tab. Through the API, send `permissionPreset` to `POST /userGroups` or `PATCH /userGroups/{id}`. See [Presets](/concepts/user-group#presets).
+
+The invite and edit user forms now offer the Owner and Member roles, not Reader or Human evaluator. For read-only access, invite a Member into a group that follows **Reader**. Each group in the form shows its products, users and permissions, and a summary shows the permissions the user gets on each product. When your organization has no group yet, a dialog after the save offers to create the first one with the new Member. The **Users** tab now shows each user's role and their groups with their permissions, and flags a Member with no group. Pick a group there to see its products, users and permissions. On a metric's page, the **User Groups** card now says that a user must be in one of those groups to evaluate the metric.
+
 ## Your Own Files Stay as Sent Beside Galtea Files
 
 Galtea now reads each element of a `content` list on its own, in a trace input, a trace output and a test case input. Your own file URLs, `image_url` parts and other parts are stored exactly as sent, even beside a file uploaded to Galtea. Galtea recognizes its own files by their storage key on any host. An edit that keeps a Galtea file unchanged no longer fails when the file was deleted, and a trace keeps a missing Galtea file, stored without its signature or its `sizeBytes`. The SDK now refuses a URL that is not a Galtea file in `input_file_paths` or `output_file_paths` before it uploads anything. See [Content Parts](/concepts/product/version/session/content-parts).
 
+## Reader and Human Evaluator Roles Retire
+
+From this release, a new or edited user can no longer get the READER or HUMAN_EVALUATOR role. Give them the MEMBER role and add them to a [user group](/concepts/user-group#permission-lists) with the **Reader** or **Human evaluator** preset instead. Galtea moves existing users with one of these roles to the MEMBER role in a one-off run, and they join a copy of each of their groups, so their access stays the same. Until that run, they keep their role. The run skips some users, and a skipped user cannot sign in once Galtea removes the old roles from sign-in: see [Roles and permissions](/security/roles-and-permissions) for who fixes each skip.
+
 ## Resend a Pending Invitation
 
 The users list and the user page now mark a member who has not accepted their invitation with an **Invitation pending** status; hover it to see when they were invited. An owner or admin can send them a new invitation email from the row menu with **Resend invitation**, with the same role and groups, instead of deleting the member and inviting them again.
+
+## Inline file bytes stay out of judge prompts
+
+An image or a compressed PDF logged inline as a `data:` URI no longer reaches an LLM-as-a-judge as base64: the judge sees `[inline bytes dropped: <type>, <size> bytes]` in its place. A text file logged the same way, such as a CSV or a JSON file, now reaches the judge as its text, which costs fewer tokens than base64. Metrics that compare values exactly, such as JSON Field Match, still read the stored value. To have an image or a PDF scored, upload it to Galtea as a file. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
 
 ## Charts Draw Each Series in a Soft Fill and a Strong Line
 

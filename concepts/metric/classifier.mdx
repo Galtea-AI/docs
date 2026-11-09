@@ -167,7 +167,7 @@ Read the draft and test it before you save. See [Generate Metrics with AI](/conc
 
 **Convert to classifier** turns an LLM judge metric into classifier metrics. It is a button on the metric's page. The AI reads the judge prompt and writes one question for each condition in it. Each question becomes its own **Classifier** metric.
 
-The button shows only for an LLM judge metric that has a judge prompt, where classifier metrics are on and your role can create metrics. The source can be a metric of your organization or a Galtea metric. The new metrics always belong to your organization. It is off while an optimization of the metric runs or waits for review, and for a metric with too many revisions to check for one.
+The button shows only for an LLM judge metric that has a judge prompt, where classifier metrics are on and you can create metrics: a Member needs `metric.create` in a user group list. The source can be a metric of your organization or a Galtea metric. The new metrics always belong to your organization. It is off while an optimization of the metric runs or waits for review, and for a metric with too many revisions to check for one.
 
 1. **Generate questions.** The AI splits the judge prompt. This takes 10 to 40 seconds. Nothing is saved and no credits are charged.
 2. **Check the proposals.** Pick how many metrics to create, and the classifier model they all use. Edit a question or leave it out.

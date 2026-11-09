@@ -96,6 +96,10 @@ The `update()` method allows you to modify an existing trace after it has been c
   Cost per input token read from the cache.
 </ParamField>
 
+Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn. Send `cost` to keep your own figure.
+
+A request that sends `cost` stores it. A request that sends token counts or per-token prices, and no `cost`, derives the cost again from them. A request that sends only the input, the output or `tokens` keeps a cost that is a sum over spans or one you stated.
+
 ## Returns
 
 Returns the updated `Trace` object.
