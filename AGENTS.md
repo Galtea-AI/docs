@@ -57,8 +57,10 @@ No hand-written page is the API contract: the wire-level contract is the generat
 
 ## Changelog Entries
 
-`run.py` builds the changelog page from `docs/changelog/entries/`, newest file name first, into `.build/` only. Never write a `changelog.mdx` page by hand.
+`run.py` builds the changelog page from `docs/changelog/entries/` into `.build/` only. Never write a `changelog.mdx` page by hand.
 
+- **Grouped by release.** An entry belongs to the first `X.Y.Z` release, by version number, whose tag holds its file, so a cherry-pick lands in its patch release. Releases show highest version first, and entries inside a release newest file name first. An entry that no release ships goes to the release being built on a release build, to an "Unreleased" block on a dev build, and nowhere on a prod build with no release. A release or prod build with no release tags fails. Only a build with no release (local, pull request, dev) falls back to one flat list when it has no tags.
+- **The entries converted from the old dated page** keep their file-name date, from a fixed list beside the generator. Never add a new entry to that list.
 - **One entry per user-facing change**, written for users in the PR that makes the change visible in production, by its author or by the agent that opens it. Never copy a PR title. A refactor, a CI change or an internal fix gets no entry.
 - **A feature behind a flag** gets its entry in the PR that turns the flag on for everyone, usually the PR that deletes the flag.
 - **Name:** `YYYYMMDD-HHMM-short-name.mdx`, with the time you write it (UTC). `run.py` refuses any other name, because the name sets the order.
