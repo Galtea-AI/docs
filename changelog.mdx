@@ -4,9 +4,21 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Stored Files Come Back as Files
+
+A file stored as a Galtea file token in a trace now comes back as the file when you read it: set `restoreFiles=true` on `GET /inferenceResults`, or `restore_files=True` in `traces.list` from SDK 5.17.0. A run also sends past turns to your endpoint with their files back, a provider byte field as raw base64, and an evaluation judge sees `[File N]` in place of each file. See [Content Parts](/concepts/product/version/session/content-parts).
+
 ## Long words wrap inside chat bubbles
 
 On the Traces tab, a long word or a one-line JSON block with no spaces now wraps inside its chat bubble. It no longer runs past the edge of the card.
+
+## Long File Names Stay in the File Row
+
+A long file name in a file row no longer runs over the row's controls. The name now ends with an ellipsis, and the full name shows when you hover over it. This applies to the files of a turn, the test case attachment list, the test connection result and the span page.
+
+## Spans check their Galtea files like traces
+
+A Galtea file in the input or output of a span is now checked as in a trace. A file of another organization fails a single span write with a `400`. In a batch, or in OpenTelemetry ingest, only that span is refused and the other spans are stored. See [Content Parts](/concepts/product/version/session/content-parts).
 
 ## Simulated callers read IDs out in groups
 

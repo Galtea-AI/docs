@@ -39,6 +39,9 @@ trace = galtea.traces.list(session_id=session_id)
 <ResponseField name="id" type="string | list[string]" default="None">
   The ID or IDs of the trace(s) to retrieve.
 </ResponseField>
+<ResponseField name="restore_files" type="bool" default="False" optional>
+  Return each stored Galtea file token in a trace's input and output as the file it names, in the form it was sent in (a data URI, or raw base64 for a provider byte field). A file that is missing or over 20 MB keeps its token. The restored text of one call is at most 50 MB, else the call fails. By default you get the stored token text. See [Content parts](/concepts/product/version/session/content-parts).
+</ResponseField>
 <Note>
   At least one of the 2 filter parameters (`session_id`, `id`) described above must be passed to the method
 </Note>

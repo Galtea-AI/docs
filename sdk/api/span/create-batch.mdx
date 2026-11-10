@@ -47,6 +47,8 @@ galtea.spans.create_batch(
 | `end_time` | `str` | No | ISO 8601 timestamp when the span ended |
 | `metadata` | `dict` | No | Additional custom metadata |
 
+A span whose `input_data` or `output_data` holds a Galtea file of another organization is refused on its own; the other spans are created. See [Content Parts](/concepts/product/version/session/content-parts).
+
 <Note>
   For `type`, other string values are sent to the API unchanged. The API never drops a span for an unrecognized type. It normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 </Note>

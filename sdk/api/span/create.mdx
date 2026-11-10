@@ -33,10 +33,10 @@ manual_span = galtea.spans.create(
   Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1MB.
 </ResponseField>
 <ResponseField name="input_data" type="any" optional>
-  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB.
+  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB. A Galtea file in its `content` list is checked as in a trace: one of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
 </ResponseField>
 <ResponseField name="output_data" type="any" optional>
-  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB.
+  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB. A Galtea file in its `content` list is checked as in a trace: one of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
 </ResponseField>
 <ResponseField name="error" type="string" optional>
   Error message if the tool call failed.
