@@ -1,6 +1,6 @@
 ---
 title: "JSON Field Match (Strict)"
-description: "Compares JSON objects field by field, checking whether all fields in the expected output exist in the actual output with matching values. An unexpected field in the actual output also lowers the score. A field can set a rule instead of a value: $norm, $regex, $num or $date. Returns the fraction of the combined expected and actual fields that match."
+description: "Compares JSON objects field by field, checking whether all fields in the expected output exist in the actual output with matching values. An unexpected field in the actual output also lowers the score. A field can set a rule instead of a value: \\$norm, \\$regex, \\$num or \\$date. Returns the fraction of the combined expected and actual fields that match."
 ---
 
 The JSON Field Match (Strict) metric is one of the [Deterministic Metric](/concepts/metric) options in Galtea. It performs the same field-level comparison as [JSON Field Match](/concepts/metric/json-field-match), but an unexpected field in the actual output also lowers the score instead of being ignored.
