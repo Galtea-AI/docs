@@ -24,7 +24,7 @@ endpoint_connection = galtea.endpoint_connections.update(
   New name for the endpoint connection.
 </ResponseField>
 <ResponseField name="url" type="string" optional>
-  New endpoint URL. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
+  New endpoint URL. A URL of another origin (scheme, host, or port) clears the stored `auth_token`, `password`, and secret header values. Send the new `auth_token` or `password` in the same request when the `auth_type` needs one, or the API answers `400`. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
 </ResponseField>
 <ResponseField name="http_method" type="string" optional>
   New HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values are
@@ -37,16 +37,16 @@ endpoint_connection = galtea.endpoint_connections.update(
   invalid ones.
 </ResponseField>
 <ResponseField name="auth_token" type="string" optional>
-  New authentication token.
+  New authentication token. Required with a `url` of another origin when `auth_type` is `BEARER` or `API_KEY`.
 </ResponseField>
 <ResponseField name="username" type="string" optional>
   New username for `BASIC` authentication.
 </ResponseField>
 <ResponseField name="password" type="string" optional>
-  New password for `BASIC` authentication.
+  New password for `BASIC` authentication. Required with a `url` of another origin when `auth_type` is `BASIC`.
 </ResponseField>
 <ResponseField name="headers" type="dict[string, string]" optional>
-  New custom headers. Replaces the whole map. Supports placeholders: credentials (e.g., `{{ bearer_token }}`, `{{ api_key }}`) and call values (e.g., `{{ trace_id }}`, `{{ session_id }}`). A fetched connection returns each secret header value as `••••••••`: send that value back to keep the stored value, or send a new value to replace it. See [Secret Header Values](/concepts/product/endpoint-connection-configuration#secret-header-values).
+  New custom headers. Replaces the whole map. Supports placeholders: credentials (e.g., `{{ bearer_token }}`, `{{ api_key }}`) and call values (e.g., `{{ trace_id }}`, `{{ session_id }}`). A fetched connection returns each secret header value as `••••••••`: send that value back to keep the stored value, or send a new value to replace it. After a `url` of another origin, send the new value: the stored secret header values are cleared, so the API answers `400` to the mask. See [Secret Header Values](/concepts/product/endpoint-connection-configuration#secret-header-values).
 </ResponseField>
 <ResponseField name="input_template" type="string" optional>
   New input template with Jinja2 placeholders. Keep `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` in the template if your test cases attach files, because a run over those test cases is refused without it. See [Input Template](/concepts/product/endpoint-connection-configuration#input-template).
@@ -93,5 +93,5 @@ endpoint_connection = galtea.endpoint_connections.update(
   Pass `None` to explicitly clear an optional field.
   Pass a value to update it.
 
-  `auth_token` and `password` are the exception: `None` or an empty string keeps the stored credential. To remove one, change `auth_type`, which clears the credentials the new type does not use.
+  `auth_token` and `password` are the exception: `None` or an empty string keeps the stored credential. To remove one, change `auth_type`, which clears the credentials the new type does not use. A `url` of another origin also clears them, so send the new value in the same request.
 </Note>

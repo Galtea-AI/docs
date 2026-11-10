@@ -4,9 +4,17 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## Long words wrap inside chat bubbles
+
+On the Traces tab, a long word or a one-line JSON block with no spaces now wraps inside its chat bubble. It no longer runs past the edge of the card.
+
 ## Simulated callers read IDs out in groups
 
 In a voice test, the simulated caller now says an order number, phone number or ID in short groups, as a person does, instead of text-to-speech reading it as millions. Amounts, lists of amounts and numbers the caller already grouped stay as written.
+
+## Saved Credentials Stay With Their Address
+
+Galtea now binds the stored token, password, and secret headers of an endpoint connection to the origin they were saved for. While a connection holds a saved secret, a test of it with a URL of another origin is refused. When you save a new origin, Galtea clears the stored secrets, and you send the new ones in the same request. See [Endpoint Connection Configuration](/concepts/product/endpoint-connection-configuration).
 
 ## Evaluation Comparison Follows the JSON Field Match Rules
 

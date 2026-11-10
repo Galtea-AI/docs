@@ -41,7 +41,7 @@ This method can be called in two ways:
 
 ## Parameters
 <ResponseField name="id" type="string" optional>
-  ID of an existing endpoint connection to test. When provided, stored connection data is used as the base and remaining fields act as overrides. With `id`, the call needs permission to edit that connection, because the test sends the stored credentials and secret header values and returns the answer. The API answers `403` without that permission. Without `id`, the call needs permission to create a connection.
+  ID of an existing endpoint connection to test. When provided, stored connection data is used as the base and remaining fields act as overrides. With `id`, the call needs permission to edit that connection, because the test sends the stored credentials and secret header values and returns the answer. The API answers `403` without that permission. Without `id`, the call needs permission to create a connection. Stored secrets are sent only to the origin (scheme, host, and port) they were saved for, so a `url` of another origin fails with `400` while the connection holds a secret.
 </ResponseField>
 <ResponseField name="url" type="string" optional>
   The endpoint URL to test. For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
