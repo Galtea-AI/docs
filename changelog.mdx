@@ -4,6 +4,10 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+## `galtea --verbose` No Longer Prints Your API Key
+
+The CLI's `--verbose` (`-v`) output now shows `<redacted>` in place of your API key and the values of the headers you set in `GALTEA_EXTRA_HEADERS`. The rest of the request and the response still print in full, so you can paste verbose output into a bug report or a CI log.
+
 ## Stored Files Come Back as Files
 
 A file stored as a Galtea file token in a trace now comes back as the file when you read it: set `restoreFiles=true` on `GET /inferenceResults`, or `restore_files=True` in `traces.list` from SDK 5.17.0. A run also sends past turns to your endpoint with their files back, a provider byte field as raw base64, and an evaluation judge sees `[File N]` in place of each file. See [Content Parts](/concepts/product/version/session/content-parts).
