@@ -22,6 +22,10 @@ RUN python scripts/run.py --embed-only
 # ─── Stage 2: Serve with Mint dev server ──────────────────────────────────────
 FROM node:24.21.0-alpine3.24 AS runtime
 
+# The base image ships musl and zlib below their fixed releases; drop this once it picks them up.
+# Naming the packages is how a fix reaches the image: the registry build cache reuses this layer until its text changes.
+RUN apk upgrade --no-cache musl musl-utils zlib
+
 WORKDIR /app
 
 # Install Mint CLI (the renamed Mintlify CLI). Even the newest mint pins
@@ -42,8 +46,11 @@ COPY <<'EOF' package.json
     "body-parser@^1": "1.20.9",
     "body-parser@^2": "2.4.0",
     "brace-expansion@^1": "1.1.20",
+    "browserslist@^4": "4.28.7",
     "esbuild": "0.28.2",
     "express-rate-limit@^8": "8.5.1",
+    "fast-uri@^3": "3.1.7",
+    "immutable@^4": "4.3.9",
     "image-size@^2": "2.0.4",
     "ip-address@^10": "10.3.1",
     "js-yaml@^4": "4.3.2",
@@ -52,6 +59,7 @@ COPY <<'EOF' package.json
     "picomatch@^4": "4.0.4",
     "re2js": "2.8.7",
     "sharp": "0.35.5",
+    "source-map-js@^1": "1.2.2",
     "zod@^4": "4.6.7"
   }
 }
@@ -77,6 +85,13 @@ RUN mkdir -p /root/.mintlify/previews/3000 \
   && wget -qO- "https://releases.mintlify.com/mint-${MINT_CLIENT_VERSION}.tar.gz" \
     | tar -xz -C /root/.mintlify/previews/3000 \
   && printf '%s' "$MINT_CLIENT_VERSION" > /root/.mintlify/previews/3000/mint/mint-version.txt
+
+# The client bundles esbuild 0.25.12, whose binary is built with Go 1.20.12 and carries its stdlib
+# CVEs. Replace it with the esbuild the overrides above install (0.28.2, Go 1.26).
+RUN C=/root/.mintlify/previews/3000/mint/node_modules \
+  && rm -rf "$C/esbuild" "$C/@esbuild/linux-x64" \
+  && cp -a node_modules/esbuild "$C/esbuild" \
+  && cp -a node_modules/@esbuild/linux-x64 "$C/@esbuild/linux-x64"
 
 # Copy the embedded docs output from the builder stage
 COPY --from=builder /docs-src/.build .
