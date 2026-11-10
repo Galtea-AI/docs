@@ -16,6 +16,10 @@ A file stored as a Galtea file token in a trace now comes back as the file when 
 
 On the Traces tab, a long word or a one-line JSON block with no spaces now wraps inside its chat bubble. It no longer runs past the edge of the card.
 
+## See the end user of each session and trace
+
+Sessions and traces that Galtea ingests from OpenTelemetry now record their end user: the customer of your agent. Each trace stores the end user of its own spans, and the session keeps the first one. Sessions linked to a test case record it too. Galtea reads it from the standard keys of `user.id`, OpenLLMetry and Langfuse with no setup, and your organization or product can name custom span attributes. The [sessions](/concepts/product/version/session) table of the dashboard has an End user filter and an End user column you can turn on, and `galtea.sessions.list(end_user=...)` filters in the SDK. See [How Galtea routes a trace](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).
+
 ## Long File Names Stay in the File Row
 
 A long file name in a file row no longer runs over the row's controls. The name now ends with an ellipsis, and the full name shows when you hover over it. This applies to the files of a turn, the test case attachment list, the test connection result and the span page.

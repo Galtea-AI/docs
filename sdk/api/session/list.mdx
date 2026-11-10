@@ -56,6 +56,9 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
 <ResponseField name="user_id" type="string | list[string]" optional>
   Filter by the ID of the user who launched the session. A production session has no launcher and never matches this filter. A session ingested from OpenTelemetry traces is production too, unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match. This is an additional filter; it does not satisfy the scoping requirement below.
 </ResponseField>
+<ResponseField name="end_user" type="string" optional>
+  Filter by the end user of the session: the customer of your agent, read from the traces' end-user attributes. The match is exact. A session with no end user never matches. This is an additional filter; it does not satisfy the scoping requirement below.
+</ResponseField>
 <Note>
-  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `dataset_id`, `id`) described above must be passed to the method. `status` and `user_id` are additional filters and do **not** satisfy this requirement on their own.
+  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `dataset_id`, `id`) described above must be passed to the method. `status`, `user_id` and `end_user` are additional filters and do **not** satisfy this requirement on their own.
 </Note>
