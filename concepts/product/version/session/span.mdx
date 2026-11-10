@@ -180,7 +180,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 <ResponseField name="Metadata" type="any" optional>
   Additional custom metadata about the span. Maximum size: 10MB.
 
-  Six keys are reserved for Galtea and removed from anything you send, on every path and without an error: `galtea.synthetic`, `galtea.span.original_name`, `galtea.span.input_from_source_rule`, `galtea.span.output_from_source_rule`, `galtea.span.usage` and `galtea.span.model`. Galtea writes all but `galtea.span.usage` itself, to record what it changed or recovered, and, for `galtea.span.model`, the [model name](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) it read off the span. Galtea no longer writes `galtea.span.usage`: the key holds the token counts only on a span stored before spans had their own token fields. A seventh, `galtea.span.original_type`, is removed from a direct span write and kept on OpenTelemetry ingest, where a replayed export legitimately carries your original label in it.
+  Five keys are reserved for Galtea and removed from anything you send, on every path and without an error: `galtea.synthetic`, `galtea.span.original_name`, `galtea.span.input_from_source_rule`, `galtea.span.output_from_source_rule` and `galtea.span.model`. Galtea writes them itself, to record what it changed or recovered, and, for `galtea.span.model`, the [model name](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) it read off the span. A sixth, `galtea.span.original_type`, is removed from a direct span write and kept on OpenTelemetry ingest, where a replayed export legitimately carries your original label in it.
 </ResponseField>
 
 <ResponseField name="Model Name" type="string" optional>

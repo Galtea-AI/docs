@@ -10,6 +10,10 @@ icon: "newspaper"
 
 The scores-over-time chart in the dashboard no longer times out on products with many versions or many production sessions. The chart opens in seconds on the default "Last 2 years" range, and the series, values and counts are the same as before.
 
+## See Where the Cost Comes From
+
+The product Analytics **Summary** now has a **Where does the cost come from?** card. It splits the estimated cost of the period by model, by version, or in Production by end user, and the rows add up to the total cost. Each row shows the LLM spans, tokens, cost and share of cost, and `galtea analytics get-cost-breakdown` returns the same data. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+
 ## The changelog groups updates by release
 
 The [changelog](/changelog) now shows one block per release, newest first. Each block names the release version and the date the release was cut, so you can see what a given version holds. Updates from before this change show only their date.
