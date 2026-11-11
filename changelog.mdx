@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Lists by ID No Longer Fail When a Filter Excludes a Row
+
+A list call that names `ids` now answers with the rows that match every filter, instead of a "not found" error for the rows a filter or the page size leaves out. For example, `galtea evaluations list --ids <id1>,<id2> --statuses PENDING` answers an empty list once both evaluations finish. An ID that does not exist still answers "not found". In the dashboard, a user group with more members than the page size now shows its members.
+
 ## Readers See Cost and Latency
 
 The **Reader** preset now includes **Cost and latency** (`evaluation.readInference`). Members of a [user group](/concepts/user-group) that follows Reader now see latency, tokens and cost in *Analytics*, the versions list, monitors and the evaluation lists.
