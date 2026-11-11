@@ -1,92 +1,25 @@
-# Mintlify Documentation Guidelines
+# Public docs (Mintlify)
 
-> **SCOPE:** These rules apply when working on files under `docs/`.
+## Rules
 
-## Generated pages: `deployment/`
-
-`docs/deployment/**`, `docs/images/deployment/**` and the `Deployment` tab of `docs.json` are
-written by the `📤 Publish Deployment Guide` workflow in `Galtea-AI/gitops` on every
-`deployment-guide-v*` release. Every page header names the tag it came from. To change one,
-edit the source page in `gitops/docs/deployment/`, merge, and let release-please cut the
-release; **a hand edit here is overwritten by the next publication**.
-
-## Critical Rule: Code Embeds
-
-**NEVER write inline Python code blocks in `.mdx` files.** All code examples live in standalone Python scripts under `docs/code/` so they can be tested in CI/CD.
-
-Snippets are validated against the mocked docker-compose stack on every PR (`.github/workflows/docs-snippets-mocked.yml`) and on prod releases (`release-train.yml` via the reusable `_docs-snippets-mocked.yml`); the nightly `e2e.yml` run validates all of them against the live environment, the only coverage for the `docs/mocked_ci_skip.txt` entries.
-
-### How it works
-
-1. Code files live in `docs/code/python/` as full, runnable Python scripts with section markers:
-   ```python
-   # @start section_name
-   result = galtea.products.create(name="My Product")
-   # @end section_name
-   ```
-2. MDX files embed sections:
-   ```mdx
-   {/* @embed path="code/python/my_file.py" lang="python" section="section_name" */}
-   ```
-
-### Code file rules
-
-- Section names: descriptive `snake_case` (e.g., `usage_and_cost_info`)
-- File naming: `sdk_api_<service>_<method>.py`, `sdk_tutorials_<topic>.py`, `concepts_<topic>.py`
-- Before creating a new code file, check if an existing one covers the topic; add a section to it instead.
-
-### Put a snippet's assertions outside the embedded region
-
-An assertion inside `# @start` / `# @end` ships to readers as part of the sample, and they inherit a check written for this repo's fixture. Keep the region to the code a reader should copy, and assert after `# @end`.
-
-This also decides whether the check can fail at all. A snippet whose agent callback runs through `evaluations.run()` or `simulator.simulate()` must not raise to signal a problem: `simulate()` catches `ValueError`, reports it as an empty agent response and ends the run normally, so the script still exits 0 and the docs gate stays green. Assert on an observable result instead (a file the callback wrote, a returned count), below the region.
-
-## Verify Prose Claims Against the Code
-
-No hand-written page is the API contract: the wire-level contract is the generated OpenAPI reference (the `openapi` entry in `docs.json`). `concepts/` pages describe product fields as display labels ("Stopping Reason") in SDK vocabulary, so their field names do not track the API's. Two traps follow.
-
-- **Absolute claims.** Before writing "every", "always", or "never", check the field in `api/prisma/schema.prisma` and `api/src/bootstrap/swagger.ts`, not only the SDK method. The API often accepts what the SDK does not expose: `SessionInput.status` lets a caller create an already-closed session, while `session_service.create()` has no such parameter.
-- **Contrasting two settings.** Confirm **both** still exist. A removed field is easy to describe from memory and yields prose that contradicts the page it links to.
-
-**A term that one page defines keeps that meaning on every page that links to it** (root `AGENTS.md`, "One word, one meaning"). A page that treats a case differently says so in plain words and does not redefine the term.
-
-## Adding a New Page
-
-1. Create the MDX file with frontmatter (`title`, `description`, `icon`)
-2. Add the page path to `docs.json` navigation
+- `deployment/`, `images/deployment/` and the `Deployment` tab of `docs.json` are published from the `gitops` repository on each deployment-guide release. Edit the source there; a hand edit here is overwritten.
+- Never write an inline Python code block in an `.mdx` file. Code lives in runnable scripts under `code/python/`, marked with `# @start <section>` and `# @end <section>`, and a page embeds a section with `{/* @embed path="..." lang="python" section="..." */}`. CI runs every script. Extend an existing script before you add one.
+- Put a snippet's assertions after `# @end`, so readers do not copy them. An agent callback run by the simulator must not raise to signal a problem: the simulator turns the error into an empty reply and exits 0. Assert on an observable result instead.
+- The generated OpenAPI reference is the API contract, not a prose page. Check an "every", "always" or "never" claim against the API schema, not only the SDK, and confirm both sides of a contrast still exist.
+- A term one page defines keeps that meaning on every page that links to it.
+- A new page gets frontmatter (`title`, `description`, `icon`) and a `docs.json` navigation entry. A renamed page gets a permanent redirect, and every internal link moves to the new path except in a changelog entry a release shipped. Never delete a redirect unless a new page must reclaim its path.
+- A redirect cannot repair a `#fragment`. When a rename changes a heading, search the tree for the old fragment and update every hit. In a shipped changelog entry change the fragment token only.
+- Write a component tag as a block: the opening tag on its own line, never followed by body text.
+- `.build/docs.json` is rewritten from local env files. Read URLs from the committed `docs.json`.
 
 ## Changelog Entries
 
-`run.py` builds the changelog page from `docs/changelog/entries/` into `.build/` only. Never write a `changelog.mdx` page by hand.
+`scripts/run.py` builds the changelog page from `changelog/entries/`, grouped by the first release whose tag holds each entry. Never write a `changelog.mdx` page by hand.
 
-- **Grouped by release.** An entry belongs to the first `X.Y.Z` release, by version number, whose tag holds its file, so a cherry-pick lands in its patch release. Releases show highest version first, and entries inside a release newest file name first. An entry that no release ships goes to the release being built on a release build, to an "Unreleased" block on a dev build, and nowhere on a prod build with no release. A release or prod build with no release tags fails. Only a build with no release (local, pull request, dev) falls back to one flat list when it has no tags.
-- **The entries converted from the old dated page** keep their file-name date, from a fixed list beside the generator. Never add a new entry to that list.
-- **One entry per user-facing change**, written for users in the PR that makes the change visible in production, by its author or by the agent that opens it. Never copy a PR title. A refactor, a CI change or an internal fix gets no entry.
-- **A feature behind a flag** gets its entry in the PR that turns the flag on for everyone, usually the PR that deletes the flag.
-- **Name:** `YYYYMMDD-HHMM-short-name.mdx`, with the time you write it (UTC). `run.py` refuses any other name, because the name sets the order.
-- **Body:** a `## Title` heading, with no frontmatter (`run.py` refuses it), then what the user can now do, rarely more than 3 sentences or 5 lines. A large feature can be longer. Link the docs pages; add code, an image or a table only when it helps.
-- **Edit an entry until a release ships it**, for example for a later part of a split feature. After that, a change gets a new entry ("You can now also do X in the dashboard").
+- One entry per user-facing change, written for users in the PR that makes it visible in production. A feature behind a flag gets its entry in the PR that turns the flag on for everyone. A refactor, a CI change or an internal fix gets none.
+- Name: `YYYYMMDD-HHMM-short-name.mdx`, in UTC, when you write it. Body: a `## Title` heading, no frontmatter, then what the user can now do, rarely more than 3 sentences.
+- Edit an entry until a release ships it. After that, a change gets a new entry.
 
-## Component and Template Reference
+## Local checks
 
-Component usage (Callouts, Tabs, Cards), SDK API reference page template, redirects, and image conventions are documented in `docs/component_reference.md`.
-
-## Architecture Decision Records
-
-| ADR | Topic |
-|-----|-------|
-| `0001-docs-file-renames-and-redirects.md` | Docs page rename process: `docs.json` nav, permanent redirect, internal links; never delete a redirect; leave shipped changelog entries untouched |
-
-## Local Development
-
-Whenever you preview, validate, or build the docs site, use the `test-docs` skill (`python scripts/run.py` to preview, `--validate` to validate). It also covers the Node version Mint needs and why the preview port is fixed.
-
-**After editing any MDX file, run `mint validate` from `docs/` (Node 22).** It is the fast local stand-in for the CI docs build and the only check that reports MDX parse errors. It still exits 0 on one, so read its output for `parsing error`; `python scripts/run.py --validate` (the CI step) fails on that line. `mint broken-links` does **not**: it reports 0 parse errors on a file the build rejects, so a green run there proves nothing about syntax.
-
-**Write a component tag as a block, never with body text on the opening-tag line.** `<Warning>text` followed by a blank line makes MDX close the paragraph and fail with `Expected a closing tag for <Warning> ... before the end of paragraph`. Put the tag on its own line, indent the body, and close on its own line, as the `<Note>` blocks already do.
-
-**`.build/docs.json` is environment-rewritten, so never read it as the source of truth for a URL.** `run.py` calls `load_env_files()`, which loads `docs/.env` **only when `python-dotenv` is installed**, and then `override_docs_json_urls()` rewrites the built copy's REST API `openapi` source (on the tab or its `Endpoints` group) from `$GALTEA_API_URL` and its navbar href from `$DASHBOARD_URL`. `docs/.env` points both at the **dev** hosts. So the same command produces different output on two machines depending on what is installed, with no warning, and a container without dotenv silently gets the committed values instead.
-
-Consumers must read the **committed `docs.json`** for URLs and use `.build/` only for MDX bodies, which is what it exists for (its `navigation` is otherwise identical). `platform-assistant/scripts/generate_corpus.py` is the reference. A wrong URL read from `.build/` appears only in body text, so no page-count or key check notices it.
-
-**Unsetting the variable does not help.** `load_dotenv(..., override=False)` fills in variables that are *absent*, so `env -u GALTEA_API_URL` is precisely the condition under which `docs/.env` wins. Only a variable that is already **set** outranks the file.
+Use the `test-docs` skill to preview and build. After editing an MDX file, run `mint validate` from `docs/` (Node 22) and read its output for `parsing error`: it exits 0 on one. `mint broken-links` does not check syntax. Components and templates: `component_reference.md`.
