@@ -192,7 +192,7 @@ A new revision can also change the judge, to try the classifier in place of an L
 
 ## Limits
 
-- **Text only**: the classifier does not read images, audio, PDFs or other files. A turn with a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host never reaches the classifier, so it reads the text beside it. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
+- **Text only**: the classifier does not read images, audio, PDFs or other files. A turn with a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host is not sent as a file: the classifier reads its entry as JSON text, in its place in the turn. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 - **Input size**: the classifier model accepts about 32,000 tokens of conversation plus the question. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
 - **Long input**: when the classifier model reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
 - **Skipped evaluations**: analytics show how many evaluations were skipped, next to the passed and not passed counts.

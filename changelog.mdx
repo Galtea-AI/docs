@@ -36,6 +36,10 @@ The CLI's `--verbose` (`-v`) output now shows `<redacted>` in place of your API 
 
 An endpoint connection's output mapping and a trace source rule now refuse a JSONPath filter such as `[?(...)]` when you save them, and Galtea never runs a filter that an older saved path still holds: that path extracts nothing. Use a plain path such as `$.choices[0].message.content` instead. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
 
+## Judges Read Each File in Its Place
+
+A judge now reads a turn as you logged it: text, files and your own elements in their order. Each Galtea file reads as `[File N]` where it sits, and your own elements, such as an `image_url` part or a file on your host, read as their JSON text. Galtea numbers the files of a session once, so a skip reason, the session page and the span page show the same `File N` beside a file. See [Files and Evaluation](/concepts/product/version/session/content-parts#files-and-evaluation).
+
 ## Stored Files Come Back as Files
 
 A file stored as a Galtea file token in a trace now comes back as the file when you read it: set `restoreFiles=true` on `GET /inferenceResults`, or `restore_files=True` in `traces.list` from SDK 5.17.0. A run also sends past turns to your endpoint with their files back, a provider byte field as raw base64, and an evaluation judge sees `[File N]` in place of each file. See [Content Parts](/concepts/product/version/session/content-parts).
