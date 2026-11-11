@@ -72,6 +72,12 @@ RUN npm install --no-audit --no-fund
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
     /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /root/.npm
 
+# Run as the image's existing `node` user (UID 1000), numerically, so a pod can
+# enforce runAsNonRoot (Pod Security "restricted"). /app is node-owned because
+# mint writes under it (e.g. /app/.mintlify) at runtime.
+RUN chown node:node /app
+USER 1000
+
 # Pin the Mintlify client (the Next.js app `mint dev` serves). Pinning the CLI
 # does not pin it: without --client-version, every container start fetches
 # whatever client releases.mintlify.com calls latest into ~/.mintlify. Replicas
@@ -79,22 +85,23 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 # rendered by one pod requests chunks another pod 404s on ("Error loading
 # page"). With --client-version the CLI re-downloads exactly this version on
 # start, and falls back to the copy baked here if the download fails. That
-# baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000.
+# baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000
+# (HOME is /home/node).
 ENV MINT_CLIENT_VERSION=0.0.3965
-RUN mkdir -p /root/.mintlify/previews/3000 \
+RUN mkdir -p /home/node/.mintlify/previews/3000 \
   && wget -qO- "https://releases.mintlify.com/mint-${MINT_CLIENT_VERSION}.tar.gz" \
-    | tar -xz -C /root/.mintlify/previews/3000 \
-  && printf '%s' "$MINT_CLIENT_VERSION" > /root/.mintlify/previews/3000/mint/mint-version.txt
+    | tar -xz -C /home/node/.mintlify/previews/3000 \
+  && printf '%s' "$MINT_CLIENT_VERSION" > /home/node/.mintlify/previews/3000/mint/mint-version.txt
 
 # The client bundles esbuild 0.25.12, whose binary is built with Go 1.20.12 and carries its stdlib
 # CVEs. Replace it with the esbuild the overrides above install (0.28.2, Go 1.26).
-RUN C=/root/.mintlify/previews/3000/mint/node_modules \
+RUN C=/home/node/.mintlify/previews/3000/mint/node_modules \
   && rm -rf "$C/esbuild" "$C/@esbuild/linux-x64" \
   && cp -a node_modules/esbuild "$C/esbuild" \
   && cp -a node_modules/@esbuild/linux-x64 "$C/@esbuild/linux-x64"
 
 # Copy the embedded docs output from the builder stage
-COPY --from=builder /docs-src/.build .
+COPY --from=builder --chown=node:node /docs-src/.build .
 
 EXPOSE 3000
 

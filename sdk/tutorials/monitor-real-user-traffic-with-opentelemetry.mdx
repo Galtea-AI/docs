@@ -336,7 +336,7 @@ The rule has four parts:
 
 - **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
 - **`attribute`** — the span attribute that holds the reply, stored as a JSON string.
-- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one. A filter expression such as `[?(...)]` is refused, in `path` and in `predicate.path`.
 - **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the user's own message as the reply.
 
 Here is a complete rule:
@@ -372,7 +372,7 @@ The rule has the same four parts:
 
 - **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
 - **`attribute`** — the span attribute that holds the user message, stored as a JSON string.
-- **`path`** — a JSONPath into that parsed JSON that points at the input text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`path`** — a JSONPath into that parsed JSON that points at the input text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one. A filter expression such as `[?(...)]` is refused, in `path` and in `predicate.path`.
 - **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the assistant's reply as the input.
 
 Name a span your system emits once per turn. A framework that replays work, such as a durable-workflow engine, re-emits the same span many times in one trace. The earliest copy can then belong to an earlier turn, and the rule picks the wrong message. In one week of production traces, an update-handler span appeared 685 times for 225 distinct updates. The activity that saved the message appeared exactly once per message. So name the span that saves or records the message, not a handler span that a replay re-enters.

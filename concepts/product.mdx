@@ -120,7 +120,7 @@ The SDK allows you to list existing products, retrieve specific products by thei
 </ResponseField>
 
 <ResponseField name="OpenTelemetry Input Source Rule (otelInputSourceRule)" type="Object" optional>
-  Reads the input of each turn from a named non-LLM span, for a user message that no LLM span carries. It has four parts: `spanName` (the exact span name), `attribute` (the span attribute that holds the JSON), `path` (a JSONPath to the text, starting with `$`), and an optional `predicate` that applies the rule only when a value matches. Leave it `null` to follow the rule of the organization. A version rule overrides this one. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Recover the Turn Input from a Non-LLM Span](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+  Reads the input of each turn from a named non-LLM span, for a user message that no LLM span carries. It has four parts: `spanName` (the exact span name), `attribute` (the span attribute that holds the JSON), `path` (a JSONPath to the text, starting with `$`, with no filter expression), and an optional `predicate` that applies the rule only when a value matches. Leave it `null` to follow the rule of the organization. A version rule overrides this one. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Recover the Turn Input from a Non-LLM Span](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
 </ResponseField>
 
 <ResponseField name="OpenTelemetry Output Source Rule (otelOutputSourceRule)" type="Object" optional>

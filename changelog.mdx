@@ -6,6 +6,12 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Readers See Cost and Latency
+
+The **Reader** preset now includes **Cost and latency** (`evaluation.readInference`). Members of a [user group](/concepts/user-group) that follows Reader now see latency, tokens and cost in *Analytics*, the versions list, monitors and the evaluation lists.
+
+To keep these values hidden from a group, give it its own permission list without **Cost and latency**. See [Roles and permissions](/security/roles-and-permissions).
+
 ## The Scores Chart Loads Fast on Large Products
 
 The scores-over-time chart in the dashboard no longer times out on products with many versions or many production sessions. The chart opens in seconds on the default "Last 2 years" range, and the series, values and counts are the same as before.
@@ -21,6 +27,10 @@ The [changelog](/changelog) now shows one block per release, newest first. Each 
 ## `galtea --verbose` No Longer Prints Your API Key
 
 The CLI's `--verbose` (`-v`) output now shows `<redacted>` in place of your API key and the values of the headers you set in `GALTEA_EXTRA_HEADERS`. The rest of the request and the response still print in full, so you can paste verbose output into a bug report or a CI log.
+
+## Filter expressions are refused in output mappings and trace source rules
+
+An endpoint connection's output mapping and a trace source rule now refuse a JSONPath filter such as `[?(...)]` when you save them, and Galtea never runs a filter that an older saved path still holds: that path extracts nothing. Use a plain path such as `$.choices[0].message.content` instead. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
 
 ## Stored Files Come Back as Files
 

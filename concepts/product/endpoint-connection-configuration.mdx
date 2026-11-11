@@ -129,6 +129,8 @@ A JSON object defining how to extract values from the API response using [JSONPa
 | `[0]` | First array element |
 | `[-1:]` | The last array element, as a one-element list |
 
+Filter and script expressions such as `[?(...)]` and `[(...)]` are refused when you save the mapping, because they would run code on every response.
+
 ### Example
 
 ```json
