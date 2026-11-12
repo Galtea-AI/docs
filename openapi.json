@@ -1134,7 +1134,7 @@
             "nullable": true,
             "readOnly": true,
             "example": 0.0026,
-            "description": "Cost of this call at the frozen rates. Null when no rates were found. A turn's cost sums its spans' costs. Null without `evaluation.readInference` on the product."
+            "description": "Cost of this call at the frozen rates. Null when no rates were found. A turn's cost sums the costs of the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it. A span that loses one side to a span below is priced again for the side it keeps. Null without `evaluation.readInference` on the product."
           }
         }
       },
@@ -2569,7 +2569,7 @@
           },
           "llmSpanCount": {
             "type": "integer",
-            "description": "LLM spans that report token usage, plus one for each turn that has none but reports a cost or tokens itself"
+            "description": "Spans the turns count for their usage, one each, plus one for each turn that counts none but reports a cost or tokens itself. A call whose input and output sit on two spans counts as two."
           },
           "inputTokens": {
             "type": "integer",
@@ -2602,14 +2602,14 @@
             "items": {
               "$ref": "#/components/schemas/CostBreakdownRow"
             },
-            "description": "Every value, the highest cost first. Each turn's estimated cost is split over its LLM spans, each under the model it reports; the part of a turn's cost that its spans do not carry goes to the version model. So the rows add up to `total`, which is the `totalCost` of `GET /analytics/cost-overview` for the same filters."
+            "description": "Every value, the highest cost first. Each turn's estimated cost is split over the LLM spans it counts, each LLM call once and under the model it reports; the part of a turn's cost that its spans do not carry goes to the version model. So the rows add up to `total`, which is the `totalCost` of `GET /analytics/cost-overview` for the same filters."
           },
           "total": {
             "type": "object",
             "properties": {
               "llmSpanCount": {
                 "type": "integer",
-                "description": "LLM spans that report token usage, plus one for each turn that has none but reports a cost or tokens itself"
+                "description": "Spans the turns count for their usage, one each, plus one for each turn that counts none but reports a cost or tokens itself. A call whose input and output sit on two spans counts as two."
               },
               "inputTokens": {
                 "type": "integer",

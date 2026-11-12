@@ -6,9 +6,25 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## An LLM Call Counts Once
+
+When a framework span wraps the provider span of an LLM call and both report usage, a turn and the **Where does the cost come from?** card of the product Analytics now count the call once, from the span below. Tokens and cost show the real spend, not twice the real spend. Turns stored before this change keep their stored totals. The card counts their tokens once from their stored spans. The extra cost that such a turn stored shows under the Version's model. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+
 ## LLM Calls Price Cached Input at the Cache-Read Rate
 
 An LLM span now reads the cached input count that OpenTelemetry instrumentations report (`gen_ai.usage.cache_read.input_tokens`) and prices those tokens at the model's cache-read price, so span and turn costs match the provider bill. A span whose reported model matches no Model now links to the model it requested, or to the name without its provider prefix (`openai/gpt-4o` matches `gpt-4o`). `cache_read_input_tokens` sent through the SDK or the API is now read as part of `input_tokens`, so a turn's total counts it once and the cached part takes the cache-read price; a count above `input_tokens` is still counted apart.
+
+## A link from one details page to another opens it fresh
+
+A link from one evaluation, trace, user, subscription, model, monitor alert or connection to another of the same kind now opens that page from a fresh start. Before, an open panel or a toggle of the page you left could carry over to the new one.
+
+## The first product says how many specifications it could not create
+
+When you create your first product and some of its generated specifications fail to save, the confirmation now says how many could not be created. You can add them later from the product's **Specifications** tab.
+
+## Every table row with a details page offers Show Details
+
+The row menu of every dashboard table whose rows open a details page now has a **Show Details** item, so you can reach that page from the keyboard as well as with a click. The runs list, the monitor alert history, the list of metrics a classifier conversion created and, for every role, the products tab of a user group now have this menu too.
 
 ## Lists by ID No Longer Fail When a Filter Excludes a Row
 

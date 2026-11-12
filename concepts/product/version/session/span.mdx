@@ -193,7 +193,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Input Tokens" type="int" optional>
-  Input tokens this LLM call reported, cached input included. Galtea sets this and the seven fields below when it stores the span; see [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost). The counts and cost of a trace are the sums over its spans. All eight are read-only, and `null` for a user without the `evaluation.readInference` permission (see [Roles and permissions](/security/roles-and-permissions)).
+  Input tokens this LLM call reported, cached input included. Galtea sets this and the seven fields below when it stores the span; see [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost). The counts and cost of a trace are the sums over the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it, and a span that loses one side to a span below is priced again for the side it keeps. All eight are read-only, and `null` for a user without the `evaluation.readInference` permission (see [Roles and permissions](/security/roles-and-permissions)).
 </ResponseField>
 
 <ResponseField name="Output Tokens" type="int" optional>
