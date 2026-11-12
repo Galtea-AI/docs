@@ -1,0 +1,43 @@
+---
+title: "Data Region"
+description: "The data region of an organization: global or EU only. Galtea staff set it on request."
+icon: "earth-europe"
+---
+
+## Overview
+
+The data region of an organization tells Galtea where it may process the data of that organization, such as the requests to model providers that run evaluations, generate test data and simulate conversations.
+
+An organization has one of two regions:
+
+- **Global** is the default. Galtea processes your data with its normal routing.
+- **EU only** asks that the processing of your data stays in the European Union. "EU-only processing" here has the meaning described in [European models, EU-only processing, and the difference between them](/deployment/cloud-specifics#european-models-eu-only-processing-and-the-difference-between-them). It is a rule about *where* the processing happens, not about *who* the model provider is.
+
+<Info>
+  The data region is an **Enterprise feature**. Contact [support@galtea.ai](mailto:support@galtea.ai) to enable it for your organization.
+</Info>
+
+<Note>
+  The region does not change where Galtea stores your data. Storage stays in `eu-west-1` for shared SaaS, in the region you choose for a private tenant, and in your own infrastructure when self-hosted. See [Security assurance](/deployment/security-assurance). The region covers data processing only.
+</Note>
+
+<Note>
+  This feature is not live yet. A deployment turns it on with a setting that is off by default. While the setting is off, the organization settings page shows no region and a request to change the region is refused.
+</Note>
+
+## Who can see and change it
+
+- **Owners** can see the current region on the organization settings page. They cannot change it.
+- **Galtea staff** change the region on request. Ask [support@galtea.ai](mailto:support@galtea.ai) to switch it.
+- The region can only be changed on an organization with an active Enterprise subscription. An organization that is frozen must be unfrozen first.
+
+## What a switch means
+
+The dashboard asks for a confirmation before it switches the region. Galtea records each change of value in the audit log, with the old and the new value.
+
+The two changes mean the following:
+
+- **Global to EU only:** from then on, Galtea processes your organization's data in the EU only. Check that the models you use are available in an EU deployment, because a model that is not available there cannot serve your organization.
+- **EU only to global:** Galtea goes back to its normal routing, which may process your data outside the EU.
+
+A change applies to processing that starts after it. It does not change processing that already ran.

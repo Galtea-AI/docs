@@ -165,6 +165,7 @@
             "icon": "shield-halved",
             "pages": [
               "security/roles-and-permissions",
+              "security/data-region",
               {
                 "group": "SAML SSO",
                 "icon": "building-lock",
@@ -784,7 +785,7 @@
           },
           {
             "group": "Endpoints",
-            "openapi": "https://dev.api.galtea.ai/openapi.json"
+            "openapi": "/openapi.json"
           }
         ]
       }

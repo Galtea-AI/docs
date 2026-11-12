@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## LLM Calls Price Cached Input at the Cache-Read Rate
+
+An LLM span now reads the cached input count that OpenTelemetry instrumentations report (`gen_ai.usage.cache_read.input_tokens`) and prices those tokens at the model's cache-read price, so span and turn costs match the provider bill. A span whose reported model matches no Model now links to the model it requested, or to the name without its provider prefix (`openai/gpt-4o` matches `gpt-4o`). `cache_read_input_tokens` sent through the SDK or the API is now read as part of `input_tokens`, so a turn's total counts it once and the cached part takes the cache-read price; a count above `input_tokens` is still counted apart.
+
 ## Lists by ID No Longer Fail When a Filter Excludes a Row
 
 A list call that names `ids` now answers with the rows that match every filter, instead of a "not found" error for the rows a filter or the page size leaves out. For example, `galtea evaluations list --ids <id1>,<id2> --statuses PENDING` answers an empty list once both evaluations finish. An ID that does not exist still answers "not found". In the dashboard, a user group with more members than the page size now shows its members.
