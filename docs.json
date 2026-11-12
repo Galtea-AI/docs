@@ -784,7 +784,7 @@
           },
           {
             "group": "Endpoints",
-            "openapi": "https://dev.api.galtea.ai/openapi.json"
+            "openapi": "/openapi.json"
           }
         ]
       }

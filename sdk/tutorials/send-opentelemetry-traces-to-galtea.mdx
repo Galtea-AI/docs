@@ -326,16 +326,25 @@ Galtea reads the token counts your spans report and adds them up per turn. Send 
 
 | Attribute Key | Type | Description |
 |---|---|---|
-| `gen_ai.usage.input_tokens` | `int` | Input (prompt) tokens the call consumed. |
+| `gen_ai.usage.input_tokens` | `int` | Input (prompt) tokens the call consumed, cached input included. |
 | `gen_ai.usage.output_tokens` | `int` | Output (completion) tokens the call produced. |
+| `gen_ai.usage.cache_read.input_tokens` | `int` | The part of the input tokens read from the provider's prompt cache. |
 
-The older names `gen_ai.usage.prompt_tokens` and `gen_ai.usage.completion_tokens` work too. When a span carries both names, the current one wins.
+The older names `gen_ai.usage.prompt_tokens`, `gen_ai.usage.completion_tokens` and `gen_ai.usage.cache_read_input_tokens` work too. When a span carries both names, the current one wins.
+
+The input count includes the cached tokens, as in the OpenTelemetry GenAI conventions, OpenAI and Gemini. A span's `tokens` is its input plus its output, so the cache counts once. When a span reports more cached tokens than input tokens, its source counted the cache apart: its `tokens` then adds the cached tokens, Galtea keeps both counts as sent, and it marks the span with `galtea.span.cache_read_above_input` in its metadata.
 
 A turn's `inputTokens`, `outputTokens` and `tokens` are the sum over every span of that turn, so a turn that makes three LLM calls reports the three calls added together. A span that reports no usage adds nothing. Send no usage at all and the turn keeps what Galtea already had: nothing when no Model is linked to the Version, or the estimate Galtea derived from the turn text when one is.
 
 Galtea also recognizes the usage a managed platform reports in its own format. MLflow Tracing's `mlflow.chat.tokenUsage` works with no Galtea attribute. When a span carries both, the `gen_ai.usage.*` keys win, field by field.
 
-**Cost** is set per span. Each LLM span is priced at the per-token price of the [Model](/concepts/model) that answered the call (see [Model](#model) below), and keeps that price if the Model price changes later. A span that names no model is priced at the Model linked to the Version. A span whose model matches no Model, or a Model with no price, has no cost rather than a cost of zero. The turn's `cost` is the sum of its span costs, so a turn that calls two models costs each call at its own price. When the turn's spans use different prices, the turn shows no per-token price. Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn, so send `cost` to keep your own figure.
+**Cost** is set per span. Each LLM span is priced at the per-token price of the [Model](/concepts/model) that answered the call (see [Model](#model) below), and keeps that price if the Model price changes later. The cached input tokens take the Model's cache-read price, or its input price when it has none, and the rest of the input takes the input price:
+
+```
+cost = (input − cached input) × input price + cached input × cache-read price + output × output price
+```
+
+For example, a `gpt-4o` call with 10,000 input tokens, 8,000 of them cached, and 500 output tokens costs $0.020. A span with more cached tokens than input tokens has all its input at the input price, plus its cached tokens at the cache-read price. A span that names no model is priced at the Model linked to the Version. A span whose model matches no Model, or a Model with no price, has no cost rather than a cost of zero. The turn's `cost` is the sum of its span costs, so a turn that calls two models costs each call at its own price. When the turn's spans use different prices, the turn shows no per-token price. Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn, so send `cost` to keep your own figure.
 
 Two spans that report the same LLM call, for example a framework span around the provider span, are both counted. Send the usage on one of them.
 
@@ -354,7 +363,7 @@ Galtea records which model answered each LLM call. It reads the first of these k
 
 MLflow Tracing's `mlflow.llm.model` and the Mistral `llm_call_details` event work with no Galtea attribute. A Langfuse file import reads each generation's model too.
 
-The span shows that name as its model. When a [Model](/concepts/model) of your organization, or a global Model, has the same name (case does not matter), Galtea also links the span to it. Your organization's Model wins over a global one. So to use a price you agreed with a provider, create a Model in your organization with the same name and your prices: the span cost and the cost breakdown then use them. The link is made when the span is stored, so a Model you add later does not link spans that are already stored. Deleting a Model keeps the link, so a span can link to a deleted Model. The span page then shows the name with no link. A name that matches no Model is still shown.
+The span shows that name as its model. When a [Model](/concepts/model) of your organization, or a global Model, has the same name (case does not matter), Galtea also links the span to it. When none does, Galtea tries the `gen_ai.request.model` name, then each name without its provider prefix (`openai/gpt-4o` becomes `gpt-4o`), and links the first one that a Model has. Your organization's Model wins over a global one of the same name. So to use a price you agreed with a provider, create a Model in your organization with the same name and your prices: the span cost and the cost breakdown then use them. The link is made when the span is stored, so a Model you add later does not link spans that are already stored. Deleting a Model keeps the link, so a span can link to a deleted Model. The span page then shows the name with no link. A name that matches no Model is still shown.
 
 <Note>
   **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.
