@@ -56,6 +56,12 @@ A file stored as a Galtea file token in a trace now comes back as the file when 
 
 On the Traces tab, a long word or a one-line JSON block with no spaces now wraps inside its chat bubble. It no longer runs past the edge of the card.
 
+## Every Revision of a Metric Shares Its Name
+
+All revisions of a [metric](/concepts/metric#revisions-and-analytics) now share one name, description, tags, documentation URL and evaluation type. Renaming any revision renames the metric. Deleting a metric by its ID deletes all its revisions. Deleting a revision deletes only that revision, and the metric too when no live revision is left; the active revision can be deleted on its own only when it is the last one. A new revision can no longer change the evaluation type, and an analytics exclusion now applies to every revision of the metric.
+
+Through the API, `DELETE /metrics/{id}` and `DELETE /metrics/batch` with the ID of a metric's active revision now return 400 while the metric has other live revisions. Delete the other revisions first, or delete the metric by its ID.
+
 ## See the end user of each session and trace
 
 Sessions and traces that Galtea ingests from OpenTelemetry now record their end user: the customer of your agent. Each trace stores the end user of its own spans, and the session keeps the first one. Sessions linked to a test case record it too. Galtea reads it from the standard keys of `user.id`, OpenLLMetry and Langfuse with no setup, and your organization or product can name custom span attributes. The [sessions](/concepts/product/version/session) table of the dashboard has an End user filter and an End user column you can turn on, and `galtea.sessions.list(end_user=...)` filters in the SDK. See [How Galtea routes a trace](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).

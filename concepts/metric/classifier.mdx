@@ -188,7 +188,7 @@ The source metric does not change, and its past results stay. Before you stop us
 
 The converted metrics are new metrics. A monitor that uses the source metric keeps using it and does not get the new metrics.
 
-A new revision can also change the judge, to try the classifier in place of an LLM judge on the same metric. Views that follow every revision of a metric, such as scores over time, then mix the two judges' scores. To keep the LLM judge metric and add classifier metrics next to it, use **Convert to classifier**.
+A new revision keeps the evaluation type of its metric, so it cannot switch a metric between an LLM judge and the classifier. To try the classifier, use **Convert to classifier**: it keeps the LLM judge metric and adds classifier metrics next to it.
 
 ## Limits
 

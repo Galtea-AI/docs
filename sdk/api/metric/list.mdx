@@ -47,7 +47,7 @@ metrics = galtea.metrics.list(limit=20)
 </ResponseField>
 
 <ResponseField name="include_excluded_from_analytics" type="bool" default="False">
-  Keyword-only. Whether to include metric revisions [excluded from analytics](/concepts/metric#revisions-and-analytics) in the results.
+  Keyword-only. Whether to include the revisions of metrics [excluded from analytics](/concepts/metric#revisions-and-analytics) in the results.
 
-  **Default:** `False` — excluded revisions are hidden. Set to `True` to also retrieve them. A lookup by `id` always returns the metric, excluded or not.
+  **Default:** `False` — the revisions of excluded metrics are hidden. Set to `True` to also retrieve them. A lookup by `id` always returns the metric, excluded or not.
 </ResponseField>

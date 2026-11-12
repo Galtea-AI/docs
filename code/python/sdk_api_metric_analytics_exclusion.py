@@ -1,7 +1,7 @@
 """
 SDK API: Metric Analytics Exclusion
-Demonstrates how to check the impact of excluding a metric revision from
-analytics, then exclude and restore it.
+Demonstrates how to check the impact of excluding a metric from analytics,
+then exclude and restore it.
 """
 
 from datetime import datetime
@@ -37,4 +37,4 @@ try:
     metric = galtea.metrics.set_analytics_exclusion(metric_id=metric_id, excluded=False)
     # @end set_analytics_exclusion
 finally:
-    galtea.metrics.delete(metric_id=metric_id)
+    galtea.metrics.delete(metric_id=metric.id)

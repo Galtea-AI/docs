@@ -11,5 +11,5 @@ galtea.metrics.delete(metric_id=metric_id)
 
 ## Parameters
 <ResponseField name="metric_id" type="string" required>
-  The ID of the metric you want to delete.
+  The ID of the metric or of one of its revisions. A metric ID deletes the metric with all its revisions. A revision ID deletes that revision, with its evaluations and specification links, and the metric too when it has no live revision left. The active revision can be deleted on its own only when it is the last revision of the metric.
 </ResponseField>

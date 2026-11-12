@@ -5844,7 +5844,7 @@
         "properties": {
           "excluded": {
             "type": "boolean",
-            "description": "True to exclude this revision, false to include it again"
+            "description": "True to exclude the metric of this revision, false to include it again"
           }
         },
         "required": [
@@ -7089,6 +7089,11 @@
             "readOnly": true,
             "description": "Earliest non-null of this metric's own legacy date and its evaluator model's `unselectableAt`, so a model no longer selectable makes every metric linked to it report as legacy even though the metric row itself is untouched. Present only once that date has passed: a scheduled future cutoff reports null, because the metric is still active until then. Unlike `disabledAt`, this field never carries a future date."
           },
+          "isActive": {
+            "type": "boolean",
+            "readOnly": true,
+            "description": "Whether this is the active revision of its metric: its own legacy date is unset, it is not deleted and it is not being optimized. Unlike a null `legacyAt`, it ignores the evaluator model, so a revision on a model that is no longer selectable is still active."
+          },
           "disabledAt": {
             "type": "string",
             "nullable": true,
@@ -7101,13 +7106,13 @@
             "nullable": true,
             "format": "date-time",
             "readOnly": true,
-            "description": "When set, results produced by this metric revision do not feed analytics."
+            "description": "When set, results of this metric, every revision included, do not feed analytics."
           },
           "excludedByUserId": {
             "type": "string",
             "nullable": true,
             "readOnly": true,
-            "description": "User who last excluded this metric revision from analytics."
+            "description": "User who last excluded this metric from analytics."
           }
         },
         "required": [
@@ -7139,6 +7144,7 @@
           "userGroupIds",
           "createdAt",
           "legacyAt",
+          "isActive",
           "disabledAt",
           "excludedFromAnalyticsAt",
           "excludedByUserId"
@@ -14610,7 +14616,7 @@
             "in": "query",
             "style": "form",
             "explode": true,
-            "description": "Filter by metric names (exact match, multiple)",
+            "description": "Filter by metric names (exact match, case insensitive, multiple). A revision also matches its own name, when it differs from its metric's.",
             "required": false,
             "schema": {
               "type": "array",
@@ -14622,7 +14628,7 @@
           {
             "name": "name",
             "in": "query",
-            "description": "Filter by metric name (partial match)",
+            "description": "Filter by metric name (partial match, case insensitive). A revision also matches its own name, when it differs from its metric's.",
             "required": false,
             "schema": {
               "type": "string"
@@ -14753,7 +14759,7 @@
           {
             "name": "includeExcludedFromAnalytics",
             "in": "query",
-            "description": "Include metric revisions that are excluded from analytics",
+            "description": "Include metrics that are excluded from analytics",
             "required": false,
             "schema": {
               "type": "boolean"
@@ -14944,7 +14950,7 @@
           "metrics"
         ],
         "summary": "Delete multiple metrics",
-        "description": "Soft delete multiple metrics by their IDs. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "description": "Soft delete multiple metrics by their IDs. Each id names a revision or a metric. A metric id deletes the metric with every revision. A revision is deleted with its evaluations and specification links. A metric whose last live revision is deleted is deleted with it. The active revision is deleted only with the last live revision of its metric. See [Metrics](https://docs.galtea.ai/concepts/metric).",
         "operationId": "deleteMetrics",
         "x-cli-name": "delete-batch",
         "security": [
@@ -14983,7 +14989,7 @@
             "description": "Metrics deleted successfully"
           },
           "400": {
-            "description": "Invalid request body",
+            "description": "Invalid request body, or the batch deletes an active revision and leaves another live revision of its metric",
             "content": {
               "application/json": {
                 "schema": {
@@ -15101,7 +15107,7 @@
           "metrics"
         ],
         "summary": "Delete metric",
-        "description": "Soft delete a metric. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "description": "Soft delete a metric by its id, or a revision by the revision id. A metric id deletes the metric with every revision. A revision is deleted with its evaluations and specification links. A metric whose last live revision is deleted is deleted with it. The active revision is deleted only with the last live revision of its metric. See [Metrics](https://docs.galtea.ai/concepts/metric).",
         "operationId": "deleteMetric",
         "x-cli-name": "delete",
         "security": [
@@ -15123,6 +15129,16 @@
         "responses": {
           "204": {
             "description": "Metric deleted successfully"
+          },
+          "400": {
+            "description": "The id names the active revision, and its metric has another live revision. Delete the other revisions first, or every revision together with `DELETE /metrics/batch`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -28243,10 +28259,10 @@
           {
             "schema": {
               "type": "boolean",
-              "description": "Include evaluations whose metric revision is excluded from analytics. Omit or pass false to hide them."
+              "description": "Include evaluations whose metric is excluded from analytics. Omit or pass false to hide them."
             },
             "required": false,
-            "description": "Include evaluations whose metric revision is excluded from analytics. Omit or pass false to hide them.",
+            "description": "Include evaluations whose metric is excluded from analytics. Omit or pass false to hide them.",
             "name": "includeExcludedFromAnalytics",
             "in": "query"
           },
@@ -32254,8 +32270,8 @@
         "tags": [
           "metrics"
         ],
-        "summary": "Get the analytics impact of a metric revision",
-        "description": "Count the results and products affected if this metric revision is excluded from analytics. A caller limited to the products its user groups grant gets counts for those products only. The exclusion itself applies to every product of the organization.",
+        "summary": "Get the analytics impact of a metric",
+        "description": "Count the results and products affected if the metric of this revision is excluded from analytics. The count covers every revision of the metric. A caller limited to the products its user groups grant gets counts for those products only. The exclusion itself applies to every product of the organization.",
         "security": [
           {
             "bearerAuth": []
@@ -32325,8 +32341,8 @@
         "tags": [
           "metrics"
         ],
-        "summary": "Include or exclude a metric revision from analytics",
-        "description": "Excluding a revision removes every result produced by it from analytics scores and coverage. It does not delete or change any result.",
+        "summary": "Include or exclude a metric from analytics",
+        "description": "Excluding a metric removes every result of every revision of it from analytics scores and coverage. It does not delete or change any result.",
         "security": [
           {
             "bearerAuth": []

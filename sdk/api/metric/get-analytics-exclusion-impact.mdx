@@ -1,23 +1,23 @@
 ---
 title: 'Getting Analytics Exclusion Impact'
 sidebarTitle: "Get Analytics Exclusion Impact"
-description: "Get the results and products affected by excluding a metric revision from analytics."
+description: "Get the results and products affected by excluding a metric from analytics."
 ---
 
-Call this before [excluding a metric revision](/sdk/api/metric/set-analytics-exclusion) to see how many results and products the change would affect.
+Call this before [excluding a metric](/sdk/api/metric/set-analytics-exclusion) to see how many results and products the change would affect.
 
 ## Returns
 
 A `MetricAnalyticsExclusionImpact` object with the following fields:
 
 <ResponseField name="result_count" type="int">
-  Total number of results produced by this metric revision. For a caller limited to the products its user groups grant, this counts only the results of those products.
+  Total number of results produced by every revision of this metric. For a caller limited to the products its user groups grant, this counts only the results of those products.
 </ResponseField>
 <ResponseField name="products" type="list[MetricAnalyticsExclusionImpactProduct]">
-  The products with results from this metric revision. A caller limited to the products its user groups grant sees only those products. The exclusion itself applies to every product of the organization. Each `MetricAnalyticsExclusionImpactProduct` has:
+  The products with results from any revision of this metric. A caller limited to the products its user groups grant sees only those products. The exclusion itself applies to every product of the organization. Each `MetricAnalyticsExclusionImpactProduct` has:
   - `id` (`str`): The product ID.
   - `name` (`str`): The product name.
-  - `result_count` (`int`): Number of results this metric revision produced for this product.
+  - `result_count` (`int`): Number of results every revision of this metric produced for this product.
 </ResponseField>
 
 ## Example
@@ -30,5 +30,5 @@ A `MetricAnalyticsExclusionImpact` object with the following fields:
 
 ## Parameters
 <ResponseField name="metric_id" type="string" required>
-  The ID of the metric revision to inspect.
+  The ID of any revision of the metric to inspect.
 </ResponseField>
