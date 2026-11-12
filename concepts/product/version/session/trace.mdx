@@ -92,7 +92,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </ResponseField>
 
 <ResponseField name="inputTokens, outputTokens, cacheReadInputTokens, tokens" type="int" optional>
-  Token counts for the trace: input, output, cache-read input and total. The input count includes the cache-read input, and the total is input plus output, plus the cache read when the source counted it apart from the input (a cache read above the input count). They are `null` for a user without the `evaluation.readInference` permission.
+  Token counts for the trace: input, output, cache-read input and total. They are `null` for a user without the `evaluation.readInference` permission.
 </ResponseField>
 
 <ResponseField name="costPerInputToken, costPerOutputToken, costPerCacheReadInputToken, cost, creditsUsed" type="float" optional>

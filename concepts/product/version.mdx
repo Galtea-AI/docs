@@ -87,7 +87,7 @@ Galtea refuses two keys that become equal after the spaces around them are remov
 
 A model fact links the version to its [model](/concepts/model), so you do not state the model twice. A fact is a model fact when its key is `model`, `model_name`, `model-name` or `modelName`. Galtea compares the key without case, `_` and `-`, so `MODEL_NAME` counts too. Every other key links nothing, including a dotted attribute name such as `app.agent.model` that comes from the version attributes of an OpenTelemetry trace.
 
-- The value must be the exact name of a model on the **Models** page of your organization in the dashboard, provider prefix included. `gpt-4o` and `azure/gpt-4o` are two different models, so use the full name of the one you run. Upper and lower case do not matter. An LLM span is matched more loosely: see [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model).
+- The value must be the exact name of a model on the **Models** page of your organization in the dashboard, provider prefix included. `gpt-4o` and `azure/gpt-4o` are two different models, so use the full name of the one you run. Upper and lower case do not matter.
 - Your organization's own model wins over a global model with the same name.
 - A `model_id` (`modelId` in the REST API) you send wins over a model fact. It must name a model of your organization or a global model. On a create, a `model_id` of `null` or an empty string counts as not sent. On an update, `model_id: null` clears the model, and an empty string is refused.
 - When model facts name two different models, Galtea links no model and still stores the version.
