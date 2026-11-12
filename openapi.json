@@ -641,7 +641,7 @@
       },
       "AnalyticsInsights": {
         "type": "object",
-        "description": "Single-version analytics insights: deterministic flags plus a fail-open LLM-generated narrative summary (the narrative is omitted when the request sets `includeNarrative=false`).",
+        "description": "Single-version analytics insights: deterministic flags plus a fail-open LLM-generated narrative summary (the narrative is omitted when the request sets `includeNarrative=false`; a region failure for an EU organization answers 503).",
         "properties": {
           "productId": {
             "type": "string",
@@ -691,7 +691,7 @@
       },
       "AnalyticsInsightsComparison": {
         "type": "object",
-        "description": "Cross-version analytics comparison insights: deterministic flags plus a fail-open LLM-generated narrative summary (the narrative is omitted when the request sets `includeNarrative=false`).",
+        "description": "Cross-version analytics comparison insights: deterministic flags plus a fail-open LLM-generated narrative summary (the narrative is omitted when the request sets `includeNarrative=false`; a region failure for an EU organization answers 503).",
         "properties": {
           "productId": {
             "type": "string",
@@ -19399,6 +19399,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The organization keeps its data in the EU and the model has no EU deployment that answered. Only a CONVERSATION parse can cause it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -24275,7 +24285,7 @@
           "analytics"
         ],
         "summary": "Get analytics insights for a version",
-        "description": "Computes deterministic red flags / proactive insights (low metric scores, specification coverage gaps) for a single version, plus a fail-open LLM-generated narrative summary. See [Platform Overview](https://docs.galtea.ai/introduction).",
+        "description": "Computes deterministic red flags / proactive insights (low metric scores, specification coverage gaps) for a single version, plus a fail-open LLM-generated narrative summary (except that a region failure for an EU organization answers 503). See [Platform Overview](https://docs.galtea.ai/introduction).",
         "operationId": "getAnalyticsInsights",
         "x-stability-level": "alpha",
         "x-cli-name": "get-insights",
@@ -24382,7 +24392,7 @@
           {
             "name": "includeNarrative",
             "in": "query",
-            "description": "When true (default), a fail-open LLM-generated narrative summary is computed and returned alongside the deterministic flags. When false, the narrative LLM call is skipped entirely and the response carries `narrative: null` and `narrativeGeneratedByAi: false`; the deterministic flags are unchanged. Machine consumers that produce their own prose should pass false to avoid the wasted LLM call.",
+            "description": "When true (default), a fail-open LLM-generated narrative summary (except that a region failure for an EU organization answers 503) is computed and returned alongside the deterministic flags. When false, the narrative LLM call is skipped entirely and the response carries `narrative: null` and `narrativeGeneratedByAi: false`; the deterministic flags are unchanged. Machine consumers that produce their own prose should pass false to avoid the wasted LLM call.",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -24449,6 +24459,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The organization keeps its data in the EU and the model has no EU deployment that answered. Only the narrative can cause it, and only when `includeNarrative` is true",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -24459,7 +24479,7 @@
           "analytics"
         ],
         "summary": "Get cross-version analytics comparison insights",
-        "description": "Computes deterministic red flags / proactive insights across versions (metric degradation, metric improvement, cost outlier, latency outlier), plus a fail-open LLM-generated narrative summary. When versionIds is omitted, all versions present in the analytics data are compared. See [Platform Overview](https://docs.galtea.ai/introduction).",
+        "description": "Computes deterministic red flags / proactive insights across versions (metric degradation, metric improvement, cost outlier, latency outlier), plus a fail-open LLM-generated narrative summary (except that a region failure for an EU organization answers 503). When versionIds is omitted, all versions present in the analytics data are compared. See [Platform Overview](https://docs.galtea.ai/introduction).",
         "operationId": "compareAnalyticsInsights",
         "x-stability-level": "alpha",
         "x-cli-name": "compare-insights",
@@ -24571,7 +24591,7 @@
           {
             "name": "includeNarrative",
             "in": "query",
-            "description": "When true (default), a fail-open LLM-generated narrative summary is computed and returned alongside the deterministic flags. When false, the narrative LLM call is skipped entirely and the response carries `narrative: null` and `narrativeGeneratedByAi: false`; the deterministic flags are unchanged. Machine consumers that produce their own prose should pass false to avoid the wasted LLM call.",
+            "description": "When true (default), a fail-open LLM-generated narrative summary (except that a region failure for an EU organization answers 503) is computed and returned alongside the deterministic flags. When false, the narrative LLM call is skipped entirely and the response carries `narrative: null` and `narrativeGeneratedByAi: false`; the deterministic flags are unchanged. Machine consumers that produce their own prose should pass false to avoid the wasted LLM call.",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -24631,6 +24651,16 @@
           },
           "404": {
             "description": "The product does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The organization keeps its data in the EU and the model has no EU deployment that answered. Only the narrative can cause it, and only when `includeNarrative` is true",
             "content": {
               "application/json": {
                 "schema": {
@@ -27917,6 +27947,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "A dependency the request needs is temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -30443,6 +30483,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The organization keeps its data in the EU and the model has no EU deployment that answered, so no probe ran. A provider that never answers is an `outcome` of the 200 body, not this error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -30594,6 +30644,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "A dependency the request needs is temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -30691,6 +30751,16 @@
           },
           "500": {
             "description": "AI generation or classification failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A dependency the request needs is temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -31576,6 +31646,16 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A dependency the request needs is temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
