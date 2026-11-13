@@ -71,6 +71,17 @@ A fact key such as `model` or `model_name` also links a model to a Version that 
 
 [Set a conversation key](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#set-a-conversation-key) names the managed platforms whose key Galtea derives. A span that carries no key waits for a later batch of its trace that does, up to a size limit. Past that limit, Galtea rejects it at once. See [Batched Exporters and the Conversation Key](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#batched-exporters-and-the-conversation-key).
 
+### End user (optional)
+
+Galtea also records the end user: the customer of your agent, not a Galtea user. Galtea reads it from a span attribute, with no setup, and shows it as the `endUser` of the [Session](/concepts/product/version/session) and of each [Trace](/concepts/product/version/session/trace), for a conversation that Galtea assembles from your spans. Spans of a [Trace that already exists](#spans-of-a-trace-that-already-exists) set no end user, so a Direct Inference session records none. The framework attributes it reads are `user.id`, `enduser.id`, `langfuse.user.id`, `langfuse.trace.metadata.langfuse_user_id`, `langfuse.observation.metadata.langfuse_user_id` and `traceloop.association.properties.user_id`.
+
+Your organization can name custom attributes, and a product can replace that list with its own (1 to 8 names). Galtea reads these first, then the framework attributes. An organization cannot turn the framework attributes off.
+
+- **Order.** The first attribute in that order that a span carries wins, if its value is a text of 1 to 255 characters. Galtea skips any other value, such as a longer text, a float, a boolean or an empty text. It reads the same attribute on the next span, and tries the next attribute only when no span has a usable value for this one. An integer is read as text, so an integer ID is kept. A span's own attribute beats the same attribute on its resource.
+- **Session and trace.** The session reads every span of the conversation. Each trace reads only its own spans, so two traces of one session can name different end users.
+- **First value stays.** The session keeps the first end user it receives. A later trace with another end user stays in the session, stores its own end user, and Galtea logs a warning. A trace keeps its first end user too: spans that arrive later fill it only while it is empty.
+- **Not set.** A trace file import sets none, but a session it created takes one from a later OpenTelemetry batch with the same conversation key.
+
 ### Spans of a Trace that already exists
 
 A Trace already exists when Galtea calls your endpoint during [Direct Inference](/sdk/tutorials/direct-inferences-and-evaluations-from-platform), or when your code created it with the SDK, the CLI or the API. Its Session already has its Version, and a Direct Inference session also has its Test Case. Your spans only need to name the Trace. Galtea then ignores the product, version, conversation and test case attributes.

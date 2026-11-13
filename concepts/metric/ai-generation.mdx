@@ -96,7 +96,7 @@ In the dashboard it is available only from the **New Revision** form (open a met
   Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable. Classifier metrics have no judge prompt, so they cannot be revised with AI.
 </Info>
 
-Applying a revision only fills in the form: the judge prompt, evaluation parameters, and description each get an "AI Generated" badge, but nothing is saved until you submit the **New Revision** form.
+Applying a revision only fills in the form: the judge prompt and evaluation parameters each get an "AI Generated" badge. The description field is locked in the **New Revision** form, so the revised description is not applied. Nothing is saved until you submit the **New Revision** form.
 
 The endpoint is also available directly via the [REST API](/api-reference) and the CLI (`galtea metrics update-config`).
 

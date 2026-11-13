@@ -4,6 +4,100 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="5.17.0" description="2026-11-13">
+
+## An LLM Call Counts Once
+
+When a framework span wraps the provider span of an LLM call and both report usage, a turn and the **Where does the cost come from?** card of the product Analytics now count the call once, from the span below. Tokens and cost show the real spend, not twice the real spend. Turns stored before this change keep their stored totals. The card counts their tokens once from their stored spans. The extra cost that such a turn stored shows under the Version's model. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+
+## LLM Calls Price Cached Input at the Cache-Read Rate
+
+An LLM span now reads the cached input count that OpenTelemetry instrumentations report (`gen_ai.usage.cache_read.input_tokens`) and prices those tokens at the model's cache-read price, so span and turn costs match the provider bill. A span whose reported model matches no Model now links to the model it requested, or to the name without its provider prefix (`openai/gpt-4o` matches `gpt-4o`). `cache_read_input_tokens` sent through the SDK or the API is now read as part of `input_tokens`, so a turn's total counts it once and the cached part takes the cache-read price; a count above `input_tokens` is still counted apart.
+
+## A link from one details page to another opens it fresh
+
+A link from one evaluation, trace, user, subscription, model, monitor alert or connection to another of the same kind now opens that page from a fresh start. Before, an open panel or a toggle of the page you left could carry over to the new one.
+
+## The first product says how many specifications it could not create
+
+When you create your first product and some of its generated specifications fail to save, the confirmation now says how many could not be created. You can add them later from the product's **Specifications** tab.
+
+## Every table row with a details page offers Show Details
+
+The row menu of every dashboard table whose rows open a details page now has a **Show Details** item, so you can reach that page from the keyboard as well as with a click. The runs list, the monitor alert history, the list of metrics a classifier conversion created and, for every role, the products tab of a user group now have this menu too.
+
+## Lists by ID No Longer Fail When a Filter Excludes a Row
+
+A list call that names `ids` now answers with the rows that match every filter, instead of a "not found" error for the rows a filter or the page size leaves out. For example, `galtea evaluations list --ids <id1>,<id2> --statuses PENDING` answers an empty list once both evaluations finish. An ID that does not exist still answers "not found". In the dashboard, a user group with more members than the page size now shows its members.
+
+## Readers See Cost and Latency
+
+The **Reader** preset now includes **Cost and latency** (`evaluation.readInference`). Members of a [user group](/concepts/user-group) that follows Reader now see latency, tokens and cost in *Analytics*, the versions list, monitors and the evaluation lists.
+
+To keep these values hidden from a group, give it its own permission list without **Cost and latency**. See [Roles and permissions](/security/roles-and-permissions).
+
+## The Scores Chart Loads Fast on Large Products
+
+The scores-over-time chart in the dashboard no longer times out on products with many versions or many production sessions. The chart opens in seconds on the default "Last 2 years" range, and the series, values and counts are the same as before.
+
+## Analytics inference values follow the inference permission
+
+A user whose group does not list `evaluation.readInference` on a product no longer sees the latency, cost and token values in its Analytics Details. `galtea analytics get-inference` refuses such a user, and the Analytics export leaves those values out and keeps the scores. See [Roles and permissions](/security/roles-and-permissions).
+
+## See Where the Cost Comes From
+
+The product Analytics **Summary** now has a **Where does the cost come from?** card. It splits the estimated cost of the period by model, by version, or in Production by end user, and the rows add up to the total cost. Each row shows the LLM spans, tokens, cost and share of cost, and `galtea analytics get-cost-breakdown` returns the same data. See [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost).
+
+## The changelog groups updates by release
+
+The [changelog](/changelog) now shows one block per release, newest first. Each block names the release version and the date the release was cut, so you can see what a given version holds. Updates from before this change show only their date.
+
+## `galtea --verbose` No Longer Prints Your API Key
+
+The CLI's `--verbose` (`-v`) output now shows `<redacted>` in place of your API key and the values of the headers you set in `GALTEA_EXTRA_HEADERS`. The rest of the request and the response still print in full, so you can paste verbose output into a bug report or a CI log.
+
+## Filter expressions are refused in output mappings and trace source rules
+
+An endpoint connection's output mapping and a trace source rule now refuse a JSONPath filter such as `[?(...)]` when you save them, and Galtea never runs a filter that an older saved path still holds: that path extracts nothing. Use a plain path such as `$.choices[0].message.content` instead. See [Output Mapping](/concepts/product/endpoint-connection-configuration#output-mapping).
+
+## Judges Read Each File in Its Place
+
+A judge now reads a turn as you logged it: text, files and your own elements in their order. Each Galtea file reads as `[File N]` where it sits, and your own elements, such as an `image_url` part or a file on your host, read as their JSON text. Galtea numbers the files of a session once, so a skip reason, the session page and the span page show the same `File N` beside a file. See [Files and Evaluation](/concepts/product/version/session/content-parts#files-and-evaluation).
+
+## Stored Files Come Back as Files
+
+A file stored as a Galtea file token in a trace now comes back as the file when you read it: set `restoreFiles=true` on `GET /inferenceResults`, or `restore_files=True` in `traces.list` from SDK 5.17.0. A run also sends past turns to your endpoint with their files back, a provider byte field as raw base64, and an evaluation judge sees `[File N]` in place of each file. See [Content Parts](/concepts/product/version/session/content-parts).
+
+## Long words wrap inside chat bubbles
+
+On the Traces tab, a long word or a one-line JSON block with no spaces now wraps inside its chat bubble. It no longer runs past the edge of the card.
+
+## Every Revision of a Metric Shares Its Name
+
+All revisions of a [metric](/concepts/metric#revisions-and-analytics) now share one name, description, tags, documentation URL and evaluation type. Renaming any revision renames the metric. Deleting a metric by its ID deletes all its revisions. Deleting a revision deletes only that revision, and the metric too when no live revision is left; the active revision can be deleted on its own only when it is the last one. A new revision can no longer change the evaluation type. An analytics exclusion still applies to one revision: the other revisions of the metric keep counting.
+
+Through the API, `DELETE /metrics/{id}` and `DELETE /metrics/batch` with the ID of a metric's active revision now return 400 while the metric has other live revisions. Delete the other revisions first, or delete the metric by its ID.
+
+## See the end user of each session and trace
+
+Sessions and traces that Galtea ingests from OpenTelemetry now record their end user: the customer of your agent. Each trace stores the end user of its own spans, and the session keeps the first one. Sessions linked to a test case record it too. Galtea reads it from the standard keys of `user.id`, OpenLLMetry and Langfuse with no setup, and your organization or product can name custom span attributes. The [sessions](/concepts/product/version/session) table of the dashboard has an End user filter and an End user column you can turn on, and `galtea.sessions.list(end_user=...)` filters in the SDK. See [How Galtea routes a trace](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).
+
+## Long File Names Stay in the File Row
+
+A long file name in a file row no longer runs over the row's controls. The name now ends with an ellipsis, and the full name shows when you hover over it. This applies to the files of a turn, the test case attachment list, the test connection result and the span page.
+
+## Spans check their Galtea files like traces
+
+A Galtea file in the input or output of a span is now checked as in a trace. A file of another organization fails a single span write with a `400`. In a batch, or in OpenTelemetry ingest, only that span is refused and the other spans are stored. See [Content Parts](/concepts/product/version/session/content-parts).
+
+## Saved Credentials Stay With Their Address
+
+Galtea now binds the stored token, password, and secret headers of an endpoint connection to the origin they were saved for. While a connection holds a saved secret, a test of it with a URL of another origin is refused. When you save a new origin, Galtea clears the stored secrets, and you send the new ones in the same request. See [Endpoint Connection Configuration](/concepts/product/endpoint-connection-configuration).
+
+</Update>
+
+<Update label="5.16.0" description="2026-11-06">
+
 ## Simulated callers read IDs out in groups
 
 In a voice test, the simulated caller now says an order number, phone number or ID in short groups, as a person does, instead of text-to-speech reading it as millions. Amounts, lists of amounts and numbers the caller already grouped stay as written.
@@ -52,6 +146,24 @@ The product Analytics **Summary** now shows the estimated cost of one session by
 
 When Galtea freezes an organization, the users it keeps now keep their role instead of becoming Reader. The organization is read-only for them while it is frozen: they can see everything their role allows, but they cannot create, edit or delete anything except their own account settings. When the organization is unfrozen, they can write again with the same role.
 
+## User Groups Can Follow a Preset, and the User Forms Show Group Access
+
+A user group now either follows a preset or holds its own list. A group that follows **Editor**, **Human evaluator** or **Reader** changes with it when Galtea changes what the preset grants. Pick **Custom**, or **Customize** under a preset, to keep today's permissions as the group's own list and edit it. Set this in the group's create and edit forms, or with **Edit permissions** in its **Permissions** tab. Through the API, send `permissionPreset` to `POST /userGroups` or `PATCH /userGroups/{id}`. See [Presets](/concepts/user-group#presets).
+
+The invite and edit user forms now offer the Owner and Member roles, not Reader or Human evaluator. For read-only access, invite a Member into a group that follows **Reader**. Each group in the form shows its products, users and permissions, and a summary shows the permissions the user gets on each product. When your organization has no group yet, a dialog after the save offers to create the first one with the new Member. The **Users** tab now shows each user's role and their groups with their permissions, and flags a Member with no group. Pick a group there to see its products, users and permissions. On a metric's page, the **User Groups** card now says that a user must be in one of those groups to evaluate the metric.
+
+## Reader and Human Evaluator Roles Retire
+
+From this release, a new or edited user can no longer get the READER or HUMAN_EVALUATOR role. Give them the MEMBER role and add them to a [user group](/concepts/user-group#permission-lists) with the **Reader** or **Human evaluator** preset instead. Galtea moves existing users with one of these roles to the MEMBER role in a one-off run, and they join a copy of each of their groups, so their access stays the same. Until that run, they keep their role.
+
+## Inline file bytes stay out of judge prompts
+
+An image or a compressed PDF logged inline as a `data:` URI no longer reaches an LLM-as-a-judge as base64: the judge sees `[inline bytes dropped: <type>, <size> bytes]` in its place. A text file logged the same way, such as a CSV or a JSON file, now reaches the judge as its text, which costs fewer tokens than base64. Metrics that compare values exactly, such as JSON Field Match, still read the stored value. To have an image or a PDF scored, upload it to Galtea as a file. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
+
+</Update>
+
+<Update label="5.15.0" description="2026-11-02">
+
 ## Model Pickers Show Which Files a Model Reads
 
 Each judge model in the metric form, in AI metric generation and in the classifier model picker now carries a tag: Reads text, images and PDFs, Reads text and images, Reads text and PDFs, Text only, or File support unknown when the model catalog does not say. A note under the picker states what the picked model does with a turn that carries a file, and the metric page shows the tag beside its model. Every classifier model shows Text only, because a classifier metric skips any turn with a file uploaded to Galtea on a side it reads. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
@@ -60,27 +172,13 @@ Each judge model in the metric form, in AI metric generation and in the classifi
 
 When the API skips an evaluation before it runs, the reason now says which file, on which turn, and what refused it: the judge model, the model catalog, a file type no judge reads, a metric with no judge model, or a metric that reads text only. DeepEval and classifier metrics now end Skipped when any turn carries a file on a side they read, even if another turn has text. An LLM-as-a-judge metric whose judge model reads images or PDFs gets the file on deployments that send files to the judge, and a human-evaluation metric is no longer skipped for a file. The dashboard file row no longer carries a judge tag, and the evaluation page warns only about audio with no transcript. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 
-## User Groups Can Follow a Preset, and the User Forms Show Group Access
-
-A user group now either follows a preset or holds its own list. A group that follows **Editor**, **Human evaluator** or **Reader** changes with it when Galtea changes what the preset grants. Pick **Custom**, or **Customize** under a preset, to keep today's permissions as the group's own list and edit it. Set this in the group's create and edit forms, or with **Edit permissions** in its **Permissions** tab. Through the API, send `permissionPreset` to `POST /userGroups` or `PATCH /userGroups/{id}`. See [Presets](/concepts/user-group#presets).
-
-The invite and edit user forms now offer the Owner and Member roles, not Reader or Human evaluator. For read-only access, invite a Member into a group that follows **Reader**. Each group in the form shows its products, users and permissions, and a summary shows the permissions the user gets on each product. When your organization has no group yet, a dialog after the save offers to create the first one with the new Member. The **Users** tab now shows each user's role and their groups with their permissions, and flags a Member with no group. Pick a group there to see its products, users and permissions. On a metric's page, the **User Groups** card now says that a user must be in one of those groups to evaluate the metric.
-
 ## Your Own Files Stay as Sent Beside Galtea Files
 
 Galtea now reads each element of a `content` list on its own, in a trace input, a trace output and a test case input. Your own file URLs, `image_url` parts and other parts are stored exactly as sent, even beside a file uploaded to Galtea. Galtea recognizes its own files by their storage key on any host. An edit that keeps a Galtea file unchanged no longer fails when the file was deleted, and a trace keeps a missing Galtea file, stored without its signature or its `sizeBytes`. The SDK now refuses a URL that is not a Galtea file in `input_file_paths` or `output_file_paths` before it uploads anything. See [Content Parts](/concepts/product/version/session/content-parts).
 
-## Reader and Human Evaluator Roles Retire
-
-From this release, a new or edited user can no longer get the READER or HUMAN_EVALUATOR role. Give them the MEMBER role and add them to a [user group](/concepts/user-group#permission-lists) with the **Reader** or **Human evaluator** preset instead. Galtea moves existing users with one of these roles to the MEMBER role in a one-off run, and they join a copy of each of their groups, so their access stays the same. Until that run, they keep their role. The run skips some users, and a skipped user cannot sign in once Galtea removes the old roles from sign-in: see [Roles and permissions](/security/roles-and-permissions) for who fixes each skip.
-
 ## Resend a Pending Invitation
 
 The users list and the user page now mark a member who has not accepted their invitation with an **Invitation pending** status; hover it to see when they were invited. An owner or admin can send them a new invitation email from the row menu with **Resend invitation**, with the same role and groups, instead of deleting the member and inviting them again.
-
-## Inline file bytes stay out of judge prompts
-
-An image or a compressed PDF logged inline as a `data:` URI no longer reaches an LLM-as-a-judge as base64: the judge sees `[inline bytes dropped: <type>, <size> bytes]` in its place. A text file logged the same way, such as a CSV or a JSON file, now reaches the judge as its text, which costs fewer tokens than base64. Metrics that compare values exactly, such as JSON Field Match, still read the stored value. To have an image or a PDF scored, upload it to Galtea as a file. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
 
 ## Charts Draw Each Series in a Soft Fill and a Strong Line
 
@@ -89,6 +187,14 @@ Charts that compare versions or metrics now draw each series in two tones of its
 ## Every Deprecation Names Its Removal Date
 
 Every deprecated SDK call, API field and CLI command now names its removal date, and none is removed before 17 January 2028. SDK warnings say `Removal: 2028-01-17.` instead of `Removal: not scheduled.`, and the CLI warnings name the date. In the API reference, the deprecated `specificationId` field of datasets carries it as `x-sunset`, with `specificationIds` as its replacement. Deprecated metrics keep their own schedule.
+
+## Search Any Table by Name Right Away
+
+Tables with a name filter now show a search field next to the Filters button. Type a name and the table filters at once, without opening the Filters menu first. The field and the Name row in the Filters menu always show the same value, and the search stays in the link like the other filters.
+
+</Update>
+
+<Update label="5.14.0" description="2026-10-30">
 
 ## Products Stand Out in the Products Table
 
@@ -99,10 +205,6 @@ Pinned products still come first, in the sort you pick. The API and the CLI (`ga
 ## Invitation Links Stay Valid for 14 Days
 
 When you invite someone to your organization, the invitation link in the email now stays valid for 14 days instead of 12 hours, so they have time to accept it.
-
-## Search Any Table by Name Right Away
-
-Tables with a name filter now show a search field next to the Filters button. Type a name and the table filters at once, without opening the Filters menu first. The field and the Name row in the Filters menu always show the same value, and the search stays in the link like the other filters.
 
 ## See Whether a Product Gets Better or Worse
 
@@ -193,30 +295,6 @@ When a voice turn's input has your own fields next to the audio, for example a `
 
 When an admin changes your [user groups](/concepts/user-group), the dashboard now applies your new access when you come back to its browser tab, at most once every 30 seconds. New products appear, and a page that was denied opens. If you lose access to the product you have open, you land on the organization's **Products** tab.
 
-## Creating From a User Group Tab Links the New Entity
-
-A user, metric or product you create from inside a [user group's](/concepts/user-group) own tab now joins that group automatically, instead of landing unlinked.
-
-- **Users tab:** the invite form opens with the group pre-selected, in the Advanced options.
-- **Metrics tab:** a blank metric starts as Human Evaluation with the group selected. The form clears the group when you switch to any other metric type, and puts the tab's group back when you return to Human Evaluation — a different group you picked before switching away is not kept. Starting from a template or revision keeps that source's own groups and adds this one.
-- **Products tab:** the name field notes which group the new product will join.
-
-This only happens when you have the right to link that group (`userGroup.update`), and it is dropped the moment you navigate to a plain creation page instead of the group tab. The [SDK's `metrics.create`](/sdk/api/metric/create) also takes an optional list of group ids to link on creation; there is still no `products.create` in the SDK. Creating a metric from the AI generation tab of the metric creation page does not link a group yet.
-
-## JSON Field Match Checks a Field by Rule
-
-A [JSON Field Match](/concepts/metric/json-field-match) test case can now give a field a rule instead of an exact expected value, by writing an object with a `$` key: `$norm` (same text once accents, case, spaces and every other character that is not a letter or digit are dropped), `$regex` (an RE2 pattern, case-insensitive by default), `$num` (a decimal comparison within a `tol` tolerance) or `$date` (reads common date formats, with an `order` of `DMY`, `MDY` or `any`). The same four rules work the same way across the [strict](/concepts/metric/json-field-match-strict), [normalized](/concepts/metric/json-field-match-normalized) and [normalized-strict](/concepts/metric/json-field-match-normalized-strict) variants.
-
-A rule field shows as a neutral "Rule" row in the evaluation details, rather than a red mismatch, and it isn't counted as a difference. A test case with a broken rule (an invalid pattern, an unknown option, or a pattern too large to run) skips the evaluation instead of failing it, with no retry.
-
-This release also changes what happens when the expected or actual output itself can't be read, for every JSON Field Match evaluation, rule or not: an expected output that isn't valid JSON, or output nested too deeply, now skips the evaluation instead of failing it as a platform error. If you track pass rates against past FAILED counts for this metric, expect some of those to move to skipped going forward.
-
-## See and Open Voice and File Inputs the Same Way
-
-The sessions table's First Input column, and the evaluations table's session-wide Input column, now show the caller's first turn instead of the agent's opening greeting, scanning up to the first three turns of the [session](/concepts/product/version/session). In the evaluations table, an input with nothing to show — including a single-turn evaluation whose input is an empty envelope — now leaves the cell blank, matching the Output column, instead of showing a dash. The same empty input exports as an empty CSV cell.
-
-Audio inputs get the same voice icon [files](/concepts/product/version/session/trace) already had, shown even next to a transcript, and alone when there is none. A cell holding only audio or only a file, in the sessions, evaluations or test case tables, now carries the same hover button a long text cell has, so one click opens the player or the file instead of the cell being a dead end. Long file names are truncated with an ellipsis instead of spilling into the next column.
-
 ## Import LangSmith Dataset Exports as Sessions
 
 **Import traces** now accepts a LangSmith dataset export (JSONL), as well as a Langfuse export. Each conversation becomes one closed [session](/concepts/product/version/session), and each example one turn. In the dashboard, choose the file type in the new **Format** field before you import. In the API, `POST /sessions/import` takes an optional `format`, and detects the format from the file when you leave it out. [Import sessions from a trace export](/concepts/product/version/session#import-sessions-from-a-trace-export) explains how examples are grouped.
@@ -242,6 +320,38 @@ When a metric's `max_output_tokens` is too low for the judge to finish its answe
 ## The CLI Works Behind a Gateway That Serves Galtea Under a Path
 
 The [CLI](/cli/usage) now works when your API gateway serves Galtea under a path, such as `https://gw.example.com/org/galtea`, and your key comes from `GALTEA_API_KEY`. Before, the CLI showed no API commands in this setup. Pass the full URL, path included, to `--host`, as [Behind an API gateway](/cli/usage#behind-an-api-gateway) shows.
+
+</Update>
+
+<Update label="2026-10-26">
+
+## Creating From a User Group Tab Links the New Entity
+
+A user, metric or product you create from inside a [user group's](/concepts/user-group) own tab now joins that group automatically, instead of landing unlinked.
+
+- **Users tab:** the invite form opens with the group pre-selected, in the Advanced options.
+- **Metrics tab:** a blank metric starts as Human Evaluation with the group selected. The form clears the group when you switch to any other metric type, and puts the tab's group back when you return to Human Evaluation — a different group you picked before switching away is not kept. Starting from a template or revision keeps that source's own groups and adds this one.
+- **Products tab:** the name field notes which group the new product will join.
+
+This only happens when you have the right to link that group (`userGroup.update`), and it is dropped the moment you navigate to a plain creation page instead of the group tab. The [SDK's `metrics.create`](/sdk/api/metric/create) also takes an optional list of group ids to link on creation; there is still no `products.create` in the SDK. Creating a metric from the AI generation tab of the metric creation page does not link a group yet.
+
+## JSON Field Match Checks a Field by Rule
+
+A [JSON Field Match](/concepts/metric/json-field-match) test case can now give a field a rule instead of an exact expected value, by writing an object with a `$` key: `$norm` (same text once accents, case, spaces and every other character that is not a letter or digit are dropped), `$regex` (an RE2 pattern, case-insensitive by default), `$num` (a decimal comparison within a `tol` tolerance) or `$date` (reads common date formats, with an `order` of `DMY`, `MDY` or `any`). The same four rules work the same way across the [strict](/concepts/metric/json-field-match-strict), [normalized](/concepts/metric/json-field-match-normalized) and [normalized-strict](/concepts/metric/json-field-match-normalized-strict) variants.
+
+A rule field shows as a neutral "Rule" row in the evaluation details, rather than a red mismatch, and it isn't counted as a difference. A test case with a broken rule (an invalid pattern, an unknown option, or a pattern too large to run) skips the evaluation instead of failing it, with no retry.
+
+This release also changes what happens when the expected or actual output itself can't be read, for every JSON Field Match evaluation, rule or not: an expected output that isn't valid JSON, or output nested too deeply, now skips the evaluation instead of failing it as a platform error. If you track pass rates against past FAILED counts for this metric, expect some of those to move to skipped going forward.
+
+## See and Open Voice and File Inputs the Same Way
+
+The sessions table's First Input column, and the evaluations table's session-wide Input column, now show the caller's first turn instead of the agent's opening greeting, scanning up to the first three turns of the [session](/concepts/product/version/session). In the evaluations table, an input with nothing to show — including a single-turn evaluation whose input is an empty envelope — now leaves the cell blank, matching the Output column, instead of showing a dash. The same empty input exports as an empty CSV cell.
+
+Audio inputs get the same voice icon [files](/concepts/product/version/session/trace) already had, shown even next to a transcript, and alone when there is none. A cell holding only audio or only a file, in the sessions, evaluations or test case tables, now carries the same hover button a long text cell has, so one click opens the player or the file instead of the cell being a dead end. Long file names are truncated with an ellipsis instead of spilling into the next column.
+
+</Update>
+
+<Update label="2026-10-23">
 
 ## Build a Monitor Step by Step, with Its Cost in View
 
@@ -296,6 +406,10 @@ Each session also lands on a version named after the model of its first answer, 
 - **The Ask Val launcher lifts clear of a button at the end of a page** instead of covering it, by up to half the window height. A control it covers mid-page still needs a scroll.
 - **A deprecated SDK call names its removal date in the warning it raises**, so you can plan the upgrade. One with no date set yet says `Removal: not scheduled.` Deprecations the platform owns, such as legacy metrics, carry no date.
 
+</Update>
+
+<Update label="2026-10-21">
+
 ## Link a Dataset to Several Specifications
 
 A [dataset](/concepts/product/dataset) can now link to more than one [Specification](/concepts/product/specification) of the same product, as long as they share the same dataset type (Accuracy, Security, or Behavior). Before, linking a dataset to a new specification silently dropped its old link.
@@ -320,12 +434,20 @@ The dashboard now shows a write action, and opens a create or edit page, only wh
 - **A provider's content block now ends an evaluation with a clear reason**, telling you to pick a different evaluator model, instead of a generic failure. In the Val assistant, a block partway through an answer now ends the reply with a clear error instead of cutting it off with no explanation.
 - **Creating or updating a dataset now returns the full dataset**, not just its id, so you do not need a follow-up read. Organization, product, and dataset writes also accept `Prefer: return=minimal` when you only need the id, or no body, back.
 
+</Update>
+
+<Update label="2026-10-20">
+
 ## Link One Dataset to Several Specifications
 
 A [dataset](/concepts/product/dataset) can now link to several [Specifications](/concepts/product/specification) of its product. An evaluation that names several of them runs the dataset once and scores it with the metrics of all of them.
 
 - **In the SDK**, pass `specification_ids` to [`datasets.create()`](/sdk/api/dataset/create) and [`datasets.update()`](/sdk/api/dataset/update). `specification_id` is deprecated and holds the oldest link.
 - **Agent runs need SDK 5.11.0 or later.** An older SDK reads only the oldest link of a dataset, so [`evaluations.run()`](/sdk/api/evaluation/run) with an `agent` skips a dataset linked to several specifications for every specification but its oldest one.
+
+</Update>
+
+<Update label="2026-10-19">
 
 ## Alert Rules Can Watch a Whole Specification
 
@@ -349,6 +471,10 @@ An evaluation's [Verdict card](/concepts/product/version/session/evaluation) now
 
 - **Specification lists load their dataset counts past 20 rows.** A dashboard filter sent array ids as indexed query parameters (`ids[0]=a&ids[1]=b`), which the API's query-string parser silently turned into an object above 20 ids and rejected with a 400; the specifications list showed "Missing dataset" on every row once a page passed that count. Array filters now go out as repeated keys, the form the API publishes and the SDK already sends.
 - **Picker dialogs no longer hide their create button.** The Endpoint Connection, Phone Connection, WebRTC Connection and Model pickers, and the Specification and classifier Session pickers, now give their toolbar a title row, so the dialog's close button no longer sits on top of the button beside it.
+
+</Update>
+
+<Update label="2026-10-16">
 
 ## One Filters Menu for Every Table and for Analytics
 
@@ -455,6 +581,10 @@ Limits to know:
 - **Specifications open where the results are.** A specification page opened without a chosen tab now opens on **Evaluations** when it has evaluations in the current view mode, and on **Overview** otherwise.
 - **Ask Val stays out of the way.** The **Ask Val** launcher in the dashboard shrinks to its icon 4 seconds after it appears, so it no longer covers buttons at the bottom right.
 
+</Update>
+
+<Update label="2026-10-09">
+
 ## Create an Empty Dataset and Add Test Cases by Hand
 
 You can now create a [dataset](/concepts/product/dataset) with no test cases and write each test case yourself. Nothing is generated, so no credits are spent.
@@ -509,6 +639,10 @@ See [Roles and permissions](/security/roles-and-permissions) for the full rules.
   - `PATCH /versions/:id` now refuses `productId`, `number`, `parentVersionId` and unknown fields, and `versions.update` in the SDK no longer takes `parent_version_id`. A revision's parent is set when you create it, as before.
 - **Read long names in tables and form fields.** When a table cuts a linked name short, such as a metric, test or version name in the evaluations tables, hover the name or move keyboard focus to it to see the full name in a tooltip. Dialog picker fields and dropdown fields now keep a long value on one line, end it with an ellipsis, and show the full value when you hover it. These field tooltips open on hover only.
 - **The dataset form no longer shows a false "At least one type is required" error** when you create a dataset from a specification or change its linked specification.
+
+</Update>
+
+<Update label="2026-10-02">
 
 ## Limit Readers and Human Evaluators to Chosen Products
 
@@ -583,6 +717,10 @@ These changes are off or optional unless your deployment turns them on.
 - **A run where no session completed says how many test cases failed,** for example "3 of 3 test cases failed; no session completed".
 - **Last Successful on the analytics page** now counts evaluations of metrics excluded from analytics and skips deleted sessions.
 - **Faster pages on large products:** analytics scores and the metrics list for a product.
+
+</Update>
+
+<Update label="2026-09-18">
 
 ## Every Launch Now Leaves a Run
 
@@ -692,6 +830,10 @@ Three changes for products instrumented with plain [OpenTelemetry](/sdk/tutorial
 - **Disconnecting a linked account cannot hang:** every **Disconnect** button is disabled from the moment the confirmation dialog opens.
 - **Generated scenarios stay grounded:** a scenario generated from a conditional specification is now built on a catalog record the rule governs, and Galtea picks one itself when the planning model names none. When no record matches the rule, the scenario falls back to the whole catalog and the guarantee does not apply.
 
+</Update>
+
+<Update label="2026-09-14">
+
 ## Review Evaluations and Correct a Wrong Judge Score
 
 Finding where your judge disagrees with your reviewers, and fixing it, now happens in one place and counts everywhere.
@@ -728,6 +870,10 @@ The **Settings** page now has a **Delete Account** card. Deletion is immediate a
 - **Scenario cases your agent can actually fail:** a scenario dataset generated from a specification now contains only direct cases. Before, roughly half the generated cases reported a violation the agent had no chance to commit. Expect these simulated conversations to run for more turns than before.
 - **European language varieties:** picking a language such as Spanish, French, or Portuguese now stores the European variety, and a simulated conversation with a bare language code uses it too. A bare `es` used to produce Latin American replies. English, Japanese, Chinese, and Korean stay as they are, and an explicit region you set always wins. See [test case](/concepts/product/dataset/test-case).
 
+</Update>
+
+<Update label="2026-09-04">
+
 ## Attach Files to Test Cases
 
 A test case input can now include an uploaded file, such as a PDF or an image, instead of only text. This lets you evaluate an AI product that reads documents, for example a contract-review agent, without paraphrasing the document yourself first.
@@ -758,6 +904,10 @@ Traces sent through OTLP (the OpenTelemetry protocol most tracing SDKs export wi
 - **Clearer evaluation errors:** An evaluation that can't be scored because the actual output has the wrong shape now shows the specific reason, instead of a generic error.
 - **Generate Metrics button restored:** The specifications list in production view shows a **Generate Metrics** button again, so you don't need the row's menu to reach it.
 
+</Update>
+
+<Update label="2026-08-27">
+
 ## Organization Pages Open Faster
 
 Opening an organization used to take around 4 seconds while eight analytics queries competed for database capacity. That work is now done far more efficiently, so the page and its product cards render noticeably faster.
@@ -787,6 +937,10 @@ Opening an organization used to take around 4 seconds while eight analytics quer
 ## Platform Improvements
 
 - **Organization link goes to Products:** The sidebar's **Organization** entry now opens the organization hub on the **Products** tab, matching where the sidebar logo and post-login landing already take you, instead of opening on **Users**.
+
+</Update>
+
+<Update label="2026-08-24">
 
 ## Version 5.0.0: A Redesigned Dashboard
 
@@ -865,6 +1019,10 @@ This is the new default for every product, set under **Session Auto-close** on t
 - **A session can be evaluated even when its version has no conversation target.**
 - **Deleting an item that is still in use now returns a clear error instead of a server error.**
 
+</Update>
+
+<Update label="2026-08-10">
+
 ## Platform Improvements
 
 We are working on a new version of the platform, and it will come out soon. In the meantime, this release collects a set of smaller improvements.
@@ -882,6 +1040,10 @@ We are working on a new version of the platform, and it will come out soon. In t
 - **A monitor's Sessions and Evaluations tabs show their rows again:** Both tabs read zero over an empty table. Neither was asking for production traffic, which is the only kind a [Monitor](/concepts/product/monitor) scores. Both now do, and each tab's count is built from the same filters as the table under it, so a count can no longer disagree with the rows it sits above.
 
 - **The Platform version card covers every service:** The **Platform version** card at the end of the **Settings** page listed only the API. It now has one row for the dashboard, one for the API, and one for each of the ten backend services, each showing a readable name plus the exact identifier used in logs and deployments. A service that has not reported its version yet says so, with a tooltip explaining what to check, rather than showing a blank version that would make it look healthy. Visible to enterprise members and admins.
+
+</Update>
+
+<Update label="2026-08-03">
 
 ## Monitor Only the Production Traffic That Matters
 
@@ -920,6 +1082,10 @@ See [Version](/concepts/product/version) for what each connection type does, or 
 - **Detail tabs renamed:** The first tab on a version, session, test, test case, monitor, or organization page is now **Overview** instead of **Details**, matching the specification and user group pages. On a product it is now **Settings**.
 - **The dashboard follows your system appearance:** With the theme set to **System**, the dashboard switches between light and dark the moment your operating system does, without a reload.
 
+</Update>
+
+<Update label="2026-07-31">
+
 ## Breaking Change: Claude Sonnet 4.5 Model Name
 
 The evaluator model name for Claude Sonnet 4.5 changed to match its real name on our LLM gateway.
@@ -932,6 +1098,10 @@ The evaluator model name for Claude Sonnet 4.5 changed to match its real name on
 **What does not break:** the dashboard. Its model list comes from our API, so it already shows the new names.
 
 **What does not break:** metrics you already created. We renamed the model on our side and they now point at the new name automatically. Your existing evaluations keep running.
+
+</Update>
+
+<Update label="2026-07-27">
 
 ## Monitor Your Production Traffic Automatically
 
@@ -982,6 +1152,10 @@ You can now leave free-form comments on an [inference result](/concepts/product/
 
 - **Auto-close settings visible on product details:** The product [details](/concepts/product) page now shows auto-close scope, inactivity window, and closed-session inference policy read-only. Previously these were visible only on the edit page, behind Advanced Options.
 
+</Update>
+
+<Update label="2026-07-21">
+
 ## Retrieval Context Now Comes from Traces
 
 `retrieval_context` is now derived from `RETRIEVER` [trace](/concepts/product/version/session/trace) spans, the same way `tools_used` is derived from `TOOL` spans, instead of living only as a standalone field.
@@ -1027,6 +1201,10 @@ As announced in the deprecation notice, the grace window for **Claude Sonnet 4**
 - **Dashboard form polish:** The caret no longer jumps to the end while typing in list fields; the role dropdown for a new user starts empty instead of silently pre-selecting **Member**; and the organization settings page was redesigned into clear General, Security, and SAML SSO cards with an instant-save MFA toggle.
 - **Deleted organization handling:** If your organization is removed while you are signed in, you are logged out instead of seeing broken pages.
 
+</Update>
+
+<Update label="2026-07-10">
+
 ## Evaluate Your Voice Agents over WebRTC
 
 You can now evaluate AI voice agents that connect over [WebRTC](/concepts/product/webrtc-connection), the standard for real-time audio over the internet. Instead of calling an HTTP API, Galtea opens a live WebRTC session with your agent through [Pipecat Cloud](https://pipecat.ai) and runs the conversation as a real voice call.
@@ -1059,6 +1237,10 @@ You no longer have to select a [version](/concepts/product/version) every time y
 - **ZIP uploads with special characters now process:** Uploading a ZIP for dataset generation whose files have spaces, accented characters, or subfolders in their names failed with an opaque error, while single files worked. Those ZIPs now parse correctly.
 - **Cleaner, more reliable voice test calls:** Voice runs over a [phone connection](/concepts/product/phone-connection) are steadier. The per-turn timer now starts when the caller's audio finishes playing, so slow personas no longer trigger a false "agent did not respond in time". A genuinely slow agent reply is saved as a partial turn instead of being dropped, and captured agent audio has its leading and trailing silence trimmed for cleaner playback.
 
+</Update>
+
+<Update label="2026-07-03">
+
 ## Track Changes to Your Test Cases
 
 [Test cases](/concepts/product/test/case) now keep a revision history, like metric revisions. When you edit a test case's evaluation content, the platform creates a new revision instead of overwriting the old one. Annotation-only edits, such as reviewer or score, still edit in place. The list shows only the latest revision by default, with an opt-in filter for older ones, and each revision links back to the one it came from. Evaluations that ran against an old test case now show an **Outdated Test Case** badge, and the SDK warns you when this happens.
@@ -1078,6 +1260,10 @@ The analytics page now shows **shared test-case coverage** so you can compare ve
 - **Faster permission checks:** Permission checks now run in parallel, so permission-heavy requests are faster.
 - **Sturdier SDK networking:** The SDK now reuses one HTTP session with retries and a timeout, and only prints colored output to a terminal.
 - **Dashboard polish:** Reduced oversized text, fixed clickable empty space in truncated table cells, restored non-admin assistant routes to the catalog, and refreshed the sidebar create-product button.
+
+</Update>
+
+<Update label="2026-06-26">
 
 ## Run Voice Simulations on Your Phone Agents
 
@@ -1124,6 +1310,10 @@ If you do not specify a metric, Val first lists the metrics shared across your s
 - **Tooltips close when the pointer moves onto their content:** Tooltips now close as soon as the pointer leaves the trigger, like any standard hover element. Previously, moving the pointer from the trigger onto the tooltip kept it open and could block clicks on elements beneath it.
 - **Long entity names stay inside their column:** Long names and identifiers in link cells (Test, Version, and similar columns in data tables) now wrap and clamp to two lines inside their column instead of overflowing into the next one.
 
+</Update>
+
+<Update label="2026-06-19">
+
 ## Platform Improvements
 
 - **Create specifications during onboarding:** You can now create your custom [specifications](/concepts/product/specification) during the onboarding flow to cover gaps you would like to evaluate that our AI system did not detect or did not expect to be a primary focus.
@@ -1135,6 +1325,10 @@ If you do not specify a metric, Val first lists the metrics shared across your s
 ## Documentation and Examples
 
 - [SDK evaluation examples](/sdk/tutorials/specification-driven-evaluations) now show the specification-first approach — passing `specification_ids=` instead of metric names — side by side with the metric-name approach, in tabbed code blocks, on every relevant tutorial page.
+
+</Update>
+
+<Update label="2026-06-15">
 
 ## Smoother Onboarding
 
@@ -1153,6 +1347,10 @@ Getting your first [product](/concepts/product) evaluated now takes less waiting
 
 - A new [Improve Your Product with Evaluations and an AI Agent](/playbooks/improve-product-with-ai-agent) playbook walks through the full evaluate → diagnose → improve → compare loop: hand your failing evaluations to an AI coding agent using the [Galtea Agent Skill](/sdk/integrations/agent-skill) and CLI, let it propose a fix, then re-run the evaluations to prove it helped — illustrated end to end on a RAG support chatbot.
 - The [Direct Inferences & Evaluations from Platform](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) tutorial now documents the full **round-trip** for stateful multi-turn conversations: how to extract a value from one response into session metadata, and then send it back on the next turn.
+
+</Update>
+
+<Update label="2026-06-10">
 
 ## Analytics Insights
 
@@ -1209,6 +1407,10 @@ In the onboarding flow, the cURL paste step is the default view; the traditional
 - **Analytics score charts use a fixed 0–100 axis:** Score charts in the Analytics section are anchored to a 0–100 scale so visual proportions are consistent across products and time windows. Previously the axis auto-scaled to the data range, making small absolute differences appear large.
 - **List endpoints default to your organization:** Every `GET` list endpoint now scopes to the caller's organization automatically, so you no longer need to pass an organization filter to list your own data. Admins can opt into a cross-organization view with the `allOrganizations` flag.
 
+</Update>
+
+<Update label="2026-06-08">
+
 ## Galtea Assistant Redesign
 
 The Galtea AI assistant is now a **non-modal docked side panel** that sits alongside the dashboard instead of covering it. When open, the page content reflows into a true split view — the panel holds a fixed width on the right while the rest of the dashboard fills the remaining space. You can resize the split by dragging the divider. Open and close the panel from anywhere in the dashboard with **⌘K** (Mac) or **Ctrl+K** (Windows/Linux).
@@ -1241,6 +1443,10 @@ You can now cancel in-progress async jobs from both the API and the SDK. When yo
 - **Red-teaming generation handles content filters:** When a content filter blocks a generation step, the red-teaming generator now retries. If the seed prompt itself keeps triggering the filter after retries, that seed is skipped and generation continues with the remaining prompts.
 - **[Specification](/concepts/product/specification) linking documented in CLI and SDK:** The `galtea spec link-tests` and `galtea spec unlink-tests` commands and their SDK equivalents — [`galtea.specifications.link_tests()`](/sdk/api/specification/link-tests) and [`galtea.specifications.unlink_tests()`](/sdk/api/specification/unlink-tests) — are now documented in the CLI `--help` output and SDK docstrings, making them easier to discover.
 
+</Update>
+
+<Update label="2026-06-01">
+
 ## Metric Optimization Lifecycle
 
 When you optimize an [AI Evaluation metric](/concepts/metric/evaluation-types#ai-evaluation), the result now behaves like any other revision of that metric. The optimized version joins the same revision lineage as a manual "Create new revision" — so you can trace the full optimization history in the metric's revision panel and see how the judge prompt has evolved across generations.
@@ -1254,6 +1460,10 @@ The **Optimize** button now shows the correct annotation threshold. It counts on
 ## Documentation and Examples
 
 - **Direct Inference OTel collector: authentication guide updated:** The [Direct Inference OTel exporter tutorial](/sdk/tutorials/direct-inferences-and-evaluations-from-platform) now covers the required `Authorization: Bearer <Galtea-API-key>` header with four supply patterns — SDK environment variables over HTTP, SDK environment variables over gRPC, programmatic Python, and OTel Collector YAML relay. The section also documents shell-expansion pitfalls with `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, a `curl` smoke-test command for self-validation, and a note on the current gRPC TLS handshake issue with HTTP/4318 as the validated path.
+
+</Update>
+
+<Update label="2026-05-26">
 
 ## Import Langfuse Traces
 
@@ -1276,6 +1486,10 @@ See the [Model Service reference](/sdk/api/model/service) for the full API.
 - **Onboarding video on the welcome screen and Quickstart:** The product welcome screen and the [Quickstart](/quickstart) page now include an embedded walkthrough video so new users can see the end-to-end setup flow before writing any code.
 - **More accurate AI evaluation scores:** Judge prompts now produce `reason` before `score`. This chain-of-thought ordering consistently improves score quality by forcing the model to articulate its reasoning before committing to a number.
 - **Table header overflow fixed:** Long column headers — such as version hashes in the analytics comparison table — are now clipped at the cell boundary instead of visually bleeding into adjacent columns.
+
+</Update>
+
+<Update label="2026-05-18">
 
 ## Metric Optimization
 
@@ -1300,6 +1514,10 @@ Navigating away from any creation or edit form with unsaved changes now opens a 
 - **Clearer status for empty-parameter evaluations:** [Evaluations](/concepts/product/version/session/evaluation) whose required fields (such as `retrieval_context`) are empty or whitespace-only strings now resolve as `SKIPPED` upfront with a clear "missing required parameters" reason, instead of dispatching and landing as `FAILED`.
 - **CLI: background spec refresh and safer plaintext login:** The [Galtea CLI](/cli/installation) now refreshes its OpenAPI spec cache in a detached background process, so commands no longer pay the refresh latency. Logging in to a non-localhost HTTP host now requires `--insecure` to prevent accidental credential exposure over plaintext; the consent is sticky on that host so re-logins do not re-prompt.
 
+</Update>
+
+<Update label="2026-05-08">
+
 ## Specifications View Redesign
 
 The [specifications](/concepts/product/specification) list is now split into two tables: **Policies** and **Capabilities & Inabilities**. Each row shows separate **Metrics** and **Tests** columns — a green check with a count when the resource exists, or a "Missing" pill that routes you to the [test](/concepts/product/test) creation form when it does not.
@@ -1319,6 +1537,10 @@ Email two-factor authentication is now available under **Settings → Security**
 - **Language field promoted in test creation:** The Language dropdown is now visible directly in the test creation form, not only under Advanced Options.
 - **CLI via Homebrew:** The Galtea CLI is now installable via Homebrew. See the [CLI installation page](/cli/installation) for all options.
 - **Same-name metric revisions:** Creating a [metric](/concepts/metric) revision that reuses the parent's name no longer fails.
+
+</Update>
+
+<Update label="2026-05-04">
 
 ## Galtea CLI
 
@@ -1359,6 +1581,10 @@ AI-assisted product and specification generation also now respects the language 
 - **Clearer max-iterations stopping reason:** Conversations that hit the iteration cap now record a "Max iterations reached" stopping reason instead of a generic error.
 - **Updated wording:** Product creation now reads "Register product" throughout the platform.
 
+</Update>
+
+<Update label="2026-04-27">
+
 ## Metric Versioning with Evaluation Replay
 
 [Metrics](/concepts/metric) now support versioning. The new "New Revision" action on any metric opens the creation form pre-filled with the source metric's name, description, tags, evaluation type, judge prompt, [evaluation parameters](/concepts/metric/evaluation-parameters), evaluator model, and user groups. Revised metrics stay linked to their predecessor through a parent-child lineage, so you can trace the evolution of a metric over time. When a revision is created, only the direct parent is marked as legacy, allowing parallel branches from the same source.
@@ -1387,6 +1613,10 @@ Two new built-in template variables are available in [endpoint connection](/conc
 
 Evaluations that depend on [trace](/concepts/product/version/session/trace) data (`TRACES` or `TOOLS_USED` [parameters](/concepts/metric/evaluation-parameters)) now wait for traces to be ingested before running. Previously, these evaluations could execute against empty trace data when traces had not yet arrived. The platform now defers them with automatic retries, and if traces do not arrive within the retry window, the evaluations land as `SKIPPED` with an actionable reason explaining what was missing. Sessions already marked as completed are detected immediately, avoiding unnecessary waiting. No credits are consumed for skipped evaluations.
 
+</Update>
+
+<Update label="2026-04-20">
+
 ## Export Evaluation Results as CSV
 
 You can now export [evaluation](/concepts/product/version/session/evaluation) results directly from the dashboard as a CSV file. The export action appears in the row selection toolbar on the evaluation list page. With no rows selected, all evaluations matching the current filters are exported. When specific rows are selected, only those are included.
@@ -1410,6 +1640,10 @@ You can now duplicate an existing [metric](/concepts/metric) as a starting point
 - **Clearer error messages for test generation:** When [QUALITY test](/concepts/product/test/case) generation fails, the error message now includes the specific reason returned by the generator, replacing generic HTTP error responses with actionable guidance.
 - **Analytics radar chart fix:** The radar chart in the Analytics tab now works correctly when a specification section has fewer than 3 scored items. The view automatically switches to radial value cards with a tooltip explaining the minimum requirement.
 - **Smoother table text filters:** Text filter inputs across all dashboard tables no longer flash or revert while typing. Filter changes are debounced before syncing to the URL, reducing unnecessary API calls and eliminating the visible blink caused by intermediate re-renders.
+
+</Update>
+
+<Update label="2026-04-13">
 
 ## Human Annotation for All Evaluations
 
@@ -1439,6 +1673,10 @@ This release extends JSON-structured inputs across the platform.
 
 **CSV import with JSON values.** When importing test cases from CSV, the platform now detects and preserves JSON objects in the input and context columns. You no longer need to flatten structured data before uploading. For the time being, structured JSON inputs are only available for uploaded or manually created tests.
 
+</Update>
+
+<Update label="2026-04-07">
+
 ## Langfuse Integration
 
 If you already use [Langfuse](https://langfuse.com) to observe your LLM application, you can now send the same traces to Galtea for evaluation by swapping a single import. Replace `from langfuse import observe` with `from galtea.integrations.langfuse import observe`, and every span will flow to both Langfuse and Galtea simultaneously.
@@ -1463,6 +1701,10 @@ You can import the spec into Postman, Cursor, Claude, or any OpenAPI-compatible 
 - **Improved code and JSON display:** Code and JSON data across evaluation details, trace details, session details, and endpoint connection test results now render with proper formatting and syntax highlighting instead of plain preformatted text.
 - **Flexible behavior test case editing:** The input field is no longer required when editing [behavior test cases](/concepts/product/test/case), since behavior-type tests do not always need explicit input values.
 - **Specification type tooltips:** Hovering over the specification type pill (Capability, Inability, Policy) in the dashboard now shows a short description of what each type means, linking to the [Specifications documentation](/concepts/product/specification) for more detail.
+
+</Update>
+
+<Update label="2026-03-30">
 
 ## Zero-Code Trace Ingestion via OpenTelemetry
 
@@ -1498,6 +1740,10 @@ The [JSON Field Match](/concepts/metric/json-field-match-normalized) metric now 
 - **Pagination stability:** Table pagination no longer resets unexpectedly when navigating between pages via URL.
 - **Show Details navigation:** The **Show Details** action in entity tables now opens directly to the details tab.
 
+</Update>
+
+<Update label="2026-03-23">
+
 ## Specifications in Analytics
 
 The analytics dashboard now includes a dedicated [Specifications](/concepts/product/specification) section that aggregates evaluation scores per specification, giving you a clear picture of how each policy area is performing across [versions](/concepts/product/version). Specification-level radar charts let you compare coverage at a glance, and clicking any specification label filters the entire dashboard to show only [metrics](/concepts/metric) linked to that specification.
@@ -1526,6 +1772,10 @@ The documentation has been significantly expanded with new video walkthroughs an
 - **Sidebar overlay:** The navigation sidebar now overlays content on hover instead of pushing the page layout, reducing visual disruption while browsing.
 - **Form and table polish:** Clearer validation errors when switching to AI generation mode, a clear button for optional form fields, improved column width handling in tables, better form field reset behavior, and more consistent UI across the dashboard.
 
+</Update>
+
+<Update label="2026-03-16">
+
 ## Improved Golden Dataset Generation
 
 The [golden dataset generation](/concepts/product/test/quality-tests) pipeline has been redesigned. You can expect more diverse questions, more accurate source attribution, and fewer duplicated or low-quality entries in your generated test cases.
@@ -1535,6 +1785,10 @@ The [golden dataset generation](/concepts/product/test/quality-tests) pipeline h
 - **Automatic text truncation:** Long text in table cells across the dashboard is now automatically clamped to two rows. Click any truncated cell to expand and view the full content rendered as Markdown. This replaces inconsistent truncation behavior across tables and keeps the interface clean without hiding information.
 - **AI metric saving fix:** An issue that prevented non-admin users from saving [AI-generated metric](/concepts/metric/ai-generation) candidates has been resolved. All team members can now review and accept metric suggestions without encountering permission errors.
 - **Evaluation link fix:** The evaluation link generated in the SDK code snippets now navigates to the correct tab, ensuring you land on the evaluations view as expected.
+
+</Update>
+
+<Update label="2026-03-09">
 
 ## AI-Powered Metric Creation
 
@@ -1568,6 +1822,10 @@ The `CustomScoreEvaluationMetric.measure()` method now receives an optional `inf
 - **Clearer metric validation errors:** When a metric is missing required evaluation parameters, the error message now lists exactly which parameters are absent — instead of the generic "at least one is missing" message.
 - **Inference error visibility:** When a direct inference call results in an error, the error text is now displayed directly in the inference result view.
 - **Unified form components:** AI-assisted creation forms and table selection dialogs across the dashboard now share a consistent design and interaction model. This also fixes an issue where discarding all AI-generated metric candidates left the review step in a dead end with no navigation options.
+
+</Update>
+
+<Update label="2026-03-02">
 
 ## Human Evaluators
 
@@ -1614,6 +1872,10 @@ Direct inference sessions now surface more visibility into what is happening dur
 ## Documentation
 
 A new [Human Evaluation tutorial](/sdk/tutorials/human-evaluation) walks you through the full workflow — from creating a human metric and setting up user groups to annotating results in the platform. The tutorial includes step-by-step screenshots showing the metric creation form, the evaluator sidebar, and the annotation interface.
+
+</Update>
+
+<Update label="2026-02-23">
 
 ## Specifications
 
@@ -1668,6 +1930,10 @@ Add the new `{{ inference_result_id }}` placeholder to your [Endpoint Connection
 
 Demo videos are now embedded throughout the documentation — covering [test generation](/concepts/product/test), [Accuracy tests](/concepts/product/test/accuracy-tests), [Security & Safety tests](/concepts/product/test/security-tests), [Behavior tests](/concepts/product/test/behavior-tests), [endpoint connection setup](/concepts/product/endpoint-connection), and [data augmentation](/concepts/product/test/data-augmentation) — so you can see each workflow in action without leaving the docs.
 
+</Update>
+
+<Update label="2026-02-16">
+
 ## Automated Report Generation
 
 You can now export your analytics data as a comprehensive PDF report directly from the [Galtea dashboard](https://platform.galtea.ai). The report is generated automatically and includes AI-written summaries for each section — covering scope, methodology, product evaluation, and conclusions — alongside dashboard-style visualizations.
@@ -1697,6 +1963,10 @@ A new step-by-step guide walks you through the full workflow of running inferenc
 
 - **Dashboard Polish:**
   Several UI improvements including better dark mode contrast, refined Pill component styling, and a smarter toast notification system that reduces interruptions for frequent users.
+
+</Update>
+
+<Update label="2026-02-09">
 
 ## SDK & Simulation Upgrades
 
@@ -1736,6 +2006,10 @@ You can now evaluate a single inference result directly from the platform UI. Th
 - **Platform Stability:**
   General improvements to platform stability and reliability to ensure a smoother experience during heavy load.
 
+</Update>
+
+<Update label="2026-02-02">
+
 ## Evaluate Single-Turn Interactions
 
 You can now [run evaluations on specific single turns](/sdk/api/evaluation/create#evaluating-a-single-trace) (even when directly [creating an Inference Result](/sdk/api/inference-result/create-and-evaluate)), rather than being restricted to evaluating full threads or sessions. This granularity allows for more precise analysis, enabling you to pinpoint and score individual exchanges within a larger conversation context without the noise of the surrounding dialogue.
@@ -1753,6 +2027,10 @@ We've enhanced table functionality across the dashboard to improve your producti
 - **Metric Stability:** We've deployed updates to improve the consistency and reliability of several core metrics.
 - **Platform Resilience:** Significant backend optimizations have been implemented to ensure platform stability and maintain low latency, even under periods of high load.
 
+</Update>
+
+<Update label="2026-01-26">
+
 ## Run Inferences and Evaluations from the Platform
 
 You can now execute inferences and run evaluations directly from the Galtea dashboard. This new capability allows you to quickly test your [Product](/concepts/product) [Versions](/concepts/product/version) and validate performance without writing a single line of code or switching to your IDE.
@@ -1769,6 +2047,10 @@ This streamlined workflow is perfect for:
 ## General Improvements
 
 - **Bug Fixes & UX Polish:** We've addressed various minor bugs and refined the user interface to provide a smoother, more stable experience across the platform.
+
+</Update>
+
+<Update label="2026-01-19">
 
 ## Standardized Tracing with OpenTelemetry
 
@@ -1796,6 +2078,10 @@ We've improved the onboarding experience to better match your workflow:
 
 - **Enhanced Forms:** We've standardized and improved forms across the platform for better usability and a more consistent experience.
 
+</Update>
+
+<Update label="2026-01-12">
+
 ## AI-Assisted Product Onboarding
 
 Getting started with Galtea got even simpler. We've improved the [Product](/concepts/product) creation flow by simplifying the integration of AI assistance directly into the product creation form. The system helps you draft comprehensive product descriptions, capabilities, and security boundaries, ensuring your product context is perfectly optimized for our test generation engine from day one.
@@ -1820,6 +2106,10 @@ We have reorganized our documentation to improve discoverability and ease of use
 
 * **General Bug Fixes:** Addressed various minor issues to improve platform stability and performance.
 * **UI Polish:** Minor visual updates across the dashboard for a more consistent user experience.
+
+</Update>
+
+<Update label="2026-01-05">
 
 ## Enhanced Product Creation Experience
 
@@ -1851,6 +2141,10 @@ This metric automatically compares the `tools_used` against the `expected_tools`
   <img src="/images/changelog/2026-01-05_tool-correctness-metric.png" alt="Tool Correctness Metric Result" />
 </Frame>
 
+</Update>
+
+<Update label="2025-12-18">
+
 ## Full Visibility with Agent Tracing
 
 You can now add **[Traces](/concepts/product/version/session/trace)** to your [Sessions](/concepts/product/version/session) and [Inference Results](/concepts/product/version/session/inference-result). This unlocks deep observability into your AI agents, allowing you to understand exactly what they are doing at each step of execution—not just the final output.
@@ -1869,6 +2163,10 @@ With the new **[Trace Service](/sdk/api/trace/service)** in the SDK, you can vis
 
 We've also added a comprehensive guide on how to instrument your code. [Read the Tracing Tutorial](/sdk/tutorials/tracing-agent-operations) to get started.
 
+</Update>
+
+<Update label="2025-11-24">
+
 ## Granular Credit Consumption and Transparency
 
 We've updated our credit system to provide more granularity and transparency. You can now see exactly where your credits are being consumed, giving you detailed visibility into your usage patterns and helping you manage resources more effectively.
@@ -1880,6 +2178,10 @@ We've improved the overall robustness of the platform to ensure higher uptime an
 ## Improved SDK File Validation
 
 We've enhanced file validation within the SDK. When uploading files—for example, when creating a [Test](/sdk/api/test/create) using `test_file_path` or `ground_truth_file_path`—you will now receive stricter validation and clearer, more descriptive error messages to help you debug issues faster.
+
+</Update>
+
+<Update label="2025-11-17">
 
 ## Simplified and More Powerful Metric Creation with Partial Prompts
 
@@ -1902,6 +2204,10 @@ When creating [Quality Tests](/concepts/product/test/quality-tests) from the das
 We're always working to improve the core platform experience. This week's updates include:
 - **Improved Performance:** We've optimized our underlying LLM usage for better concurrency, scalability, and robustness, resulting in a faster and more reliable platform.
 - **Enhanced Email Validation:** The process for validating user emails has been made more robust to ensure better security and deliverability.
+
+</Update>
+
+<Update label="2025-11-10">
 
 ## Flexible Sign-In with Google, GitHub, and GitLab
 
@@ -1928,6 +2234,10 @@ We're bringing more transparency and efficiency to our test generation process:
 - Fixed a bug where file names from ZIP archives were not displayed correctly in the UI.
 - Resolved an issue that prevented the processing of ZIP files containing two files with the same name (e.g., `folder1/file.txt` and `folder2/file.txt`).
 
+</Update>
+
+<Update label="2025-11-03">
+
 ## A Fresh New Look for the Dashboard
 
 We've polished the dashboard with a subtle but significant UI refresh. Expect updated colors, clearer icons, and more consistent dialogs designed to create a smoother, more intuitive, and visually consistent workflow.
@@ -1939,6 +2249,10 @@ We've bolstered the platform's security with improved user authentication mechan
 ## Smarter & Faster Red Teaming Generation
 
 Creating [Red Teaming tests](/concepts/product/test/red-teaming-tests) is now better than ever. We've improved language control during generation for more robust and relevant tests, even when no specific language is provided. Plus, we've optimized the generation process for significantly faster test creation, allowing you to build robust security evaluations more efficiently.
+
+</Update>
+
+<Update label="2025-10-27">
 
 ## Introducing Partial Prompts: Create Custom Metrics Faster
 
@@ -1961,6 +2275,10 @@ Our quality generator now intelligently processes long documents, ensuring optim
 ## Platform Experience Enhancements
 
 We've also rolled out several quality-of-life improvements and bug fixes for a smoother experience. A notable update is that tables across the platform now refresh instantly after you delete an item with a right-click, making data management more fluid and intuitive.
+
+</Update>
+
+<Update label="2025-10-15">
 
 ## Define Product Behavior with Policies
 
@@ -1989,6 +2307,10 @@ We've rolled out several enhancements to improve your workflow and the platform'
 
 -   **Deletion Confirmations:** To prevent accidental data loss, the platform will now ask for confirmation before deleting key entities like Test Cases, Evaluations, and Versions.
 -   **Improved Table Experience:** The performance and user experience of data tables and their filters have been optimized for a smoother, more responsive interface.
+
+</Update>
+
+<Update label="2025-10-06">
 
 ## Platform Simplification and SDK v3.0
 
@@ -2019,6 +2341,10 @@ We've rolled out several updates to make your workflow smoother and more efficie
 ## General Improvements
 This release also includes numerous performance optimizations and minor UI/UX enhancements across the entire platform to provide a faster and more polished experience.
 
+</Update>
+
+<Update label="2025-09-29">
+
 ## Create Conversational Scenarios from Your Quality Tests
 
 You can now generate comprehensive **[Scenario Based Tests](/concepts/product/test/scenario-tests)** directly from your existing **[Quality Tests](/concepts/product/test/quality-tests)**. This powerful feature allows you to transform your single-turn, gold-standard test cases into realistic, multi-turn conversational scenarios, significantly accelerating the process of evaluating your AI's dialogue capabilities.
@@ -2030,6 +2356,10 @@ We've added the **[URL Validation](/concepts/metric/url-validation)** metric to 
 ## Platform Enhancements and Performance Boost
 
 We've rolled out major performance improvements across the platform, with a special focus on the analytics views, making them faster and more responsive. This update also includes several minor visual fixes, such as ensuring icons render correctly in different themes, to provide a smoother and more polished user experience.
+
+</Update>
+
+<Update label="2025-09-22">
 
 ## Consistent Sorting and Enhanced Navigation
 
@@ -2059,6 +2389,10 @@ The **[Misuse Resilience](/concepts/metric/misuse-resilience)** metric has been 
 
 The analytics page now includes a filter for Test Case language. This allows you to narrow down your analysis and gain more precise insights into the performance of your multilingual models.
 
+</Update>
+
+<Update label="2025-09-15">
+
 ## Confidence Scores for Generated Test Cases
 
 We're introducing confidence scores for all generated [Test Cases](/concepts/product/test/case). This new feature provides a clear indicator of the quality and reliability of each test case, helping you better understand your test suites and prioritize human review efforts. Higher scores indicate greater confidence in the test case's relevance and accuracy.
@@ -2076,6 +2410,10 @@ You can now create your own **[Custom Judges](/concepts/metric/evaluation-types#
 We've added more control and realism to the [Conversation Simulator](/concepts/product/test/case/conversation-simulator):
 - **Agent-First Interactions**: The `simulate` method now includes an `agent_goes_first` parameter, allowing you to test scenarios where the agent initiates the conversation. [See the SDK docs](/sdk/api/simulator/simulate).
 - **Selectable Conversation Styles**: When creating a [Scenario Based Test](/concepts/product/test/scenario-tests), you can now choose a conversation style (`written` or `spoken`). This influences the tone and formality of the simulated user's dialogue, enabling more realistic testing. This is available under the `strategies` parameter in the [test creation method](/sdk/api/test/create).
+
+</Update>
+
+<Update label="2025-09-08">
 
 ## More Realistic Conversation Simulations
 
@@ -2097,6 +2435,10 @@ Getting started with a new [product](/concepts/product) is now faster than ever.
 ## Enhanced Document Processing
 
 We've improved our backend for processing documents used in test generation. This enhancement leads to more accurate and relevant test cases being created from your knowledge bases, improving the overall quality of your evaluations.
+
+</Update>
+
+<Update label="2025-09-01">
 
 ## Fresh New Look: Galtea Rebranding is Live!
 
@@ -2124,6 +2466,10 @@ We've implemented more secure and robust authentication mechanisms across the pl
 
 Our document processing capabilities have been significantly improved for PDF files. The enhanced extraction algorithms now provide more accurate and comprehensive knowledge retrieval from PDF documents, making it easier to create relevant [test cases](/concepts/product/test) and evaluation scenarios from your existing documentation and knowledge bases.
 
+</Update>
+
+<Update label="2025-08-11">
+
 ## TestCase Scenarios Creation and Edition via Dashboard
 
 You can now create and edit **TestCase Scenarios** directly through the Dashboard interface. This streamlined workflow allows you to define complex multi-turn conversation scenarios without leaving the platform, making it easier to set up comprehensive testing workflows for your conversational AI systems.
@@ -2139,6 +2485,10 @@ When creating Judge metrics, you can now select from pre-built judge templates t
 ## Infrastructure Improvements for Event Resilience
 
 We've enhanced our event handling infrastructure to provide better resilience against unexpected system events. These improvements help ensure that your tests and evaluations are preserved and continue running smoothly, even during system maintenance or unexpected interruptions.
+
+</Update>
+
+<Update label="2025-08-04">
 
 ## Create Custom Judges via Your Own Prompts
 
@@ -2162,6 +2512,10 @@ We've launched the second iteration of our redesigned dashboard with a refreshed
 - **Modern Forms**: Forms have been modernized to provide a more intuitive and visually appealing user experience, as well as giving a more professional look to the Dashboard.
 
 This redesign represents our commitment to delivering a more intuitive and visually appealing user experience while maintaining the powerful functionality you rely on.
+
+</Update>
+
+<Update label="2025-07-28">
 
 ## Expanded Evaluator Model Support
 
@@ -2214,6 +2568,10 @@ This redesign represents our commitment to delivering a more intuitive and visua
 
 We've enhanced our [SDK documentation](/sdk/api/metric/create#param-evaluator-model-name) with clearer guidance on defining evaluator models for metrics, making it easier to configure and customize your evaluation workflows.
 
+</Update>
+
+<Update label="2025-07-21">
+
 ## Test Your Chatbots with Simulated Conversations
 
 It is now possible to generate tests that simulate realistic, multi-turn user interactions. Our new **[Scenario Based Tests](/concepts/product/test/scenario-tests)** allow you to define user personas and goals to evaluate how well your conversational AI handles complex dialogues.
@@ -2233,6 +2591,10 @@ We've rolled out several improvements to make metric creation and management mor
 ## Support for Larger Inputs and Outputs
 
 To better support applications that handle large documents or complex queries, we have increased the maximum character size for evaluation inputs and outputs to 250,000 characters.
+
+</Update>
+
+<Update label="2025-07-14">
 
 ## Test Your Chatbots with Realistic Conversation Simulation
 
@@ -2260,6 +2622,10 @@ Logging entire conversations is now easier and more intuitive. We've updated our
 
 See the new format in action in the **[Inference Result Batch Creation docs](/sdk/api/inference-result/create-batch)**.
 
+</Update>
+
+<Update label="2025-07-07">
+
 ## Tailor Your Red Teaming with Custom Threats
 
 You can now define your own custom threats when creating [Red Teaming Tests](/concepts/product/test/red-teaming-tests). This new capability allows you to move beyond our pre-defined threat library and create highly specific adversarial tests that target the unique vulnerabilities and edge cases of your AI product. Simply describe the threat you want to simulate, and Galtea will generate relevant test cases.
@@ -2281,6 +2647,10 @@ To improve collaboration and workflow for human annotation teams, [Test Cases](/
 - Track which test cases have been validated by a human.
 - See who performed the review, providing a clear audit trail.
 - Filter and manage your test sets with greater confidence.
+
+</Update>
+
+<Update label="2025-06-30">
 
 ## Introducing the Factual Accuracy Metric
 
@@ -2326,6 +2696,10 @@ The three main metric sources you'll see are:
 
 This transparency helps you make more informed decisions about which metrics to use for your specific evaluation needs.
 
+</Update>
+
+<Update label="2025-06-23">
+
 ## Generate Quality Tests from Examples
 
 You can now create Quality Tests directly from your own examples using the new **Few Shots** parameter. This makes it easier to tailor tests to your specific use cases and ensure your models are evaluated on the scenarios that matter most. [Learn more about test creation](/sdk/api/test/create).
@@ -2353,6 +2727,10 @@ Check it out [here](https://docs.galtea.ai/sdk/tutorials/writing-specifications)
 ## General Improvements
 
 We've made various bug fixes and UX/UI improvements across the Dashboard, SDK, and more, making your experience smoother and more reliable.
+
+</Update>
+
+<Update label="2025-06-16">
 
 ## Major Platform Overhaul
 
@@ -2402,6 +2780,10 @@ The new Galtea SDK v2 is here! It includes breaking changes to simplify workflow
 - **Single Threat per Red Teaming Test:**  
   Red Teaming Tests now only allow a single threat per test, ensuring clearer results.
 
+</Update>
+
+<Update label="2025-05-26">
+
 ## Improved Test Generation
 
 Our test generation capabilities have been significantly upgraded:
@@ -2422,6 +2804,10 @@ We're making it easier than ever to integrate Galtea into your development proce
 We've also rolled out several usability enhancements based on your feedback:
 - **Enhanced Readability in Tables:** Table cells now correctly render line breaks, making it easier to view multi-line content and detailed information at a glance.
 - **Controlled Test Case Generation:** To ensure optimal performance and manageability, the maximum number of test cases automatically generated for a single test from a knowledge base is now capped at 1000.
+
+</Update>
+
+<Update label="2025-05-19">
 
 ## Streamlined Onboarding and Quicker Starts
 
@@ -2452,6 +2838,10 @@ Clarity in collaboration is important. Now, the user who created a [Product](/co
 Working with data tables in the dashboard is now more efficient:
 - **Clear Filter Indicators:** Easily see which filters are currently applied to any table.
 - **Quick Filter Reset:** A new "Clear All Filters" button allows you to reset your view with a single click.
+
+</Update>
+
+<Update label="2025-05-12">
 
 ## New Conversation Evaluation Metrics
 
@@ -2490,6 +2880,10 @@ We've enhanced the clarity of threat selection in the Test Creation form. The se
 We've resolved several issues to ensure a smoother experience:
 - Fixed a bug that could trigger an infinite loop in the Test Cases List of the dashboard
 - Addressed multiple small UI glitches and errors throughout the platform
+
+</Update>
+
+<Update label="2025-05-05">
 
 ## Improvements in Red Teaming Tests
 
@@ -2533,6 +2927,10 @@ We've added protections to ensure your SDK integration is as smooth and reliable
 - **Test Creation Not Possible Through `.txt` Knowledge Base Files**  
   Due to a recent refactor, the creation of tests using knowledge base files with `.txt` extensions was not possible. This has been fixed and you can now create tests using `.txt` files as the knowledge base again.
 
+</Update>
+
+<Update label="2025-04-28">
+
 ## Monitoring Is Live!
 
 Real-world user interactions with your products can now be fully monitored and analyzed. Using the Galtea SDK, you can trigger evaluations in a production environment and view how different versions perform with real users. [Read more here](/sdk/tutorials/monitor-production-responses-to-user-queries).
@@ -2573,3 +2971,5 @@ We're continuously refining the platform based on your feedback. This week's imp
   <Frame>
     <img src="/images/changelog/2025-04-28_additional-filters.png" alt="Additional Filters" />
   </Frame>
+
+</Update>

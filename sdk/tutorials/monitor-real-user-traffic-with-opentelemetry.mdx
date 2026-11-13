@@ -251,6 +251,10 @@ Set these on your organization. A product can replace each one, and each product
   - Dashboard: the **OpenTelemetry** card of the **Update Organization** page. A product replaces the list in **Advanced Options** of its edit form.
   - API: `PATCH /organizations/{id}` and `PATCH /products/{id}`, field `otelVersionAttributes`.
   - CLI: `galtea organizations update` and `galtea products update`.
+- **The end user attributes:**
+  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page. A product replaces the list in **Advanced Options** of its edit form.
+  - API: `PATCH /organizations/{id}` and `PATCH /products/{id}`, field `otelEndUserAttributes`.
+  - CLI: `galtea organizations update` and `galtea products update`.
 - **The key and the key values:**
   - Dashboard: the **OpenTelemetry** card of the **Update Organization** page, for the key. **Advanced Options** of each product's edit form, for its values or its own key.
   - API: the same two endpoints, fields `otelProductKey` and `otelProductKeyValues`.
@@ -297,9 +301,9 @@ curl -X PATCH "https://api.galtea.ai/products/<product-id>" \
   -d '{"otelProductKeyValues": {"service.namespace": "checkout", "service.name": "checkout-agent"}}'
 ```
 
-Send only the fields you change. An absent field keeps its value. On a product, `null` clears a field. The organization key cannot be `null`. The same two routes set the version attributes and the span source rules of an organization and of a product. `POST /products` accepts the same fields for a new product. For version attributes, an organization sends `[]` to turn the list off, and a product sends `null` to follow the organization's list.
+Send only the fields you change. An absent field keeps its value. On a product, `null` clears a field. The organization key cannot be `null`. The same two routes set the version attributes, the end user attributes, and the span source rules of an organization and of a product. `POST /products` accepts the same fields for a new product. For version attributes, an organization sends `[]` to turn the list off, and a product sends `null` to follow the organization's list. For the end user attributes, an organization sends `[]` to remove the custom attributes, and the framework attributes stay on. A product sends `null` to follow the organization's list: a product list cannot be empty.
 
-In the dashboard, open the **OpenTelemetry** card of the **Update Organization** page, or **Advanced Options** of the product edit form. Both edit the key, the version attributes, and the span source rules. The product form also edits the key values.
+In the dashboard, open the **OpenTelemetry** card of the **Update Organization** page, or **Advanced Options** of the product edit form. Both edit the key, the version attributes, the end user attributes, and the span source rules. The product form also edits the key values.
 
 Then send traces with the attributes of the key on the resource and the facts of the agent state. This resource goes to the product above:
 
@@ -332,7 +336,7 @@ The rule has four parts:
 
 - **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
 - **`attribute`** — the span attribute that holds the reply, stored as a JSON string.
-- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one. A filter expression such as `[?(...)]` is refused, in `path` and in `predicate.path`.
 - **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the user's own message as the reply.
 
 Here is a complete rule:
@@ -368,7 +372,7 @@ The rule has the same four parts:
 
 - **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
 - **`attribute`** — the span attribute that holds the user message, stored as a JSON string.
-- **`path`** — a JSONPath into that parsed JSON that points at the input text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`path`** — a JSONPath into that parsed JSON that points at the input text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one. A filter expression such as `[?(...)]` is refused, in `path` and in `predicate.path`.
 - **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the assistant's reply as the input.
 
 Name a span your system emits once per turn. A framework that replays work, such as a durable-workflow engine, re-emits the same span many times in one trace. The earliest copy can then belong to an earlier turn, and the rule picks the wrong message. In one week of production traces, an update-handler span appeared 685 times for 225 distinct updates. The activity that saved the message appeared exactly once per message. So name the span that saves or records the message, not a handler span that a replay re-enters.

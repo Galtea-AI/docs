@@ -100,7 +100,7 @@ Through the API instead, upload each file first and send the storage URI the upl
 }
 ```
 
-Galtea reads each element of `content` on its own. A Galtea file is a `file` part whose `uri` names the key an upload returned. Galtea checks it and stores it without its upload signature. Every other element is yours and is stored as sent, such as a file URL on your own host, an `image_url` part or a `file` part with an OpenAI `file_id`. A Galtea file of another organization, or one that no longer exists, is refused with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
+Galtea reads each element of `content` on its own. A Galtea file is a `file` part whose `uri` names the key an upload returned. Galtea checks it and stores it without its upload signature. Every other element is yours and is stored as sent, such as a file URL on your own host, an `image_url` part or a `file` part with an OpenAI `file_id`. A judge reads such an element as its JSON text, in its place in the input. A Galtea file of another organization, or one that no longer exists, is refused with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
 
 `mimeType` is filled from the stored file. `filename` is filled too on Galtea Cloud, so the download offers the name you uploaded rather than a random id. A self-hosted deployment on Azure Blob Storage cannot keep that name, so send `filename` yourself there. Your own values override the filled ones, with one exception: `sizeBytes` comes back measured from the stored file, and a value you send for it is ignored. The 20 MB limit below is read from that measurement. The SDK sends `filename` and `mimeType`, read from the local file, so they are right on every deployment.
 
@@ -113,10 +113,11 @@ These limits apply to Galtea files, and each one is refused with a clear error r
 - **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
 - **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each uploaded file to your endpoint. Your own `file` parts, such as a URL on your own host, are not delivered (see [Content Parts](/concepts/product/version/session/content-parts#your-own-parts)). Without it, the run is refused rather than sent without the document.
 
-**Inline file bytes never reach a judge.** A file sent inline in a test case or a trace, as a `data:` URI of any length, reaches an LLM-as-a-judge in one of two ways:
+**Inline file bytes never reach a judge as text.** A file sent inline in a test case or a trace, as a `data:` URI of any length, reaches an LLM-as-a-judge in one of three ways:
 
 - **A text file**, such as CSV, JSON or plain text, arrives as its text, between `[inline file: <type>, <size> bytes]` and `[end of inline file]`. Galtea decides it is text from its bytes, not its declared type, and reads the `charset` it declares, UTF-8 by default. Inside JSON, including JSON written inside a reply, it arrives escaped as a JSON string. It arrives as the marker below instead when that escaping would make it over four times longer.
 - **Any other file**, such as an image or a compressed PDF, arrives as `[inline bytes dropped: <type>, <size> bytes]`.
+- **A file that Galtea stored**, because the deployment copies inline media in traces, arrives as `[File N]`. A stored image or PDF is also sent to the judge like any Galtea file, and a stored audio or other file is not (see [Content Parts](/concepts/product/version/session/content-parts#files-and-evaluation)).
 
 Metrics that compare values exactly still read the stored value.
 

@@ -22,6 +22,10 @@ RUN python scripts/run.py --embed-only
 # ─── Stage 2: Serve with Mint dev server ──────────────────────────────────────
 FROM node:24.21.0-alpine3.24 AS runtime
 
+# The base image ships musl and zlib below their fixed releases; drop this once it picks them up.
+# Naming the packages is how a fix reaches the image: the registry build cache reuses this layer until its text changes.
+RUN apk upgrade --no-cache musl musl-utils zlib
+
 WORKDIR /app
 
 # Install Mint CLI (the renamed Mintlify CLI). Even the newest mint pins
@@ -42,8 +46,11 @@ COPY <<'EOF' package.json
     "body-parser@^1": "1.20.9",
     "body-parser@^2": "2.4.0",
     "brace-expansion@^1": "1.1.20",
+    "browserslist@^4": "4.28.7",
     "esbuild": "0.28.2",
     "express-rate-limit@^8": "8.5.1",
+    "fast-uri@^3": "3.1.7",
+    "immutable@^4": "4.3.9",
     "image-size@^2": "2.0.4",
     "ip-address@^10": "10.3.1",
     "js-yaml@^4": "4.3.2",
@@ -52,6 +59,7 @@ COPY <<'EOF' package.json
     "picomatch@^4": "4.0.4",
     "re2js": "2.8.7",
     "sharp": "0.35.5",
+    "source-map-js@^1": "1.2.2",
     "zod@^4": "4.6.7"
   }
 }
@@ -64,6 +72,12 @@ RUN npm install --no-audit --no-fund
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
     /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /root/.npm
 
+# Run as the image's existing `node` user (UID 1000), numerically, so a pod can
+# enforce runAsNonRoot (Pod Security "restricted"). /app is node-owned because
+# mint writes under it (e.g. /app/.mintlify) at runtime.
+RUN chown node:node /app
+USER 1000
+
 # Pin the Mintlify client (the Next.js app `mint dev` serves). Pinning the CLI
 # does not pin it: without --client-version, every container start fetches
 # whatever client releases.mintlify.com calls latest into ~/.mintlify. Replicas
@@ -71,15 +85,16 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 # rendered by one pod requests chunks another pod 404s on ("Error loading
 # page"). With --client-version the CLI re-downloads exactly this version on
 # start, and falls back to the copy baked here if the download fails. That
-# baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000.
+# baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000
+# (HOME is /home/node).
 ENV MINT_CLIENT_VERSION=0.0.3965
-RUN mkdir -p /root/.mintlify/previews/3000 \
+RUN mkdir -p /home/node/.mintlify/previews/3000 \
   && wget -qO- "https://releases.mintlify.com/mint-${MINT_CLIENT_VERSION}.tar.gz" \
-    | tar -xz -C /root/.mintlify/previews/3000 \
-  && printf '%s' "$MINT_CLIENT_VERSION" > /root/.mintlify/previews/3000/mint/mint-version.txt
+    | tar -xz -C /home/node/.mintlify/previews/3000 \
+  && printf '%s' "$MINT_CLIENT_VERSION" > /home/node/.mintlify/previews/3000/mint/mint-version.txt
 
 # Copy the embedded docs output from the builder stage
-COPY --from=builder /docs-src/.build .
+COPY --from=builder --chown=node:node /docs-src/.build .
 
 EXPOSE 3000
 

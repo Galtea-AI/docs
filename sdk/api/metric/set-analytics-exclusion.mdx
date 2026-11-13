@@ -20,7 +20,7 @@ This changes analytics aggregation only. Existing evaluations keep their scores 
 
 ## Parameters
 <ResponseField name="metric_id" type="string" required>
-  The ID of the metric revision to exclude or include.
+  The ID of the metric revision to exclude or include. The other revisions of the metric are not changed.
 </ResponseField>
 <ResponseField name="excluded" type="bool" required>
   `True` to exclude the revision from analytics. `False` to include it again.

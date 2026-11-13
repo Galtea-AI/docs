@@ -144,6 +144,6 @@ galtea.specifications.delete(specification_id=specification.id)
 # Cleanup
 if capability_spec is not None:
     galtea.specifications.delete(specification_id=capability_spec.id)
-galtea.metrics.delete(metric_id=metric_id)
+galtea.metrics.delete(metric_id=metric.id)
 galtea.datasets.delete(dataset_id=dataset_id)
 galtea.products.delete(product_id=product_id)

@@ -92,7 +92,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 </ResponseField>
 
 <ResponseField name="inputTokens, outputTokens, cacheReadInputTokens, tokens" type="int" optional>
-  Token counts for the trace: input, output, cache-read input and total. They are `null` for a user without the `evaluation.readInference` permission.
+  Token counts for the trace: input, output, cache-read input and total. The input count includes the cache-read input, and the total is input plus output, plus the cache read when the source counted it apart from the input (a cache read above the input count). They are `null` for a user without the `evaluation.readInference` permission.
 </ResponseField>
 
 <ResponseField name="costPerInputToken, costPerOutputToken, costPerCacheReadInputToken, cost, creditsUsed" type="float" optional>
@@ -105,6 +105,10 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 
 <ResponseField name="OpenTelemetry Trace ID" type="string" optional>
   The W3C trace ID that Galtea sends to your endpoint in the `traceparent` header on this [Direct Inference](/concepts/product/endpoint-connection) turn. Galtea stores it when the turn starts. This is the OpenTelemetry trace id, not the id of this Trace, which is `id`. It lets you correlate the turn with your OTEL-instrumented service. Present on every conversation turn that Galtea generates through an HTTP endpoint connection (Direct Inference), including turns that failed. Phone and WebRTC turns do not have it.
+</ResponseField>
+
+<ResponseField name="End User" type="string" optional>
+  The customer of your agent who sent this turn. It is not a Galtea user. Read-only: OpenTelemetry ingest sets it from the spans of this trace only, so two traces of one session can name different end users. Spans that arrive later fill it while it is empty, and never change a stored value. Null when no span of the trace names one. Spans of an existing Trace, such as a Direct Inference turn, set none. A trace file import never sets it. The [session](/concepts/product/version/session) keeps the first end user of all its traces. See [End user](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).
 </ResponseField>
 
 ## Related

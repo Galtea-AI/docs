@@ -56,7 +56,7 @@ user_group = galtea.user_groups.update(
   New description for the user group.
 </ResponseField>
 <ResponseField name="all_products" type="boolean" optional>
-  Links the group to every product of the organization, current and future. A MEMBER, READER or HUMAN_EVALUATOR in the group then reaches every product.
+  Links the group to every product of the organization, current and future. A MEMBER in the group then reaches every product.
 </ResponseField>
 <ResponseField name="permissions" type="list[string] | None" optional>
   The permissions the group grants, each written `entity.action`, for example `analytics.readCoverage`. A product entry applies to the group's products, and a `metric`, `model` or `comment` entry across the organization. A list replaces the current list, so the group follows no preset, and an empty list grants nothing. Pass `None` to make the group follow the `EDITOR` preset, which grants every permission the role of its members allows. Leave it out to keep the current list. The API answers 400 for an entry that cannot be granted, for an action without the `read` of its entity, for a list with a product entry and no `product.read`, and for an entry without a read of another entity it needs, such as `analytics.read` without `metric.read`. See [permission lists](/concepts/user-group#permission-lists).

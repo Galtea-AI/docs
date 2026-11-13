@@ -39,6 +39,10 @@ You can create, view, and manage sessions programmatically using the [Galtea SDK
   The user who launched the session, read-only and set by the API. Null for a production session, which has no launching user. A session ingested from OpenTelemetry traces is production too, unless the spans name a test case; that one records the user of the API key that sent the traces.
 </ResponseField>
 
+<ResponseField name="End User" type="Text" optional>
+  The customer of your agent who held the conversation. It is not a Galtea user. Read-only: OpenTelemetry ingest sets it once, from the first trace that names an end user, and a later trace with another end user does not change it. Null when no trace names one. Only a conversation that Galtea assembles from spans takes it: spans of an existing Trace, such as a Direct Inference turn, set none. A trace file import never sets it. A session that an import created can still take it from a later OpenTelemetry batch with the same conversation key. Each [trace](/concepts/product/version/session/trace) also stores the end user of its own spans. Galtea reads the framework attributes with no setup, and your organization or product can name custom ones. See [End user](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional). Filter the list by it with `end_user` ([List Sessions](/sdk/api/session/list)).
+</ResponseField>
+
 <ResponseField name="Run" type="Run" optional>
   The [Run](/concepts/product/run) that created this session (`runId` in the API). Null for a session you log yourself: one opened via `POST /sessions` with no run id, a trace file import, or an OpenTelemetry-ingested session. You can also set it yourself: pass `runId` to `POST /sessions` to add the session to a Run you opened. The API refuses that on a production session. A production session never carries one, not even when a launch created it. This field names the creator only. A Run also reaches the sessions it scored, through its evaluations. See [The sessions of a Run](/concepts/product/run#the-sessions-of-a-run).
 </ResponseField>

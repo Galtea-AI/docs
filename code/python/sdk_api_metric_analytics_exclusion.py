@@ -37,4 +37,4 @@ try:
     metric = galtea.metrics.set_analytics_exclusion(metric_id=metric_id, excluded=False)
     # @end set_analytics_exclusion
 finally:
-    galtea.metrics.delete(metric_id=metric_id)
+    galtea.metrics.delete(metric_id=metric.id)
