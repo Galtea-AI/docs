@@ -4,6 +4,14 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="Unreleased">
+
+## Metrics score text and data files
+
+On deployments that send files to the judge, an LLM-as-a-judge metric and a classifier metric now score a Galtea file of text, such as TXT, CSV, Markdown, JSON, XML or HTML, instead of skipping the evaluation. Every LLM judge model reads the file's text, under its name and number. DeepEval-based metrics still skip a turn that carries a file. See [how judges read files](/concepts/product/dataset/test-case#file-inputs).
+
+</Update>
+
 <Update label="5.17.0" description="2026-11-13">
 
 ## An LLM Call Counts Once

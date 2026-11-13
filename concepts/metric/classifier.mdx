@@ -192,8 +192,8 @@ A new revision keeps the evaluation type of its metric, so it cannot switch a me
 
 ## Limits
 
-- **Text only**: the classifier does not read images, audio, PDFs or other files. A turn with a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host is not sent as a file: the classifier reads its entry as JSON text, in its place in the turn. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
-- **Input size**: the classifier model accepts about 32,000 tokens of conversation plus the question. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
+- **Text only**: the classifier does not read images, audio, PDFs or other binary files. It reads a text [Galtea file](/concepts/product/version/session/content-parts#galtea-files) (TXT, CSV, Markdown, JSON, XML or HTML) as its text, under the file's name and number. Any other Galtea file on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host is not sent as a file: the classifier reads its entry as JSON text, in its place in the turn. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
+- **Input size**: the classifier model accepts about 32,000 tokens of conversation plus the question. File text counts toward this limit. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
 - **Long input**: when the classifier model reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
 - **Skipped evaluations**: analytics show how many evaluations were skipped, next to the passed and not passed counts.
 - **Classifier model**: the metric stores its classifier model, such as `jev-1.13.0`. To change it, create a revision with another classifier model. Every result records the model that answered in `score_breakdown.model`. A gateway decision model answers with its base group name, so a metric on `eu.microsoft-decision-1` records `microsoft-decision-1`.
@@ -201,12 +201,12 @@ A new revision keeps the evaluation type of its metric, so it cannot switch a me
 
 ## Data processing
 
-To score a classifier metric, Galtea sends the question and the fields it names to the provider of the metric's classifier model. Files are never sent.
+To score a classifier metric, Galtea sends the question and the fields it names to the provider of the metric's classifier model. On deployments that send files to the judge, it also sends the text of each text file on those fields. Images, PDFs and other files are never sent.
 
 - **A `jev-*` model**: the data goes to TypeSafe, which processes it in the United States. See [TypeSafe legal](https://typesafe.ai/legal).
 - **Any other decision model**: the data goes to the provider that serves that model on your deployment.
 
-Where the deployment enables the [applicability check](/concepts/metric#applicability-check), the provider of the deployment's decision model also receives data for every metric that gets the check, not only for classifier metrics. That decision model is the evaluator setting `DECISION_MODEL`: a Jev version by default, or another decision model. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
+Where the deployment enables the [applicability check](/concepts/metric#applicability-check), the provider of the deployment's decision model also receives data for every metric that gets the check, not only for classifier metrics. That decision model is the evaluator setting `DECISION_MODEL`: a Jev version by default, or another decision model. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. When files are sent to the judge, it also sends the text of each text file on the input and output, and on the retrieval context when the metric scores it. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
 
 ## Create a classifier metric with the SDK
 

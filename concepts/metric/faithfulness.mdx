@@ -13,7 +13,7 @@ To compute the `faithfulness` metric, the following inputs are required:
 
 - **`input`**: The user's original prompt.
 - **`actual_output`**: The LLM-generated response.
-- **`retrieval_context`**: The retrieved passages or nodes used by the model. A Galtea file in the output of a `RETRIEVER` span reads as `[File N]`. On deployments that send files to the judge, the judge also receives the file itself, and the evaluation is skipped when the judge model cannot read that kind of file.
+- **`retrieval_context`**: The retrieved passages or nodes used by the model. A Galtea file in the output of a `RETRIEVER` span reads as `[File N]`. On deployments that send files to the judge, the judge also receives an image or a PDF as itself, and the evaluation is skipped when the judge model cannot read that kind of file. A text file reaches the judge as its text, on every judge model.
 
 ## How Is It Calculated?
 
