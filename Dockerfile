@@ -93,13 +93,6 @@ RUN mkdir -p /home/node/.mintlify/previews/3000 \
     | tar -xz -C /home/node/.mintlify/previews/3000 \
   && printf '%s' "$MINT_CLIENT_VERSION" > /home/node/.mintlify/previews/3000/mint/mint-version.txt
 
-# The client bundles esbuild 0.25.12, whose binary is built with Go 1.20.12 and carries its stdlib
-# CVEs. Replace it with the esbuild the overrides above install (0.28.2, Go 1.26).
-RUN C=/home/node/.mintlify/previews/3000/mint/node_modules \
-  && rm -rf "$C/esbuild" "$C/@esbuild/linux-x64" \
-  && cp -a node_modules/esbuild "$C/esbuild" \
-  && cp -a node_modules/@esbuild/linux-x64 "$C/@esbuild/linux-x64"
-
 # Copy the embedded docs output from the builder stage
 COPY --from=builder --chown=node:node /docs-src/.build .
 

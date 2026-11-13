@@ -23,6 +23,8 @@
   // (defaults to https://platform.galtea.ai when unset).
   const DASHBOARD_URL = "https://dev.platform.galtea.ai";
   const ASSISTANT_PATH = "/embed/assistant?embed=true";
+  // Older docs versions live under /vX.Y/ and the latest at the root; Val knows only the latest docs.
+  const OLDER_VERSION_PATH = /^\/v\d+\.\d+(\/|$)/;
 
   if (window.__galteaAssistantMounted) return;
   window.__galteaAssistantMounted = true;
@@ -35,10 +37,8 @@
   // Mintlify toggles `class="dark"` on <html> for its appearance switcher and
   // its system-preference resolver. We mirror that into the iframe so the
   // embedded React panel renders in the same mode the visitor is reading in.
-  const currentDocsTheme = () =>
-    document.documentElement.classList.contains("dark") ? "dark" : "light";
-  const iframeSrc = () =>
-    DASHBOARD_URL + ASSISTANT_PATH + "&theme=" + currentDocsTheme();
+  const currentDocsTheme = () => (document.documentElement.classList.contains("dark") ? "dark" : "light");
+  const iframeSrc = () => DASHBOARD_URL + ASSISTANT_PATH + "&theme=" + currentDocsTheme();
 
   const mount = () => {
     const styleEl = document.createElement("style");
@@ -56,8 +56,11 @@
 				html.dark button.ga-launcher:hover{box-shadow:0 0 8px 0 #3c63be,0 0 18px 0 #76a00e,0 10px 28px rgba(0,0,0,.5)}
 				html.dark .ga-label{color:#f7f6f3}
 				.ga-iframe-wrap{position:fixed;right:24px;bottom:92px;z-index:2147483600;width:min(420px,calc(100vw - 32px));height:min(640px,calc(100vh - 132px));border-radius:16px;box-shadow:0 24px 48px rgba(0,0,0,.16);overflow:hidden;background:#f7f6f3;display:none;border:1px solid #ebebeb}
-				.ga-iframe-wrap.open{display:block}
-				.ga-iframe-wrap iframe{display:block;width:100%;height:100%;border:0;background:transparent}
+				.ga-iframe-wrap.open{display:flex;flex-direction:column}
+				.ga-iframe-wrap iframe{display:block;width:100%;flex:1;min-height:0;border:0;background:transparent}
+				.ga-version-note{display:none;padding:10px 14px;font:13px/1.45 Geist,ui-sans-serif,system-ui,-apple-system,sans-serif;color:#171717;background:#fff7d6;border-bottom:1px solid #ebebeb}
+				.ga-version-note.show{display:block}
+				html.dark .ga-version-note{color:#f7f6f3;background:#3a3216;border-color:#2c2c2c}
 				html.dark .ga-iframe-wrap{background:#09090a;border-color:#2c2c2c;box-shadow:0 24px 48px rgba(0,0,0,.5)}
 			`;
     document.head.appendChild(styleEl);
@@ -65,11 +68,15 @@
     const launcher = document.createElement("button");
     launcher.className = "ga-launcher";
     launcher.setAttribute("aria-label", "Open Val");
-    launcher.innerHTML =
-      '<span class="ga-chip">' + MARK_SVG + '</span><span class="ga-label">Ask Val</span>';
+    launcher.innerHTML = '<span class="ga-chip">' + MARK_SVG + '</span><span class="ga-label">Ask Val</span>';
 
     const wrap = document.createElement("div");
     wrap.className = "ga-iframe-wrap";
+    const versionNote = document.createElement("div");
+    versionNote.className = "ga-version-note";
+    versionNote.textContent =
+      "Val answers about the latest Galtea version only. For the version on this page, ask the assistant inside your Galtea platform, or use the Galtea agent skill.";
+    wrap.appendChild(versionNote);
 
     let iframe = null;
     const ensureIframe = () => {
@@ -87,10 +94,26 @@
       // docs host.
       iframe.setAttribute(
         "sandbox",
-        "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+        "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox",
       );
       wrap.appendChild(iframe);
     };
+
+    // Mintlify navigates without a page load and the panel stays open across
+    // pages, so the note follows every history change.
+    const syncVersionNote = () => {
+      versionNote.classList.toggle("show", OLDER_VERSION_PATH.test(window.location.pathname));
+    };
+    for (const method of ["pushState", "replaceState"]) {
+      const original = history[method];
+      history[method] = function (...args) {
+        const result = original.apply(this, args);
+        syncVersionNote();
+        return result;
+      };
+    }
+    window.addEventListener("popstate", syncVersionNote);
+    syncVersionNote();
 
     const toggle = () => {
       ensureIframe();
@@ -118,10 +141,7 @@
     // product-onboarding embed for height updates).
     const themeObserver = new MutationObserver(() => {
       if (!iframe || !iframe.contentWindow) return;
-      iframe.contentWindow.postMessage(
-        { type: "galtea-theme", theme: currentDocsTheme() },
-        "*"
-      );
+      iframe.contentWindow.postMessage({ type: "galtea-theme", theme: currentDocsTheme() }, "*");
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
