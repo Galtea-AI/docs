@@ -1,7 +1,7 @@
 ---
 title: 'Setting Analytics Exclusion'
 sidebarTitle: "Set Analytics Exclusion"
-description: "Exclude or include a metric, with all its revisions, in analytics."
+description: "Exclude or include a metric revision in analytics."
 ---
 
 ## Returns
@@ -20,8 +20,8 @@ This changes analytics aggregation only. Existing evaluations keep their scores 
 
 ## Parameters
 <ResponseField name="metric_id" type="string" required>
-  The ID of any revision of the metric to exclude or include. The change applies to every revision of the metric.
+  The ID of the metric revision to exclude or include. The other revisions of the metric are not changed.
 </ResponseField>
 <ResponseField name="excluded" type="bool" required>
-  `True` to exclude the metric from analytics. `False` to include it again.
+  `True` to exclude the revision from analytics. `False` to include it again.
 </ResponseField>

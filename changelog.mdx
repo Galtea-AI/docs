@@ -74,7 +74,7 @@ On the Traces tab, a long word or a one-line JSON block with no spaces now wraps
 
 ## Every Revision of a Metric Shares Its Name
 
-All revisions of a [metric](/concepts/metric#revisions-and-analytics) now share one name, description, tags, documentation URL and evaluation type. Renaming any revision renames the metric. Deleting a metric by its ID deletes all its revisions. Deleting a revision deletes only that revision, and the metric too when no live revision is left; the active revision can be deleted on its own only when it is the last one. A new revision can no longer change the evaluation type, and an analytics exclusion now applies to every revision of the metric.
+All revisions of a [metric](/concepts/metric#revisions-and-analytics) now share one name, description, tags, documentation URL and evaluation type. Renaming any revision renames the metric. Deleting a metric by its ID deletes all its revisions. Deleting a revision deletes only that revision, and the metric too when no live revision is left; the active revision can be deleted on its own only when it is the last one. A new revision can no longer change the evaluation type. An analytics exclusion still applies to one revision: the other revisions of the metric keep counting.
 
 Through the API, `DELETE /metrics/{id}` and `DELETE /metrics/batch` with the ID of a metric's active revision now return 400 while the metric has other live revisions. Delete the other revisions first, or delete the metric by its ID.
 

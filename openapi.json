@@ -5844,7 +5844,7 @@
         "properties": {
           "excluded": {
             "type": "boolean",
-            "description": "True to exclude the metric of this revision, false to include it again"
+            "description": "True to exclude this revision, false to include it again"
           }
         },
         "required": [
@@ -7106,13 +7106,13 @@
             "nullable": true,
             "format": "date-time",
             "readOnly": true,
-            "description": "When set, results of this metric, every revision included, do not feed analytics."
+            "description": "When set, results produced by this metric revision do not feed analytics."
           },
           "excludedByUserId": {
             "type": "string",
             "nullable": true,
             "readOnly": true,
-            "description": "User who last excluded this metric from analytics."
+            "description": "User who last excluded this metric revision from analytics."
           }
         },
         "required": [
@@ -14759,7 +14759,7 @@
           {
             "name": "includeExcludedFromAnalytics",
             "in": "query",
-            "description": "Include metrics that are excluded from analytics",
+            "description": "Include metric revisions that are excluded from analytics",
             "required": false,
             "schema": {
               "type": "boolean"
@@ -21276,11 +21276,11 @@
               "items": {
                 "type": "string"
               },
-              "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metrics excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
+              "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
               "maxItems": 25
             },
             "required": false,
-            "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metrics excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
+            "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
             "style": "form",
             "explode": true,
             "name": "failedSpecificationIds",
@@ -28299,10 +28299,10 @@
           {
             "schema": {
               "type": "boolean",
-              "description": "Include evaluations whose metric is excluded from analytics. Omit or pass false to hide them."
+              "description": "Include evaluations whose metric revision is excluded from analytics. Omit or pass false to hide them."
             },
             "required": false,
-            "description": "Include evaluations whose metric is excluded from analytics. Omit or pass false to hide them.",
+            "description": "Include evaluations whose metric revision is excluded from analytics. Omit or pass false to hide them.",
             "name": "includeExcludedFromAnalytics",
             "in": "query"
           },
@@ -32350,8 +32350,8 @@
         "tags": [
           "metrics"
         ],
-        "summary": "Get the analytics impact of a metric",
-        "description": "Count the results and products affected if the metric of this revision is excluded from analytics. The count covers every revision of the metric. A caller limited to the products its user groups grant gets counts for those products only. The exclusion itself applies to every product of the organization.",
+        "summary": "Get the analytics impact of a metric revision",
+        "description": "Count the results and products affected if this metric revision is excluded from analytics. A caller limited to the products its user groups grant gets counts for those products only. The exclusion itself applies to every product of the organization.",
         "security": [
           {
             "bearerAuth": []
@@ -32421,8 +32421,8 @@
         "tags": [
           "metrics"
         ],
-        "summary": "Include or exclude a metric from analytics",
-        "description": "Excluding a metric removes every result of every revision of it from analytics scores and coverage. It does not delete or change any result.",
+        "summary": "Include or exclude a metric revision from analytics",
+        "description": "Excluding a revision removes every result produced by it from analytics scores and coverage. Other revisions of the metric keep counting. It does not delete or change any result.",
         "security": [
           {
             "bearerAuth": []

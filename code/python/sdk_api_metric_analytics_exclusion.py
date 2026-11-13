@@ -1,7 +1,7 @@
 """
 SDK API: Metric Analytics Exclusion
-Demonstrates how to check the impact of excluding a metric from analytics,
-then exclude and restore it.
+Demonstrates how to check the impact of excluding a metric revision from
+analytics, then exclude and restore it.
 """
 
 from datetime import datetime

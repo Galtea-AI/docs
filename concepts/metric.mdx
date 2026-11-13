@@ -67,15 +67,15 @@ flowchart TD
 
 A metric has one active revision. Creating a revision marks the active revision as `Legacy`, also when you start the new revision from an older one. All revisions of a metric share its name, description, tags, documentation URL and evaluation type. Renaming any revision renames the metric, and a new revision cannot change the evaluation type. Deleting a metric by its ID deletes all its revisions. Deleting a revision deletes only that revision, with its evaluations and specification links, and the metric too when it has no live revision left. You can delete the active revision on its own only when it is the last revision of the metric. In the dashboard, deleting a metric deletes all its revisions.
 
-Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude the metric. Exclusion applies to the whole metric: every revision, the newest included.
+Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it. An exclusion applies to one revision: the other revisions of the metric keep counting, and analytics still show one line for the metric. Use it, for example, to drop the results of a bad run on an older revision.
 
-After you save a revision, the dashboard asks whether to exclude the metric, and shows how many results and products the exclusion affects. A user limited to the products their user groups grant sees counts that cover only those products, but the exclusion applies to every product. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting every result of the metric, the new revision's included.
+After you save a revision, the dashboard shows how many results and products the earlier revision affects. A user limited to the products their user groups grant sees counts that cover only those products, but the exclusion applies to every product. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
 
 You can reverse this decision from the metric's actions menu. Exclusion does not delete or change any evaluation. Each evaluation keeps its score, reason, and metric revision.
 
-The metric list hides the revisions of an excluded metric by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. To inspect earlier revisions, open **Filters** and turn on **Include legacy**. Add the **Analytics** column from the **Columns** menu to see whether each metric is `Included` or `Excluded`.
+The metric list hides excluded revisions by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. To inspect earlier revisions, open **Filters** and turn on **Include legacy**. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
 
-When a product has excluded results, the Details view of its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded metrics do not appear in the Analytics metric filter because they contribute no scores to that page. The page's **Last Successful** date still counts their evaluations, because it reports when an evaluation last ran.
+When a product has excluded results, the Details view of its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no scores to that page. The page's **Last Successful** date still counts their evaluations, because it reports when an evaluation last ran.
 
 ## Pass threshold
 

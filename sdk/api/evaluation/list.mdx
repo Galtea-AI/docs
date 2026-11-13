@@ -66,7 +66,7 @@ evaluations = galtea.evaluations.list(session_id=session_id)
   The ID or IDs of the [Runs](/concepts/product/run) that launched the evaluations to retrieve. A monitor-dispatched evaluation belongs to no run, so it never matches.
 </ResponseField>
 <ResponseField name="include_excluded_from_analytics" type="bool" default="False">
-  Keyword-only. Include evaluations whose metric is excluded from analytics. These results keep their score and reason, but they do not feed any analytics number. See [Metrics](/concepts/metric).
+  Keyword-only. Include evaluations whose metric revision is excluded from analytics. These results keep their score and reason, but they do not feed any analytics number. See [Metrics](/concepts/metric).
 </ResponseField>
 <ResponseField name="score_gt" type="float" default="None">
   Keyword-only. Keep evaluations whose judge score is greater than this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
