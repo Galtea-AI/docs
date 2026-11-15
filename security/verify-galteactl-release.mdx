@@ -1,0 +1,62 @@
+---
+title: "Verify a galteactl release"
+description: "Check the signature of a galteactl binary with Galtea's public key, and read its software bill of materials."
+icon: "file-signature"
+---
+
+## Overview
+
+`galteactl` is the program that runs the install steps of a self-hosted or private Galtea deployment. Every release has three things you can check:
+
+- A **signature** of each binary, made with the same key that signs Galtea's container images.
+- A **signature** of `SHA256SUMS`, the file that lists the checksum of every other release file.
+- A **software bill of materials (SBOM)** for each binary: an SPDX JSON file that lists the Go modules the binary holds.
+
+The install tool already checks the checksum of the binary against the lock file of your delivery package. This page is for a person who also wants to check the signature.
+
+## Requirements
+
+- cosign 3.0 or later. The signature files use the bundle format of cosign 3.
+- The AWS CLI and the read key profile of your delivery package guide (`galtea-artifacts` below), to copy the files. The read key cannot list the folder, so each file is copied by its exact name.
+- `jq`, to read the SBOM.
+
+## The public key
+
+Save this key as `image-signing.pub`. The same file is in each delivery package as `policy/image-signing.pub`. Compare the two before you trust either.
+
+```text
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7fG9qQZ+DndffVmQPaZT5/jIg8Uu
+OVy5xcVBKSkk7xmsR/HzUC+4FWhsm/OJmUSxNY7oYnSev7pq2Cb1P07Bzw==
+-----END PUBLIC KEY-----
+```
+
+## Verify a binary
+
+Set the release (for example `0.14.0`) and the platform of your machine (`linux_amd64`, `linux_arm64`, `darwin_amd64` or `darwin_arm64`).
+
+```bash
+V=0.14.0
+P=linux_amd64
+mkdir -p /tmp/gctl-$V && cd /tmp/gctl-$V
+for f in "galteactl_$P" "galteactl_$P.sigstore.json" "galteactl_$P.spdx.json" SHA256SUMS SHA256SUMS.sigstore.json; do
+  aws s3 cp --profile galtea-artifacts "s3://galtea-delivery-packages/galteactl/$V/$f" .
+done
+cosign verify-blob --key image-signing.pub --bundle "galteactl_$P.sigstore.json" "galteactl_$P"
+cosign verify-blob --key image-signing.pub --bundle SHA256SUMS.sigstore.json SHA256SUMS
+sha256sum -c --ignore-missing SHA256SUMS
+```
+
+Expected output: `Verified OK` twice, then `galteactl_linux_amd64: OK` and `galteactl_linux_amd64.spdx.json: OK`. If a command prints anything else, do not run the binary, and write to [support@galtea.ai](mailto:support@galtea.ai).
+
+## Read the SBOM
+
+```bash
+jq -r '.packages[] | "\(.name) \(.versionInfo)"' "galteactl_$P.spdx.json" | sort
+```
+
+Each line is one Go module that the binary holds, with its version. Use the list to match the binary against your vulnerability scanner.
+
+<Note>
+  The signature proves that a Galtea release job made the file. The signing key lives in AWS KMS and never leaves it. The signature goes to the public Sigstore transparency log, as the signatures of Galtea's container images do.
+</Note>

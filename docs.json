@@ -166,6 +166,7 @@
             "pages": [
               "security/roles-and-permissions",
               "security/data-region",
+              "security/verify-galteactl-release",
               {
                 "group": "SAML SSO",
                 "icon": "building-lock",
