@@ -14,6 +14,10 @@ The docs site now keeps the docs of every supported Galtea version from 5.10 on.
 
 On deployments that send files to the judge, an LLM-as-a-judge metric and a classifier metric now score a Galtea file of text, such as TXT, CSV, Markdown, JSON, XML or HTML, instead of skipping the evaluation. Every LLM judge model reads the file's text, under its name and number. DeepEval-based metrics still skip a turn that carries a file. See [how judges read files](/concepts/product/dataset/test-case#file-inputs).
 
+## Analytics coverage follows the coverage permission
+
+A user whose group does not list `analytics.readCoverage` on a product no longer receives the test-case coverage of its Analytics Details through `GET /analytics/coverage`, and the dashboard hides it. `galtea analytics get-coverage` refuses such a user, and the Analytics export leaves coverage out and keeps the scores. `GET /analytics` still returns the coverage to anyone who can see Analytics. `galtea analytics get-version-summary` reads the average score per version and the count of excluded results. See [Roles and permissions](/security/roles-and-permissions).
+
 </Update>
 
 <Update label="5.17.0" description="2026-11-13">

@@ -2475,6 +2475,107 @@
           "latestVersion"
         ]
       },
+      "AnalyticsSharedCoverageSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "The candidate test cases under the filters"
+          },
+          "used": {
+            "type": "integer",
+            "description": "The test cases at least one listed version was evaluated against"
+          },
+          "ignored": {
+            "type": "integer",
+            "description": "`total` minus `used`"
+          }
+        },
+        "required": [
+          "total",
+          "used",
+          "ignored"
+        ]
+      },
+      "AnalyticsVersionCoverage": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string"
+          },
+          "versionName": {
+            "type": "string"
+          },
+          "coverage": {
+            "type": "number",
+            "description": "The share, 0 to 100, of the product reachable test cases this version has a scored evaluation for, all time and unfiltered. Only on `total`."
+          },
+          "usedTestCaseCount": {
+            "type": "integer",
+            "description": "The distinct test cases this version was evaluated against under the filters. Absent on a group with no `sharedCoverage`."
+          },
+          "sharedCoverage": {
+            "type": "number",
+            "description": "`usedTestCaseCount` as a share, 0 to 100, of the `used` test cases. Absent with `usedTestCaseCount`."
+          }
+        },
+        "required": [
+          "versionId",
+          "versionName"
+        ]
+      },
+      "AnalyticsCoverage": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "versions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnalyticsVersionCoverage"
+                  }
+                },
+                "sharedCoverage": {
+                  "$ref": "#/components/schemas/AnalyticsSharedCoverageSummary"
+                }
+              },
+              "required": [
+                "type",
+                "versions"
+              ]
+            },
+            "description": "Per test type, as the coverage fields of `averages.groups` on `GET /analytics`. `sharedCoverage` is absent for a group with no test-case coverage, such as PRODUCTION."
+          },
+          "total": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsVersionCoverage"
+            },
+            "description": "Over every test type, as the coverage fields of `averages.total` on `GET /analytics`"
+          },
+          "sharedCoverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsSharedCoverageSummary"
+              },
+              {
+                "description": "Over every test type, as `averages.sharedCoverage` on `GET /analytics`"
+              }
+            ]
+          }
+        },
+        "required": [
+          "groups",
+          "total",
+          "sharedCoverage"
+        ]
+      },
       "AnalyticsInferenceResultValues": {
         "type": "object",
         "properties": {
@@ -2637,6 +2738,69 @@
         "required": [
           "rows",
           "total"
+        ]
+      },
+      "AnalyticsVersionAverage": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string"
+          },
+          "versionName": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number",
+            "description": "The average score, 0 to 100"
+          }
+        },
+        "required": [
+          "versionId",
+          "versionName",
+          "score"
+        ]
+      },
+      "AnalyticsVersionSummary": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "scores": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnalyticsVersionAverage"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "scores"
+              ]
+            },
+            "description": "Per test type, the mean of the metric scores of each version, as `averages.groups[].scores` on `GET /analytics` without coverage"
+          },
+          "total": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsVersionAverage"
+            },
+            "description": "Per version, the mean of the test-type averages, as `averages.total` on `GET /analytics` without coverage"
+          },
+          "excludedResultCount": {
+            "type": "integer",
+            "description": "The results these numbers leave out, as `excludedResultCount` on `GET /analytics`"
+          }
+        },
+        "required": [
+          "groups",
+          "total",
+          "excludedResultCount"
         ]
       },
       "CostOverview": {
@@ -24134,7 +24298,7 @@
           "analytics"
         ],
         "summary": "Export analytics data",
-        "description": "Export analytics data for a product with optional filtering. The report holds latency, cost and tokens only for a caller with `evaluation.readInference` on the product. See [Platform Overview](https://docs.galtea.ai/introduction).",
+        "description": "Export analytics data for a product with optional filtering. The report holds latency, cost and tokens only for a caller with `evaluation.readInference` on the product, and test-case coverage only for a caller with `analytics.readCoverage` on it. See [Platform Overview](https://docs.galtea.ai/introduction).",
         "operationId": "exportAnalytics",
         "x-stability-level": "alpha",
         "x-cli-name": "export",
@@ -26334,6 +26498,380 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AnalyticsInference"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/version-summary": {
+      "get": {
+        "operationId": "getAnalyticsVersionSummary",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Get the average score per version and the excluded-result count for a product",
+        "description": "The average score per version, per test type and pooled over the test types, and the count of results these numbers leave out, with the same filters as `GET /analytics`. Needs `product.read` and `analytics.read` on the product, else 403; 404 for a missing product.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get-version-summary",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The product to read"
+            },
+            "required": true,
+            "description": "The product to read",
+            "name": "productId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by version IDs"
+            },
+            "required": false,
+            "description": "Filter by version IDs",
+            "style": "form",
+            "explode": true,
+            "name": "versionIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by test IDs"
+            },
+            "required": false,
+            "description": "Filter by test IDs",
+            "style": "form",
+            "explode": true,
+            "name": "testIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by metric IDs"
+            },
+            "required": false,
+            "description": "Filter by metric IDs",
+            "style": "form",
+            "explode": true,
+            "name": "metricIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Narrow results to the metrics these specifications link; combines with metricIds as an intersection."
+            },
+            "required": false,
+            "description": "Narrow results to the metrics these specifications link; combines with metricIds as an intersection.",
+            "style": "form",
+            "explode": true,
+            "name": "specificationIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by language codes"
+            },
+            "required": false,
+            "description": "Filter by language codes",
+            "style": "form",
+            "explode": true,
+            "name": "languages",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Start date for filtering (epoch milliseconds). Ranges wider than 1830 days (5 years) are rejected with 400."
+            },
+            "required": false,
+            "description": "Start date for filtering (epoch milliseconds). Ranges wider than 1830 days (5 years) are rejected with 400.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "End date for filtering (epoch milliseconds)"
+            },
+            "required": false,
+            "description": "End date for filtering (epoch milliseconds)",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "When set, returns only production (true) or only development (false) data. Omit to include both."
+            },
+            "required": false,
+            "description": "When set, returns only production (true) or only development (false) data. Omit to include both.",
+            "name": "isProduction",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The version summary of the product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsVersionSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/coverage": {
+      "get": {
+        "operationId": "getAnalyticsCoverage",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Get the test-case coverage per version for a product",
+        "description": "The test cases each version was evaluated against, per test type and over every test type, with the same filters as `GET /analytics`. Needs `analytics.readCoverage` on the product, on top of `product.read` and `analytics.read`, else 403; 404 for a missing product.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get-coverage",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The product to read"
+            },
+            "required": true,
+            "description": "The product to read",
+            "name": "productId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by version IDs"
+            },
+            "required": false,
+            "description": "Filter by version IDs",
+            "style": "form",
+            "explode": true,
+            "name": "versionIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by test IDs"
+            },
+            "required": false,
+            "description": "Filter by test IDs",
+            "style": "form",
+            "explode": true,
+            "name": "testIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by metric IDs"
+            },
+            "required": false,
+            "description": "Filter by metric IDs",
+            "style": "form",
+            "explode": true,
+            "name": "metricIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Narrow results to the metrics these specifications link; combines with metricIds as an intersection."
+            },
+            "required": false,
+            "description": "Narrow results to the metrics these specifications link; combines with metricIds as an intersection.",
+            "style": "form",
+            "explode": true,
+            "name": "specificationIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by language codes"
+            },
+            "required": false,
+            "description": "Filter by language codes",
+            "style": "form",
+            "explode": true,
+            "name": "languages",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Start date for filtering (epoch milliseconds). Ranges wider than 1830 days (5 years) are rejected with 400."
+            },
+            "required": false,
+            "description": "Start date for filtering (epoch milliseconds). Ranges wider than 1830 days (5 years) are rejected with 400.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "End date for filtering (epoch milliseconds)"
+            },
+            "required": false,
+            "description": "End date for filtering (epoch milliseconds)",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "When set, returns only production (true) or only development (false) data. Omit to include both."
+            },
+            "required": false,
+            "description": "When set, returns only production (true) or only development (false) data. Omit to include both.",
+            "name": "isProduction",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The coverage of the product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsCoverage"
                 }
               }
             }
