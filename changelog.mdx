@@ -14,6 +14,10 @@ In **Is it getting better or worse?** on the product Summary, the range button n
 
 For an EU-only organization, the evaluation of a classifier metric, its "Test on a sample" preview and the applicability check now run on an EU deployment of the decision model. A classifier metric whose decision model has no EU deployment ends SKIPPED, and its preview fails, with no call to another region. See [Data Region](/security/data-region).
 
+## `galtea docs` Shows the Docs of Your Platform
+
+The new `galtea docs` command prints the docs address for your platform version, the `llms.txt` index, and the platform version. It works without a login: then it prints https://docs.galtea.ai and a notice on stderr. Use it to point a coding agent at the right docs.
+
 ## Read and Change a Metric and Its Revisions Separately (Alpha)
 
 The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with three changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. And a lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead.

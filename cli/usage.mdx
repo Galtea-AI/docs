@@ -86,6 +86,18 @@ galtea help
 
 For parameter, request body, and response shape details, see the [**REST API**](/api-reference) tab.
 
+### Finding the docs of your platform
+
+Run `galtea docs` to see where the docs of your platform version live.
+
+```bash
+galtea docs
+```
+
+The command prints the `Platform:` version, the `Docs:` address of that version, and the `Index:` address (the `llms.txt` file that lists the pages of the newest docs). To read a page, find it in the index, then open its path under the `Docs:` address. A page added after your platform version is not under that address and answers 404.
+
+You do not need to log in. The command prints https://docs.galtea.ai and a notice on stderr with the reason when it cannot ask the platform: you are not logged in, the profile you chose with `-p` or `RSH_PROFILE` has no API key or does not exist, or the platform refuses the key, cannot be reached, answers with an error or an answer the CLI cannot read, or is older than this command.
+
 ### Getting new commands
 
 The CLI does not download its commands from the API. Each CLI version has the commands of the [Galtea API](/api-reference) release it was built with. So one CLI version always offers the same commands, and a script that works today keeps working until you upgrade.
@@ -117,7 +129,7 @@ A deprecated command or flag no longer shows in `--help`, but it keeps working u
 
 ### Version checks
 
-The CLI asks the Galtea platform if it serves your CLI version. It asks at `galtea login`, and before a command at most once a day. It also asks again right after you update the CLI.
+The CLI asks the Galtea platform if it serves your CLI version. It asks at `galtea login`, and at most once a day before a command that runs an API operation, such as `galtea products list`. It also asks again right after you update the CLI.
 
 - **The platform cannot serve your CLI version.** This happens when the CLI is newer than the platform, or when the platform no longer supports its major version. The command stops with exit code `10` before it sends its request. The message names the command of each install tool (Homebrew, APT, DNF and pip) that installs a matching CLI, and links to [Install an older version](/cli/installation#install-an-older-version).
 - **Your CLI version has an end date.** A warning names the date and the update command of each install method. The command runs.
@@ -125,7 +137,7 @@ The CLI asks the Galtea platform if it serves your CLI version. It asks at `galt
 
 The warning and the notice print only on the run that asks, so you see them at most once a day. If the platform cannot answer, the command runs.
 
-If `galtea login` finds a CLI version the platform cannot serve, it does not save the key and exits with code `10`. Install a matching CLI, then log in again. The commands that report on the platform itself, such as `galtea health`, `galtea build-info` and `galtea platform-compatibility`, skip the check, so they still run on a blocked CLI.
+If `galtea login` finds a CLI version the platform cannot serve, it does not save the key and exits with code `10`. Install a matching CLI, then log in again. The commands that report on the platform itself, such as `galtea health`, `galtea build-info`, `galtea platform-compatibility` and `galtea docs`, skip the check, so they still run on a blocked CLI.
 
 ### Hand it to your coding agent
 

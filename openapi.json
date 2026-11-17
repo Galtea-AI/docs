@@ -12782,6 +12782,20 @@
           "majors"
         ]
       },
+      "PlatformDocs": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Docs of this platform release; the bare docs root on a development or preview build. The `llms.txt` at the docs root lists the pages of the newest docs: open the path of a page under this address. A page added after this release answers 404 here.",
+            "example": "https://docs.galtea.ai/v5.12"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
       "PlatformCompatibility": {
         "type": "object",
         "properties": {
@@ -12791,6 +12805,9 @@
             "description": "Platform release this API was built for. Absent on a development or preview build.",
             "example": "5.12.0"
           },
+          "docs": {
+            "$ref": "#/components/schemas/PlatformDocs"
+          },
           "sdk": {
             "$ref": "#/components/schemas/ClientCompatibility"
           },
@@ -12799,6 +12816,7 @@
           }
         },
         "required": [
+          "docs",
           "sdk",
           "cli"
         ]
@@ -29461,7 +29479,7 @@
         "operationId": "getPlatformCompatibility",
         "tags": [],
         "summary": "Platform compatibility",
-        "description": "The platform release this API runs, the latest SDK and CLI releases built with it, and the SDK and CLI major versions it supports, so a client can tell whether it is compatible. Requires authentication; open to every authenticated user.",
+        "description": "The platform release this API runs, the address of its docs, the latest SDK and CLI releases built with it, and the SDK and CLI major versions it supports, so a client can tell whether it is compatible. Requires authentication; open to every authenticated user.",
         "security": [
           {
             "bearerAuth": []
