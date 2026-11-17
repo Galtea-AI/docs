@@ -3,6 +3,7 @@ name: fix-docs
 description: Audit and fix documentation - prose pages, code snippets, or both - against the actual codebase implementation
 argument-hint: "[focus-area]"
 model: sonnet
+disable-model-invocation: true
 ---
 
 _Classify every discrepancy using code evidence. Never guess Category A/B/C: if the source of truth is unclear, flag it as a question for the user rather than fixing the wrong layer._

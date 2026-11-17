@@ -1,0 +1,397 @@
+---
+title: 'Send OpenTelemetry Traces to Galtea'
+description: "Configure an OpenTelemetry exporter or Collector to reach Galtea's public OTel endpoint: endpoint, authentication, and how spans map to Span records."
+icon: "tower-cell"
+---
+
+import OtelRoutingAttributes from '/v5.17/snippets/otel-routing-attributes.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/sdk/tutorials/send-opentelemetry-traces-to-galtea).
+</Warning>
+
+Galtea exposes a public [OpenTelemetry](https://opentelemetry.io/) (OTel) endpoint. OTel is the open standard for emitting traces. The endpoint is an OTLP collector, where OTLP is the OTel export protocol. Send your traces there to enable two use cases:
+
+- **Create production sessions from real traffic.** Uncorrelated spans become production [Sessions](/v5.17/concepts/product/version/session) that [Monitors](/v5.17/concepts/product/monitor) evaluate automatically. Spans that name a test case become a non-production session instead, which no Monitor scores. See [Monitor Real User Traffic via OpenTelemetry](/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+- **Enrich existing Galtea Traces.** Spans correlated to a [Trace](/v5.17/concepts/product/version/session/trace) become [Span](/v5.17/concepts/product/version/session/span) records on it. [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists) explains how a span names its Trace.
+
+The endpoint, authentication, and exporter configuration on this page are the same for both.
+
+## Endpoint and authentication
+
+Configure your OTel exporter to send traces to the Galtea collector. Every request must carry an `Authorization: Bearer <Galtea-API-key>` header — without it, the gateway returns `401 Unauthorized` before the request reaches the collector.
+
+All examples below use the Galtea platform hostname: `otel.platform.prod-main.galtea.ai`.
+
+<Accordion title="Using a dedicated tenant deployment?">
+  If your organization has a private Galtea deployment, replace the hostname with your tenant-specific endpoint:
+
+  ```
+  otel.platform.<TENANT>.galtea.ai
+  ```
+
+  Your Galtea account team will provide the exact hostname during onboarding.
+</Accordion>
+
+## Configure your exporter
+
+<Tabs>
+  <Tab title="Environment variables">
+    The OpenTelemetry SDK reads endpoint and headers from environment variables. Use shell substitution to expand `${GALTEA_API_KEY}` *before* the value is stored in `OTEL_EXPORTER_OTLP_TRACES_HEADERS`:
+
+    <Tabs>
+      <Tab title="HTTP (port 4318)">
+        ```bash
+        export GALTEA_API_KEY="gsk_..."
+        export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel.platform.prod-main.galtea.ai:4318/otel/traces"
+        export OTEL_EXPORTER_OTLP_TRACES_HEADERS="Authorization=Bearer ${GALTEA_API_KEY}"
+        ```
+
+        The same `${GALTEA_API_KEY}` syntax works in a `docker-compose.yml` `environment:` block, but only when `GALTEA_API_KEY` is set in the shell that runs Compose or in a `.env` file Compose loads. Docker Compose substitutes `${...}` from those sources when it renders the config. It does not read another entry in the same `environment:` block. If the variable is unset there, the exporter receives the literal string `${GALTEA_API_KEY}` and the gateway returns `401 Unauthorized`.
+
+        <Note>
+          Use `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` (the per-signal variant), not `OTEL_EXPORTER_OTLP_ENDPOINT`. The base variable auto-appends `/v1/traces` to the URL, but the Galtea collector expects the `/otel/traces` path.
+        </Note>
+      </Tab>
+
+      <Tab title="gRPC (port 4317)">
+        The header variable is reused — only the endpoint, protocol, and port change:
+
+        ```bash
+        export GALTEA_API_KEY="gsk_..."
+        export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://otel.platform.prod-main.galtea.ai:4317"
+        export OTEL_EXPORTER_OTLP_TRACES_PROTOCOL="grpc"
+        export OTEL_EXPORTER_OTLP_TRACES_HEADERS="Authorization=Bearer ${GALTEA_API_KEY}"
+        ```
+
+        <Note>
+          Older deployments may reject the gRPC TLS handshake with `missing selected ALPN property`. This affects modern gRPC clients that strictly enforce ALPN (originally surfaced with grpc-go ≥ 1.67, and reproducible from `grpcio` too). It is a platform-side NLB configuration that is being rolled out — if you encounter it, use the HTTP/4318 endpoint until your environment is updated.
+        </Note>
+      </Tab>
+    </Tabs>
+
+    <Warning>
+      The OTel exporter does **not** interpolate placeholders inside `OTEL_EXPORTER_OTLP_TRACES_HEADERS` — it sends the value verbatim. Exporting `Authorization=Bearer $GALTEA_API_KEY` without shell expansion (for example, single-quoted, or written into a `.env` file that your runtime loads without expanding it) literally sends the string `$GALTEA_API_KEY` and the gateway returns `401 Unauthorized`. Ensure the expansion happens at export time, not later.
+    </Warning>
+  </Tab>
+
+  <Tab title="Python code">
+    If you would rather configure the exporter in code, build the `OTLPSpanExporter` directly and read the API key from the environment at runtime. The exporter sends the header value exactly as provided — the `f"Bearer {galtea_api_key}"` formatting happens once at startup, so there is no ambiguity about when the key is substituted.
+
+    <Tabs>
+      <Tab title="HTTP (port 4318)">
+```python
+import os
+
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+# Read the Galtea API key from the environment at runtime.
+# The exporter will send it as `Authorization: Bearer <key>` on every request.
+galtea_api_key = os.environ.get("GALTEA_API_KEY")
+if not galtea_api_key:
+    raise ValueError("GALTEA_API_KEY environment variable is not set")
+
+exporter = OTLPSpanExporter(
+    endpoint="https://otel.platform.prod-main.galtea.ai:4318/otel/traces",
+    headers={"Authorization": f"Bearer {galtea_api_key}"},
+)
+
+# Register the exporter without clobbering a provider another library may have
+# already installed — e.g. `opentelemetry-bootstrap` auto-instrumentation (set up
+# in step 2 above) or the Galtea SDK. `set_tracer_provider()` is a silent no-op if
+# a real provider is already active, so only create one when the active provider is
+# still the default proxy; otherwise attach the exporter to the existing provider.
+provider = trace.get_tracer_provider()
+if isinstance(provider, trace.ProxyTracerProvider):
+    provider = TracerProvider()
+    trace.set_tracer_provider(provider)
+
+provider.add_span_processor(BatchSpanProcessor(exporter))
+```
+      </Tab>
+
+      <Tab title="gRPC (port 4317)">
+        Use the gRPC exporter from `opentelemetry.exporter.otlp.proto.grpc` and point it at port 4317 (no URL path):
+
+```python
+import os
+
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+# Read the Galtea API key from the environment at runtime.
+# The exporter will send it as `Authorization: Bearer <key>` on every request.
+galtea_api_key = os.environ.get("GALTEA_API_KEY")
+if not galtea_api_key:
+    raise ValueError("GALTEA_API_KEY environment variable is not set")
+
+# gRPC exporter: the endpoint is `host:port` (no URL path), with TLS enabled.
+# gRPC metadata keys must be lowercase, so the header is `authorization`.
+exporter = OTLPSpanExporter(
+    endpoint="otel.platform.prod-main.galtea.ai:4317",
+    insecure=False,
+    headers=(("authorization", f"Bearer {galtea_api_key}"),),
+)
+
+# Register the exporter without clobbering a provider another library may have
+# already installed — e.g. `opentelemetry-bootstrap` auto-instrumentation (set up
+# in step 2 above) or the Galtea SDK. `set_tracer_provider()` is a silent no-op if
+# a real provider is already active, so only create one when the active provider is
+# still the default proxy; otherwise attach the exporter to the existing provider.
+provider = trace.get_tracer_provider()
+if isinstance(provider, trace.ProxyTracerProvider):
+    provider = TracerProvider()
+    trace.set_tracer_provider(provider)
+
+provider.add_span_processor(BatchSpanProcessor(exporter))
+```
+
+        <Note>
+          Older deployments may reject the gRPC TLS handshake with `missing selected ALPN property`. This affects modern gRPC clients that strictly enforce ALPN (originally surfaced with grpc-go ≥ 1.67, and reproducible from `grpcio` too). It is a platform-side NLB configuration that is being rolled out — if you encounter it, use the HTTP/4318 exporter until your environment is updated.
+        </Note>
+      </Tab>
+    </Tabs>
+  </Tab>
+
+  <Tab title="OTel Collector">
+    If you already run your own OpenTelemetry Collector, configure it to forward the `traces` pipeline to Galtea. Choose the outbound protocol that suits your deployment:
+
+    <Tabs>
+      <Tab title="HTTP (port 4318)">
+        ```yaml
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+
+        processors:
+          batch:
+            timeout: 1s
+            send_batch_size: 512
+
+        exporters:
+          otlphttp/galtea:
+            # Galtea expects /otel/traces, NOT the OTLP default /v1/traces.
+            traces_endpoint: https://otel.platform.prod-main.galtea.ai:4318/otel/traces
+            headers:
+              Authorization: "Bearer ${env:GALTEA_API_KEY}"
+            compression: gzip
+
+        service:
+          pipelines:
+            traces:
+              receivers: [otlp]
+              processors: [batch]
+              exporters: [otlphttp/galtea]
+        ```
+      </Tab>
+
+      <Tab title="gRPC (port 4317)">
+        ```yaml
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+
+        processors:
+          batch:
+            timeout: 1s
+            send_batch_size: 512
+
+        exporters:
+          otlp/galtea:
+            endpoint: otel.platform.prod-main.galtea.ai:4317
+            tls:
+              insecure: false
+            headers:
+              Authorization: "Bearer ${env:GALTEA_API_KEY}"
+            compression: gzip
+
+        service:
+          pipelines:
+            traces:
+              receivers: [otlp]
+              processors: [batch]
+              exporters: [otlp/galtea]
+        ```
+      </Tab>
+    </Tabs>
+
+    <Warning>
+      `${env:GALTEA_API_KEY}` is the OpenTelemetry Collector's **own** environment-variable interpolation syntax — it is resolved by the Collector itself when it loads the config. This is different from the shell `${GALTEA_API_KEY}` syntax used in the SDK env-var tabs (which is resolved by the shell at export time). Using shell syntax in a Collector config (or Collector syntax in a shell export) will send a literal, unexpanded string and the gateway will return `401 Unauthorized`.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Verify your key and endpoint
+
+A quick way to confirm the header is being applied correctly is to POST an empty payload and inspect the status code:
+
+```bash
+curl -sS -w 'HTTP %{http_code}\n' -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${GALTEA_API_KEY}" \
+  -d '{"resourceSpans":[]}' \
+  https://otel.platform.prod-main.galtea.ai:4318/otel/traces
+# Expect: HTTP 200 with an empty-success body — Galtea's gateway returns {"partialSuccess":{}}
+# Without the Authorization header: HTTP 401 — "Provide a valid galtea API key token"
+```
+
+## How span content maps to Span records
+
+When a span becomes a [Span](/v5.17/concepts/product/version/session/span) record — whether it **enriches an existing trace** or is **assembled into a production conversation** — its input and output are filled **per field**, using the first source that provides a value:
+
+1. **`galtea.span.*` explicit attributes** — full control, always wins.
+2. **`gen_ai.*` GenAI semantic conventions** — the OpenTelemetry standard for LLM telemetry.
+3. **Recognized managed-platform span shapes** — platform-specific formats Galtea knows.
+4. **A configured span-source rule** — `otelInputSourceRule` or `otelOutputSourceRule` on the Version, the Product, or the organization, which reads the field out of a named non-LLM span. See [Recover the turn input from a non-LLM span](/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+
+A **turn's** input and output follow a different order, because a turn has many spans: a configured source rule decides the field, else the turn's single root span, else the earliest input and the latest output. Only an input that carries a user message counts, so an empty value such as `{}` or `[]` never becomes the turn input. A configured rule that fires on no span of the turn leaves that field empty; it never falls back. See [Monitor real user traffic](/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#what-you-get).
+
+If you set no attributes, spans are still ingested. A span type Galtea does not recognize is also ingested: Galtea normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
+
+The **span type** follows its own order, because only `galtea.span.type` is a Galtea attribute:
+
+1. **`galtea.span.type`** — always wins.
+2. **The span kind your platform already declares** — MLflow's `mlflow.spanType`, OpenLLMetry's `traceloop.span.kind`, or a span shape that names the kind by itself.
+3. **`gen_ai.operation.name`** — the OpenTelemetry GenAI operation, such as `chat` or `embeddings`. With none, OpenLLMetry's older `llm.request.type`, such as `chat` or `completion`.
+4. **`SPAN`** — when nothing above names a kind.
+
+So a span imported from an instrumented platform is typed without any Galtea attribute: an MLflow `RETRIEVER` span becomes a `RETRIEVER` span, which is what Galtea reads retrieval context from. A vendor word Galtea spells differently still maps, so MLflow's `LLM` becomes `GENERATION`.
+
+<Note>
+  These keys had different names before version 5.0.0, and Galtea still reads the old ones. See
+  [Dataset, Trace, and Span Renames](/v5.17/sdk/migration-guides/entity-renames) if your collector already
+  sends them.
+</Note>
+
+<Tabs>
+  <Tab title="Galtea span attributes">
+    | Attribute Key | Type | Maps To | Description |
+    |---|---|---|---|
+    | `galtea.span.type` | `string` | `type` | Span type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. Any other value is normalized to one of these types instead of being rejected, and your original label is kept in `metadata` under `galtea.span.original_type`. |
+    | `galtea.span.description` | `string` | `description` | Human-readable description of the operation. Max 1MB. |
+    | `galtea.span.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10MB. |
+    | `galtea.span.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10MB. |
+    | `galtea.span.error` | `string` | `error` | Error message. Takes precedence over OTel span status error. |
+    | `galtea.span.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 10MB. |
+    | `galtea.trace.id` | `string` | `inferenceResultId` | Links the span to a Trace that already exists. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists). |
+  </Tab>
+  <Tab title="OTel GenAI conventions">
+    No Galtea attributes needed. When `galtea.span.input` / `galtea.span.output` are not set, input and output are filled from the OpenTelemetry [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) in any of these forms:
+
+    - `gen_ai.input.messages` / `gen_ai.output.messages` (the current conventions)
+    - the legacy `gen_ai.prompt` / `gen_ai.completion` attributes
+    - the GenAI content span events
+    - the flattened `gen_ai.prompt.<N>.role` / `.content` / `.tool_calls.<M>.*` and `gen_ai.completion.<N>.*` attributes, rebuilt into a message list in index order
+
+    `gen_ai.operation.name` sets the span type when you send no `galtea.span.type`: `chat`, `text_completion` and `generate_content` become `GENERATION`, `embeddings` becomes `EMBEDDING`, `execute_tool` becomes `TOOL`, and `create_agent` / `invoke_agent` become `AGENT`. With no `gen_ai.operation.name`, OpenLLMetry's older `llm.request.type` sets it: `chat` and `completion` become `GENERATION`, and `embedding` becomes `EMBEDDING`.
+
+    On an `execute_tool` span, or any span typed `TOOL`, send `gen_ai.tool.name` as well. The conventions name that span `execute_tool get_weather`, and Galtea stores the span name as the tool name. So without the attribute the tool reads as `execute_tool get_weather`, and a `tool_correctness` metric never matches it against `get_weather`. With it, the span takes the tool name, and the original span name stays in `metadata` under `galtea.span.original_name`.
+
+    `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` give Galtea the call's token counts. See [Token usage and cost](#token-usage-and-cost) below.
+
+    <Tip>
+      If your system is already instrumented with plain OpenTelemetry GenAI conventions, input, output and span type map with **zero** Galtea-specific attributes.
+    </Tip>
+  </Tab>
+  <Tab title="Managed platforms">
+    For managed platforms, Galtea recognizes some span shapes automatically, with no configuration needed: platforms whose telemetry carries the abraxas span-event format (such as Mistral's agent platform), platforms instrumented with [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) (recognized from MLflow's own `mlflow.*` span attributes), and apps instrumented with [OpenLLMetry](https://github.com/traceloop/openllmetry) (recognized from its `traceloop.*` span attributes).
+
+    OpenLLMetry's `@workflow`, `@agent`, `@task` and `@tool` decorators record the function's arguments and return value in `traceloop.entity.input` and `traceloop.entity.output`, which Galtea stores as the span's input and output. A call with one positional argument and no keyword argument, such as `chat(message)`, stores that argument. A call with no argument, or whose one argument is `None` or an empty string, stores no input, so the turn reads its input from a child span. Any other call, including one with a single keyword argument such as `chat(message="hi")`, stores the `{"args": [...], "kwargs": {...}}` object as OpenLLMetry wrote it. So when the workflow receives the user message and returns its reply as text, the root `@workflow` span supplies the turn's input and output. For any other return value, see [What you get](/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#what-you-get) for the span the turn reads instead. A `@tool` span is named after its tool, from `gen_ai.tool.name` or, on an older SDK, `traceloop.entity.name`.
+
+    These shapes also set the **span type**. MLflow's `mlflow.spanType` maps onto the Galtea span type (`RETRIEVER`, `TOOL`, `CHAIN`, `AGENT` and `EMBEDDING` map directly; `LLM` and `CHAT_MODEL` become `GENERATION`), and an abraxas LLM-call span becomes a `GENERATION`. OpenLLMetry's `traceloop.span.kind` maps `agent` to `AGENT`, `tool` to `TOOL`, and `workflow` and `task` to `CHAIN`. MLflow's `UNKNOWN` and OpenLLMetry's `unknown` name no kind, so a span carrying one falls through to the next source in the order above.
+  </Tab>
+</Tabs>
+
+These OTel fields are mapped **automatically for every span**, whichever source above you use:
+
+- **`span.name`** → `name`
+- **`startTimeUnixNano` / `endTimeUnixNano`** → `startTime` / `endTime` + `latencyMs` (computed)
+- **`span.status`** → `error` (fallback when `galtea.span.error` is not set; only for `STATUS_CODE_ERROR`)
+- **`parentSpanId`** → `parentTraceId` (parent-child hierarchy)
+
+All remaining unmapped span attributes are collected into the `metadata` field, so no data is lost.
+
+## Token usage and cost
+
+Galtea reads the token counts your spans report and adds them up per turn. Send them with the OpenTelemetry GenAI keys:
+
+| Attribute Key | Type | Description |
+|---|---|---|
+| `gen_ai.usage.input_tokens` | `int` | Input (prompt) tokens the call consumed, cached input included. |
+| `gen_ai.usage.output_tokens` | `int` | Output (completion) tokens the call produced. |
+| `gen_ai.usage.cache_read.input_tokens` | `int` | The part of the input tokens read from the provider's prompt cache. |
+
+The older names `gen_ai.usage.prompt_tokens`, `gen_ai.usage.completion_tokens` and `gen_ai.usage.cache_read_input_tokens` work too. When a span carries both names, the current one wins.
+
+The input count includes the cached tokens, as in the OpenTelemetry GenAI conventions, OpenAI and Gemini. A span's `tokens` is its input plus its output, so the cache counts once. When a span reports more cached tokens than input tokens, its source counted the cache apart: its `tokens` then adds the cached tokens, Galtea keeps both counts as sent, and it marks the span with `galtea.span.cache_read_above_input` in its metadata.
+
+A turn's `inputTokens`, `outputTokens` and `tokens` count each LLM call once, so a turn that makes three LLM calls reports the three calls added together. A framework span can wrap the provider span of a call and report the same usage. Galtea then counts the span below and skips the one above. A span counts its input (cached input included) and its output only when no span below it in the same turn reports a non-zero value there. A span whose children report nothing counts all it reported, and a child that reports only its output hides only the output of the span above. A span that reports no usage adds nothing, and a span below it still hides the usage above. Galtea compares spans of one turn only: a parent and a child on two turns both count. Send no usage at all and the turn keeps what Galtea already had: nothing when no Model is linked to the Version, or the estimate Galtea derived from the turn text when one is.
+
+Galtea also recognizes the usage a managed platform reports in its own format. MLflow Tracing's `mlflow.chat.tokenUsage` works with no Galtea attribute. When a span carries both, the `gen_ai.usage.*` keys win, field by field.
+
+**Cost** is set per span. Each LLM span is priced at the per-token price of the [Model](/v5.17/concepts/model) that answered the call (see [Model](#model) below), and keeps that price if the Model price changes later. The cached input tokens take the Model's cache-read price, or its input price when it has none, and the rest of the input takes the input price:
+
+```
+cost = (input − cached input) × input price + cached input × cache-read price + output × output price
+```
+
+For example, a `gpt-4o` call with 10,000 input tokens, 8,000 of them cached, and 500 output tokens costs $0.020. A span with more cached tokens than input tokens has all its input at the input price, plus its cached tokens at the cache-read price. A span that names no model is priced at the Model linked to the Version. A span whose model matches no Model, or a Model with no price, has no cost rather than a cost of zero. The turn's `cost` is the sum of the costs of the spans it counts, so a turn that calls two models costs each call at its own price. A span that counts only part of its usage is priced again for that part, at the price it was stored with. When the turn's spans use different prices, the turn shows no per-token price. Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn, so send `cost` to keep your own figure.
+
+You can send the usage on the framework span, the provider span or both: the call counts once.
+
+The **Where does the cost come from?** card of the product Analytics **Summary** splits this cost by model, version or end user (`galtea analytics get-cost-breakdown`). Each LLM call counts once, as it does in the turn, under the model its span names, or the Version's model when it names none. The part of a turn's cost that its spans do not carry, and a turn with no LLM span that reports a cost or tokens, count under the Version's model. A turn that reports neither adds nothing. Grouping by end user needs the [end user](/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional) on your spans.
+
+A reported count replaces one Galtea estimated earlier: your own figure is the accurate one. A cost you reported yourself is kept, and the new counts do not replace it: Galtea recomputes only a cost it derived from the counts and the Model price, never a different figure you set. Spans of a turn may arrive in several export batches, and Galtea counts the turn again over all its stored spans each time. A batch that brings a span below one that already reported usage takes over that count, so the total can also fall to the real spend. Re-sending the same spans changes nothing.
+
+## Model
+
+Galtea records which model answered each LLM call. It reads the first of these keys that the span carries:
+
+| Attribute Key | Type | Description |
+|---|---|---|
+| `gen_ai.response.model` | `string` | The model the provider says answered the call. |
+| `gen_ai.request.model` | `string` | The model the call asked for. |
+
+MLflow Tracing's `mlflow.llm.model` and the Mistral `llm_call_details` event work with no Galtea attribute. A Langfuse file import reads each generation's model too.
+
+The span shows that name as its model. When a [Model](/v5.17/concepts/model) of your organization, or a global Model, has the same name (case does not matter), Galtea also links the span to it. When none does, Galtea tries the `gen_ai.request.model` name, then each name without its provider prefix (`openai/gpt-4o` becomes `gpt-4o`), and links the first one that a Model has. Your organization's Model wins over a global one of the same name. So to use a price you agreed with a provider, create a Model in your organization with the same name and your prices: the span cost and the cost breakdown then use them. The link is made when the span is stored, so a Model you add later does not link spans that are already stored. Deleting a Model keeps the link, so a span can link to a deleted Model. The span page then shows the name with no link. A name that matches no Model is still shown.
+
+<Note>
+  **Retrieval context (RAG):** to record what your system retrieved, type a span as `RETRIEVER` and put the retrieved data in its output (for example via `galtea.span.output`). This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans, and the output has no required shape.
+</Note>
+
+<Warning>
+  OpenInference (`input.value`) does **not** populate input/output yet. Its data is still stored in the span's `metadata` field, so nothing is lost, but evaluations that read the span input and output will not see it.
+</Warning>
+
+## Attributes that route a conversation
+
+The keys above, except `galtea.trace.id`, fill a Span record. The keys below decide where Galtea stores the spans.
+
+<OtelRoutingAttributes />
+
+[Monitor Real User Traffic via OpenTelemetry](/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry) walks through the full setup, step by step.
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Monitor Real User Traffic via OpenTelemetry" icon="satellite-dish" href="/v5.17/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry">
+    Turn your live traffic's traces into production sessions that Monitors evaluate.
+  </Card>
+  <Card title="W3C Trace Context Propagation" icon="tower-broadcast" href="/v5.17/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation">
+    Attach OTel spans to the test runs Galtea triggers via Direct Inference.
+  </Card>
+</CardGroup>

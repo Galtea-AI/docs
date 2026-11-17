@@ -1,0 +1,172 @@
+---
+title: 'Human Evaluation'
+description: 'Set up user groups, create human evaluation metrics, and let your team manually review and score AI outputs'
+icon: 'user-pen'
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.11. [Read this page in the latest version](/sdk/tutorials/human-evaluation).
+</Warning>
+
+## What is Human Evaluation?
+
+Human Evaluation lets your team **manually review and score AI outputs**. Instead of an LLM judge, evaluations enter a `PENDING_HUMAN` status and wait for a human annotator to submit a score through the dashboard.
+
+It is especially useful when you need subjective judgment, domain expertise, or a human-in-the-loop quality gate that automated scoring cannot provide.
+
+## How It Works
+
+1. **Create a user group** — organize the team members who will review outputs
+2. **Link products to the group** — choose which products the group members can review
+3. **Create a Human Evaluation metric** — route evaluations to your group instead of an LLM judge
+4. **Run evaluations** — evaluations enter `PENDING_HUMAN` status
+5. **Annotate in the dashboard** — group members review outputs and submit scores
+
+<video
+  controls muted playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/human-evaluation-walkthrough.mp4"
+></video>
+
+## Step 1: Create a User Group
+
+[User Groups](/v5.11/concepts/user-group) organize evaluators and control who can score evaluations for specific metrics. Only an OWNER or ADMIN can create a group or change its users. Any user who may edit a metric can link a group to that metric.
+
+```python
+user_group = galtea.user_groups.create(
+    name="quality-reviewers-" + run_identifier,
+    description="Team responsible for reviewing output quality",
+)
+```
+
+You can also create groups from the dashboard: navigate to your organization's **Groups** tab.
+
+## Step 2: Add Users to the Group
+
+Link users by their user IDs. Users in the group will see pending evaluations for linked metrics in their **Human Evaluations** dashboard page. A READER or HUMAN_EVALUATOR also sees only the evaluations of the products their groups grant.
+
+```python
+galtea.user_groups.link_users(
+    user_group_id=user_group_id,
+    user_ids=[user_id_1],
+)
+```
+
+<Tip>
+  You can find user IDs in the dashboard under **Settings > Members**, or by using the organization members API.
+</Tip>
+
+## Step 3: Link Products to the Group
+
+A READER or HUMAN_EVALUATOR sees only the products that one of its groups links. Link the products that the group must review. You can also create the group with `all_products=True` to link every product of the organization, current and future.
+
+```python
+galtea.user_groups.link_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_1, product_id_2],
+)
+```
+
+You can also link products from the dashboard: open the group and use its **Products** tab, or set the products (or **All products**) in the group's create and edit forms.
+
+## Step 4: Create a Human Evaluation Metric
+
+Create a metric with the **Human Evaluation** type and link it to your user group. When evaluations run against this metric, they enter `PENDING_HUMAN` status and appear in the linked group members' dashboards. A metric with no linked group reaches nobody, so always link at least one group before running evaluations against it. A READER or HUMAN_EVALUATOR in that group also needs a group that links the evaluation's product.
+
+### Option A: From the Dashboard
+
+Go to the **[Metrics creation](https://platform.galtea.ai/metric-new)** form and configure:
+
+- **Evaluation Type** — Select **Human Evaluation**
+- **[User Groups](/v5.11/concepts/user-group)** — Assign one or more user groups
+- **Evaluation Parameters** — Choose which parameters (Input, Expected Output, Actual Output, etc.) annotators will see
+- **Evaluation Guidelines** — Write the criteria annotators should follow when scoring
+
+### Option B: From the SDK
+
+```python
+metric = galtea.metrics.create(
+    name="domain-expert-review-" + run_identifier,
+    source="human_evaluation",
+    judge_prompt="Review the assistant's response for accuracy and helpfulness. Score 1 if the response is correct and useful, 0 if it contains errors or is unhelpful.",
+    evaluation_params=["input", "actual_output", "expected_output"],
+    user_group_ids=[user_group_id],
+    description="Domain expert review of response quality",
+)
+
+# Link the metric to the user group
+galtea.user_groups.link_metrics(
+    user_group_id=user_group_id,
+    metric_ids=[metric.id],
+)
+```
+
+## Step 5: Run Evaluations
+
+Run evaluations using the SDK or from the dashboard just like any other metric. The only difference is that each evaluation will enter `PENDING_HUMAN` status instead of being scored by an LLM.
+
+Link the metric and a [Dataset](/v5.11/concepts/product/dataset) to a [Specification](/v5.11/concepts/product/specification) once (see [Writing Specifications](/v5.11/sdk/tutorials/writing-specifications)), create a [Version](/v5.11/concepts/product/version) for the build you want reviewed, then let `galtea.evaluations.run()` do the rest: it resolves the specifications, runs your product on every [Test Case](/v5.11/concepts/product/dataset/test-case), and submits the results for review. A specification missing either its metrics or a dataset is skipped silently, so the run evaluates nothing.
+
+```python
+# Simulate your product's response
+def your_product_function(user_message: str) -> str:
+    return f"Model response to: {user_message}"
+
+
+# One call resolves the specifications, their datasets and metrics, runs your product on
+# every test case, and submits the results. Since the metric source is human_evaluation,
+# each evaluation lands in PENDING_HUMAN instead of running an LLM judge.
+result = galtea.evaluations.run(version_id=version_id, agent=your_product_function)
+
+print(f"Submitted evaluations for {result['testCaseCount']} test cases")
+```
+
+See also [Evaluating Conversations](/v5.11/sdk/tutorials/evaluating-conversations) for multi-turn reviews, [Run Dataset-Based Evaluations](/v5.11/sdk/tutorials/run-dataset-based-evaluations) when you need per-test-case control, or [Direct Inferences and Evaluations from the Platform](/v5.11/sdk/tutorials/direct-inferences-and-evaluations-from-platform).
+
+## Step 6: Annotate in the Dashboard
+
+Navigate to the **Human Evaluations** page in the sidebar. The **Evaluate** tab opens on the next pending evaluation and reserves it for you, so no one else in your group gets the same one. Review the conversation and context, submit a score, optionally add a reason, and click **Save & Next**. Pick **Incorrect**, **Partially correct** or **Correct** (stored as 0, 0.5 or 1), or switch to **Percentage** or **Fraction** for any other score from 0 to 1. **Skip** gives the evaluation back to the group; you see it again after the others.
+
+To back your score with a phrase of the conversation, select it and click the evidence icon next to it, then write a note. The evidence is saved at the end of the reason, under **Evidence from the conversation**, so `human_reason` returns it too. The **Evidence** button next to **Reason** shows how many you added and lists them, and you can edit or remove each one.
+
+Each evaluation has its own URL, so a reload or a second browser tab reopens the one you are scoring. To bring a reviewer in, send them the link to the **Human Evaluations** page: it opens on their next evaluation. The **Pending** and **Submitted** tabs list the evaluations; **Evaluate** and **Re-evaluate** open one in the **Evaluate** tab.
+
+## Managing Groups
+
+### Update a Group
+
+```python
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    name="senior-quality-reviewers-" + run_identifier,
+    description="Senior team for quality reviews",
+)
+```
+
+### Remove Users or Metrics
+
+```python
+galtea.user_groups.unlink_users(
+    user_group_id=user_group_id,
+    user_ids=[user_id_1],
+)
+```
+
+```python
+galtea.user_groups.unlink_metrics(
+    user_group_id=user_group_id,
+    metric_ids=[metric_id_2],
+)
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Evaluation Types" icon="layer-group" href="/v5.11/concepts/metric/evaluation-types">
+    Understand AI Evaluation, Human Evaluation, and Self-Hosted scoring.
+  </Card>
+  <Card title="User Group Concept" icon="users" href="/v5.11/concepts/user-group">
+    Learn more about user groups and their properties.
+  </Card>
+</CardGroup>
+

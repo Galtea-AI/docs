@@ -1,0 +1,53 @@
+---
+title: "Registration"
+description: "Create your Galtea account and sign in"
+icon: "user-plus"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/registration).
+</Warning>
+
+## Create Your Account
+
+Sign up at [platform.galtea.ai](https://platform.galtea.ai/) — registration is open and takes less than a minute.
+
+<img src="/images/login.png" alt="Galtea sign-in page" style={{ borderRadius: '0.5rem', maxWidth: '350px', display: 'block', margin: '0 auto' }} />
+
+## Sign-In Methods
+
+<CardGroup cols={2}>
+
+<Card title="Email & Password" icon="envelope">
+  Create an account with your email address and a password.
+</Card>
+
+<Card title="Google" icon="google" iconType="brands">
+  Sign in with your Google account.
+</Card>
+
+<Card title="GitHub" icon="github" iconType="brands">
+  Sign in with your GitHub account.
+</Card>
+
+<Card title="GitLab" icon="gitlab" iconType="brands">
+  Sign in with your GitLab account.
+</Card>
+
+<Card title="SAML SSO" icon="building-lock" href="/v5.13/security/saml-sso">
+  Sign in through your organization's identity provider. See the [SAML SSO guide](/v5.13/security/saml-sso) to configure it.
+</Card>
+
+</CardGroup>
+
+## Two-Factor Authentication
+
+If you enable email two-factor authentication from **Settings → Security**, every email/password sign-in is followed by a one-time 6-digit code sent to your inbox. Enter the code on the prompt that appears immediately after sign-in to complete the session. SAML SSO and OAuth (Google, GitHub, GitLab) sign-ins are not subject to this prompt — your identity provider is treated as the second factor. API keys are also unaffected: they are pre-issued credentials and continue to work without an additional code.
+
+## Next Steps
+
+Once you're signed in, follow the [Quickstart](/v5.13/quickstart) to register your first product and run an evaluation.
+
+## Need Help?
+
+If you run into any issues during registration or sign-in, reach out to [support@galtea.ai](mailto:support@galtea.ai).

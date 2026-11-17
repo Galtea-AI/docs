@@ -1,0 +1,426 @@
+---
+title: 'Monitor Real User Traffic via OpenTelemetry'
+description: "Send your live traffic's OpenTelemetry traces to Galtea to create production sessions that Monitors evaluate automatically, or mark a conversation as a test case."
+icon: "satellite-dish"
+---
+
+import OtelRoutingAttributes from '/v5.15/snippets/otel-routing-attributes.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+</Warning>
+
+If your AI system serves real users and emits [OpenTelemetry](https://opentelemetry.io/) (OTel) traces, export them to Galtea. OTel is the open standard for emitting traces. Galtea assembles the spans into production [Sessions](/v5.15/concepts/product/version/session) with conversation turns, and [Monitors](/v5.15/concepts/product/monitor) evaluate those sessions automatically. Spans that name a [Test Case](/v5.15/concepts/product/dataset/test-case) open a development session instead, which no Monitor scores.
+
+<Note>
+  This page is about real production traffic. To attach OTel spans to the test runs Galtea triggers via Direct Inference, see [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists) and [W3C Trace Context Propagation](/v5.15/sdk/tutorials/direct-inferences-and-evaluations-from-platform#option-3-w3c-trace-context-propagation).
+</Note>
+
+## Prerequisites
+
+- A [Product](/v5.15/concepts/product) in Galtea. A [Version](/v5.15/concepts/product/version) too, if you route by version ID.
+- A Galtea API key.
+- Your system emits OpenTelemetry traces.
+
+Galtea stores each conversation under a Product and one of its Versions. So after you connect the endpoint, steps 2 to 4 answer three questions in order: which product, which version, and which conversation. [How Galtea Routes a Trace](#how-galtea-routes-a-trace) lists every attribute and rule in one place.
+
+<Steps>
+  <Step title="Send your traces to Galtea" id="send-your-traces-to-galtea">
+    Point your OTel exporter or Collector at Galtea's public OTel endpoint. [Send OpenTelemetry Traces to Galtea](/v5.15/sdk/tutorials/send-opentelemetry-traces-to-galtea) covers the endpoint, the `Authorization: Bearer <API key>` requirement, the exporter and Collector configuration, and a curl check to verify your key.
+  </Step>
+
+  <Step title="Name the product" id="name-the-product">
+    Galtea needs to know which [Product](/v5.15/concepts/product) the spans belong to. You name it with a **resource attribute**. A resource attribute describes the whole telemetry source, not a single span. So you can set it once on your own OTel Collector, even when a managed platform emits the spans and you cannot edit them. Galtea validates it against the organization of the API key you authenticate with.
+
+    Skip this step if you name the Version by its ID in the next step. A Version ID already names its product.
+
+    <Tabs>
+      <Tab title="By product ID">
+        Set `galtea.product.id` to the ID of your product.
+
+        ```yaml
+        # Add this to the Collector config from the "Send OpenTelemetry Traces to Galtea" setup page.
+        # The otlp receiver, the batch processor, and the otlphttp/galtea exporter
+        # are defined there; here you only add the resource/galtea processor and
+        # reference it in the traces pipeline.
+        processors:
+          resource/galtea:
+            attributes:
+              - key: galtea.product.id
+                value: "<your-product-id>"
+                action: upsert
+
+        service:
+          pipelines:
+            traces:
+              receivers: [otlp]
+              processors: [resource/galtea, batch]
+              exporters: [otlphttp/galtea]
+        ```
+      </Tab>
+      <Tab title="By resource attributes">
+        Your telemetry may carry no Galtea ID, but it often carries standard resource attributes such as `service.name`. Your organization names these attributes once (the product key), and each product stores its own values. Galtea then routes a resource to the product whose values it carries. A new organization uses `service.name`.
+
+        ```bash
+        export OTEL_RESOURCE_ATTRIBUTES="service.name=checkout-agent"
+        ```
+
+        [Route Traces to a Product by Resource Attributes](#route-traces-to-a-product-by-resource-attributes) shows how to set the key and the values.
+      </Tab>
+    </Tabs>
+
+    When a resource carries both, `galtea.product.id` wins.
+  </Step>
+
+  <Step title="Name the version" id="name-the-version">
+    Galtea also needs the [Version](/v5.15/concepts/product/version) of that product. You name it with resource attributes too, in the same `resource/galtea` processor. Pick one of three options.
+
+    <Tabs>
+      <Tab title="By version ID">
+        Set `galtea.version.id` to the ID of a Version you created. It names the product too, so the previous step is not needed.
+
+        ```yaml
+        processors:
+          resource/galtea:
+            attributes:
+              - key: galtea.version.id
+                value: "<your-version-id>"
+                action: upsert
+
+        service:
+          pipelines:
+            traces:
+              receivers: [otlp]
+              processors: [resource/galtea, batch]
+              exporters: [otlphttp/galtea]
+        ```
+
+        Every change to your agent then needs a new Version and a new ID in this configuration.
+      </Tab>
+      <Tab title="By facts">
+        Set one `galtea.version.fact.<key>` attribute for each [fact](/v5.15/concepts/product/version#version-facts) of your agent state. The text after the prefix is the fact key. Galtea finds the Version of the product that holds exactly these facts, and creates the product's next Version when none does. So a release or a model change needs no configuration edit in Galtea.
+
+        A fact is text. An integer is sent as text and accepted. A decimal number, a boolean, a list, or a null value makes the facts invalid, so quote `"0.7"` in the Collector configuration: an unquoted `0.7` is sent as a decimal number.
+
+        ```yaml
+        processors:
+          resource/galtea:
+            attributes:
+              # The product, from the previous step.
+              - key: galtea.product.id
+                value: "<your-product-id>"
+                action: upsert
+              - key: galtea.version.fact.release
+                from_attribute: service.version
+                action: upsert
+              - key: galtea.version.fact.model
+                value: "gpt-4o"
+                action: upsert
+              - key: galtea.version.fact.temperature
+                value: "0.7"
+                action: upsert
+        ```
+
+        Add `resource/galtea` to the traces pipeline as in the previous step. Without a Collector, set the same attributes in your OTel SDK environment. Percent-encode commas, equals signs, and spaces in a value.
+
+        ```bash
+        export OTEL_RESOURCE_ATTRIBUTES="galtea.product.id=<your-product-id>,galtea.version.fact.model=gpt-4o,galtea.version.fact.release=1.4.2"
+        ```
+
+        When no Version holds the facts yet, the role of your API key must be allowed to create a Version. Otherwise Galtea rejects the spans and the export response says so.
+      </Tab>
+      <Tab title="By version attributes">
+        Your organization names, once, which standard resource attributes make up a Version, for example `service.version` and `app.agent.model`. Your telemetry then needs no `galtea.version.fact.*` rename. Send the listed attributes your agent already emits, next to the product attribute of the previous step. Galtea builds the [facts](/v5.15/concepts/product/version#version-facts) from the listed attributes the resource carries, finds the Version that holds exactly these facts, and creates it when none does.
+
+        Set the list with `PATCH /organizations/{id}`. A product can replace it with its own list through `PATCH /products/{id}`. Send `null` for a product to follow the organization list again. In the dashboard, the organization list is in the **OpenTelemetry** card of the **Update Organization** page (the **Edit** action of the organization menu), and the product list is in **Advanced Options** of the product edit form.
+
+        ```bash
+        curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>" \
+          -H "Authorization: Bearer ${GALTEA_API_KEY}" \
+          -H "Content-Type: application/json" \
+          -d '{"otelVersionAttributes": ["service.version", "app.agent.model"]}'
+        ```
+
+        With this list, a trace whose resource carries `service.version=1.4.0` and `app.agent.model=gpt-4.1` goes to the Version with exactly these facts:
+
+        ```json
+        {"service.version": "1.4.0", "app.agent.model": "gpt-4.1"}
+        ```
+
+        The fact key is the full attribute name. So a Version that an SDK test creates with `{"version": "1.4.0", "model": "gpt-4.1"}` is another Version, because its keys differ. The key `app.agent.model` links no model. Only a key such as `model` or `model_name` does (see [Model facts](/v5.15/concepts/product/version#model-facts)).
+
+        Rules to know:
+
+        - **At least one listed attribute must be present.** A blank value, a value with no content, and a null value count as absent. A null value does not make the facts invalid here.
+        - **A name follows the same rules as the product key.** It is at most 255 characters, has no space, does not start with `galtea.`, and is not `customer.id`. A list holds at most 32 distinct names, and their JSON text at most 2000 bytes. A product list cannot be empty.
+        - **A list change moves no stored Version.** Existing Versions keep their facts. Only new traces use the new list.
+      </Tab>
+    </Tabs>
+
+    <Warning>
+      Never turn a value that changes per request or per pod into a fact, as a `galtea.version.fact.*` attribute or as a listed version attribute. Examples are a request ID, a timestamp, `host.name`, `k8s.pod.name`, `service.instance.id`, and a trace ID. Every distinct value creates a new Version, and Galtea does not limit how many.
+    </Warning>
+
+    Without a version, uncorrelated spans are rejected. The export response's `partialSuccess.errorMessage` then reads, for example, `5 spans carry neither galtea.version.id, nor galtea.version.fact.* resource attributes, nor a resource attribute named in the version attributes in force for their product, and match no existing trace`. When a resource carries more than one option, Galtea uses the first of the order in the tabs. See [Which version](#2-which-version).
+  </Step>
+
+  <Step title="Set a conversation key" id="set-a-conversation-key">
+    The conversation key decides which spans belong to the same Galtea session. Provide it in whichever way fits your setup.
+
+    <Tabs>
+      <Tab title="Your own session ID">
+        Set the `galtea.session.custom_id` **span attribute** to your own conversation identifier, for example your chat session ID. Spans carrying it are grouped into one Galtea session per distinct ID. Within a session, one OTel trace (all spans sharing a W3C trace ID) becomes one conversation turn.
+
+        The key on the turn's root span is enough. Galtea holds the spans of a batch that carries no key and joins them to the turn when the batch with the key arrives, so you do not have to stamp every span. See [Batched exporters and the conversation key](#batched-exporters-and-the-conversation-key).
+      </Tab>
+      <Tab title="OpenTelemetry standard keys">
+        If your instrumentation follows the OpenTelemetry conventions, Galtea groups spans by the standard conversation key with no Galtea-specific attribute. It reads `gen_ai.conversation.id` (the [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)) first, and falls back to `session.id` (the [session convention](https://opentelemetry.io/docs/specs/semconv/general/session/)). As with your own session ID, one OTel trace becomes one conversation turn.
+
+        An explicit `galtea.session.custom_id` still takes priority over both when a span carries it. `gen_ai.conversation.id` wins over `session.id` when both are present.
+
+        [MLflow Tracing](https://mlflow.org/docs/latest/tracing/) does not emit a standard conversation key on its spans by default. If your platform uses MLflow, set the `session.id` (or `galtea.session.custom_id`) span attribute yourself. Setting it on the turn's root span is enough; see [Batched exporters and the conversation key](#batched-exporters-and-the-conversation-key).
+      </Tab>
+      <Tab title="Managed platform (vendor-derived)">
+        Some platforms cannot attach `galtea.session.custom_id` to their spans. For these, Galtea derives the conversation key from a recognized vendor attribute, so you do not change the platform's instrumentation.
+
+        Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key, and splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Link a conversation to a test case (optional)" id="link-a-conversation-to-a-test-case">
+    Skip this step for real user traffic. Use it when the traffic comes from a test run and you want the session to name the [Test Case](/v5.15/concepts/product/dataset/test-case) it exercises.
+
+    Set `galtea.test_case.id` to the test case ID. Galtea then creates the session as a non-production session linked to that test case. A [Monitor](/v5.15/concepts/product/monitor) scores only production sessions, so it never scores this session and the session spends no evaluation credits. Without the attribute, Galtea creates a production session, exactly as before.
+
+    Set the key in either place:
+
+    - **On the resource**, when the whole telemetry source is one test run. Add it to the `resource/galtea` processor of the product and version steps.
+    - **On a span**, when one source sends several test cases. A span value marks one conversation, and it wins over the resource value.
+
+    ```yaml
+    # The resource form. Same Collector processor as the version step, with one more attribute.
+    processors:
+      resource/galtea:
+        attributes:
+          - key: galtea.version.id
+            value: "<your-version-id>"
+            action: upsert
+          - key: galtea.test_case.id
+            value: "<your-test-case-id>"
+            action: upsert
+    ```
+
+    Galtea rejects only that conversation when the test case does not fit, for example when it belongs to another product than the version. The rest of the payload still ingests. [What Galtea rejects](#what-galtea-rejects) lists every case.
+
+    Spans that carry no test case attribute still attach to whatever session the conversation key already holds on that Version. That is how OTel spans join a session the Galtea SDK opened during a test run. Each OTel trace becomes a new turn of that session. To add spans to a turn that already exists, set `galtea.trace.id` instead. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists).
+
+    A test-case-linked session closes like any other: the inactivity sweep closes it after the product's auto-close window, unless the product's auto-close scope excludes development sessions, in which case it stays open until you finish it.
+  </Step>
+
+  <Step title="Send traffic and verify" id="send-traffic-and-verify">
+    Once traffic flows, the assembled conversations appear as sessions under the version you routed to, in the dashboard. They are production sessions, and Monitors evaluate them automatically. A conversation that names a test case appears as a non-production session instead, and no Monitor scores it.
+
+    Galtea never guesses where your data belongs. Uncorrelated spans with no version are rejected. Spans that never get a conversation key are dropped after a wait, as [Batched Exporters and the Conversation Key](#batched-exporters-and-the-conversation-key) explains.
+  </Step>
+</Steps>
+
+## What You Get
+
+- **Production sessions.** Sessions created this way are production sessions, so [Monitors](/v5.15/concepts/product/monitor) evaluate them automatically. The one exception is a conversation that names a test case: it creates a non-production session, which no Monitor scores.
+- **Automatic input and output.** Each turn's input and output are read from the turn's own spans. A managed platform whose LLM text lives only in `gen_ai.*` attributes or vendor span events still produces turns with non-empty input and output. When one span is the root of the turn (for example, an agent span that wraps child LLM and tool spans, the usual shape from MLflow autolog or an agent framework), the turn takes the root span's input and output: the user message and the agent's final answer. This applies per field. The input comes from the root when the root carries a user message. An empty root input, such as `{}`, `""` or an empty message list `[]`, does not count, so the turn takes the user message from a child span instead. The output comes from the root only when the root's output is a plain answer (a text reply, or a chat-completion or `assistant_message` envelope that reduces to text); when the root's output is a wrapper object that is not the answer (for example a status or tool-decision blob), the turn keeps the child span's real reply instead. A field the root does not carry, or a turn with no single root (for example, several sibling LLM calls), falls back to the first prompt as the turn input and the last completion as the turn output. A turn where no span carries a user message, such as a greeting the agent sends first, has an empty input. A configured input or output source rule replaces that fallback and the root span for its field, and leaves the field empty when it matches no span rather than falling back: see [Recover the turn input from a non-LLM span](#recover-the-turn-input-from-a-non-llm-span). If the chosen output is a raw OpenAI chat-completion object, the turn shows its message text; the span record keeps the full object. See [How span content maps to Span records](/v5.15/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records) for the per-field precedence. For turns answered without any LLM call, see [Recover replies that do not come from the LLM](#recover-replies-that-do-not-come-from-the-llm).
+- **Idempotent ingestion.** Re-sent or late span batches do not create duplicate sessions, turns, or spans. Later turns append to the same session.
+- **Works together with the SDK.** If a session with the same custom ID already exists on the Version the spans route to (for example, created by the SDK), ingestion adds the turns to it instead of creating a new one.
+
+<Note>
+  Two behaviors to plan for:
+
+  - **A closed session can reopen for a new turn.** A session is closed once it reaches `COMPLETED` or `FAILED`, either by an explicit finish or by the auto-close sweep (see [Session lifecycle](/v5.15/concepts/product/version/session#session-lifecycle)). Late spans for turns it already has are still accepted. Spans for a new turn follow the product's [Closed Session Inference Creation Policy](/v5.15/concepts/product#product-properties): by default (`REOPEN_AND_REEVALUATE`) the turn is stored, the session goes back to `PENDING`, and a [Monitor](/v5.15/concepts/product/monitor) scores it again once it closes. With `IGNORE` the turn is dropped silently. With `REJECT`, its spans appear in the export response's rejected-span count and nothing is stored; start a new conversation with a fresh `galtea.session.custom_id` (or a new Temporal workflow) to keep those turns. A non-production session follows the same policy; it has no monitor evaluations, so a reopen only stores the turn.
+  - **One payload can open at most 100 new conversations.** New sessions beyond that in the same OTLP payload are rejected (they appear in the export response's rejected-span count). Continuations of conversations that already exist do not count toward the limit. If you send a large backfill or a high-volume export, split it across smaller export batches. Self-hosted deployments can raise the limit with the `OTEL_MAX_NEW_CONVERSATIONS_PER_PAYLOAD` setting.
+</Note>
+
+## How Galtea Routes a Trace
+
+Galtea routes each resource once, when it ingests it. A later change of a setting moves no stored trace.
+
+<OtelRoutingAttributes />
+
+### Where to set each setting
+
+Set these on your organization. A product can replace each one, and each product holds its own key values. A Version can also replace the source rules.
+
+- **The version attributes:**
+  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page. A product replaces the list in **Advanced Options** of its edit form.
+  - API: `PATCH /organizations/{id}` and `PATCH /products/{id}`, field `otelVersionAttributes`.
+  - CLI: `galtea organizations update` and `galtea products update`.
+- **The key and the key values:**
+  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page, for the key. **Advanced Options** of each product's edit form, for its values or its own key.
+  - API: the same two endpoints, fields `otelProductKey` and `otelProductKeyValues`.
+  - CLI: the same two commands.
+- **The input and output source rules** ([output](#recover-replies-that-do-not-come-from-the-llm), [input](#recover-the-turn-input-from-a-non-llm-span)):
+  - Dashboard: the **OpenTelemetry** card of the **Update Organization** page, and **Advanced Options** of each product's edit form.
+  - API: the same two endpoints, fields `otelInputSourceRule` and `otelOutputSourceRule`.
+  - CLI: the same two commands.
+
+Changing these settings needs the permission in [Roles and permissions](/v5.15/security/roles-and-permissions).
+
+## Route Traces to a Product by Resource Attributes
+
+Your telemetry may carry no Galtea ID. A collector for a whole company often does not know the Galtea product ID of each agent. It does know standard resource attributes such as `service.namespace` and `service.name`. Galtea can use them to find the product.
+
+Two settings make this work:
+
+- **The product key** belongs to the organization. It lists 1 to 10 resource attribute names that identify a product, for example `service.namespace` and `service.name`. A name cannot start with `galtea.` and cannot be `customer.id`. A new organization uses `service.name`.
+- **The key values** belong to the product. They give one value for each attribute of the key, for example `service.namespace` is `checkout` and `service.name` is `checkout-agent`.
+
+A resource that has no `galtea.version.id` or `galtea.product.id` goes to the product whose key values it carries. It must carry `galtea.version.fact.*` attributes, or attributes that the version attributes of your organization or product list. Galtea then finds or creates the Version from the facts, as in the "By facts" and "By version attributes" tabs of [Name the version](#name-the-version). [Which product](#1-which-product) gives the order when a resource also carries `galtea.product.id`.
+
+Rules to know:
+
+- **Every attribute is required.** A resource must carry every attribute of the key. A resource that misses one matches no product. Matching is exact and case-sensitive.
+- **A product can use its own key.** Set `otelProductKey` on the product to use other attributes than the organization. It is `null` while the product follows the organization key, and then it follows every later change.
+- **The key with the most attributes wins.** When a resource matches several products, the product whose key has the most attributes wins, whether that key is its own or the organization key. A tie routes the resource nowhere.
+- **Key values are unique.** Two live products of one organization cannot hold the same key values. The second request answers `409`.
+- **A value cannot be `unknown_service`.** The OpenTelemetry SDK sets `service.name` to `unknown_service` or `unknown_service:<process>` when you set no name. Galtea refuses these as key values, because they would name no real product.
+- **The key is locked while products use it.** The organization cannot change the set of attributes of its key while a live product that follows the key holds key values. The request answers `409`. You can reorder the same attributes. To change the set, clear those key values first or give the products their own key.
+- **Stored traces keep their product.** Galtea routes once, when it ingests a trace. A later change of a key or of key values moves no stored trace.
+
+First set the key of the organization. Then give each product its values. The caller needs permission to update the organization and the product (see [Roles and permissions](/v5.15/security/roles-and-permissions)).
+
+```bash
+curl -X PATCH "https://api.galtea.ai/organizations/<organization-id>" \
+  -H "Authorization: Bearer ${GALTEA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"otelProductKey": ["service.namespace", "service.name"]}'
+
+curl -X PATCH "https://api.galtea.ai/products/<product-id>" \
+  -H "Authorization: Bearer ${GALTEA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"otelProductKeyValues": {"service.namespace": "checkout", "service.name": "checkout-agent"}}'
+```
+
+Send only the fields you change. An absent field keeps its value. On a product, `null` clears a field. The organization key cannot be `null`. The same two routes set the version attributes and the span source rules of an organization and of a product. `POST /products` accepts the same fields for a new product. For version attributes, an organization sends `[]` to turn the list off, and a product sends `null` to follow the organization's list.
+
+In the dashboard, open the **OpenTelemetry** card of the **Update Organization** page, or **Advanced Options** of the product edit form. Both edit the key, the version attributes, and the span source rules. The product form also edits the key values.
+
+Then send traces with the attributes of the key on the resource and the facts of the agent state. This resource goes to the product above:
+
+```bash
+export OTEL_RESOURCE_ATTRIBUTES="service.namespace=checkout,service.name=checkout-agent,galtea.version.fact.model=gpt-4o,galtea.version.fact.release=1.4.2"
+```
+
+If no product matches, Galtea rejects the spans of that resource and the rest of the payload still ingests. The `partialSuccess.errorMessage` of the response then reads, for example, `5 spans carry galtea.version.fact.* resource attributes, or resource attributes named in the version attributes of their organization, but no usable galtea.product.id, and their resource attributes route to no single product`.
+
+## Batched Exporters and the Conversation Key
+
+Every OpenTelemetry SDK exports through a `BatchSpanProcessor`, which sends spans as they end and flushes every few seconds. A turn's tool calls and intermediate LLM calls end first, so they travel in earlier requests, and the turn's root span travels in the last one. When you set the conversation key on the root span, those earlier requests reach Galtea with no key at all.
+
+Galtea holds them. A request carrying no key waits for one, and the request that carries the key replays everything held for the same trace into the same turn. The spans are not reported as rejected while they wait. Order does not matter: a keyless request arriving after the keyed one attaches straight away.
+
+Two things to know:
+
+- **The wait is bounded.** Spans wait 15 minutes by default. If no request ever carries a key for that trace, they are dropped and the reason is logged. So an instrumentation that never sets a conversation key stores nothing, exactly as before. Self-hosted deployments can change the window with the `OTEL_KEYLESS_HOLD_WINDOW_SECONDS` setting, and the per-trace cap on held spans with `OTEL_KEYLESS_HOLD_MAX_SPANS`.
+- **You may still set the key on every span.** It is not required, and it costs nothing to keep if your instrumentation already does it.
+
+Parent and child links survive the same split. A span whose parent travels in a later request is still nested under that parent in the trace tree.
+
+## Recover Replies That Do Not Come from the LLM
+
+Some turns are answered without an LLM completion. A guardrail can replace the answer, a template can redirect the user, or a tool can return the final reply on its own. For these turns the user-visible answer lives on a non-LLM span. So by default the assembled turn output is empty, or it shows an internal label such as an intent-classifier tag, instead of the real reply.
+
+The `otelOutputSourceRule` config field fixes this. It names the exact span and field that carry the real reply, so the turn shows the true answer. Set it on an organization, a [Product](/v5.15/concepts/product) or a [Version](/v5.15/concepts/product/version). The Version value overrides the Product value, which overrides the organization value. Leave it `null` (the default) to keep the rule off.
+
+The rule has four parts:
+
+- **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
+- **`attribute`** — the span attribute that holds the reply, stored as a JSON string.
+- **`path`** — a JSONPath into that parsed JSON that points at the output text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the user's own message as the reply.
+
+Here is a complete rule:
+
+```json
+{
+  "spanName": "ExecuteActivity:save_reply",
+  "attribute": "app.arguments",
+  "path": "$[0].message.content",
+  "predicate": { "path": "$[0].message.role", "equals": "assistant" }
+}
+```
+
+Read it step by step. The assistant's reply is saved on the `ExecuteActivity:save_reply` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the reply text inside that array. The predicate keeps user messages out: the same span also carries the user's message with role `"user"`, so the predicate makes the rule fire only for role `"assistant"`. Name a span your system emits once per turn here too, because a replayed span appears several times and the latest copy may belong to another turn. The [input rule section](#recover-the-turn-input-from-a-non-llm-span) explains why.
+
+<Note>
+  The rule decides the turn output, whatever order your spans are emitted in. A rule fires on a span when the span name matches and the predicate passes. Galtea takes the turn output from the value the rule extracted, on the latest span where it fired. A span that matches the name but fails the predicate never wins the turn. The rule wins over the root-span and latest-span fallbacks. It also wins over a `galtea.span.output` set on a **different** span of the same turn.
+
+  So if you already set the Galtea attributes on the right span, you do not need a rule. The rule does not fire on a span that already holds the output through a higher source. `galtea.span.output` and `gen_ai.*` are the two common ones, and there the normal sources decide. When the rule fires on no span of the turn, the turn output is **empty**. The fallbacks do not apply: a rule is configured exactly where they give a wrong value, so falling back would restore the answer you rejected. If you ever need the fallback under a configured rule, ask us and it becomes an explicit setting on the rule.
+
+  Per span, nothing changes. Each [Span](/v5.15/concepts/product/version/session/span) record still fills its own fields from `galtea.span.*`, then `gen_ai.*`, then a recognized managed-platform span shape, and the rule fills a field only when none of those did. The Span records you see in the dashboard are the same with or without a rule.
+</Note>
+
+Set `otelOutputSourceRule` on a version, a product, or an organization. In the Python SDK you can set it when you create or update a version. The field is `otel_output_source_rule`, and you pass the same four-part object shown above. The SDK does not set it on products or on organizations. To set it on a product or an organization, use the dashboard, the API or the CLI, as [Where to set each setting](#where-to-set-each-setting) lists. The version value wins over the product value, which wins over the organization value.
+
+## Recover the Turn Input from a Non-LLM Span
+
+The turn input has the mirror problem. Many agents save the user message on their own span, and they save it **after** the LLM spans of the same turn. Galtea then reads the turn input from the earliest span that carries one, which is the LLM prompt: your system prompt plus a copy of the user message. So the turn shows the prompt instead of what the user typed.
+
+The `otelInputSourceRule` config field fixes this. It names the exact span and field that carry the user message, so the turn shows the real question. Set it on an organization, a [Product](/v5.15/concepts/product) or a [Version](/v5.15/concepts/product/version). The Version value overrides the Product value, which overrides the organization value. Leave it `null` (the default) to keep the rule off.
+
+The rule has the same four parts:
+
+- **`spanName`** — the exact OTLP span name to match. For a Temporal (managed-platform) activity, this is the activity span name.
+- **`attribute`** — the span attribute that holds the user message, stored as a JSON string.
+- **`path`** — a JSONPath into that parsed JSON that points at the input text. JSONPath is a small query syntax for JSON, for example `$[0].message.content`. It must start with `$`, the root of the parsed value; a path without it matches nothing, so the API and the dashboard both reject one.
+- **`predicate`** (optional) — an object `{ path, equals }`. The rule applies only when the node at `predicate.path` equals `equals`. Use it when the user message and the assistant message share the same span and attribute, so you do not pick the assistant's reply as the input.
+
+Name a span your system emits once per turn. A framework that replays work, such as a durable-workflow engine, re-emits the same span many times in one trace. The earliest copy can then belong to an earlier turn, and the rule picks the wrong message. In one week of production traces, an update-handler span appeared 685 times for 225 distinct updates. The activity that saved the message appeared exactly once per message. So name the span that saves or records the message, not a handler span that a replay re-enters.
+
+Here is a complete rule:
+
+```json
+{
+  "spanName": "ExecuteActivity:save_message",
+  "attribute": "app.arguments",
+  "path": "$[0].message.content",
+  "predicate": { "path": "$[0].message.role", "equals": "user" }
+}
+```
+
+Read it step by step. The user message is saved on the `ExecuteActivity:save_message` span, inside the `app.arguments` attribute, which holds a JSON array. `$[0].message.content` is the message text inside that array. The predicate keeps assistant messages out: the same span also carries the assistant's reply with role `"assistant"`, so the predicate makes the rule fire only for role `"user"`.
+
+<Note>
+  The rule decides the turn input, whatever order your spans are emitted in. A rule fires on a span when the span name matches and the predicate passes. Galtea takes the turn input from the value the rule extracted, on the earliest span where it fired and found a user message. An empty value, such as `""` or `null`, does not count. A span that matches the name but fails the predicate never wins the turn. The rule wins over the root-span and earliest-span fallbacks, and over a `galtea.span.input` set on any span of the turn, including the span the rule itself names.
+
+  Per span, nothing changes. A Span record still fills its own fields from `galtea.span.*`, then `gen_ai.*`, then a recognized managed-platform span shape, and the rule last, so a span that already holds an input through a higher source keeps showing that value. The turn input is separate: it is computed from your rule and the stored spans, so it takes what the rule extracts.
+
+  When the rule extracts no user message from any span of the turn, the turn input is **empty**. The fallbacks do not apply, for the same reason as the output rule: a rule is configured exactly where they give a wrong value. A greeting turn with no user message to save therefore has an empty input, and its output still comes from the output rule. If you ever need the fallback under a configured rule, ask us and it becomes an explicit setting on the rule.
+</Note>
+
+Set `otelInputSourceRule` on a version, a product, or an organization, the same way as the output rule. In the Python SDK you can set both when you create or update a version: the fields are `otel_input_source_rule` and `otel_output_source_rule`. The SDK does not set either rule on products or on organizations. To set a rule on a product or an organization, use the dashboard, the API or the CLI, as [Where to set each setting](#where-to-set-each-setting) lists.
+
+### How a Rule Is Resolved and Changed
+
+Each source rule behaves the same way, and each direction is resolved on its own:
+
+- **A version inherits the product rule, and a product inherits the organization rule.** Galtea uses the version rule when the version has one, then the product rule, then the organization rule. So a version whose rule is `null` uses the product rule, and a product whose rule is `null` uses the organization rule. A version cannot opt out of an inherited rule today. Pointing the version rule at a span name that version never emits does not restore the inherited rule: it empties the field for every turn of that version. To stop recovering a field, clear the product and organization rules, or point the version rule at a span that version does emit.
+- **A rule change reaches a stored turn when it extracts a value.** Galtea keeps every span it stored, so a turn that still receives new spans is recomputed with the rule configured at that moment, over all of its spans. Correcting a rule therefore repairs those turns, and a turn recorded before you set the rule is repaired the same way. A turn that receives no further spans keeps the value it has.
+- **A change never empties a field that holds a value.** If your new rule extracts nothing from a turn, Galtea leaves that turn's stored value alone rather than clearing it. Clearing stored values is a separate operation, so an edit to a rule cannot blank recorded traffic as a side effect. A rule change is never what clears a stored field. One platform action can: when a turn's boundary span arrives after its content, Galtea moves that content to the turn it belongs to, and the turn it came from is left empty rather than keeping the next turn's words. That clears only a field those same spans filled.
+- **A rule that matches nothing empties its field.** A configured rule decides its direction outright. When it matches no span of the turn, that field is empty, and the root-span and earliest/latest fallbacks do not apply. Each direction is independent, so an input rule that matches nothing does not stop the output rule. If a rule of yours needs the fallback instead, ask us: it becomes an explicit setting on the rule, never the default.
+- **A recovered field is marked on the span.** A span whose field a rule filled carries `galtea.span.input_from_source_rule` or `galtea.span.output_from_source_rule` in its metadata. Galtea writes and reads these keys itself, and strips them from any value you send. Use them to confirm which span a rule fired on.
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Send OpenTelemetry Traces to Galtea" icon="tower-cell" href="/v5.15/sdk/tutorials/send-opentelemetry-traces-to-galtea">
+    Endpoint, authentication, exporter and Collector setup, and the span mapping reference.
+  </Card>
+  <Card title="Monitor" icon="gauge-high" href="/v5.15/concepts/product/monitor">
+    The always-on rule that evaluates your production sessions automatically.
+  </Card>
+  <Card title="Span" icon="timeline" href="/v5.15/concepts/product/version/session/span">
+    What a Span record is and which properties it holds.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/v5.15/sdk/tutorials/tracing-agent-operations">
+    Collect spans with the Galtea SDK's `@traced` decorator.
+  </Card>
+</CardGroup>

@@ -1,0 +1,19 @@
+---
+title: 'Deleting Evaluation'
+sidebarTitle: "Delete"
+description: "Delete a specific evaluation by its ID."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/sdk/api/evaluation/delete).
+</Warning>
+
+## Example
+```python
+galtea.evaluations.delete(evaluation_id=evaluation_id)
+```
+
+## Parameters
+<ResponseField name="evaluation_id" type="string" required>
+  The ID of the evaluation you want to delete.
+</ResponseField>

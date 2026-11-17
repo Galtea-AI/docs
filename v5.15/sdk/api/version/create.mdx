@@ -1,0 +1,103 @@
+---
+title: 'Create Version'
+sidebarTitle: "Create"
+description: "Create a version for your product."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/sdk/api/version/create).
+</Warning>
+
+<Tip>
+  To get the version of one agent state, use [Get or Create Version](/v5.15/sdk/api/version/get-or-create) instead. It returns the version that holds your facts, and creates it only the first time. So a script that runs again, or two jobs that run at the same time, reuse one version.
+</Tip>
+
+## Returns
+Returns a [Version](/v5.15/concepts/product/version) object for the given parameters, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/v5.15/sdk/api/galtea#errors) instead: do not create it again. The returned object carries the `number` Galtea allocated, and the `name` the version is stored under.
+
+## Example
+```python
+version = galtea.versions.create(
+    product_id=product_id,
+    description="Demo version created via SDK",
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" optional>
+  Your own label for the version. Leave it out and Galtea stores the version under its label, `v` followed by its [number](/v5.15/concepts/product/version#how-a-version-is-identified), for example `v7`.
+
+  A create with no name needs an API that allocates version numbers. A self-hosted deployment older than that still requires a name and refuses the create. Pass a name against such a deployment.
+
+  <Warning>
+    A name of `v` followed by digits is reserved for version labels. The check ignores upper and lower case, so `V7` follows the same rule as `v7`. Galtea accepts such a name only when it is the version's own label, so version 7 accepts `v7` and refuses `v3`. It always refuses `v01`, `v007` and `v0`, because no version is ever labelled that way. A name such as `v1.0` is outside the reserved shape and stays valid.
+  </Warning>
+</ResponseField>
+<ResponseField name="product_id" type="string" required>
+  The ID of the product you want to create a version for.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  A textual description of the version.
+</ResponseField>
+<ResponseField name="system_prompt" type="string" optional>
+  The system prompt used with the model for this version.
+</ResponseField>
+<ResponseField name="model_id" type="string" optional>
+  Reference to a [model](/v5.15/concepts/model) configured in the Galtea Platform, used for cost tracking on this version's traces. `versions.create` sends no facts. To link the model from a [model fact](/v5.15/concepts/product/version#model-facts), use [`versions.get_or_create`](/v5.15/sdk/api/version/get-or-create).
+
+  <Accordion title="Example: linking a version to a model">
+    Use the [Model service](/v5.15/sdk/api/model/service) to look up an existing model by name and pass its `id` to `versions.create`:
+
+    ```python
+    # Look up an existing model by name (created earlier via galtea.models.create).
+    selected_model = galtea.models.get_by_name(name=model_name)
+
+    # Pass its id to versions.create so Galtea can track cost for this version's
+    # traces using the model's per-token pricing.
+    version = galtea.versions.create(
+        product_id=_demo_product_id,
+        model_id=selected_model.id,
+        description="Version linked to a model for cost tracking.",
+    )
+    ```
+
+    See [`galtea.models.get_by_name`](/v5.15/sdk/api/model/get-by-name) or [`galtea.models.list`](/v5.15/sdk/api/model/list) for other ways to discover existing models.
+  </Accordion>
+</ResponseField>
+<ResponseField name="dataset_description" type="string" optional>
+  Description of the dataset used for training or fine-tuning.
+</ResponseField>
+<ResponseField name="dataset_uri" type="string" optional>
+  A URI pointing to the dataset.
+</ResponseField>
+<ResponseField name="conversation_endpoint_connection_id" type="string" optional>
+  The ID of the [Endpoint Connection](/v5.15/concepts/product/endpoint-connection) used for conversational interactions with your AI product.
+</ResponseField>
+<ResponseField name="initialization_endpoint_connection_id" type="string" optional>
+  The ID of the [Endpoint Connection](/v5.15/concepts/product/endpoint-connection) executed before the conversation begins. Used to initialize a session and obtain a session ID. See [Version Endpoint Connections](/v5.15/concepts/product/version#endpoint-connections) for more details.
+</ResponseField>
+<ResponseField name="finalization_endpoint_connection_id" type="string" optional>
+  The ID of the [Endpoint Connection](/v5.15/concepts/product/endpoint-connection) executed after the conversation ends. Used to clean up resources.
+</ResponseField>
+<ResponseField name="phone_connection_id" type="string" optional>
+  The ID of the [Phone Connection](/v5.15/concepts/product/phone-connection) Galtea dials to reach your AI agent over the phone. A version's conversation target is mutually exclusive: provide one of a phone connection, a WebRTC connection (`web_rtc_connection_id`), or an endpoint connection (`conversation_endpoint_connection_id`), never more than one.
+</ResponseField>
+<ResponseField name="web_rtc_connection_id" type="string" optional>
+  The ID of the [WebRTC Connection](/v5.15/concepts/product/webrtc-connection) Galtea uses to reach your AI agent over WebRTC. A version's conversation target is mutually exclusive: provide one of a WebRTC connection, a phone connection (`phone_connection_id`), or an endpoint connection (`conversation_endpoint_connection_id`), never more than one.
+</ResponseField>
+<ResponseField name="endpoint_connection_id" type="string" optional>
+  <Warning>Deprecated. Use `conversation_endpoint_connection_id` instead.</Warning>
+  Legacy parameter maintained for backwards compatibility. Maps to `conversation_endpoint_connection_id`.
+</ResponseField>
+<ResponseField name="guardrails" type="string" optional>
+  Configuration or description of safety guardrails applied.
+</ResponseField>
+<ResponseField name="parent_version_id" type="string" optional>
+  The ID of the parent [version](/v5.15/concepts/product/version) this version is iterated from. Setting it makes the new version a revision of the parent and records the lineage. The parent must belong to the same product. Leave it empty to create a root version. See [Version Lineage](/v5.15/concepts/product/version#version-lineage) for details.
+</ResponseField>
+<ResponseField name="otel_input_source_rule" type="dict" optional>
+  Recovers a turn's input from a non-LLM span, for products whose user message is not on the LLM span. An object with `spanName`, `attribute`, `path` and an optional `predicate`. The version value overrides the product value, which overrides the organization value. See [Recover the turn input from a non-LLM span](/v5.15/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+</ResponseField>
+<ResponseField name="otel_output_source_rule" type="dict" optional>
+  Recovers a turn's output from a non-LLM span, for templated or non-LLM replies. Same four parts as `otel_input_source_rule`. The version value overrides the product value, which overrides the organization value. See [Recover replies that do not come from the LLM](/v5.15/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-replies-that-do-not-come-from-the-llm).
+</ResponseField>

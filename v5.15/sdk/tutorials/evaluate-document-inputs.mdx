@@ -1,0 +1,172 @@
+---
+title: 'Evaluate Document Inputs'
+description: "Attach documents to test cases, fetch them back with the SDK, and score what your pipeline answers."
+icon: "file-lines"
+---
+
+import JudgeFileRule from '/v5.15/snippets/judge-file-rule.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/sdk/tutorials/evaluate-document-inputs).
+</Warning>
+
+Some products read documents: a scanned contract, an invoice, a report. You attach the document to the [test case](/v5.15/concepts/product/dataset/test-case#file-inputs), and Galtea stores it.
+
+**Galtea does not answer from the document for you.** Reading it is your product's job. This page walks the round trip your own pipeline drives: attach the documents, list the test cases, download each attached file, answer with your own pipeline, and score the answer.
+
+Galtea can also deliver the documents to your endpoint and run the inference for you. Name the files in the [endpoint connection template](/v5.15/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) with `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}`, then run the dataset the usual way. Use the pipeline below when your product is not reachable over HTTP.
+
+<JudgeFileRule />
+
+A file test case runs as a single turn, so the rule above applies to every metric that reads the input. The manual `create_and_evaluate(..., input=...)` loop below can log your pipeline's extracted text as the turn input, without the file, and the metric scores that text. `evaluations.run()` cannot override the input, so the turn keeps the file and the rule above decides whether the metric scores it or skips. Otherwise score the output only, with a metric such as [JSON Field Match](/v5.15/concepts/metric/json-field-match).
+
+### Workflow
+
+<Steps>
+  <Step title="Attach the documents">
+    Add an `input_file_paths` column to your dataset CSV. The SDK uploads each file and attaches it to that row's input.
+  </Step>
+  <Step title="Read the test cases back">
+    `galtea.test_cases.list()` returns the text in `input` and the attachments in `input_files`.
+  </Step>
+  <Step title="Download each attached file">
+    `galtea.storage.download()` saves a file locally and returns the path it wrote.
+  </Step>
+  <Step title="Answer and score">
+    Run your own pipeline over the local files, then log the answer and evaluate it.
+  </Step>
+</Steps>
+
+## 1. Attach the documents
+
+Name the local files in an `input_file_paths` column. Separate several paths with `;` or `|`. A row may attach files and leave `input` empty, which is how you write a test case that is only a document:
+
+```csv
+input,expected_output,input_file_paths
+Extract the tenant and the monthly rent,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/lease-agreement.pdf
+,"{""tenant"": ""A. Garcia"", ""monthly_rent"": 900}",path/to/lease-agreement.pdf
+```
+
+Each `expected_output` here is a JSON object, because the metric below compares it field by field. CSV escapes a quote by doubling it, which is why every `"` inside those cells appears as `""`.
+
+```python
+dataset = galtea.datasets.create(
+    name=f"lease-documents-{run_identifier}",
+    type="ACCURACY",
+    product_id=product_id,
+    dataset_file_path="path/to/lease_dataset.csv",
+)
+```
+
+The SDK uploads each file and rewrites the row before it sends anything, so the column never reaches the platform and your local paths stay private. A file named by several rows is uploaded once.
+
+<Tip>
+  To attach a document to one test case instead of a whole dataset, pass `input_file_paths` to [`test_cases.create()`](/v5.15/sdk/api/test-case/create).
+</Tip>
+
+### Check some fields by rule
+
+An expected field can hold a [field rule](/v5.15/concepts/metric/json-field-match#field-rules) when the exact value is not what you test. For a document that holds an ID number, a name, an address and a birth date, write the `expected_output` like this:
+
+```json
+{
+  "nombre": "MARIA LOPEZ GARCIA",
+  "curp": {"$regex": "^[A-Z]{4}\\d{6}[HM][A-Z]{5}[A-Z0-9]\\d$"},
+  "domicilio": {"$norm": "C L ATONA 102 COL PRI CHACON"},
+  "fecha_nacimiento": {"$date": "1986-08-31"}
+}
+```
+
+Each backslash is written twice because the value is JSON. In a CSV cell, each `"` is also doubled. This example is not part of the tutorial dataset.
+
+## 2. Write your pipeline
+
+This is the step Galtea cannot do. It takes the question and the local file paths, and returns whatever your product would answer:
+
+```python
+def answer_from_documents(question: str | None, document_paths: list[str]) -> str:
+    """Read the documents and answer. Galtea never reads them for you. This step is yours when you
+    drive the run; Galtea can also send the files to your endpoint instead."""
+    # Replace this with the call to your own model, parser or agent.
+    return '{"tenant": "A. Garcia", "monthly_rent": 900}'
+```
+
+## 3. Read, download, answer, score
+
+```python
+test_cases = galtea.test_cases.list(dataset_id=dataset.id, include_legacy=False)
+
+for test_case in test_cases:
+    # None when the test case carries a document and no text of its own.
+    question = test_case.input
+
+    # Each file is saved under the name it was uploaded with, not its storage key.
+    document_paths = [
+        galtea.storage.download(attached, output_directory="./.temp/lease-documents")
+        for attached in test_case.input_files
+    ]
+    print(f"Test case {test_case.id}: {question or '(document only)'} + {len(document_paths)} file(s)")
+
+    answer = answer_from_documents(question, document_paths)
+
+    session = galtea.sessions.create(version_id=version.id, test_case_id=test_case.id)
+    galtea.traces.create_and_evaluate(
+        session_id=session.id,
+        output=answer,
+        metrics=[{"name": "JSON Field Match"}],
+    )
+```
+
+Four details in that loop are worth knowing:
+
+- **`test_case.input` is `None` for a document-only test case.** The document is the whole input, so there is no text to read. Use `test_case.input_data` when you need the full structured input, including the file parts.
+- **`include_legacy=False` returns only the current revision** of each test case. Leave it at its default and an edited test case comes back once per revision, so you download the same document again for each one.
+- **The file is saved under the name you uploaded it with.** Storage keys are random ids, so without `filename` you would get `9f3c1a.pdf` on disk. [`download()`](/v5.15/sdk/api/storage/download) reads the name from the `AttachedFile`.
+- **A failed download raises.** The message names the file and the cause, never the presigned link. Wrap the loop in `try`/`except` if one unreadable document should not stop the rest.
+
+## 4. The same round trip through `evaluations.run()`
+
+When the dataset is linked to a [specification](/v5.15/concepts/product/specification), one call replaces the loop above. Give `evaluations.run()` an agent function whose first parameter is annotated `AgentInput`, and the attached files arrive as `input_data.input_files`, the same `AttachedFile` objects `test_case.input_files` returns:
+
+```python
+def document_agent(input_data: AgentInput) -> AgentResponse:
+    # The same AttachedFile objects as test_case.input_files: filename and mime_type match.
+    document_paths = [
+        galtea.storage.download(attached, output_directory="./.temp/lease-documents")
+        for attached in input_data.input_files
+    ]
+    # None for a document-only test case, like test_case.input above.
+    question = input_data.last_user_message_str() or None
+    return AgentResponse(content=answer_from_documents(question, document_paths))
+
+
+result = galtea.evaluations.run(
+    version_id=version.id,
+    agent=document_agent,
+    specification_ids=[specification.id],
+)
+print(f"Evaluated {result['testCaseCount']} test cases")
+```
+
+Only this signature receives the files. A `(str) -> str` agent receives the question alone, so the SDK warns once when a test case also attaches files and fails the trace for a document-only test case. See [Reading attached files](/v5.15/sdk/api/agent/input#reading-attached-files).
+
+<Note>
+  `galtea.storage.download()` also takes a plain URI, so it fetches any file your organization uploaded, not only test case attachments. See [Download File](/v5.15/sdk/api/storage/download).
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="File inputs" icon="paperclip" href="/v5.15/concepts/product/dataset/test-case#file-inputs">
+    The limits, the accepted file types, and how editing a document test case works.
+  </Card>
+  <Card title="Storage Service" icon="box" href="/v5.15/sdk/api/storage/service">
+    Upload and download files directly, for any purpose.
+  </Card>
+  <Card title="Run Dataset-Based Evaluations" icon="clipboard-check" href="/v5.15/sdk/tutorials/run-dataset-based-evaluations">
+    The same loop for test cases that are plain text.
+  </Card>
+  <Card title="JSON Field Match" icon="brackets-curly" href="/v5.15/concepts/metric/json-field-match">
+    Score a structured answer field by field, without reading the input.
+  </Card>
+</CardGroup>

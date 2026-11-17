@@ -1,0 +1,5 @@
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `EntityNotFoundException` | The platform holds nothing under the id or name you passed. Import it with `from galtea import EntityNotFoundException`. Read the status from `e.status_code`. When the API answered 404 the SDK raises the subclass `EntityNotFoundHTTPError`, which also derives from `requests.HTTPError` and carries `e.response`, so code catching `requests.HTTPError` keeps working. |

@@ -1,0 +1,28 @@
+---
+title: 'Retrieving Monitor'
+sidebarTitle: "Get"
+description: "Retrieve a specific monitor by its ID."
+---
+
+import EntityNotFound from '/v5.14/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/sdk/api/monitor/get).
+</Warning>
+
+## Returns
+Returns a [Monitor](/v5.14/concepts/product/monitor) object for the given monitor ID.
+
+## Example
+```python
+monitor = galtea.monitors.get(monitor_id=monitor.id)
+```
+
+The returned monitor lists `metric_group_ids` (the families picked directly), `specification_ids` (the bound Specifications) and `scored_metric_group_ids` (the families the monitor scores today, from both sources). `specification_ids_by_metric_group_id` maps each family a bound Specification brings to the Specifications behind it.
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

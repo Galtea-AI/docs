@@ -1,0 +1,247 @@
+---
+title: 'Evaluating Conversations'
+description: "Learn how to evaluate multi-turn conversations using Galtea's session-based workflow across dataset-based, past conversations, and production monitoring."
+icon: "comments"
+---
+
+import AgentCallables from '/v5.10/snippets/agent-callables.mdx';
+import ConversationSimulatorCard from '/v5.10/snippets/cards/conversation-simulator-card.mdx';
+import EvaluationCard from '/v5.10/snippets/cards/evaluation-card.mdx';
+import TraceCard from '/v5.10/snippets/cards/trace-card.mdx';
+import SessionCard from '/v5.10/snippets/cards/session-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.10. [Read this page in the latest version](/sdk/tutorials/evaluating-conversations).
+</Warning>
+
+To accurately evaluate interactions within a dialogue, you can use Galtea's session-based workflow. This approach allows you to log an entire conversation and then run evaluations on all of its turns at once.
+
+Certain metrics are specifically designed for conversational analysis and require the full context:
+  - **Role Adherence**: Measures how well the AI stays within its defined role.
+  - **Knowledge Retention**: Assesses the model's ability to remember and use information from previous turns.
+  - **Conversation Completeness**: Evaluates whether the conversation has reached a natural and informative conclusion.
+  - **Conversation Relevancy**: Assesses whether each turn in the conversation is relevant to the ongoing topic.
+
+## The Session-Based Workflow
+
+Every evaluation follows the same two steps: first get the conversation into a [Session](/v5.10/concepts/product/version/session), then evaluate that session.
+
+<Steps>
+    <Step title="Capture the conversation in a session">
+        A [Session](/v5.10/concepts/product/version/session) holds all the turns of one conversation. How the turns get there depends on your use case (simulated, ingested, or live). See [step 1](#1-capture-the-conversation-in-a-session).
+    </Step>
+    <Step title="Evaluate the session">
+        Once the turns are logged, evaluate the whole conversation at once with `evaluations.create()`. See [step 2](#2-evaluate-the-session).
+    </Step>
+</Steps>
+
+## 1. Capture the conversation in a session
+
+How turns get into a session depends on where the conversation comes from. Pick the use case that matches yours. Each one ends with a logged `session` you evaluate in [step 2](#2-evaluate-the-session).
+
+<Tabs>
+  <Tab title="Dataset-based evaluation">
+    Use this when you have test cases. Galtea's [Conversation Simulator](/v5.10/concepts/product/dataset/test-case/conversation-simulator) drives a synthetic user against your own agent, so you provide an agent function. It requires `test_case_id`.
+
+    First, define an agent function that connects Galtea to your product:
+
+<AgentCallables />
+
+    Then fetch a test case, create a session, and run the simulator with your agent. The session is created here on purpose: this page is about inspecting and evaluating one conversation, so you need the `session` object in hand.
+
+```python
+# Fetch your test cases (created from a CSV of behavior test cases)
+test_cases = galtea_client.test_cases.list(dataset_id=behavior_dataset.id)
+if not test_cases:
+    raise ValueError("No test cases found")
+
+# Take one test case (loop over `test_cases` to evaluate them all)
+test_case = test_cases[0]
+
+# Create a session for the test case, then let the simulator drive the
+# conversation between a synthetic user and your agent function (`my_agent`)
+session = galtea_client.sessions.create(version_id=version_id, test_case_id=test_case.id)
+galtea_client.simulator.simulate(
+    session_id=session.id,
+    agent=my_agent,
+    max_turns=test_case.max_iterations or 10,
+)
+```
+
+<Info>
+  See the full simulation workflow in [Simulating Conversations](/v5.10/sdk/tutorials/simulating-conversations).
+</Info>
+
+<Tip>
+  To simulate and evaluate **every** test case of your product in one call, without handling sessions yourself, use `galtea.evaluations.run()` — see [Specification-Driven Evaluations](/v5.10/sdk/tutorials/specification-driven-evaluations).
+</Tip>
+  </Tab>
+
+  <Tab title="Past conversations (offline ingestion)">
+    Use this when the conversation already happened outside Galtea. Create a session (no `test_case_id`) and log all of its turns in a single batch.
+
+```python
+# The conversation already happened: create a session (no test_case_id) and log every turn
+session = galtea_client.sessions.create(
+    version_id=version_id,
+    custom_id="EXTERNAL_CONVERSATION_ID",  # optional: map to your own conversation ID
+    is_production=True,  # set to True when these are real users
+)
+
+conversation_turns = [
+    {"role": "user", "content": "What are some lower-risk investment strategies?"},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+        "retrieval_context": "Low-risk investment options include index funds, government bonds, and Treasury securities.",
+    },
+    {"role": "user", "content": "With age, should the investment strategy change?"},
+    {
+        "role": "assistant",
+        "content": "Yes, many advisors recommend shifting to more conservative investments as you approach retirement.",
+        "retrieval_context": "Financial advisors typically recommend a more conservative asset allocation as investors near retirement age.",
+    },
+]
+
+# Log all turns at once
+galtea_client.traces.create_batch(session_id=session.id, conversation_turns=conversation_turns)
+```
+  </Tab>
+
+  <Tab title="Monitoring (production)">
+    Use this for real-time logging of user interactions from your live product. Create the session with `is_production=True` and log turns as they happen, or batch them at the end.
+
+<Tabs>
+  <Tab title="Log turns individually">
+```python
+# Create a production session and log each turn as it happens in your live app
+session = galtea_client.sessions.create(version_id=version_id, is_production=True)
+
+
+def your_product(user_input: str) -> str:
+    return f"This is a simulated response to '{user_input}'"
+
+
+def handle_turn(user_input: str) -> str:
+    model_output = your_product(user_input)
+    galtea_client.traces.create(session_id=session.id, input=user_input, output=model_output)
+    return model_output
+
+
+# Simulate production interactions
+handle_turn("Hello!")
+handle_turn("What services do you offer?")
+```
+  </Tab>
+  <Tab title="Log turns in a batch">
+```python
+# Or, if you already have the full transcript, create the session and log all turns at once
+session = galtea_client.sessions.create(version_id=version_id, is_production=True)
+
+conversation_turns = [
+    {"role": "user", "content": "What are some lower-risk investment strategies?"},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+    },
+]
+
+galtea_client.traces.create_batch(session_id=session.id, conversation_turns=conversation_turns)
+```
+  </Tab>
+</Tabs>
+
+When the live conversation is over, finish the session so it stops accepting turns and a [Monitor](/v5.10/concepts/product/monitor) can score it. Under a default-config product an explicit finish is how a session completes.
+
+```python
+# When the live conversation is over, finish the session. This closes it (status COMPLETED).
+# Under a default-config product this is how a session completes, and a Monitor scores only
+# closed sessions, so finishing gets it picked up on the next scan.
+galtea_client.sessions.finish(session_id=session.id)
+```
+
+<Info>
+  See the dedicated guide: [Monitor Production Responses](/v5.10/sdk/tutorials/monitor-production-responses-to-user-queries).
+</Info>
+  </Tab>
+</Tabs>
+
+## 2. Evaluate the session
+
+Whichever use case you picked, you now have a `session` with all its turns logged. Evaluate the whole conversation at once, either by passing [Specification](/v5.10/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or by listing metrics explicitly.
+
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Evaluate the whole conversation; metrics are resolved from the specifications automatically
+galtea_client.evaluations.create(
+    session_id=session.id,
+    specification_ids=[conversation_spec.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
+```python
+# Evaluate the whole conversation by listing metrics explicitly
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Conversation Relevancy"},
+        {"name": "Role Adherence"},
+        {"name": "Knowledge Retention"},
+    ],
+)
+```
+  </Tab>
+</Tabs>
+
+<Info>
+  For dataset-based evaluation, run this evaluation inside your loop so every simulated session is evaluated.
+</Info>
+
+## Custom Metrics with Full Conversation Access
+
+When you use `CustomScoreEvaluationMetric`, your `measure()` method always receives a `traces` parameter containing `Trace` objects. For session evaluations this includes all turns; for single trace evaluations it contains one item. This enables conversation-level scoring (e.g., consistency checks, cross-turn analysis).
+
+```python
+from galtea import CustomScoreEvaluationMetric, Trace
+
+
+class ConversationConsistency(CustomScoreEvaluationMetric):
+    """Scores how consistently the assistant responds across all turns."""
+
+    def __init__(self):
+        super().__init__(name=metric_name)
+
+    def measure(self, *args, traces: list[Trace] | None = None, **kwargs) -> float:
+        if not traces:
+            return 0.0
+        # Access the full conversation for cross-turn analysis
+        assistant_outputs = [trace.actual_output for trace in traces if trace.actual_output]
+        if len(assistant_outputs) < 2:
+            return 1.0
+        # Your custom logic here (e.g., check for contradictions across turns)
+        return 0.9
+
+
+galtea_client.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},
+        {"score": ConversationConsistency()},  # Custom multi-turn metric
+    ],
+)
+```
+
+<Info>
+  Each `Trace` object provides `actual_input`, `actual_output`, `latency`, `index`, and other fields. Retrieval context is not a field on the object; it is derived from the turn's `RETRIEVER` spans. See the [custom metrics tutorial](/v5.10/sdk/tutorials/evaluate-with-custom-metrics) for more on custom metrics.
+</Info>
+
+## Learn More
+
+<CardGroup cols={2}>
+  <SessionCard />
+  <TraceCard />
+  <EvaluationCard />
+  <ConversationSimulatorCard />
+</CardGroup>

@@ -1,0 +1,62 @@
+---
+title: 'Monitors Service'
+sidebarTitle: "Service"
+description: "Monitors Service API methods in the Galtea SDK"
+---
+
+import MonitorCard from '/v5.17/snippets/cards/monitor-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/sdk/api/monitor/service).
+</Warning>
+
+The Monitors Service in the Galtea SDK allows you to manage [monitors](/v5.17/concepts/product/monitor) for your products.
+This Service is exposed by the `galtea.monitors` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.17/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a monitor:
+```python
+monitor = galtea.monitors.create(
+    name="Production quality monitor",
+    product_id=product_id,
+    metric_group_ids=[metric_group_id],
+    # Optional: watch a single version. Omit to watch every version of the product.
+    # version_id="your-version-id",
+    sampling_percentage=10,  # score 10% of production sessions (default)
+    monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
+    message_conditions=[
+        MonitorMessageCondition(count="messages", operator="gt", value=1)
+    ],  # the default: skip a session where only the agent spoke once
+)
+```
+
+List monitors:
+```python
+monitors = galtea.monitors.list(
+    product_ids=[product_id],
+    statuses=["ACTIVE"],
+)
+```
+
+## Service Methods
+- [Create Monitor](/v5.17/sdk/api/monitor/create)
+- [Listing Monitors](/v5.17/sdk/api/monitor/list)
+- [Retrieving Monitor](/v5.17/sdk/api/monitor/get)
+- [Updating Monitor](/v5.17/sdk/api/monitor/update)
+- [Pausing Monitor](/v5.17/sdk/api/monitor/pause)
+- [Resuming Monitor](/v5.17/sdk/api/monitor/resume)
+- [Deleting Monitor](/v5.17/sdk/api/monitor/delete)
+
+## Related
+
+<MonitorCard />

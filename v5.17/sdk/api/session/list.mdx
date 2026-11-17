@@ -1,0 +1,68 @@
+---
+title: 'List Sessions'
+sidebarTitle: "List"
+description: "List sessions with optional filtering."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/sdk/api/session/list).
+</Warning>
+
+## Returns
+Returns a list of [Session](/v5.17/concepts/product/version/session) objects.
+
+## Example
+```python
+sessions = galtea.sessions.list(version_id=version_id, limit=10)
+```
+
+## Parameters
+<ResponseField name="version_id" type="string | list[string]" optional>
+  The ID or IDs of the version(s) to filter sessions by.
+</ResponseField>
+<ResponseField name="test_case_id" type="string | list[string]" optional>
+  The ID or IDs of the test case(s) to filter sessions by.
+</ResponseField>
+<ResponseField name="custom_id" type="string | list[string]" optional>
+  The custom ID or IDs to filter sessions by.
+</ResponseField>
+<ResponseField name="dataset_id" type="string | list[string]" optional>
+  The ID or IDs of the dataset(s) to filter sessions by.
+
+  <Note>Deprecated alias: `test_id`.</Note>
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter sessions created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter sessions created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_created_at`.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort sessions by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of sessions to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="10000" optional>
+  Maximum number of sessions to return in a single request.
+  
+  **Default:** `10000`
+</ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the session(s) to retrieve.
+</ResponseField>
+<ResponseField name="status" type="string | list[string]" default="None">
+  Filter sessions by status. Valid values are `PENDING`, `COMPLETED`, and `FAILED`. Accepts a single value or a list of values (results are OR-combined). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="user_id" type="string | list[string]" optional>
+  Filter by the ID of the user who launched the session. A production session has no launcher and never matches this filter. A session ingested from OpenTelemetry traces is production too, unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match. This is an additional filter; it does not satisfy the scoping requirement below.
+</ResponseField>
+<ResponseField name="end_user" type="string" optional>
+  Filter by the end user of the session: the customer of your agent, read from the traces' end-user attributes. The match is exact. A session with no end user never matches. This is an additional filter; it does not satisfy the scoping requirement below.
+</ResponseField>
+<Note>
+  At least one of the scoping filters (`version_id`, `test_case_id`, `custom_id`, `dataset_id`, `id`) described above must be passed to the method. `status`, `user_id` and `end_user` are additional filters and do **not** satisfy this requirement on their own.
+</Note>

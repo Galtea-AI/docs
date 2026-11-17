@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Product'
+sidebarTitle: "Get"
+description: "Retrieve a specific product by its ID."
+---
+
+import EntityNotFound from '/v5.12/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.12. [Read this page in the latest version](/sdk/api/product/get).
+</Warning>
+
+## Returns
+Returns a [Product](/v5.12/concepts/product) object for the given product ID.
+
+## Example
+```python
+product = galtea.products.get(product_id=product_id)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" required>
+  The ID of the product you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

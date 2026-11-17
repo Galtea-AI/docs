@@ -1,0 +1,420 @@
+---
+title: 'Direct Inferences and Evaluations from the Platform'
+description: "Learn how to configure Endpoint Connections to run inferences and evaluations directly from the Galtea Dashboard, without writing any SDK code."
+icon: "tower-broadcast"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.12. [Read this page in the latest version](/sdk/tutorials/direct-inferences-and-evaluations-from-platform).
+</Warning>
+
+Galtea allows you to run inferences against your AI system and evaluate its responses **directly from the Dashboard**, without writing any SDK code. This is made possible by [Endpoint Connections](/v5.12/concepts/product/endpoint-connection), which tell Galtea how to call your API, extract the response, and manage session state across turns.
+
+<Info>
+  This guide covers the **platform-based** workflow. If you prefer to generate inferences programmatically (e.g., in a CI/CD pipeline or custom script), see the [SDK tutorials](/v5.12/sdk/tutorials/run-dataset-based-evaluations) instead.
+</Info>
+
+## Prerequisites
+
+Before you begin, make sure you have the following set up in the [Galtea Dashboard](https://platform.galtea.ai/):
+
+- A [Product](/v5.12/concepts/product) representing your AI system
+- A [Dataset](/v5.12/concepts/product/dataset) with at least one [Test Case](/v5.12/concepts/product/dataset/test-case) to run against your endpoint
+
+## Workflow Overview
+
+<Steps>
+  <Step title="Create an Endpoint Connection">
+    Define how Galtea should call your AI endpoint — URL, authentication, request format, and response extraction.
+  </Step>
+  <Step title="Create a Version with the Endpoint Connection">
+    Create a new version of your product and attach the endpoint connection to it.
+  </Step>
+  <Step title="Run an Evaluation from the Dashboard">
+    Open the version and choose the datasets and metrics to run. Galtea calls your endpoint for each test case, records the traces, and evaluates them.
+  </Step>
+  <Step title="Evaluate Again with Other Metrics">
+    Optional. Score an existing session again with different metrics, without calling your endpoint a second time.
+  </Step>
+</Steps>
+
+## Step 1: Create an Endpoint Connection
+
+{/* <!-- VIDEO PLACEHOLDER: Endpoint connection template authoring walkthrough (90s)
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/endpoint-connection-template-authoring.mp4"
+></video>
+--> */}
+
+Navigate to your product in the Dashboard, switch to **Development** view mode, and open the **Connections** section in the sidebar (under **Product**), then the **Endpoints** tab. Click **New Endpoint Connection** and configure the following:
+
+1. **Name** — A descriptive name (e.g., "Production Chat API").
+2. **Type** — Select `CONVERSATION` for the primary request/response endpoint.
+3. **URL** — The full URL of your AI endpoint (e.g., `https://api.company.com/v1/chat`).
+4. **HTTP Method** — Typically `POST`.
+5. **Authentication** — Choose the auth type (`Bearer`, `API_KEY`, `Basic`, or `None`) and provide the token.
+6. **Input Template** — A Jinja2 template that defines the request body Galtea will send.
+7. **Output Mapping** — JSONPath expressions that tell Galtea how to extract values from the response.
+
+### Input Template
+
+The input template uses [Jinja2](https://jinja.palletsprojects.com/) syntax with placeholders that Galtea fills automatically. At minimum, use `{{ input.user_message }}` to inject the test case input:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+For multi-turn conversations, use `past_turns` to include conversation history:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {% for turn in past_turns %}
+    {"role": "user", "content": "{{ turn.input }}"},
+    {"role": "assistant", "content": "{{ turn.output }}"},
+    {% endfor %}
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ]
+}
+```
+
+When a test case attaches a file, use `input_files` to send it to your endpoint:
+
+```jinja2
+{
+  "question": "{{ input.user_message }}",
+  "document_url": "{{ input_files[0].url }}",
+  "document_name": "{{ input_files[0].filename }}"
+}
+```
+
+Use `{{ input_files[0].base64 }}` instead when your endpoint takes the bytes in the request body. A test case that attaches files is refused when the template names no `input_files` variable.
+
+<Tip>
+  See [Structured Input Template Syntax](/v5.12/concepts/product/endpoint-connection-template-syntax) for the full list of available placeholders and advanced template examples.
+</Tip>
+
+### Output Mapping
+
+The output mapping tells Galtea how to extract values from the API response using [JSONPath](https://goessner.net/articles/JsonPath/) expressions. The `output` key is required:
+
+```json
+{
+  "output": "$.choices[0].message.content"
+}
+```
+
+You can also extract additional values to store as session metadata:
+
+```json
+{
+  "output": "$.choices[0].message.content",
+  "retrieval_context": "$.choices[0].retrieval_context",
+  "session_id": "$.metadata.session_id"
+}
+```
+
+Any extra key beyond the [special keys](/v5.12/concepts/product/endpoint-connection-configuration#special-keys) (`output`, `retrieval_context`, `session_id`, `traces`, `output_files`) is saved to the session metadata and becomes available as a `{{ key }}` placeholder in subsequent turns.
+
+#### Sending an extracted value back (the round-trip)
+
+Extracting a value is only **half** of stateful multi-turn handling. If your agent returns an identifier on the first turn — a `thread_id`, `conversation_id`, or any token that groups subsequent messages — you must also **reference it in the Input Template** so Galtea sends it back on the next turn. Extraction alone stores the value but never resends it.
+
+The round-trip has two coordinated sides:
+
+<CodeGroup>
+```json Output Mapping (extract)
+{
+  "output": "$.content",
+  "thread_id": "$.thread_id"
+}
+```
+
+```jinja2 Input Template (re-send)
+{
+  "message": { "type": "human", "content": "{{ input.user_message }}" },
+  "thread_id": "{{ thread_id }}"
+}
+```
+</CodeGroup>
+
+Turn by turn:
+
+1. **Turn 1** — `thread_id` has no value yet, so `{{ thread_id }}` renders as an empty string. Your agent creates a new thread and returns its id in the response.
+2. **Extraction** — Output Mapping captures `$.thread_id` into session metadata.
+3. **Turn 2+** — `{{ thread_id }}` now renders the captured id, so every following message is routed to the same thread.
+
+<Warning>
+  Configuring the Output Mapping but leaving a **hardcoded** id (or omitting `{{ thread_id }}` entirely) in the Input Template is the most common mistake: the value is captured but never resent, so the agent either starts a fresh thread every turn or — worse, with a fixed id — collides every conversation onto one shared thread and leaks context across unrelated test cases.
+</Warning>
+
+<Tip>
+  On the first turn, undefined placeholders render as empty strings. If your agent **rejects** an empty `thread_id` (rather than treating it as "create a new thread"), omit the field entirely on the first turn with a conditional, minding the trailing comma so the body stays valid JSON:
+
+  ```jinja2
+  {
+    "message": { "type": "human", "content": "{{ input.user_message }}" }{% if thread_id %},
+    "thread_id": "{{ thread_id }}"{% endif %}
+  }
+  ```
+</Tip>
+
+<Info>
+  See [Templates & Mapping — State Management](/v5.12/concepts/product/endpoint-connection-configuration#state-management) for the full reference on how extracted values are stored and reused across turns.
+</Info>
+
+## Step 2: Create a Version with the Endpoint Connection
+
+Navigate to your product and create a new **Version**. When configuring the version:
+
+1. Fill in the version name, model, and any other relevant properties.
+2. Turn on the **Link Connection** toggle. It is off by default; turning it on reveals the connection fields.
+3. Choose **HTTP Endpoint** as the **Conversation Target**.
+4. In the **Endpoint Connection** field, select the endpoint connection you created in Step 1.
+
+Once **Link Connection** is on, the **Endpoint Connection** is the only required connection. For most integrations, this single endpoint handles the entire interaction lifecycle.
+
+<Note>
+  If your AI system requires separate endpoints for session initialization or cleanup, you can optionally configure **Initialization** and **Finalization** endpoint connections. These also appear only under **Link Connection** with the **HTTP Endpoint** target. See [Endpoint Connection — Multi-Step Session Lifecycle](/v5.12/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced) for details.
+</Note>
+
+## Step 3: Run an Evaluation
+
+Once your version is set up with an endpoint connection, you can run it from the Dashboard. Evaluations start from the version, not from the dataset:
+
+1. Navigate to your product's **Versions** section.
+2. Open the version with the configured endpoint connection, or use the **Run Evaluation** button on its row.
+3. Pick what to run in the dialog:
+   - **Specifications** (recommended): every runnable [Specification](/v5.12/concepts/product/specification) is preselected, and its linked datasets and metrics are taken from it.
+   - **Datasets & Metrics**: choose the datasets and [Metrics](/v5.12/concepts/metric) yourself.
+4. Start the run.
+
+The Dashboard then opens the version's **Sessions** tab, where the run's new sessions are already listed. Their evaluations appear on the **Evaluations** tab as each inference finishes.
+
+Galtea will iterate through each test case, call your endpoint using the configured endpoint connection, record the resulting [Traces](/v5.12/concepts/product/version/session/trace), and evaluate them with the metrics you selected. Each test case produces a session with one or more traces depending on whether it's a single-turn or multi-turn test.
+
+## Step 4: Evaluate Again with Other Metrics
+
+The run above already produces scores. Use this step only when you want to score inferences you already have, for example against a metric you added later. It reuses the recorded inferences and does not call your endpoint again:
+
+1. Navigate to the session in the Dashboard.
+2. Click **Run Evaluation**.
+3. Select the [Metrics](/v5.12/concepts/metric) you want to use.
+4. Run the evaluation.
+
+The Dashboard then opens that session's **Evaluations** tab, where the new evaluations are already listed.
+
+Galtea will assess each trace using the selected metrics and provide scores and explanations.
+
+<Tip>
+  For single-turn tests, metrics like [Factual Accuracy](/v5.12/concepts/metric/factual-accuracy) and [Answer Relevancy](/v5.12/concepts/metric/answer-relevancy) work well. For multi-turn conversations, consider [Knowledge Retention](/v5.12/concepts/metric/knowledge-retention), [Role Adherence](/v5.12/concepts/metric/role-adherence), and [Conversation Completeness](/v5.12/concepts/metric/conversation-completeness).
+</Tip>
+
+## Collecting Spans During Direct Inference
+
+There are three ways to collect [spans](/v5.12/concepts/product/version/session/span) during Direct Inference:
+
+1. **Output Mapping (no code)** — Extract spans from the API response using a `traces` key in your output mapping.
+2. **SDK `set_context` (in your handler)** — Pass `{{ trace_id }}` to your endpoint and use the SDK to create spans from within the handler.
+3. **W3C Trace Context Propagation (zero code)** — Galtea sends a `traceparent` header on every turn call, so your OTEL spans correlate with Galtea traces automatically.
+
+### Option 1: Extract Spans via Output Mapping
+
+If your endpoint returns span data in its response, you can extract it using the `traces` key in the output mapping. Galtea will store each span object linked to the trace automatically.
+
+**Example API response:**
+```json
+{
+  "response": "The answer is 42.",
+  "traces": [
+    {
+      "name": "retrieve_context",
+      "type": "RETRIEVER",
+      "latencyMs": 120,
+      "inputData": { "query": "meaning of life" },
+      "outputData": { "documents": ["..."] }
+    },
+    {
+      "name": "generate_response",
+      "type": "GENERATION",
+      "latencyMs": 350,
+      "inputData": { "context": "..." },
+      "outputData": { "text": "The answer is 42." }
+    }
+  ]
+}
+```
+
+**Output Mapping:**
+```json
+{
+  "output": "$.response",
+  "traces": "$.traces"
+}
+```
+
+Galtea extracts the `traces` array and creates `Span` entities linked to the trace. Each object in the array must contain at least a `name` field and can include any [Span properties](/v5.12/concepts/product/version/session/span#span-properties):
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | string | Yes | Name of the traced operation |
+| `type` | string | No | One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL` |
+| `description` | string | No | Human-readable description of the operation |
+| `inputData` | object | No | Input parameters passed to the operation |
+| `outputData` | object | No | Result returned by the operation |
+| `error` | string | No | Error message if the operation failed |
+| `latencyMs` | number | No | Execution time in milliseconds |
+| `metadata` | object | No | Additional custom metadata |
+| `startTime` | string | No | ISO 8601 timestamp when the operation started |
+| `endTime` | string | No | ISO 8601 timestamp when the operation completed |
+| `parentTraceId` | string | No | ID of the parent span for hierarchical relationships |
+
+<Tip>
+  This approach requires no SDK code in your endpoint handler — it works purely through configuration.
+</Tip>
+
+### Option 2: Use `set_context` in Your Endpoint Handler
+
+When running evaluations via Direct Inference, you can collect spans from your endpoint handler by linking the `trace_id` to your span context. Galtea automatically sends the `X-Galtea-Inference-Id` HTTP header with every Direct Inference request, so your endpoint can read it directly — no template changes needed.
+
+Alternatively, you can pass `{{ trace_id }}` in the input template if you prefer to receive it in the request body.
+
+#### 1. Get the `trace_id`
+
+**From the HTTP header (recommended)** — available automatically on every Direct Inference call:
+
+```python
+trace_id = request.headers.get("X-Galtea-Inference-Id")
+```
+
+**From the input template** — include the placeholder in your endpoint connection's input template:
+
+```jinja2
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "user", "content": "{{ input.user_message }}"}
+  ],
+  "metadata": {
+    "trace_id": "{{ trace_id }}"
+  }
+}
+```
+
+#### 2. Use `set_context` in Your Endpoint Handler
+
+In your API endpoint, extract the `trace_id` from the request and use the SDK's `set_context` / `clear_context` to associate spans with it:
+
+```python
+@traced(type=SpanType.AGENT)
+def run_agent(query: str) -> str:
+    # Your agent logic here — all nested @traced calls
+    # will be linked to the trace automatically
+    return "Agent response to: " + query
+
+
+def my_endpoint_handler(request):
+    """Your API endpoint that Galtea calls during Direct Inference."""
+    body = request.json()
+    user_input = body["messages"][-1]["content"]
+    trace_id = body["metadata"]["trace_id"]
+
+    # Set Galtea context so all @traced calls are linked to this trace
+    token = set_context(trace_id=trace_id)
+    try:
+        response = run_agent(user_input)
+    finally:
+        # Flush spans to Galtea and clear context
+        clear_context(token)
+
+    return {"choices": [{"message": {"content": response}}]}
+```
+
+All `@traced`-decorated functions called while the context is active will be automatically linked to the trace in Galtea.
+
+<Info>
+  For a complete guide on tracing setup, decorators, and context managers, see the [Tracing Agent Operations](/v5.12/sdk/tutorials/tracing-agent-operations) tutorial.
+</Info>
+
+### Option 3: W3C Trace Context Propagation
+
+If your service is instrumented with [OpenTelemetry](https://opentelemetry.io/), you can automatically correlate your internal spans with Galtea traces using the [W3C Trace Context](https://www.w3.org/TR/trace-context/) standard — no code changes required on your side.
+
+<Note>
+  **Prerequisites:** Your service must be instrumented with OpenTelemetry and must receive the `traceparent` header Galtea sends with each Direct Inference request. This option correlates your spans with the traces Direct Inference creates. To create production sessions from OTel traces without Direct Inference, see [Monitor Real User Traffic via OpenTelemetry](/v5.12/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+</Note>
+
+#### How it works
+
+Galtea sends a `traceparent` header on every conversation turn call. You do not need to turn anything on. The header carries one [W3C trace ID](https://www.w3.org/TR/trace-context/#trace-id) per turn, the same across retries:
+
+```
+traceparent: 00-{trace-id}-{span-id}-01
+```
+
+Galtea stores that trace ID on the Trace, in its **OpenTelemetry Trace ID** field, when the turn starts and before it calls your endpoint. Your OTEL-instrumented service automatically creates child spans under that trace. Spans your agent exports before it answers attach to the turn. A collector can correlate the two with the stored trace ID.
+
+Galtea sends the header whether or not the platform's own tracing is on. Galtea refuses a `traceparent` header in your custom headers on save (400), because it sets its own. Galtea also sends a `baggage` header that names the turn. See [Baggage](/v5.12/concepts/product/endpoint-connection-configuration#baggage) for what it does and how to use it.
+
+<Note>
+  This option is only available for **Conversation** endpoint connections — the ones that handle inference calls. Initialization and Finalization endpoints are session lifecycle calls where trace correlation does not apply.
+</Note>
+
+<Tip>
+  The trace ID is stored on each trace and visible in the dashboard, so you can correlate traces even without checking your observability platform.
+</Tip>
+
+#### 1. Configure your service for OTEL
+
+Ensure your service has OpenTelemetry instrumentation enabled. Most frameworks support [auto-instrumentation](https://opentelemetry.io/docs/zero-code/) which requires no code changes:
+
+```bash
+# Python example
+pip install opentelemetry-distro opentelemetry-exporter-otlp
+opentelemetry-bootstrap -a install
+```
+
+#### 2. Send your spans to Galtea
+
+Point your OTel exporter or Collector at Galtea's public OTel endpoint. [Send OpenTelemetry Traces to Galtea](/v5.12/sdk/tutorials/send-opentelemetry-traces-to-galtea) covers the endpoint, the `Authorization: Bearer <API key>` requirement, the exporter and Collector configuration, and a curl check to verify your key.
+
+Once configured, spans from your service will be automatically linked to the corresponding Galtea traces via the shared trace ID.
+
+<Warning>
+  This approach only works for **Direct Inference** (where Galtea initiates the call to your endpoint). For SDK-based connections where your code calls the Galtea API, use the SDK's [span context](/v5.12/sdk/api/span/set-context) mechanism instead.
+</Warning>
+
+<Info>
+  To control how span content maps to Span records (the `galtea.span.*` attributes and the automatically mapped OTel fields), see [How span content maps to Span records](/v5.12/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records). To create production sessions from OTel traffic without Direct Inference, see [Monitor Real User Traffic via OpenTelemetry](/v5.12/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).
+</Info>
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Endpoint Connection" icon="plug" href="/v5.12/concepts/product/endpoint-connection">
+    Full reference for configuring endpoint connections
+  </Card>
+  <Card title="Version" icon="code-branch" href="/v5.12/concepts/product/version">
+    Learn about versions and how endpoint connections integrate with them
+  </Card>
+  <Card title="Evaluations" icon="clipboard-check" href="/v5.12/concepts/product/version/session/evaluation">
+    Understand how evaluations work
+  </Card>
+  <Card title="Metrics" icon="brackets-curly" href="/v5.12/concepts/metric">
+    Browse available metrics for evaluating your AI
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/v5.12/sdk/tutorials/tracing-agent-operations">
+    Capture and analyze your agent's internal operations
+  </Card>
+</CardGroup>
+

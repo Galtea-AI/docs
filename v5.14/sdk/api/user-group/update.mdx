@@ -1,0 +1,56 @@
+---
+title: "Update User Group"
+sidebarTitle: "Update"
+description: "Update an existing user group."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/sdk/api/user-group/update).
+</Warning>
+
+Only an OWNER or ADMIN can update a user group.
+
+## Returns
+Returns the updated [User Group](/v5.14/concepts/user-group) object.
+
+## Example
+```python
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    name="senior-quality-reviewers-" + run_identifier,
+    description="Senior team for quality reviews",
+)
+```
+
+### Set a permission list
+```python
+# Give the group a list of product permissions: its members can do exactly these actions
+# on the group's products, as far as their role allows.
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    permissions=["product.read", "analytics.read", "analytics.readCoverage"],
+)
+```
+
+### Remove the permission list
+```python
+# None removes the custom list. Leaving `permissions` out keeps the current list.
+user_group = galtea.user_groups.update(user_group_id=user_group_id, permissions=None)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the user group.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  New description for the user group.
+</ResponseField>
+<ResponseField name="all_products" type="boolean" optional>
+  Links the group to every product of the organization, current and future. A MEMBER, READER or HUMAN_EVALUATOR in the group then reaches every product.
+</ResponseField>
+<ResponseField name="permissions" type="list[string] | None" optional>
+  The product permissions the group grants on its products, each written `entity.action`, for example `analytics.readCoverage`. A list replaces the current list, and an empty list grants nothing. Pass `None` to remove the custom list, so the group grants every permission the role of its members allows. Leave it out to keep the current list. The API answers 400 for an entry that cannot be granted, for an action without the `read` of its entity, for `evaluation.readInference` without `inferenceResult.read`, and for a non-empty list without `product.read`. See [permission lists](/v5.14/concepts/user-group#permission-lists).
+</ResponseField>

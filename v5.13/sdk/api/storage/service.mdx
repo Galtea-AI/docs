@@ -1,0 +1,26 @@
+---
+title: 'Storage Service'
+sidebarTitle: "Service"
+description: "Storage Service API methods in the Galtea SDK"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/storage/service).
+</Warning>
+
+The Storage Service moves files between this machine and the platform's object storage. The API hands out a link and the file travels through it. On most deployments that link is a presigned storage URL, so the bytes never pass through the API. A deployment whose network cannot reach storage serves the link from the API itself instead. Either way, only the resulting reference is sent back to the API.
+This Service is exposed by the `galtea.storage` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.13/sdk/api/galtea).
+</Info>
+
+Most test cases attach files through [`test_cases.create()`](/v5.13/sdk/api/test-case/create) or [`test_cases.upload_input_file()`](/v5.13/sdk/api/test-case/upload-input-file), which call `upload()` for you. Traces do the same through `input_file_paths` and `output_file_paths` on [`traces.create()`](/v5.13/sdk/api/trace/create) and [`traces.update()`](/v5.13/sdk/api/trace/update). Reach for `galtea.storage` directly when you need to fetch the bytes back, or upload a file for a purpose other than a test case input or a trace.
+
+For the full round trip, from a dataset of documents to a scored answer, see [Evaluate Document Inputs](/v5.13/sdk/tutorials/evaluate-document-inputs).
+
+## Service Methods
+
+- [Upload File](/v5.13/sdk/api/storage/upload)
+- [Download File](/v5.13/sdk/api/storage/download)
+- [Read File](/v5.13/sdk/api/storage/read)

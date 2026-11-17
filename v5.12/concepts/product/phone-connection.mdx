@@ -1,0 +1,134 @@
+---
+title: "Phone Connection"
+sidebarTitle: "Overview"
+description: "A reusable telephony connection that lets Galtea dial your AI agent's phone number for voice evaluation."
+---
+
+import ConceptsOverviewCard from '/v5.12/snippets/cards/concepts-overview-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.12. [Read this page in the latest version](/concepts/product/phone-connection).
+</Warning>
+
+## What is a Phone Connection?
+
+A Phone Connection tells Galtea how to reach your AI agent over the phone. Instead of calling an HTTP API, Galtea **dials your agent's phone number** and runs the conversation as a real voice call — this is **Direct Inference over the phone**. You configure the phone number once, and Galtea uses it to drive voice evaluations against your telephony agent automatically. The simulated caller's language is taken from each **test case** (see [below](#how-the-callers-language-is-chosen)), so one connection serves test cases in different languages.
+
+## Use Cases
+
+- **Evaluate voice agents** — Galtea calls your agent's phone number directly for each test case, exercising the full telephony stack
+- **Multi-turn conversation evaluation** — For Behavior test cases, Galtea drives a full conversation using the test case's persona, goal, and scenario, with the conversation simulator generating each user turn.
+- **Single-turn evaluation** — For Accuracy and Security test cases, Galtea speaks the test case's input line into the call and evaluates the agent's reply — the voice equivalent of a single-turn HTTP run.
+- **Standardize call configuration** — Define a reusable phone number and call protocol for repeatable voice evaluations
+- **Manage multiple agents** — Create separate phone connections for different agents or environments
+
+## Creating a Phone Connection
+
+To create a Phone Connection:
+
+1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
+2. In **Development** view mode, open the **Connections** section in the sidebar (under **Product**), then the **Phone** tab
+3. Click "New Phone Connection"
+4. Configure the connection properties as described below
+
+## Phone Connection Properties
+
+<ResponseField name="Name" type="Text" required>
+  A unique name for the phone connection within the product. **Example**: "Production Voice Agent" or "Staging IVR".
+</ResponseField>
+
+<ResponseField name="Phone Number" type="Text" required>
+  The phone number Galtea dials to reach your AI agent, in [E.164 format](https://en.wikipedia.org/wiki/E.164) (a leading `+` followed by the country code and number). **Example**: `+14155552671`.
+</ResponseField>
+
+<ResponseField name="Agent Speaks First" type="Checkbox">
+  Controls whether the voice agent opens the conversation once the call connects. Leave it **unchecked** (the default) when the simulated caller should speak first, which suits agents that wait for a greeting from the user. **Check** it for interviewer-style agents that greet the caller first.
+</ResponseField>
+
+## How the caller's language is chosen
+
+The simulated caller's spoken language is **not** set on the phone connection — it comes from each [test case](/v5.12/concepts/product/dataset/test-case)'s language. Because a phone connection is attached to a [Version](/v5.12/concepts/product/version) and a version runs many test cases, this lets one connection cover test cases in different languages.
+
+With a multilingual text-to-speech provider, the test case's language drives the synthesis language and the voice is selected automatically (e.g. a Spanish test case → the caller speaks Spanish with a natively-accented voice). When a test case has no language set, the provider falls back to its configured default voice.
+
+## Adding background noise to a call
+
+Like language, background noise is **not** set on the phone connection — it comes from each [dataset](/v5.12/concepts/product/dataset) or [test case](/v5.12/concepts/product/dataset/test-case). Two optional fields control it:
+
+- **Background Noise Profile** — the kind of noise: clip-backed (`office`, `street`, `car`) or synthetic (`white`, `pink`). Leave unset for a clean recording.
+- **Background Noise Level** — how loud the noise is relative to the caller's speech: `light`, `medium`, or `heavy`.
+
+Both must be set together; setting only one is rejected. Galtea mixes the noise into the simulated caller's audio during the call, so it tests how your agent behaves under noisy conditions (e.g. a caller phoning from a busy street). The saved [call recording](/v5.12/concepts/product/version/session) contains the noise, so what you hear on playback in the dashboard is what your agent heard.
+
+A dataset carries a default background noise setting, and each test case can override it. A test case created without its own setting inherits the dataset's setting at creation time; setting a test case's noise explicitly (including clearing it) overrides that default for that case alone.
+
+<Note>
+  Background noise only applies to voice datasets run over a phone connection. It has no effect on datasets run over an [Endpoint Connection](/v5.12/concepts/product/endpoint-connection).
+</Note>
+
+## Relation to Versions
+
+A Phone Connection becomes the **conversation target** of a [Version](/v5.12/concepts/product/version): when a version references a phone connection, Galtea dials that number to run each evaluation.
+
+A version's conversation target is **mutually exclusive** — a version connects to your AI product either through an [Endpoint Connection](/v5.12/concepts/product/endpoint-connection) **or** through a Phone Connection, never both. Choose an endpoint connection when Galtea should call your HTTP API, or a phone connection when Galtea should place a voice call.
+
+## Relation to Voice Evaluation
+
+Phone Connections power **voice evaluation**: because Galtea drives a real phone call, the conversation, transcription, and resulting inferences reflect how your agent behaves over the telephony channel. This makes phone connections the entry point for evaluating voice agents end-to-end.
+
+Phone connections run **any** dataset type — no additional configuration is required beyond attaching the phone connection to the version:
+
+- **Behavior** test cases run multi-turn: the conversation simulator drives each user turn from the test case's persona, goal, and scenario.
+- **Accuracy** and **Security** test cases run single-turn: Galtea speaks the test case's input line into the call and evaluates the agent's reply.
+
+<Note>
+  For single-turn (Accuracy/Security) datasets scored by **deterministic metrics**, leave **Agent Speaks First** unchecked (the default). When the agent speaks first, the call has two turns (the agent's greeting plus the scripted line), which deterministic metrics — designed for a single turn — cannot score correctly. Multi-turn (Behavior) datasets are unaffected.
+</Note>
+
+The API automatically transcribes the agent's audio responses using speech-to-text, so no manual transcript preparation is required. Each recorded agent turn is transcribed before evaluation runs, and the written transcript is what metrics score — your agent's voice output is evaluated as accurately as any text-based agent.
+
+Both sides of every turn are recorded and stored on the `Trace` for that turn:
+
+- **Agent audio** (what your agent said): stored as a content-parts envelope on `actualOutput`; access the envelope via the SDK's `.actual_output_data` field and the scored transcript via `.actual_output`.
+- **Simulated user audio** (what the synthetic caller said): stored as a content-parts envelope on `input`; access the envelope via the SDK's `.input_data` field and the spoken transcript via `.input`.
+
+This means the full phone conversation — both the synthetic user side and the agent side — can be played back turn by turn in the dashboard's audio player and read programmatically via the SDK. See [Trace](/v5.12/concepts/product/version/session/trace) for the envelope shapes.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use descriptive names">
+    Choose names that clearly identify the agent's purpose and environment, such as "Production Voice Agent" or "Staging IVR".
+  </Accordion>
+
+  <Accordion title="Always use E.164 format">
+    Provide the phone number with a leading `+` and country code (e.g., `+14155552671`). Numbers in other formats are rejected.
+  </Accordion>
+
+  <Accordion title="Set the call's language on the test case">
+    Set each test case's language to the language your agent operates in. With a multilingual text-to-speech provider the simulated caller then speaks that language with a natively-accented voice (e.g. Spanish), with no per-connection configuration needed.
+  </Accordion>
+
+  <Accordion title="Set a default background noise on the dataset">
+    Set the background noise profile and level on the dataset so every generated or CSV-uploaded test case inherits realistic ambient noise automatically. Override it on individual test cases only when you need a specific case to be quieter, louder, or silent.
+  </Accordion>
+
+  <Accordion title="Set who speaks first">
+    If your agent greets the caller (interviewer-style), check **Agent Speaks First**. Leave it unchecked when your agent waits for the user to initiate the conversation.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Endpoint Connection" icon="plug" href="/v5.12/concepts/product/endpoint-connection">
+    Connect to your AI product over an HTTP API instead of the phone.
+  </Card>
+  <Card title="Phone Connection Service SDK" icon="phone" href="/v5.12/sdk/api/phone-connection/service">
+    Manage phone connections programmatically using the Python SDK.
+  </Card>
+  <Card title="Version" icon="code-branch" href="/v5.12/concepts/product/version">
+    Attach a phone connection to a version for voice evaluation.
+  </Card>
+</CardGroup>

@@ -1,0 +1,28 @@
+---
+title: 'Retrieving Dataset'
+sidebarTitle: "Get"
+description: "Retrieve a specific dataset by its ID."
+---
+
+import EntityNotFound from '/v5.11/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.11. [Read this page in the latest version](/sdk/api/dataset/get).
+</Warning>
+
+## Returns
+Returns a [Dataset](/v5.11/concepts/product/dataset) object for the given dataset ID.
+
+## Example
+```python
+dataset = galtea.datasets.get(dataset_id=dataset_id)
+```
+
+## Parameters
+<ResponseField name="dataset_id" type="string" required>
+  The ID of the dataset you want to retrieve.
+
+  <Note>Deprecated alias: `test_id`.</Note>
+</ResponseField>
+
+<EntityNotFound />

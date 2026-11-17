@@ -1,0 +1,77 @@
+---
+title: 'Listing Test Cases'
+sidebarTitle: "List"
+description: "List all test cases associated with a specific dataset."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/sdk/api/test-case/list).
+</Warning>
+
+## Returns
+Returns a list of [TestCase](/v5.15/concepts/product/dataset/test-case) objects for the given dataset.
+
+## Example
+```python
+test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
+```
+
+## Parameters
+<ResponseField name="dataset_id" type="string | list[string]" optional>
+  The ID or IDs of the dataset you want to get the test cases from.
+
+  <Note>Deprecated alias: `test_id`.</Note>
+</ResponseField>
+<ResponseField name="languages" type="list[string]" optional>
+  Languages to filter test cases by. Accepts [BCP-47 language tags](https://en.wikipedia.org/wiki/IETF_language_tag) — a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`).
+  - https://en.wikipedia.org/wiki/IETF_language_tag
+</ResponseField>
+<ResponseField name="variants" type="list[string]" optional>
+  The list of variants to filter by.
+</ResponseField>
+<ResponseField name="strategies" type="list[string]" optional>
+  The list of strategies to filter by.
+</ResponseField>
+<ResponseField name="expected_tools" type="list[string]" optional>
+  The list of expected tools to filter by. It will retrieve test cases that contain exactly the same specified tools or more.
+</ResponseField>
+<ResponseField name="reviewed" type="bool" optional>
+  Filter by reviewed status.
+</ResponseField>
+<ResponseField name="user_score" type="int" optional>
+  Filter by user score (0 for unreviewed, 1 for good quality, -1 for bad quality).
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter test cases created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter test cases created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_created_at`.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort test cases by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of test cases to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="10000" optional>
+  Maximum number of test cases to return in a single request.
+  
+  **Default:** `10000`
+</ResponseField>
+<ResponseField name="include_legacy" type="bool" default="True">
+  Whether to include superseded (legacy) test-case revisions in the results.
+
+  **Default:** `True` — a family's older revisions are returned alongside its current active revision, matching the API. Set to `False` to return only the active head of each revision family.
+</ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the test case(s) to retrieve.
+</ResponseField>
+<ResponseField name="input" type="string" optional>
+  Case-insensitive substring filter applied across the test case input JSON values. Only test cases whose input contains this substring (when cast to text) are returned.
+</ResponseField>
+<Note>
+  At least one of the 2 filter parameters (`dataset_id`, `id`) described above must be passed to the method
+</Note>

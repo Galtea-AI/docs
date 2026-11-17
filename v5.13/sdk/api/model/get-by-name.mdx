@@ -1,0 +1,26 @@
+---
+title: 'Get Model By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific model by its name within the authenticated user's organization."
+---
+
+import EntityNotFound from '/v5.13/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/model/get-by-name).
+</Warning>
+
+## Returns
+Returns a [Model](/v5.13/concepts/model) object for the given name.
+
+## Example
+```python
+model = galtea.models.get_by_name(name=model_name)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the model to retrieve.
+</ResponseField>
+
+<EntityNotFound />

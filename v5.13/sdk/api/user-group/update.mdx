@@ -1,0 +1,37 @@
+---
+title: "Update User Group"
+sidebarTitle: "Update"
+description: "Update an existing user group."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/user-group/update).
+</Warning>
+
+Only an OWNER or ADMIN can update a user group.
+
+## Returns
+Returns the updated [User Group](/v5.13/concepts/user-group) object.
+
+## Example
+```python
+user_group = galtea.user_groups.update(
+    user_group_id=user_group_id,
+    name="senior-quality-reviewers-" + run_identifier,
+    description="Senior team for quality reviews",
+)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the user group.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  New description for the user group.
+</ResponseField>
+<ResponseField name="all_products" type="boolean" optional>
+  Links the group to every product of the organization, current and future. A READER or HUMAN_EVALUATOR in the group then sees every product.
+</ResponseField>

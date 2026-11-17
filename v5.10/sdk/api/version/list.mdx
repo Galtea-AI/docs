@@ -1,0 +1,51 @@
+---
+title: 'Listing Versions'
+sidebarTitle: "List"
+description: "List all versions associated with a specific product."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.10. [Read this page in the latest version](/sdk/api/version/list).
+</Warning>
+
+## Returns
+Returns a list of [Version](/v5.10/concepts/product/version) objects for the given product. Each object carries the version's `number`, its product-local identity. On a self-hosted deployment older than version numbers, `number` is `None`.
+
+## Example
+```python
+versions = galtea.versions.list(product_id=product_id, limit=5)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string | list[string]" optional>
+  The ID or IDs of the product(s) for which you want to list versions.
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter versions created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter versions created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_created_at`.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort versions by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of versions to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="10000" optional>
+  Maximum number of versions to return in a single request.
+  
+  **Default:** `10000`
+</ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the version(s) to retrieve.
+</ResponseField>
+<ResponseField name="parent_version_id" type="string | list[string]" default="None">
+  Filter versions by their parent [version](/v5.10/concepts/product/version#version-lineage). Pass one or more parent IDs to return only the revisions iterated from those parents. This is a refinement filter, so you must still pass `product_id` or `id`.
+</ResponseField>
+<Note>
+  At least one of the 2 filter parameters (`product_id`, `id`) described above must be passed to the method
+</Note>

@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Metric By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific metric by its name."
+---
+
+import EntityNotFound from '/v5.16/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/sdk/api/metric/get-by-name).
+</Warning>
+
+## Returns
+Returns a [Metric](/v5.16/concepts/metric) object for the given metric name.
+
+## Example
+```python
+metric = galtea.metrics.get_by_name(name=metric_name)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  The name of the metric you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

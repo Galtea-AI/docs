@@ -1,0 +1,60 @@
+---
+title: 'Dataset Service'
+sidebarTitle: "Service"
+description: "Dataset Service API methods in the Galtea SDK"
+---
+
+import DatasetCard from '/v5.12/snippets/cards/dataset-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.12. [Read this page in the latest version](/sdk/api/dataset/service).
+</Warning>
+
+The Dataset Service in the Galtea SDK allows you to manage [datasets](/v5.12/concepts/product/dataset) for evaluating your products.
+This Service is exposed by the `galtea.datasets` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.12/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a dataset:
+```python
+dataset = galtea.datasets.create(
+    name=dataset_name,
+    type="ACCURACY",
+    product_id=product_id,
+    ground_truth_file_path="path/to/knowledge.md",
+    language="english",
+    max_test_cases=5,
+)
+```
+
+List datasets for a product:
+```python
+datasets = galtea.datasets.list(product_id=product_id, limit=10)
+```
+
+Get a dataset by ID:
+```python
+dataset = galtea.datasets.get(dataset_id=dataset_id)
+```
+
+## Service Methods
+- [Create Dataset](/v5.12/sdk/api/dataset/create)
+- [Listing Datasets](/v5.12/sdk/api/dataset/list)
+- [Retrieving Dataset](/v5.12/sdk/api/dataset/get)
+- [Retrieving Dataset By Name](/v5.12/sdk/api/dataset/get-by-name)
+- [Updating Dataset](/v5.12/sdk/api/dataset/update)
+- [Deleting Dataset](/v5.12/sdk/api/dataset/delete)
+- [Downloading Dataset](/v5.12/sdk/api/dataset/download)
+
+## Related
+
+<DatasetCard />

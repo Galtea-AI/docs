@@ -1,0 +1,39 @@
+---
+title: 'Downloading Dataset'
+sidebarTitle: "Download"
+description: "Download the file associated with a specific dataset."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/sdk/api/dataset/download).
+</Warning>
+
+## Returns
+Returns the local file path to the downloaded dataset file.
+
+## Example
+```python
+downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./.temp")
+```
+
+## Parameters
+<ResponseField name="dataset" type="Dataset object" required>
+  The Dataset object (retrieved via `get` or `get_by_name`) for which you want to download the associated file. The dataset must have a `uri` attribute.
+
+  <Note>Deprecated alias: `test`.</Note>
+</ResponseField>
+<ResponseField name="output_directory" type="string" default="the current directory" optional>
+  The local directory path where the dataset file will be saved.
+</ResponseField>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `ValueError` | No dataset was given, or it has no associated file. |
+| `Exception` | The download link expired, or the transfer from storage failed. |
+
+<Note>
+  A failed download raises instead of returning `None`, and the message never contains the
+  presigned link.
+</Note>

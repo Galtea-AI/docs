@@ -20,6 +20,6 @@
 - Name: `YYYYMMDD-HHMM-short-name.mdx`, in UTC, when you write it. Body: a `## Title` heading, no frontmatter, then what the user can now do, rarely more than 3 sentences.
 - Edit an entry until a release ships it. After that, a change gets a new entry.
 
-## Local checks
+## Verify
 
-Use the `test-docs` skill to preview and build. After editing an MDX file, run `mint validate` from `docs/` (Node 22) and read its output for `parsing error`: it exits 0 on one. `mint broken-links` does not check syntax. Components and templates: `component_reference.md`.
+Like CI: `python -m unittest discover -s scripts -p 'test_*.py'`, then `python scripts/run.py --validate` and `ruff format --check .`. A bare `run.py` starts `mint dev`, which never exits. After editing an MDX file, run `mint validate` from `docs/` (Node 22) and read its output for `parsing error`: it exits 0 on one. `mint broken-links` does not check syntax. Components and templates: `component_reference.md`.

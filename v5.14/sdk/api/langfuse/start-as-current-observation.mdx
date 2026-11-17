@@ -1,0 +1,86 @@
+---
+title: 'start_as_current_observation'
+sidebarTitle: "start_as_current_observation"
+description: "Drop-in replacement for Langfuse's start_as_current_observation context manager with Galtea span linking."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/sdk/api/langfuse/start-as-current-observation).
+</Warning>
+
+## Example
+
+```python
+from galtea.integrations.langfuse import start_as_current_observation
+
+# Without Galtea correlation:
+with start_as_current_observation(name="process-query", as_type="span") as span:
+    result = run_agent("user query")
+    span.update(output=result)
+
+# With Galtea correlation:
+with start_as_current_observation(
+    name="process-query",
+    as_type="span",
+    trace_id="trace_abc123",
+) as span:
+    result = run_agent("user query")
+    span.update(output=result)
+```
+
+<Note>
+  This is a synchronous context manager. Inside `async def` code, use plain `with` (not `async with`); `async with` raises `TypeError` because the underlying generator does not implement the async context manager protocol. For async agents, prefer the [`@observe`](/v5.14/sdk/api/langfuse/observe) decorator.
+</Note>
+
+## Parameters
+
+<ResponseField name="trace_id" type="str" optional>
+  Galtea trace ID to link spans to. When provided, the wrapper manages the Galtea span context automatically for the duration of the block.
+</ResponseField>
+<ResponseField name="name" type="str" required>
+  Span name for the observation.
+</ResponseField>
+<ResponseField name="as_type" type="str" optional>
+  Langfuse observation type: `span` (default), `generation`, `agent`, `tool`, `retriever`, `chain`, `evaluator`, `embedding`, `guardrail`. Mapped to Galtea's `SpanType` automatically. See [observation types](/v5.14/sdk/integrations/langfuse/overview#observation-types).
+</ResponseField>
+
+All other keyword arguments are forwarded to Langfuse's `start_as_current_observation`.
+
+## Yields
+
+A Langfuse observation span object. Supports all native Langfuse span methods:
+
+<ResponseField name="update(**kwargs)" type="method">
+  Update observation attributes (`output`, `model`, `metadata`, etc.).
+</ResponseField>
+<ResponseField name="start_as_current_observation(**kwargs)" type="method">
+  Create a child observation. Child calls are **native Langfuse** — no Galtea wrapper needed.
+</ResponseField>
+<ResponseField name="score(**kwargs)" type="method">
+  Attach a score to this observation.
+</ResponseField>
+
+## Nested Observations
+
+Only the **root** call needs the Galtea wrapper. Child observations created via `root.start_as_current_observation(...)` are native Langfuse — they are automatically linked to Galtea while the root context is active.
+
+```python
+from galtea.integrations.langfuse import start_as_current_observation
+
+# Only the root call needs the Galtea wrapper.
+# Child calls on yielded spans are native Langfuse.
+with start_as_current_observation(
+    name="pipeline",
+    as_type="span",
+    trace_id="trace_abc123",
+) as root:
+    with root.start_as_current_observation(name="retrieve", as_type="retriever") as ret:
+        docs = ["doc1", "doc2"]
+        ret.update(output=docs)
+
+    with root.start_as_current_observation(name="generate", as_type="generation") as gen:
+        response = "Generated response"
+        gen.update(output=response, model="gpt-4")
+
+    root.update(output=response)
+```

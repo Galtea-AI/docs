@@ -1,0 +1,144 @@
+---
+title: "Session"
+sidebarTitle: "Overview"
+description: "A group of traces that make up a full conversation"
+---
+
+import ConceptsOverviewCard from '/v5.16/snippets/cards/concepts-overview-card.mdx';
+import SDKSessionServiceCard from '/v5.16/snippets/cards/sdk-session-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/concepts/product/version/session).
+</Warning>
+
+## What is a Session?
+
+A session groups the turns of a single conversation between a user and your AI product. It contains one or more [traces](/v5.16/concepts/product/version/session/trace) (input/output pairs) and can be evaluated as a whole using conversational metrics.
+
+You create sessions explicitly with `sessions.create()` for full control over session lifecycle and grouping. If you give a session your own `custom_id`, you can then reference it by that id when [creating a trace](/v5.16/sdk/api/trace/create): pass it as `session_custom_id` (with a `version_id` or `product_id` anchor) and Galtea appends the turn to that existing session. Sessions can also be created automatically by ingesting OpenTelemetry traces; see [Monitor Real User Traffic via OpenTelemetry](/v5.16/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry). Those are production sessions, unless the spans name a test case with the `galtea.test_case.id` attribute.
+
+You can create, view, and manage sessions programmatically using the [Galtea SDK](/v5.16/sdk/api/session/service).
+
+## SDK Integration
+
+<SDKSessionServiceCard />
+
+## Session Properties
+
+<ResponseField name="Custom ID" type="Text" required>
+  The custom ID associated with the session.
+  This is usually a client-side generated ID that identifies the conversation session between a user and a LLM app.
+  It is unique per version: logging a trace with a `session_custom_id` finds the existing session with that custom ID and appends to it (see [Create Trace](/v5.16/sdk/api/trace/create)).
+</ResponseField>
+
+<ResponseField name="Version" type="Version" required>
+  The version associated with the session.
+</ResponseField>
+
+<ResponseField name="Test Case" type="Test Case" optional>
+  The test case associated with the session. This is typically used for non-production evaluations. A session ingested from OpenTelemetry traces also carries one when the spans name it with the `galtea.test_case.id` attribute.
+</ResponseField>
+
+<ResponseField name="Launched By" type="User" optional>
+  The user who launched the session, read-only and set by the API. Null for a production session, which has no launching user. A session ingested from OpenTelemetry traces is production too, unless the spans name a test case; that one records the user of the API key that sent the traces.
+</ResponseField>
+
+<ResponseField name="Run" type="Run" optional>
+  The [Run](/v5.16/concepts/product/run) that created this session (`runId` in the API). Null for a session you log yourself: one opened via `POST /sessions` with no run id, a trace file import, or an OpenTelemetry-ingested session. You can also set it yourself: pass `runId` to `POST /sessions` to add the session to a Run you opened. The API refuses that on a production session. A production session never carries one, not even when a launch created it. This field names the creator only. A Run also reaches the sessions it scored, through its evaluations. See [The sessions of a Run](/v5.16/concepts/product/run#the-sessions-of-a-run).
+</ResponseField>
+
+<ResponseField name="Is Production" type="Boolean" optional>
+  Indicates whether the session represents real production traffic. Defaults to `True` when `test_case_id` is omitted at creation and `False` when a `test_case_id` is provided. A session ingested from OpenTelemetry traces follows the same rule: it is non-production when the spans name a test case, and production otherwise. Externally-ingested sessions (e.g. imported traces) may also be classified as non-production without supplying a `test_case_id`. The only forbidden combination is `test_case_id` set together with `is_production=True`. When `test_case_id` is set, the session `context` is derived from the test case; otherwise the `context` from the request is used directly.
+</ResponseField>
+
+<ResponseField name="Is Seed" type="Boolean" optional>
+  Indicates whether the session holds a [test case's predefined conversation](/v5.16/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation). Read-only, and set by the API. A seed session is stored but never executed: each run copies its turns into the run's own session and continues from there, so the seed itself never changes. The test case that owns it names it in `seedSessionId`, and a session is the seed of at most one test case.
+
+  Listing sessions leaves seed sessions out, so this field reads `False` on every session a list returns. To read one, ask for it by id: take `seed_session_id` from the test case and fetch that session.
+</ResponseField>
+
+<ResponseField name="Context" type="Text" optional>
+  The context provided to the AI product during the session or ground-truth related context. For production sessions, this value is taken from the request. For non-production sessions, it is derived from the linked test case.
+</ResponseField>
+
+<ResponseField name="Metadata" type="Object" optional>
+  Additional custom metadata about the session. This can be used to store any relevant information that doesn't fit into the other fields.
+</ResponseField>
+
+<ResponseField name="Status" type="Enum">
+  The lifecycle state of the session, and the single signal for whether it is open or closed.
+  - `PENDING` (**open**): the session accepts new turns. Every session starts here.
+  - `COMPLETED` (**closed**): the session finished successfully.
+  - `FAILED` (**closed**): the session ended with an error.
+
+  A session stays `PENDING` until it closes. It closes when you finish it explicitly with [`sessions.finish()`](/v5.16/sdk/api/session/finish), or when the product's auto-close setting closes it after a window of inactivity. On a default-configured product every session, development or production, auto-closes after 30 quiet minutes, and calling `finish()` closes it right away. A closed session goes back to `PENDING` when a new turn arrives, unless you change the product's closed-session policy. See [Session Lifecycle](#session-lifecycle) for the full open/closed model and what happens to a turn that arrives after the session closes.
+</ResponseField>
+
+<ResponseField name="Stopping Reason" type="Text" optional>
+  Human-readable text describing why the conversation ended, for example "Automatically closed after 30 minutes of inactivity". It is a label for people to read: it does not lock the session or drive any behavior. The session `Status` alone decides whether the session is open or closed.
+</ResponseField>
+
+<ResponseField name="Error" type="Text" optional>
+  Any error message associated with the session. This is useful for tracking failed sessions or sessions that encountered issues.
+</ResponseField>
+
+<ResponseField name="Turn Count" type="Integer" optional>
+  How many traces the session holds, not counting deleted ones. Read-only, and computed by the API on each request. Only the session list (`GET /sessions`) returns it: a read of one session leaves it out. Sort the list by it with `sort=turnCount` followed by `asc` or `desc`. Such a sort is refused with a 400 when more than 50,000 sessions match the filters, so narrow the list first, for example by `fromCreatedAt` and `toCreatedAt`.
+</ResponseField>
+
+<ResponseField name="Recording URI" type="Text" optional>
+  The storage URI of the full-call recording for telephony sessions, returned under the deployment's public file base when one is set, otherwise as stored. This field is read-only and populated by the API after a phone-call session's recording is captured and processed. Null for non-telephony sessions or before the recording is available. Resolve to a playable URL via the storage endpoint.
+</ResponseField>
+
+## Import Sessions from a Trace Export
+
+You can bring conversations you already traced elsewhere into a version without writing code. In the dashboard, open a version, choose **New Session**, then **Import traces**, pick the format of the export, upload the file, and pick whether the sessions are production or development. The import reads the file only as the format you picked. The same import is available as `POST /sessions/import`, where the `format` field is optional: without it, the format is detected from the content. The file can be up to 25 MB.
+
+Two export formats are accepted:
+
+- **Langfuse:** a trace export from the Langfuse UI, as JSON, JSONL or CSV. Each Langfuse session becomes a session, and each trace a turn.
+- **LangSmith:** a dataset export downloaded as JSONL, one example per line. Examples that share a conversation id in their metadata (`thread_id`, else `session_id`, else `conversation_id`) become one session, one turn per example. Turns follow the time in their `run_id`; examples without a time-ordered `run_id` come after, in file order. An example with no conversation id becomes a session of its own. A turn shows the last user message as its input and the agent's last text reply as its output. User identifiers in the metadata (`owner`, `user_id`, `created_by`, `user_groups`) are not stored.
+
+Each imported session is closed once its turns are stored, so you can evaluate it at once. A turn with no input and no output is skipped, and the import reports how many were skipped.
+
+## Session Lifecycle
+
+A session is either **open** or **closed**, and its `Status` is the single source of truth for which one it is:
+
+- **Open** (`PENDING`): the session accepts new turns. Every new session starts open by default.
+- **Closed** (`COMPLETED` or `FAILED`): the session is finished. What a later turn does to it depends on the product's closed-session policy, described below.
+
+### How a session closes
+
+A session becomes closed in one of these ways:
+
+- **Explicit finish.** You end the session on purpose, and it closes right away. Call [`sessions.finish()`](/v5.16/sdk/api/session/finish) from the SDK: it records a `Stopping Reason` and sets the status to `COMPLETED`. The endpoint behind it (`PATCH /sessions/{id}/finish`) also accepts an `error` instead, which closes the session as `FAILED`.
+- **Auto-close sweep.** Galtea runs a background job that closes quiet sessions for you. It closes an open session once its most recent trace is older than the product's inactivity window, and writes a `Stopping Reason` such as "Automatically closed after 30 minutes of inactivity" so you can tell an auto-close from an explicit finish. The sweep only closes open sessions; it never changes one that is already closed.
+- **The agent ended the conversation.** In a run that calls your agent through an endpoint connection, a reply that matches one of the connection's [conversation end rules](/v5.16/concepts/product/endpoint-connection-configuration#conversation-end-rules) closes the session as `COMPLETED` with the `Stopping Reason` `The agent ended the conversation (HTTP <code>)`, where `<code>` is the reply's status code. The session is evaluated. When the matching reply has no agent answer (an error, or a 2xx reply with no output), Galtea removes that turn and does not score it. Such a reply on the first turn, or in a single-turn test, fails the session instead.
+
+You configure auto-close per product with three fields: **Auto Close Scope** (which sessions the sweep closes: `NONE`, `DEVELOPMENT`, `PRODUCTION`, or `ALL`), **Auto Close Inactivity Minutes** (the quiet window), and **Closed Session Inference Creation Policy** (what happens to a late turn, see below). See the [Product properties](/v5.16/concepts/product#product-properties) for the exact fields and defaults; set them from the API or the dashboard. By default the scope is `ALL`, so both production and development (test) sessions auto-close after the window. A development session you create from the SDK therefore closes on its own once you stop adding turns, and you can still finish it explicitly to close it at once. Set the scope to `PRODUCTION` to keep development sessions open until you finish them.
+
+### Turns that arrive after a session closes
+
+When a new trace arrives for a closed session, the product's **Closed Session Inference Creation Policy** decides what happens:
+
+- `REOPEN_AND_REEVALUATE` (the default): the API stores the turn and opens the session again. The status goes back to `PENDING`, so the auto-close sweep closes the session again later. The session's existing monitor evaluations move to the `OUTDATED` status, so their scores stop counting as current, and a [Monitor](/v5.16/concepts/product/monitor) scores the session again once it closes. A development (test) session reopens the same way; it has no monitor evaluations, so only the turn is stored and the status changes.
+- `IGNORE`: the API accepts the call, returns success, and stores nothing. The late turn is silently dropped.
+- `REJECT`: the API refuses the call and returns an error.
+
+The default keeps every late turn, so a user who replies after a long gap does not lose that turn. If you set the policy to `IGNORE` or `REJECT` and still want late turns kept, raise the inactivity window or set the scope so those sessions are not auto-closed. The [Monitor Production Responses](/v5.16/sdk/tutorials/monitor-production-responses-to-user-queries#late-turns-on-a-closed-session) tutorial walks through this trade-off.
+
+## Related
+
+<CardGroup cols={3}>
+  <ConceptsOverviewCard />
+  <Card title="Evaluation" icon="clipboard-check" href="/v5.16/concepts/product/version/session/evaluation">
+    Learn how evaluations score traces within a session.
+  </Card>
+  <Card title="Trace" icon="message-bot" href="/v5.16/concepts/product/version/session/trace">
+    Understand the input/output pairs that make up a session.
+  </Card>
+  <Card title="Simulating Conversations" icon="comments" href="/v5.16/sdk/tutorials/simulating-conversations">
+    Tutorial on running multi-turn conversation simulations.
+  </Card>
+</CardGroup>

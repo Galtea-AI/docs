@@ -1,0 +1,141 @@
+---
+title: "Specification"
+sidebarTitle: "Overview"
+description: "A testable behavioral expectation for a product"
+---
+
+import ConceptsOverviewCard from '/v5.10/snippets/cards/concepts-overview-card.mdx';
+import ProductCard from '/v5.10/snippets/cards/product-card.mdx';
+import MetricCard from '/v5.10/snippets/cards/metric-card.mdx';
+import SDKSpecificationServiceCard from '/v5.10/snippets/cards/sdk-specification-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.10. [Read this page in the latest version](/concepts/product/specification).
+</Warning>
+
+## What is a Specification?
+
+A Specification in Galtea represents a single, testable behavioral expectation for a product. Examples include _"Must decline political questions"_, _"Can answer questions about phone specifications"_, or _"Always includes a disclaimer when giving financial advice"_.
+
+Each specification has a **type** that classifies the kind of behavioral expectation:
+
+- **Capability**: A core function the product can perform — what the product is designed to accomplish or deliver. For example: _"Can classify images as containing cats or dogs"_, _"Can retrieve and display the user's account balance"_ (conversational), or _"Can generate personalized product recommendations based on browsing history"_.
+
+- **Inability**: An action or task the product is fundamentally unable to do even if a malicious actor gained full control over it. These represent hard technical constraints where the infrastructure, system access, or architecture simply does not exist. For example: _"Cannot execute wire transfers"_ (no payment gateway connected) or _"Cannot access other customers' data"_ (no system integration exists).
+
+- **Policy**: A mandatory rule or guideline the product must follow — from restrictions to behavioral guidelines. This includes refusal rules (what it must decline), interaction patterns (how it responds), communication style, and mandatory disclaimers. For example: _"Must include a disclaimer when discussing medical topics"_ or _"Refuses requests to share confidential business data"_.
+
+Specifications also have a **dataset type** that determines the evaluation approach: `ACCURACY`, `SECURITY`, or `BEHAVIOR`.
+
+<Note>Specifications replace the legacy free-text fields (Capabilities, Inabilities, Policies) on Products with structured, individually testable expectations linked to specific metrics.</Note>
+
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/specifications-overview.mp4"
+></video>
+
+## The Specification-Driven Workflow
+
+Specifications are at the center of Galtea's recommended evaluation flow:
+
+1. **Define specifications** for your product (Capability, Inability, Policy)
+2. **Generate metrics** from specifications using [AI Metric Generation](/v5.10/concepts/metric/ai-generation)
+3. **Create datasets** from specifications — the dataset type is auto-derived
+4. **Run evaluations** with `evaluations.run()` — resolves specs, datasets, and metrics automatically
+
+<Note>
+  In the dashboard, specifications are managed in two places, one per **scope**. Both are sidebar entries of the open product: the **Specifications** section holds the positive scope (Capability and Policy), and the **Product** section holds the negative scope (Inability). Both use the same table and the same creation form; the form knows which scope it is in from the `scope` parameter in its URL (`?scope=positive` or `?scope=negative`).
+
+  You are never asked to pick a type up front. When you create a specification, **Fill with AI** opens automatically: describe the behavior in a rough note and the AI rewrites it into a properly written description, then classifies it behind the scenes. **Complete with AI** does the same classification for a description you have already written, without rewriting the text. Dataset type (and its variant, when applicable) appear under an Advanced section once classified. Review and edit before saving — nothing is persisted until you submit the form. Saving a Capability or Policy lands on its page, which opens **Setup for evaluation** when there is something to generate, offering the dataset, its metrics, or both. Dismiss it and the specification is still saved, just with nothing generated. Saving an Inability skips the offer, since an inability needs neither.
+
+  The **Specifications** section also warns you when some of the product's datasets belong to no specification, since those datasets are left out when you generate from specifications. A dataset counts as unlinked when it never had a specification, or when the specification it had was deleted. The warning's **Review datasets** link opens the product's Datasets list already filtered to those datasets, where you can select them and link them to a specification in one action.
+
+  If your description does not match the scope you are in, the form says so and will not save it. Describe something the product cannot do while in the positive scope and it tells you a thing a product cannot do should not be set as a specification; describe a capability or a rule while in the negative scope and it tells you a thing a product can do cannot be set as an inability. In the positive scope you can also correct a wrong classification yourself: **Advanced Options** holds a Capability/Policy choice, pre-filled by the AI. Inability is never offered there, because it belongs to the other scope.
+</Note>
+
+<Card title="Specification-Driven Evaluations Tutorial" icon="rocket" href="/v5.10/sdk/tutorials/specification-driven-evaluations">
+  End-to-end guide: define specs, generate metrics, create datasets, and run evaluations — all from specifications.
+</Card>
+
+## Keeping Specifications Up to Date
+
+As your product evolves, its documentation — PRDs, design docs, spec sheets — often changes before its specifications do. The `POST /products/{id}/regenerate-config` endpoint lets you cross-check an uploaded document against a product's existing specifications and receive classified suggestions without persisting anything.
+
+Each suggestion carries a `status`:
+
+- `new` — a candidate specification extracted from the document that has no match among the product's existing specifications.
+- `updated` — a candidate that refines or extends an existing specification (includes a reference to the existing spec).
+- `contradictory` — a candidate that conflicts with an existing specification (includes a reference to the existing spec).
+
+The endpoint **persists nothing**. Applying a suggestion — creating a new specification, updating an existing one, or removing a contradicted one — is a separate, explicit step using the standard specification endpoints in the [REST API](/v5.10/api-reference). This means nothing changes without your confirmation and unaffected specifications remain untouched.
+
+<Info>
+  The dashboard flow for reviewing and applying suggestions is tracked in a follow-up. In the meantime the endpoint is available via the [REST API](/v5.10/api-reference) and the CLI (`galtea products regenerate-config`).
+</Info>
+
+## SDK Integration
+
+The SDK allows you to create, list, retrieve, and delete specifications, as well as link and unlink both metrics and datasets. See the [Specification Service API documentation](/v5.10/sdk/api/specification/service) for more details.
+
+<SDKSpecificationServiceCard />
+
+## Specification Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier of the specification.
+</ResponseField>
+
+<ResponseField name="product_id" type="string" required>
+  The ID of the product this specification belongs to.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  A short, human-readable name for the specification. Shown wherever the specification is listed or referenced.
+  **Example**: "Declines political questions".
+</ResponseField>
+
+<ResponseField name="description" type="string" required>
+  A description of the testable behavioral expectation.
+  **Example**: "Must decline political questions and redirect the user to authoritative sources."
+</ResponseField>
+
+<ResponseField name="type" type="Enum" required>
+  The type of specification.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`.
+  <Note>
+    You cannot change a specification to `INABILITY` while a live [Monitor](/v5.10/concepts/product/monitor) binds it.
+    The API answers `400`. Unbind the specification from the monitor first.
+  </Note>
+</ResponseField>
+
+<ResponseField name="test_type" type="Enum" optional>
+  The type of dataset for this specification.
+  Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
+  <Note>
+    Required for `POLICY` specifications. For `CAPABILITY` specifications it is always `BEHAVIOR`, assigned
+    automatically. Must not be provided for `INABILITY` specifications.
+  </Note>
+
+  <Note>On `specifications.create()` and `specifications.list()` this is the `dataset_type` parameter. The attribute you read back off the returned object is still `test_type`.</Note>
+</ResponseField>
+
+<ResponseField name="test_variant" type="string" optional>
+  Variant of the dataset type. Applicable for `ACCURACY` and `SECURITY` dataset types.
+</ResponseField>
+
+<ResponseField name="metric_ids" type="list[string]" optional>
+  List of metric IDs linked to this specification.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Timestamp of when the specification was created (ISO 8601 format).
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <ProductCard />
+  <MetricCard />
+</CardGroup>

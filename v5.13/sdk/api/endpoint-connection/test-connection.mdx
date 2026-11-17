@@ -1,0 +1,105 @@
+---
+title: 'Test Connection'
+sidebarTitle: "Test Connection"
+description: "Test an endpoint connection by making a sample request."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/endpoint-connection/test-connection).
+</Warning>
+
+## Returns
+Returns a `TestConnectionResult` object containing:
+- `success` (bool): Whether the test request succeeded.
+- `status_code` (int): The HTTP status code returned by the endpoint.
+- `latency` (float): Round-trip latency in milliseconds.
+- `response` (any): The raw response body from the endpoint.
+- `error` (string | None): Error message if the request failed.
+- `extracted_output` (dict | None): Values extracted via `output_mapping`, if provided.
+- `extraction_error` (string | None): Error message if extraction failed.
+
+## Modes
+
+This method can be called in two ways:
+
+**With an existing connection ID** — the stored connection is used as a base and any provided fields act as overrides:
+```python
+    test_result = galtea.endpoint_connections.test(
+        id=endpoint_connection_id,
+    )
+```
+
+**Without an ID** — all connection fields are provided directly (useful during creation flow):
+```python
+    test_result = galtea.endpoint_connections.test(
+        url="https://api.example.com/v1/chat",
+        http_method="POST",
+        auth_type="BEARER",
+        auth_token="YOUR_AUTH_TOKEN",
+        input_template='{"message": "{{ input.user_message }}"}',
+        output_mapping={"output": "$.response"},
+        type=EndpointConnectionType.CONVERSATION,
+        timeout=30,
+    )
+```
+
+## Parameters
+<ResponseField name="id" type="string" optional>
+  ID of an existing endpoint connection to test. When provided, stored connection data is used as the base and remaining fields act as overrides. With `id`, the call needs permission to edit that connection, because the test sends the stored credentials and secret header values and returns the answer. The API answers `403` without that permission. Without `id`, the call needs permission to create a connection.
+</ResponseField>
+<ResponseField name="url" type="string" optional>
+  The endpoint URL to test. For [multi-step session lifecycles](/v5.13/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
+</ResponseField>
+<ResponseField name="http_method" type="string" optional>
+  HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values are sent
+  to the API unchanged, so values added in newer API versions can be used; the API rejects invalid
+  ones.
+</ResponseField>
+<ResponseField name="input_template" type="string" optional>
+  Input template with Jinja2 placeholders. See [Input Template](/v5.13/concepts/product/endpoint-connection-configuration#input-template).
+  <Note>
+    The test renders a placeholder attachment for `input_files`. Its URL points at nothing your endpoint can download, so a failed download in this test is expected. See [Attached Files and Audio](/v5.13/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio).
+  </Note>
+</ResponseField>
+<ResponseField name="auth_type" type="string" optional>
+  Authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Other string values are
+  sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
+</ResponseField>
+<ResponseField name="auth_token" type="string" optional>
+  Authentication token.
+</ResponseField>
+<ResponseField name="username" type="string" optional>
+  Username for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="password" type="string" optional>
+  Password for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="headers" type="dict[string, string]" optional>
+  Custom headers. Supports placeholders: credentials (e.g., `{{ bearer_token }}`, `{{ api_key }}`) and call values (e.g., `{{ trace_id }}`, `{{ session_id }}`). When you test a stored connection, a `••••••••` value sends the stored value of that header. See [Secret Header Values](/v5.13/concepts/product/endpoint-connection-configuration#secret-header-values).
+</ResponseField>
+<ResponseField name="output_mapping" type="dict[string, string]" optional>
+  Output mapping using JSONPath expressions. See [Output Mapping](/v5.13/concepts/product/endpoint-connection-configuration#output-mapping).
+</ResponseField>
+<ResponseField name="type" type="string" optional>
+  Endpoint connection type. Valid values: `INITIALIZATION`, `CONVERSATION`, `FINALIZATION`.
+  `CONVERSATION` is required for all products. `INITIALIZATION` and `FINALIZATION` are only needed
+  for [complex session management](/v5.13/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced).
+  Other string values are sent to the API unchanged, so values added in newer API versions can be
+  used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="timeout" type="int" optional>
+  Request timeout in seconds.
+</ResponseField>
+<ResponseField name="acknowledged_insecure_http" type="bool" optional>
+  Set to `true` to test an `http://` URL that is not saved yet. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/v5.13/concepts/product/endpoint-connection#http-endpoints).
+</ResponseField>
+
+<Note>
+  All fields except `id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to exclude it from the test request.
+  Pass `None` to explicitly send null — useful to override a stored value when testing with an existing connection ID.
+  Pass a value to include it.
+
+  `auth_token` and `password` are the exception: `None` or an empty string keeps the stored credential. Changing `auth_type` drops the credentials the new type does not use, so the test matches what saving would produce.
+</Note>

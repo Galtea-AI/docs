@@ -1,0 +1,54 @@
+---
+title: 'Listing Specifications'
+sidebarTitle: "List"
+description: "List specifications with optional filters."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.11. [Read this page in the latest version](/sdk/api/specification/list).
+</Warning>
+
+## Returns
+Returns a list of [Specification](/v5.11/concepts/product/specification) objects.
+
+## Example
+```python
+specifications = galtea.specifications.list(
+    product_id=product_id,
+    type="CAPABILITY",
+)
+```
+
+## Parameters
+<ResponseField name="product_id" type="string" optional>
+  Filter specifications by product ID.
+</ResponseField>
+<ResponseField name="type" type="string | SpecificationType" optional>
+  Filter by specification type.
+  Possible values: `CAPABILITY`, `INABILITY`, `POLICY`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="dataset_type" type="string | DatasetType" optional>
+  Filter by dataset type.
+  Possible values: `ACCURACY`, `SECURITY`, `BEHAVIOR`.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  Filter by specification name (partial, case-insensitive match).
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter specifications created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter specifications created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort specifications by creation date. Valid values are `"asc"` and `"desc"`.
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of specifications to skip before starting to collect results. Use for pagination.
+</ResponseField>
+<ResponseField name="limit" type="int" default="10000" optional>
+  Maximum number of specifications to return in a single request.
+</ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the specification(s) to retrieve.
+</ResponseField>

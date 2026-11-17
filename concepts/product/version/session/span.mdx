@@ -102,7 +102,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 - Put the retrieved data in the span's **output**. This is how Galtea reads retrieval context: it is derived from your `RETRIEVER` spans. It is no longer a stored field on the trace.
 - The output has **no required shape**. It is stored as-is, so a plain string, a list of chunks, or any other structure all work.
 - One RETRIEVER span per retrieval step is fine. If a trace has several RETRIEVER spans, Galtea joins their outputs in chronological order (by start time).
-- A [Galtea file](/concepts/product/version/session/content-parts#galtea-files) in the `content` list of a span of any type reads as `[File N]` in its place. On deployments that send files to the judge, the judge also receives the file itself. Most deployments do not send files to the judge yet. Galtea numbers span files after every file of the session's turns.
+- A [Galtea file](/concepts/product/version/session/content-parts#galtea-files) in the `content` list of a span of any type reads as `[File N]` in its place. On deployments that send files to the judge, the judge also receives an image or a PDF as itself, and a text file as its text. Most deployments do not send files to the judge yet. Galtea numbers span files after every file of the session's turns.
 
 ## Best Practices
 

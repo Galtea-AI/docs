@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Version'
+sidebarTitle: "Get"
+description: "Retrieve a specific version by its ID."
+---
+
+import EntityNotFound from '/v5.17/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/sdk/api/version/get).
+</Warning>
+
+## Returns
+Returns a [Version](/v5.17/concepts/product/version) object for the given version ID. The object carries the version's `number`, its product-local identity. On a self-hosted deployment older than version numbers, `number` is `None`.
+
+## Example
+```python
+version = galtea.versions.get(version_id=version_id)
+```
+
+## Parameters
+<ResponseField name="version_id" type="string" required>
+  The ID of the version you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

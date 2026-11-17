@@ -1,0 +1,105 @@
+---
+title: 'Simulate Conversation'
+sidebarTitle: "Simulate"
+description: "Run a full conversation simulation between your agent and a simulated user using the Galtea SDK."
+---
+
+import AgentCallables from '/v5.17/snippets/agent-callables.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/sdk/api/simulator/simulate).
+</Warning>
+
+## Returns
+It returns a result object from the [Conversation Simulator](/v5.17/concepts/product/dataset/test-case/conversation-simulator#simulation-result-structure) with the session id, the number of turns, whether the simulation finished, the stopping reason, and metadata. It does not hold the messages: read the turns with `client.traces.list()`.
+
+## Agent Options
+
+<AgentCallables />
+
+## AgentInput Fields
+
+With the **Structured** signature (`(input_data: AgentInput) -> AgentResponse`), your function receives an [`AgentInput`](/v5.17/sdk/api/agent/input). That page lists every field and helper method, including `input_files` for [reading attached files](/v5.17/sdk/api/agent/input#reading-attached-files).
+
+## Example
+
+```python
+# Define your agent function
+def my_agent(user_message: str) -> str:
+    return f"Response to: {user_message}"
+
+
+simulation_result = galtea.simulator.simulate(
+    session_id=behavior_session.id,
+    agent=my_agent,
+    max_turns=3,
+)
+```
+
+## Parameters
+
+<ResponseField name="session_id" type="str" required>
+  The session identifier for this simulation.
+</ResponseField>
+
+<ResponseField name="agent" type="AgentType" required>
+  The agent function that generates responses. Supported signatures:
+  - **Simple:** `(user_message: str) -> str` — receives last user message
+  - **Chat History:** `(messages: list[dict]) -> str` — receives full chat history (OpenAI format)
+  - **Structured:** `(input_data: AgentInput) -> AgentResponse` — structured input/output
+  
+  Both sync and async functions are supported. Use the structured signature when you need `usage_info`, `cost_info`, or `retrieval_context`. Only the structured signature receives the files a test case attaches; the other two fail the trace for a file-only test case.
+
+  <Warning>
+    An agent called from `simulate()` cannot answer with files. `output_file_paths` on the
+    returned `AgentResponse` raises a `ValueError`, whether or not the response also carries
+    text. A simulated conversation carries no files yet, on either side, so they would be
+    dropped and the turn stored without them. Log a turn that answers with a document outside a
+    simulation, with `traces.create(output_file_paths=...)`.
+  </Warning>
+</ResponseField>
+
+<ResponseField name="max_turns" type="int">
+  Number of conversation turns this simulation may add. Defaults to the Test Case's max turns if not provided. When the test case [starts from a predefined conversation](/v5.17/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation), the copied turns do not count against it: 4 predefined turns with `max_turns=1` call your agent once.
+</ResponseField>
+
+<ResponseField name="log_inference_results" type="bool">
+  <Warning>**Deprecated** — Traces are now automatically tracked by the API. The parameter keeps its old name and no longer has any effect.</Warning>
+</ResponseField>
+
+<ResponseField name="enable_last_inference" type="bool">
+  Whether to call your agent one final time after the simulated user sends their last message. Default: True.
+  When enabled, your agent will have the opportunity to respond to the conversation's final user message, ensuring complete dialogue coverage for evaluation purposes.
+
+  <Warning>
+    Setting this to `False` needs Galtea SDK 5.2.0 or later. A turn stays pending until something answers it, and the platform skips every evaluation on a session that holds a pending turn. From 5.2.0 the SDK closes that unanswered last turn for you. An earlier release leaves it pending, so the session gets no scores.
+
+    Closing it is best effort. If that call fails, the simulation still returns normally and the session stays unscored, so check `result.metadata["last_turn_finalize_error"]` in any script or CI job.
+  </Warning>
+</ResponseField>
+
+<ResponseField name="include_metadata" type="bool">
+  <Warning>**Deprecated**: The result now always includes metadata. The parameter no longer has any effect.</Warning>
+</ResponseField>
+
+<ResponseField name="agent_goes_first" type="bool">
+  If True, the agent will generate the first message before any user messages are generated. Default: False
+  <Note>
+    When `agent_goes_first` is set to `True`:
+    - Any `input` (first user message) defined on the associated `TestCase` will be ignored.
+    - The first call to your agent will have an empty `messages` list in the `AgentInput`. Ensure your agent function can handle cases where `input_data.last_user_message_str()` returns `None` (or the messages list is empty).
+    - The opening turn is recorded as pending and only your agent's reply completes it. If the run stops during that first call, the turn stays pending, and the session's evaluations are skipped until something completes it.
+    - It cannot be combined with a test case that [starts from a predefined conversation](/v5.17/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation). The opening turn is recorded before the predefined conversation can be placed in front of it, so the simulation is refused.
+  </Note>
+</ResponseField>
+
+<ResponseField name="stop_when_agent_returns_empty_response" type="bool">
+  If True, the simulation will stop when the agent returns an empty (`""` / `None`) response. Default: True
+
+  <Note>
+    When `stop_when_agent_returns_empty_response` is set to `False`:
+    - The simulation will continue even if the agent returns a response that is empty (`""`) or `None`.
+    - This allows for more flexible conversation flows where you want to capture all agent interactions regardless of content.
+    - Be careful when using this option, as it may lead to further credit consumption if the agent keeps returning empty responses. To mitigate this, you can also make use of the `max_turns` parameter to set an upper limit on the number of turns.
+  </Note>
+</ResponseField>

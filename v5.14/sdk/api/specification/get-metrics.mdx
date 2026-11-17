@@ -1,0 +1,29 @@
+---
+title: "Get Linked Metrics"
+sidebarTitle: "Get Metrics"
+description: "Get all metrics linked to a specification."
+---
+
+import EntityNotFound from '/v5.14/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/sdk/api/specification/get-metrics).
+</Warning>
+
+## Returns
+
+Returns a list of [Metric](/v5.14/concepts/metric) objects linked to the specification.
+
+## Example
+```python
+metrics = galtea.specifications.get_metrics(
+    specification_id=specification.id,
+)
+```
+
+## Parameters
+<ResponseField name="specification_id" type="string" required>
+  The ID of the specification to get linked metrics for.
+</ResponseField>
+
+<EntityNotFound />

@@ -1,0 +1,106 @@
+---
+title: 'Update Dataset'
+sidebarTitle: "Update"
+description: "Update the name, metadata or specifications of an existing dataset"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/dataset/update).
+</Warning>
+
+## Overview
+
+The `update()` method allows you to modify an existing dataset after it has been created.
+
+<Warning>
+  Only `name`, `metadata` and `specification_ids` are mutable post-creation. All other fields
+  (`type`, `variants`, `strategies`, `uri`, `ground_truth_uri`,
+  `data_catalog_uri`, `source_test_id`, `max_test_cases`, etc.) are fixed
+  for the lifetime of the dataset because they drive generation, credit
+  accounting, and the stored test-case shape. Sending any of them in an
+  update returns a `400`.
+</Warning>
+
+## Parameters
+
+<ResponseField name="dataset_id" type="string" required>
+  The ID of the dataset to update.
+
+  <Note>Deprecated alias: `test_id`.</Note>
+</ResponseField>
+
+<ResponseField name="name" type="string" optional>
+  New dataset name. Must be a non-empty string; leading and trailing whitespace are trimmed server-side.
+</ResponseField>
+
+<ResponseField name="metadata" type="Any" optional>
+  Arbitrary JSON-serializable metadata for tracking purposes. Replaces the existing metadata wholesale. Pass `None` to clear.
+</ResponseField>
+
+<ResponseField name="specification_ids" type="list[string]" optional>
+  The full list of [Specifications](/v5.13/concepts/product/specification) the dataset links to. It replaces the current links: a specification left out of the list is unlinked, and `[]` removes every link. Each specification must belong to the dataset's product and generate the dataset's type. To add or remove links without sending the full list, use [Link Datasets](/v5.13/sdk/api/specification/link-datasets) and [Unlink Datasets](/v5.13/sdk/api/specification/unlink-datasets).
+</ResponseField>
+
+## Returns
+
+Returns the updated `Dataset` object.
+
+## Example
+
+```python
+renamed = galtea.datasets.update(
+    dataset_id=dataset.id,
+    name=f"renamed-test-{run_identifier}",
+)
+```
+
+## Use Cases
+
+### Replacing Metadata
+
+Overwrite the metadata object on an existing dataset:
+
+```python
+with_new_metadata = galtea.datasets.update(
+    dataset_id=dataset.id,
+    metadata={"owner": "platform-team", "ticket": "QA-200", "priority": "high"},
+)
+```
+
+### Updating Name and Metadata Together
+
+```python
+updated = galtea.datasets.update(
+    dataset_id=dataset.id,
+    name=f"final-test-{run_identifier}",
+    metadata={"owner": "platform-team", "archived": True},
+)
+```
+
+### Replacing the Linked Specifications
+
+```python
+# The list replaces the dataset's links: pass every specification it should keep.
+linked = galtea.datasets.update(
+    dataset_id=dataset.id,
+    specification_ids=[toxicity_policy.id, misuse_policy.id],
+)
+```
+
+## Notes
+
+<Note>
+  All fields except `dataset_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field (`specification_ids` takes `[]` instead).
+  Pass a value to update it.
+</Note>
+
+## Related Methods
+
+- [Create Dataset](/v5.13/sdk/api/dataset/create) - Create a new dataset
+- [Get Dataset](/v5.13/sdk/api/dataset/get) - Retrieve a dataset by ID
+- [List Datasets](/v5.13/sdk/api/dataset/list) - List datasets for a product
+- [Delete Dataset](/v5.13/sdk/api/dataset/delete) - Soft-delete a dataset
+- [Link Datasets](/v5.13/sdk/api/specification/link-datasets) - Attach an existing dataset to a specification
+- [Unlink Datasets](/v5.13/sdk/api/specification/unlink-datasets) - Detach a dataset from a specification

@@ -1,0 +1,26 @@
+---
+title: 'Get WebRTC Connection'
+sidebarTitle: "Get"
+description: "Retrieve a specific WebRTC connection by its ID."
+---
+
+import EntityNotFound from '/v5.14/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/sdk/api/webrtc-connection/get).
+</Warning>
+
+## Returns
+Returns a [WebRTC Connection](/v5.14/concepts/product/webrtc-connection) object for the given ID. The object exposes a `has_api_key` boolean, not the stored API key.
+
+## Example
+```python
+web_rtc_connection = galtea.web_rtc_connections.get(web_rtc_connection_id=web_rtc_connection_id)
+```
+
+## Parameters
+<ResponseField name="web_rtc_connection_id" type="string" required>
+  The ID of the WebRTC connection to retrieve.
+</ResponseField>
+
+<EntityNotFound />

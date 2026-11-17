@@ -1,0 +1,57 @@
+---
+title: 'Test Case Service'
+sidebarTitle: "Service"
+description: "Test Case Service API methods in the Galtea SDK"
+---
+
+import TestCaseCard from '/v5.16/snippets/cards/test-case-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/sdk/api/test-case/service).
+</Warning>
+
+The Test Case Service in the Galtea SDK allows you to manage [test-cases](/v5.16/concepts/product/dataset/test-case) for evaluating your products.
+This Service is exposed by the `galtea.test_cases` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.16/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a test case:
+```python
+test_case = galtea.test_cases.create(
+    dataset_id=dataset_id,
+    input="What is the capital of France?",
+    expected_output="Paris",
+    context="Geography facts",
+    variant="original",
+)
+```
+
+List test cases:
+```python
+test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
+```
+
+Get a test case by ID:
+```python
+test_case = galtea.test_cases.get(test_case_id=test_case_id)
+```
+
+## Service Methods
+- [Create Test Case](/v5.16/sdk/api/test-case/create)
+- [Upload Input File](/v5.16/sdk/api/test-case/upload-input-file)
+- [Listing Test Cases](/v5.16/sdk/api/test-case/list)
+- [Retrieving Test Case](/v5.16/sdk/api/test-case/get)
+- [Deleting Test Case](/v5.16/sdk/api/test-case/delete)
+
+## Related
+
+<TestCaseCard />

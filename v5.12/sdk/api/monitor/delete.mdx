@@ -1,0 +1,19 @@
+---
+title: 'Deleting Monitor'
+sidebarTitle: "Delete"
+description: "Delete a specific monitor by its ID."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.12. [Read this page in the latest version](/sdk/api/monitor/delete).
+</Warning>
+
+## Example
+```python
+galtea.monitors.delete(monitor_id=monitor.id)
+```
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor you want to delete.
+</ResponseField>

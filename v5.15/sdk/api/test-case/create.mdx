@@ -1,0 +1,161 @@
+---
+title: 'Create Test Case'
+sidebarTitle: "Create"
+description: "Create a test case for your dataset."
+---
+
+import JudgeFileRule from '/v5.15/snippets/judge-file-rule.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/sdk/api/test-case/create).
+</Warning>
+
+## Returns
+Returns a [TestCase](/v5.15/concepts/product/dataset/test-case) object for the given parameters.
+
+## Example
+```python
+test_case = galtea.test_cases.create(
+    dataset_id=dataset_id,
+    input="What is the capital of France?",
+    expected_output="Paris",
+    context="Geography facts",
+    variant="original",
+)
+```
+
+### Starting from a predefined conversation
+Write the turns out, or copy them from a session that already holds them. See [Starting a Scenario from a Conversation](/v5.15/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation).
+
+```python
+conversation_history = [
+    {"role": "user", "content": "Hi, I am checking what this analytics workspace can do."},
+    {"role": "assistant", "content": "I can help with dashboards, reports and data sources."},
+    {"role": "user", "content": "Does it handle orders and payments too?"},
+    {"role": "assistant", "content": "No. It reports on your data, it does not process payments."},
+]
+
+test_case = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    user_persona="A team lead evaluating the product",
+    goal="Get a clear answer about what the product does and does not cover",
+    scenario="The user asks about an unrelated service",
+    conversation_history=conversation_history,
+    # Turns the simulator runs after the predefined conversation.
+    max_iterations=2,
+)
+```
+
+```python
+reused = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    user_persona="A team lead evaluating the product",
+    goal="Ask for a feature the product does not have",
+    scenario="The user asks about an unrelated service",
+    seed_session_id=test_case.seed_session_id,
+    max_iterations=2,
+)
+```
+
+## Parameters
+<ResponseField name="dataset_id" type="string" required>
+  The ID of the dataset you want to create the test case for.
+
+  <Note>Deprecated alias: `test_id`.</Note>
+</ResponseField>
+<ResponseField name="input" type="string" optional>
+  The input for the test case. For Accuracy and Safety datasets, this is the question or prompt you want to send to your model for evaluation. For Behavior datasets, this is the first user message to use in the conversation (bypassing the simulator for the first turn).
+</ResponseField>
+<ResponseField name="input_file_paths" type="list[string]" optional>
+  Files to attach to the input, for a product that reads documents. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, which is attached without uploading the file again. Any other URL raises a `ValueError` before anything is uploaded. `input` stays optional, so a test case may hold files and no text at all. Galtea sends each attachment to your endpoint when the [endpoint connection template](/v5.15/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) names `input_files`.
+
+  At most 20 files totalling 20 MB, of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. To attach one already-uploaded file to several test cases, use [Upload Input File](/v5.15/sdk/api/test-case/upload-input-file) instead.
+
+  The rule below holds for both run styles: your own pipeline, and Galtea calling your endpoint. See [File inputs](/v5.15/concepts/product/dataset/test-case#file-inputs).
+
+  <JudgeFileRule />
+</ResponseField>
+<ResponseField name="expected_output" type="string" optional>
+  The expected output for the input given. This is the correct answer or response you want to evaluate against. For a JSON Field Match metric, a field of a JSON object can hold a [field rule](/v5.15/concepts/metric/json-field-match#field-rules). Rules travel inside this string, so write each backslash twice.
+</ResponseField>
+<ResponseField name="expected_tools" type="list[string]" optional>
+  The expected tools for the input given. This is the list of tools that the model should use to generate the expected output.
+</ResponseField>
+<ResponseField name="context" type="string" optional>
+  The context for the test case. This is the additional information that can help the model generate the expected output.
+</ResponseField>
+<ResponseField name="variant" type="string" optional>
+  An optional variant to categorize or label the test case (e.g., "original", "paraphrased").
+</ResponseField>
+<ResponseField name="reviewed_by_id" type="string" optional>
+  The ID of the user who has reviewed and validated this test case.
+</ResponseField>
+<ResponseField name="language" type="string" optional>
+  Language for the test case. Accepts a [BCP-47 language tag](https://en.wikipedia.org/wiki/IETF_language_tag): a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`, `"en-GB"`). The region subtag selects the regional variety in the simulated user's messages and in voice synthesis (the accent the simulated caller speaks with); generated test text keeps the base language. The value is stored as the full tag. A bare code for `ca`, `de`, `es`, `eu`, `fr`, `gl`, `it`, `nl` or `pt` defaults to that language's European variety in the simulated user's messages only (`pt` → `pt-PT`); an explicit region always overrides it, and neither voice synthesis nor the stored value is affected.
+</ResponseField>
+<ResponseField name="gender" type="string" optional>
+  Persona gender, `"MALE"` or `"FEMALE"`, for voice evaluations: it selects the male or female synthesized voice for the simulated caller. A voice pinned for the call's locale takes precedence. Text evaluations ignore it. When unset, the voice uses the default for the language.
+</ResponseField>
+<ResponseField name="background_noise_profile" type="string" optional>
+  Background noise mixed into the simulated caller's audio for voice evaluations run over a [phone connection](/v5.15/concepts/product/phone-connection). Ignored for test cases that don't run over a phone connection.
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  <Note>
+    This method creates the test case directly, so it does **not** inherit the parent [dataset](/v5.15/concepts/product/dataset)'s background noise — omitting this parameter leaves the test case with no noise. (Test cases generated by Galtea from a ground truth file or a CSV upload do inherit the dataset's noise automatically; this only applies to cases created one-by-one through this method.)
+
+    Must be set together with `background_noise_level` — passing only one of the two is rejected by the API.
+  </Note>
+</ResponseField>
+<ResponseField name="background_noise_level" type="string" optional>
+  How loud the background noise is relative to the caller's speech, as a fixed signal-to-noise ratio per level. One of `light`, `medium`, or `heavy`. Must be set together with `background_noise_profile`.
+</ResponseField>
+<ResponseField name="user_score" type="int" optional>
+  User vote for the test case (1 for good quality, -1 for bad quality, 0 for unreviewed).
+</ResponseField>
+<ResponseField name="user_score_reason" type="string" optional>
+  Reason for the user vote given.
+</ResponseField>
+<ResponseField name="confidence" type="float" optional>
+  Confidence for the test case.
+</ResponseField>
+<ResponseField name="confidence_reason" type="string" optional>
+  Reason for the confidence given.
+</ResponseField>
+<ResponseField name="goal" type="string" optional>
+  The user's objective for behavior datasets. Used when creating BEHAVIOR test cases.
+</ResponseField>
+<ResponseField name="user_persona" type="string" optional>
+  Description of the user persona used to generate scenario-based test cases.
+</ResponseField>
+<ResponseField name="scenario" type="string" optional>
+  Description of the scenario context for scenario-based test cases.
+</ResponseField>
+
+<ResponseField name="stopping_criterias" type="list[string]" optional>
+  List of criteria to end the conversation in scenario-based simulations.
+</ResponseField>
+
+<ResponseField name="conversation_history" type="list[dict]" optional>
+  A predefined conversation the simulation starts from, written out. Each entry is one message, `{"role": "user" | "assistant", "content": "..."}`, and at least one message is required. Galtea stores the conversation as a separate session and names it in the created test case's `seed_session_id`. See [Starting a Scenario from a Conversation](/v5.15/concepts/product/dataset/test-case#starting-a-scenario-from-a-conversation).
+
+  An assistant message directly after a user message joins that user message to form **one turn**. Any other message opens a turn of its own, so a conversation may open with an assistant greeting or end on an unanswered question. The four messages above alternate, so they are two turns, which is the unit `max_iterations` counts.
+
+  <Note>
+    A message carries text only. `retrieval_context` on a message is refused, so use `seed_session_id` when the conversation must carry retrieval context or tool calls. Cannot be sent together with `seed_session_id`. Both are only accepted on a Behavior test case whose product has at least one version.
+  </Note>
+</ResponseField>
+
+<ResponseField name="seed_session_id" type="string" optional>
+  The ID of an existing session to copy the predefined conversation from. The copy takes that session's turns **and its traces**, so a conversation built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished. Removed turns at the end of the session are left out of the copy, so a session the agent ended can be copied. A removed turn in the middle of the session is refused.
+
+  <Note>
+    On the created test case, `seed_session_id` names the copy Galtea made, not the session you passed. Cannot be sent together with `conversation_history`.
+  </Note>
+</ResponseField>
+
+<ResponseField name="max_iterations" type="int" optional>
+  The maximum number of turns the simulator runs before the conversation ends. It counts the live turns only: a test case that starts from a predefined conversation runs this many turns on top of it. A predefined conversation of 4 turns with `max_iterations` 1 runs one new turn and the session ends with 5.
+
+  A turn is one exchange. A `conversation_history` of 8 alternating messages starting with the user is therefore 4 turns, not 8. Messages that do not alternate that way make more turns, so count them with the pairing rule above rather than halving.
+</ResponseField>

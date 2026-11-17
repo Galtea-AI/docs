@@ -1,0 +1,205 @@
+---
+title: "Metric"
+sidebarTitle: "Overview"
+description: "Criteria and methods for evaluating AI product performance"
+---
+
+import ConceptsOverviewCard from '/v5.10/snippets/cards/concepts-overview-card.mdx';
+import EvaluationCard from '/v5.10/snippets/cards/evaluation-card.mdx';
+import SDKMetricsServiceCard from '/v5.10/snippets/cards/sdk-metrics-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.10. [Read this page in the latest version](/concepts/metric).
+</Warning>
+
+## What are Metrics?
+
+Metrics define how Galtea scores your [product's](/v5.10/concepts/product) outputs during [evaluations](/v5.10/concepts/product/version/session/evaluation). Each metric captures one specific quality dimension — factual accuracy, tone, security resilience, or a custom criterion you define.
+
+<Info>
+  Metrics are organization-wide and can be reused across multiple products. You can link metrics to [Specifications](/v5.10/concepts/product/specification) for structured evaluation workflows.
+</Info>
+
+You can **create**, view and manage your metrics on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/v5.10/sdk/api/metric/service).
+
+{/* <!-- VIDEO PLACEHOLDER: Custom metric creation walkthrough (60s)
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/custom-metric-creation.mp4"
+></video>
+--> */}
+
+## Two Families of Metrics
+
+- **Deterministic metrics** apply rule-based logic — string matching, numerical checks, bounding box overlap. Results are consistent and reproducible. Built-in examples: [BLEU](/v5.10/concepts/metric/bleu), [ROUGE](/v5.10/concepts/metric/rouge), [Text Similarity](/v5.10/concepts/metric/text-similarity), [Tool Correctness](/v5.10/concepts/metric/tool-correctness). You can also define your own using the SDK's `CustomScoreEvaluationMetric` class — see [our tutorial](/v5.10/sdk/tutorials/evaluate-with-custom-metrics).
+
+- **Non-deterministic metrics** use an LLM-as-a-judge to assess open-ended qualities like factual accuracy, misuse resilience, and task completion. Galtea's judges are human-aligned and optimized for each evaluation type. You can also [create your own AI Evaluation metrics](/v5.10/concepts/metric/evaluation-types#ai-evaluation) with a custom scoring rubric.
+
+## How Metrics Are Evaluated
+
+Every metric has an [Evaluation Type](/v5.10/concepts/metric/evaluation-types) that determines how scoring happens:
+
+```mermaid
+%%{init: {"theme": "neutral"}}%%
+flowchart TD
+    A[What kind of scoring?] --> B{Automated?}
+    B -->|Yes| C{Rule-based logic?}
+    B -->|No| D[Human Evaluation]
+    C -->|Yes| E[Self-Hosted]
+    C -->|No| F[AI Evaluation]
+    E -->|Run locally, upload score| H[Pre-computed or CustomScoreEvaluationMetric]
+    F -->|LLM judges with your rubric| I[judge_prompt + evaluation_params]
+    D -->|Annotators score via dashboard| G[PENDING_HUMAN → score submitted]
+```
+
+<br />
+
+<CardGroup cols={3}>
+  <Card title="Self-Hosted" icon="server" href="/v5.10/concepts/metric/evaluation-types#self-hosted">
+    Your own logic runs locally; only the score is uploaded.
+  </Card>
+  <Card title="AI Evaluation" icon="robot" href="/v5.10/concepts/metric/evaluation-types#ai-evaluation">
+    An LLM scores responses using a rubric you define.
+  </Card>
+  <Card title="Human Evaluation" icon="user" href="/v5.10/concepts/metric/evaluation-types#human-evaluation">
+    Human annotators score responses using defined criteria.
+  </Card>
+</CardGroup>
+
+## Revisions and Analytics
+
+Creating a revision marks the previous metric revision as `Legacy`. Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it.
+
+After you save a revision, the dashboard shows how many results and products the earlier revision affects. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
+
+You can reverse this decision from the metric's actions menu. Exclusion does not delete or change any evaluation. Each evaluation keeps its score, reason, and metric revision.
+
+The metric list hides excluded revisions by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. To inspect earlier revisions, open **Filters** and turn on **Include legacy**. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
+
+When a product has excluded results, its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no scores to that page. The page's **Last Successful** date still counts their evaluations, because it reports when an evaluation last ran.
+
+## Pass threshold
+
+Every metric has a pass threshold: the score, from 0 to 1, at or above which an evaluation passes. When you do not set one, it is 0.5. Galtea's own metrics use 0.5. An evaluation with no reported score has no result, so it neither passes nor fails.
+
+You set the threshold when you create the metric. It cannot change afterwards, so to use another one, create a revision of the metric. In the dashboard, the threshold is a percent in **Advanced Options** of the create form, prefilled with 50, and it accepts decimals. A revision starts with the threshold of the revision it comes from. Score pills are green at or above the threshold and red below it.
+
+## Optimization review
+
+**Optimize** writes an improved judge prompt into a new revision named `<name> (Optimized)`. While it runs, that revision's page shows its progress, and you can leave the page. Unlike other revisions, it does not mark the original `Legacy`. When the optimizer returns a different prompt, the revision shows **Ready for review**, and its page shows the changes and both prompts.
+
+- **Apply optimization** marks the original revision `Legacy`. The optimized revision takes the original's name, description, and tags, and joins its specifications and user groups. Monitors use it from their next run.
+- **Keep original** leaves the original unchanged and marks the optimized revision **Not applied**. You can then optimize again.
+
+The optimizer judges each prompt at the metric's pass threshold, and the optimized revision keeps that threshold.
+
+From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
+
+Expand **Advanced Options** in the **Optimize** confirmation to narrow a run. **Strategies** sets which rewrites the optimizer tries: **Fix false passes**, **Fix false failures**, **Add a scoring rubric**, **Simplify the prompt** and **Broaden the wording**. Each step asks for one rewrite per selected strategy and keeps the best one. **Maximum steps** sets how many steps the run may take, from 1 to 10, and defaults to 10. A run stops earlier when the prompt stops improving. With every strategy selected and 10 steps, the run is the same as one without options. The review card, the No improvement notice and the page of a declined or applied revision show the steps the run used out of its maximum and the strategies it ran. An attempt that did not report them shows **Not reported**.
+
+The review compares the original and the optimized prompt on both sets. For each prompt, it shows how many of the evaluations that both prompts scored agree with your annotation, and the alignment when it is defined. A declined or applied revision keeps these results on its page. The validation result is evidence, not a guarantee: a small validation set gives a rough estimate.
+
+Only the active revision of a metric can be optimized. Through the API, call `POST /metrics/{id}/activate-optimization` or `POST /metrics/{id}/decline-optimization` with the optimized revision's id.
+
+## Judge model retirement
+
+When a judge model is retiring, you get an email up to 30 days before the retirement date. It names the affected metrics and the judge models you can use instead. The email goes to the organization owners and admins, and to the creator of each affected metric.
+
+A metric's judge model cannot change after you create it. For your own metrics, create a new revision with another judge model.
+
+Galtea maintains its own metrics, so you cannot revise them. If your organization used one in the last 90 days, its owners and admins get the email too. Galtea may replace one of its metrics with a new revision on another judge model. When it does, the email names the new revision and links to it. Use that revision to keep evaluating. When there is no new revision, create your own metric with one of the listed judge models to keep evaluating after the retirement date.
+
+If the judge model becomes unavailable to Galtea on or after the retirement date, and stays unavailable for six hours, the same recipients get one email naming the metrics that stopped scoring.
+
+## Available Metrics
+
+<Note>
+  The following table lists the default metrics available in the Galtea platform. You can also [create custom metrics](/v5.10/concepts/metric/evaluation-types#ai-evaluation) or [generate metrics from specifications](/v5.10/concepts/metric/ai-generation).
+</Note>
+
+| Metric | Category | Description |
+| --- | --- | --- |
+| **[Factual Accuracy](/v5.10/concepts/metric/factual-accuracy)** | RAG | Evaluates whether the actual_output factually aligns with the expected_output. |
+| **[Resilience To Noise](/v5.10/concepts/metric/resilience-to-noise)** | RAG | Evaluates whether the output is resilient to noisy input (typos, OCR/ASR errors). |
+| **[Answer Relevancy](/v5.10/concepts/metric/answer-relevancy)** | RAG | Evaluates how relevant the actual_output is compared to the provided input. |
+| **[Faithfulness](/v5.10/concepts/metric/faithfulness)** | RAG | Evaluates whether the actual_output factually aligns with the retrieval_context. |
+| **[Contextual Precision](/v5.10/concepts/metric/contextual-precision)** | RAG | Evaluates whether relevant retrieval_context nodes are ranked higher than irrelevant ones. |
+| **[Contextual Recall](/v5.10/concepts/metric/contextual-recall)** | RAG | Evaluates whether the retrieval_context sufficiently covers the expected_output. |
+| **[Contextual Relevancy](/v5.10/concepts/metric/contextual-relevancy)** | RAG | Evaluates the overall relevance of the retrieval_context for a given input. |
+| **[BLEU](/v5.10/concepts/metric/bleu)** | Deterministic | Measures n-gram overlap between actual and expected output. |
+| **[ROUGE](/v5.10/concepts/metric/rouge)** | Deterministic | Measures longest common subsequence between actual and expected output. |
+| **[METEOR](/v5.10/concepts/metric/meteor)** | Deterministic | Aligns words using exact matches, stems, or synonyms. |
+| **[Text Similarity](/v5.10/concepts/metric/text-similarity)** | Deterministic | Quantifies textual resemblance using character-level fuzzy matching. |
+| **[Text Match](/v5.10/concepts/metric/text-match)** *(deprecated)* | Deterministic | Binary match using character-level fuzzy matching with a threshold. Use [Text Similarity](/v5.10/concepts/metric/text-similarity) instead. |
+| **[IOU](/v5.10/concepts/metric/iou)** | Deterministic | Measures spatial overlap between predicted and reference bounding boxes. |
+| **[Spatial Match](/v5.10/concepts/metric/spatial-match)** | Deterministic | Binary evaluation of spatial alignment using IoU score. |
+| **[URL Validation](/v5.10/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |
+| **[Tool Correctness](/v5.10/concepts/metric/tool-correctness)** | Deterministic | Compares tools used by the agent against expected tools. |
+| **[JSON Field Match](/v5.10/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Normalized)](/v5.10/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Strict)](/v5.10/concepts/metric/json-field-match-strict)** | Deterministic | Like JSON Field Match, but an unexpected field in the actual output also lowers the score. |
+| **[JSON Field Match (Normalized, Strict)](/v5.10/concepts/metric/json-field-match-normalized-strict)** | Deterministic | Like JSON Field Match (Normalized), but an unexpected field in the actual output also lowers the score. |
+| **[Role Adherence](/v5.10/concepts/metric/role-adherence)** | Conversational | Evaluates whether the chatbot adheres to its given role throughout a conversation. |
+| **[Conversation Completeness](/v5.10/concepts/metric/conversation-completeness)** | Conversational | Evaluates whether the chatbot satisfies user needs throughout a conversation. |
+| **[Conversation Relevancy](/v5.10/concepts/metric/conversation-relevancy)** | Conversational | Evaluates whether the chatbot generates relevant responses throughout a conversation. |
+| **[Knowledge Retention](/v5.10/concepts/metric/knowledge-retention)** | Conversational | Assesses factual information retention throughout a conversation. |
+| **[User Satisfaction](/v5.10/concepts/metric/user-satisfaction)** | Conversational | Evaluates user satisfaction with the chatbot interaction. |
+| **[User Objective Accomplished](/v5.10/concepts/metric/user-objective-accomplished)** | Conversational | Evaluates whether the chatbot fulfilled the user's stated objective. |
+| **[Non-Toxic](/v5.10/concepts/metric/non-toxic)** | Security & Safety | Evaluates whether responses are free of toxic language. |
+| **[Unbiased](/v5.10/concepts/metric/unbiased)** | Security & Safety | Evaluates whether output is free of gender, racial, or political bias. |
+| **[Misuse Resilience](/v5.10/concepts/metric/misuse-resilience)** | Security & Safety | Evaluates resilience to misuse and alignment with the product's defined capabilities and inabilities. |
+| **[Data Leakage](/v5.10/concepts/metric/data-leakage)** | Security & Safety | Evaluates whether the LLM returns sensitive information. |
+| **[Jailbreak Resilience](/v5.10/concepts/metric/jailbreak-resilience)** | Security & Safety | Evaluates resistance to adversarial prompt manipulation. |
+
+## SDK Integration
+
+<SDKMetricsServiceCard />
+
+## Metric Properties
+
+<ResponseField name="Name" type="Text" required>
+  The name of the metric. **Example**: "Factual Accuracy"
+</ResponseField>
+
+<ResponseField name="Description" type="Text" optional>
+  A brief description of what the metric evaluates.
+</ResponseField>
+
+<ResponseField name="Evaluator Model" type="Text" optional>
+  The model used to score the metric. Does not apply to deterministic metrics. For a [Classifier (Jev)](/v5.10/concepts/metric/classifier) metric, the platform sets the Jev model. **Example**: "GPT-4.1"
+</ResponseField>
+
+<ResponseField name="Pass Threshold" type="Number" optional>
+  The score, from 0 to 1, at or above which an evaluation of this metric passes. Defaults to 0.5. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.pass_threshold`. **Example**: 0.7
+</ResponseField>
+
+<ResponseField name="Tags" type="Text List" optional>
+  Tags for categorization. **Example**: ["RAG", "Conversational"]
+</ResponseField>
+
+<ResponseField name="Evaluation Type" type="Enum" required>
+  How outputs are scored: AI Evaluation, Human Evaluation, or Self-Hosted. See [Evaluation Types](/v5.10/concepts/metric/evaluation-types) for full details.
+</ResponseField>
+
+<ResponseField name="User Groups" type="List[String]" optional>
+  [User groups](/v5.10/concepts/user-group) for Human Evaluation metrics. Controls which annotators can score evaluations for this metric.
+</ResponseField>
+
+<ResponseField name="Evaluation Parameters" type="List[Enum]" required>
+  The data fields available to the evaluator. See [Evaluation Parameters](/v5.10/concepts/metric/evaluation-parameters) for the full reference. Not applicable for Self-Hosted metrics. For a Classifier (Jev) metric, the platform derives them from the placeholders in the question.
+</ResponseField>
+
+<ResponseField name="Classifier Question" type="Object" optional>
+  The one Yes/No or Scale question a classifier metric asks. Only for the classifier source. See [Classifier (Jev)](/v5.10/concepts/metric/classifier).
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <EvaluationCard />
+  <Card title="Create Custom Metrics" icon="wand-magic-sparkles" href="/v5.10/concepts/metric/evaluation-types#ai-evaluation">
+    Write your own judge prompt and scoring rubric.
+  </Card>
+</CardGroup>

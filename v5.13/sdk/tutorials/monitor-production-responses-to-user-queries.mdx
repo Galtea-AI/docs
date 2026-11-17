@@ -1,0 +1,315 @@
+---
+title: 'Monitor Production Responses'
+description: "Learn how to log and evaluate user queries from your production environment."
+icon: "users"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/tutorials/monitor-production-responses-to-user-queries).
+</Warning>
+
+You can use Galtea to log and evaluate real user interactions from your production environment. This helps you monitor your product's performance over time.
+
+<Tip>This tutorial evaluates production sessions on demand, one call at a time. To score production sessions automatically and continuously, create a [Monitor](/v5.13/concepts/product/monitor) instead: an always-on rule that samples and scores a product's production sessions with metric families, Specifications, or both, with no run to trigger by hand.</Tip>
+
+### Recommended: Use Your Own Conversation IDs
+
+If your application already has its own conversation or chat ids, you can keep using them as the handle for a Galtea session, so you never store Galtea's own session id. First, create the session once with `galtea.sessions.create(custom_id=<your id>, ...)`. Then log every turn with `session_custom_id=<your id>` (plus a `version_id` or `product_id` anchor): each call finds that session by your custom id and appends to it.
+
+```python
+# At the start of the conversation, create the session ONCE with YOUR own id.
+galtea.sessions.create(
+    custom_id="conversation-42",  # your own conversation id
+    version_id=VERSION_ID,
+    is_production=True,
+)
+
+
+# In your application's request handler...
+def handle_user_query_with_custom_id(conversation_id: str, user_query: str) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query)
+
+    # Log and evaluate in one call, using YOUR conversation id as the handle.
+    # Galtea finds the existing session by that id and appends the turn to it.
+    galtea.traces.create_and_evaluate(
+        session_custom_id=conversation_id,  # the id you created the session with
+        version_id=VERSION_ID,  # or product_id=product_id to find it under the product
+        input=user_query,
+        output=model_response,
+        metrics=[
+            {"name": "Role Adherence"},
+            {"name": "Answer Relevancy"},
+        ],
+    )
+
+    return model_response
+
+
+# Test the handler: both calls land in the same session
+handle_user_query_with_custom_id("conversation-42", "What are your business hours?")
+handle_user_query_with_custom_id("conversation-42", "Are you open on weekends?")
+```
+
+The same works for logging turns without evaluating them:
+
+```python
+# Create the session once, up front, with your own conversation id.
+galtea.sessions.create(
+    custom_id="conversation-1234",
+    version_id=VERSION_ID,
+    is_production=True,
+)
+
+
+def handle_conversation_turn(conversation_id: str, user_input: str) -> str:
+    # Replace this with your actual model call
+    model_output = f"This is a simulated response to '{user_input}'"
+
+    # Log each turn under your own conversation id. Galtea finds the existing
+    # session by that id and appends the turn to it.
+    galtea.traces.create(
+        session_custom_id=conversation_id,
+        version_id=VERSION_ID,  # or product_id=product_id
+        input=user_input,
+        output=model_output,
+    )
+    return model_output
+
+
+# This would happen dynamically in your application.
+for question in [
+    "What are some lower-risk investment strategies?",
+    "With age, should the investment strategy change?",
+    "Great, thanks!",
+]:
+    handle_conversation_turn("conversation-1234", question)
+```
+
+<Note>Sessions are created only through the sessions API. If no session matches your `session_custom_id` and anchor, the call returns a `400` error. Create the session first with `galtea.sessions.create(custom_id=...)`.</Note>
+
+<Tip>If your system already emits OpenTelemetry traces, you can create production sessions without any SDK calls. See [Monitor Real User Traffic via OpenTelemetry](/v5.13/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry).</Tip>
+
+### Single-Turn Production Monitoring
+
+For simple, single-turn interactions, create a production session and use `galtea.traces.create_and_evaluate()` to log and evaluate the interaction in a single call.
+
+You can pass [Specification](/v5.13/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+
+<Tabs>
+<Tab title="Using specification IDs">
+```python
+# In your application's request handler...
+def handle_user_query_with_specifications(user_query: str, retrieval_context: str | None = None) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query, retrieval_context)
+
+    # Log and evaluate the interaction, resolving metrics from your specifications
+    session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
+    galtea.traces.create_and_evaluate(
+        session_id=session.id,
+        input=user_query,
+        output=model_response,
+        retrieval_context=retrieval_context,
+        specification_ids=specification_ids,
+    )
+
+    return model_response
+
+
+# Test the handler
+handle_user_query_with_specifications("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
+```
+</Tab>
+<Tab title="Using metrics">
+```python
+# In your application's request handler...
+def handle_user_query(user_query: str, retrieval_context: str | None = None) -> str:
+    # Your logic to get a response from your model
+    model_response = your_product_function(user_query, retrieval_context)
+
+    # Log and evaluate the interaction in Galtea
+    session = galtea.sessions.create(version_id=VERSION_ID, is_production=True)
+    galtea.traces.create_and_evaluate(
+        session_id=session.id,
+        input=user_query,
+        output=model_response,
+        retrieval_context=retrieval_context,
+        metrics=[
+            {"name": "Role Adherence"},
+            {"name": "Answer Relevancy"},
+            {"name": "Faithfulness"},
+        ],
+    )
+
+    return model_response
+
+
+# Test the handler
+handle_user_query("What are your business hours?", "Business hours: 9am-5pm Monday-Friday")
+```
+</Tab>
+</Tabs>
+
+### Multi-Turn Production Monitoring (Conversations)
+
+For multi-turn conversations, use the session-based workflow to log the entire interaction first and then evaluate it. If your application has its own conversation ids, prefer the `session_custom_id` flow above: create the session once with a `custom_id` in step 1, then pass `session_custom_id` (plus `version_id` or `product_id`) instead of `session_id` in step 2.
+
+<Steps>
+<Step title="1. Create a Session">
+First, create a session at the start of the conversation. For production monitoring, make sure to set `is_production=True`.
+
+```python
+# Use is_production=True for real user interactions
+session = galtea.sessions.create(
+    custom_id="CLIENT_PROVIDED_SESSION_ID",  # Optional: a custom ID to associate this session in Galtea Platform to the one in your real application.
+    version_id=VERSION_ID,
+    is_production=True,
+)
+```
+</Step>
+
+<Step title="2. Log Conversation Turns">
+Next, log the user-assistant interactions. You can do this individually as each turn happens or in a single batch after the conversation ends.
+
+<Tabs>
+<Tab title="Log Turns Individually">
+This approach is useful for logging interactions in real-time in a live application.
+
+```python
+def get_model_response(user_input: str) -> str:
+    # Replace this with your actual model call
+    model_output = f"This is a simulated response to '{user_input}'"
+    return model_output
+
+
+# This would happen dynamically in your application.
+user_questions = [
+    "What are some lower-risk investment strategies?",
+    "With age, should the investment strategy change?",
+    "Great, thanks!",
+]
+
+for question in user_questions:
+    model_response = get_model_response(question)
+    # Log the turn to Galtea right after it happens
+    trace = galtea.traces.create(session_id=session.id, input=question, output=model_response)
+```
+
+</Tab>
+<Tab title="Log Turns in a Batch">
+If you have the entire conversation history, you can log all turns at once for efficiency.
+
+```python
+# The conversation must be in the standard format: a list of role/content dictionaries
+conversation_turns = [
+    {"role": "user", "content": "What are some lower-risk investment strategies?"},
+    {
+        "role": "assistant",
+        "content": "For lower-risk investments, consider diversified index funds, bonds, or Treasury securities.",
+    },
+    {"role": "user", "content": "With age, should the investment strategy change?"},
+    {
+        "role": "assistant",
+        "content": "Yes, many advisors recommend shifting to more conservative investments as you approach retirement.",
+    },
+    {"role": "user", "content": "Great, thanks!"},
+    {"role": "assistant", "content": "You're welcome!"},
+]
+
+galtea.traces.create_batch(session_id=session_batch.id, conversation_turns=conversation_turns)
+```
+</Tab>
+</Tabs>
+</Step>
+
+<Step title="3. Evaluate the Session">
+Once the conversation is complete and all turns are logged, you can run an evaluation on the entire session. Pass [Specification](/v5.13/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+
+<Tabs>
+<Tab title="Using specification IDs">
+```python
+# Or resolve metrics from your product's specifications instead of listing them
+galtea.evaluations.create(session_id=session.id, specification_ids=specification_ids)
+```
+</Tab>
+<Tab title="Using metrics">
+```python
+galtea.evaluations.create(session_id=session.id, metrics=METRICS_TO_EVALUATE)
+```
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step title="4. Finish the Session">
+When the user's conversation ends, finish the session with [`finish()`](/v5.13/sdk/api/session/finish). This closes the session and makes it ready for evaluation.
+
+```python
+# When the user's conversation ends, finish the session. This closes it, so a monitor
+# can score it on the next scan instead of waiting for the product's auto-close window.
+galtea.sessions.finish(session.id)
+```
+
+Finishing matters most when you use a [Monitor](/v5.13/concepts/product/monitor) to score production sessions automatically: a monitor scores only closed sessions. An explicit finish makes the session eligible on the next scan, instead of waiting for the product's inactivity auto-close window (30 minutes by default). Call `finish()` only once the conversation is truly over. A turn that arrives later follows the product's closed-session policy: by default the session opens again and the monitor scores it again, but the policy can also drop or reject the turn.
+</Step>
+</Steps>
+
+<Info>
+For more details on evaluating multi-turn conversations, see the [Evaluating Conversations](/v5.13/sdk/tutorials/evaluating-conversations) guide.
+</Info>
+
+## Late Turns on a Closed Session
+
+A production session does not stay open forever. Galtea's auto-close sweep closes a session once it has been quiet for the product's **auto-close inactivity window** (default 30 minutes), and an explicit finish closes it at once. A [session](/v5.13/concepts/product/version/session#session-lifecycle) is then closed (`COMPLETED` or `FAILED`).
+
+<Note>The product's auto-close window is the only inactivity window: it closes the session (its `Status` changes). A [Monitor](/v5.13/concepts/product/monitor) has no window of its own; it scores a session once the session is closed, whether by an explicit finish or by the auto-close sweep.</Note>
+
+So a turn that arrives after the session closes (for example, a user who replies an hour later) is handled by the product's **Closed Session Inference Creation Policy**:
+
+- `REOPEN_AND_REEVALUATE` (the default): the turn is **stored** and the session opens again with status `PENDING`. Its existing monitor evaluations move to the `OUTDATED` status, and the monitor scores the session again once it closes. Nothing is lost. A development (test) session reopens the same way; it has no monitor evaluations, so only the turn is stored and the status changes.
+- `IGNORE`: the log call returns success, but the turn is **not stored**. The late reply is silently dropped.
+- `REJECT`: the log call **fails with an error**. Your code must handle it (for example, start a new session for the reply).
+
+<Note>Each re-score spends evaluation credits again. The outdated evaluation keeps the credits it already used, so a session that reopens many times costs more and uses more of the monitor's monthly credit cap.</Note>
+
+The default keeps late replies. If you set the policy to `IGNORE` or `REJECT`, a late reply is lost or raises an error. Two settings help in that case. Both are set per product from the API or the dashboard (the SDK reads these fields but does not set them):
+
+- **Raise the inactivity window.** Increase **Auto Close Inactivity Minutes** so sessions stay open longer before the sweep closes them.
+- **Turn off auto-close for these sessions.** Set **Auto Close Scope** to `NONE` (or a scope that excludes production) so the sweep never closes them; they then close only on an explicit finish.
+
+See the [Product properties](/v5.13/concepts/product#product-properties) for the three auto-close fields and their defaults, and the [Session Lifecycle](/v5.13/concepts/product/version/session#session-lifecycle) for the full open/closed model.
+
+## Reading Monitor Results
+
+If you have set up a [Monitor](https://platform.galtea.ai/) on the Galtea dashboard to continuously evaluate a sample of your production sessions, you can pull its results with a single call:
+
+```bash
+curl -sS -H "Authorization: Bearer ${GALTEA_API_KEY}" \
+  "https://api.galtea.ai/monitors/${MONITOR_ID}/results?days=7"
+```
+
+The `days` query parameter sets the trailing window to aggregate, bucketed by day. It defaults to 7 and accepts up to 90.
+
+The response is built to give you an honest read of your product's quality, not just a bare average. Keep these ideas in mind when you interpret it:
+
+- **Each metric family gets its own score series.** A metric family is a metric and every later revision of it (for example, when you edit its judge prompt), grouped as one line of history. The response returns one series per family the monitor scores, picked directly or brought by a bound Specification, each with a whole-range `headline` score and one point per day bucket.
+- **A revision excluded from analytics leaves the series.** If you [exclude a metric revision from analytics](/v5.13/concepts/metric#revisions-and-analytics), its results drop out of that family's score series and headline, the same way they drop out of the Analytics page. Restoring the revision brings them back.
+- **Scores are sampling-weighted.** A monitor does not evaluate every session; it evaluates a sample to control cost. Sessions from a period when sampling was lower count for more in the average, so a period with a smaller sample does not silently pull the score toward its own noise.
+- **A human review is the score Galtea reports.** When a reviewer scores an evaluation, every series and headline uses the reviewer's score, not the judge's. That evaluation counts even when the judge's own run failed, was skipped, or never finished.
+- **A confidence interval tells you how much to trust a score.** The confidence interval is the range that most likely contains the true score. Galtea publishes a 95% interval once a bucket has scored at least 30 sessions. Below that floor, `confidenceInterval` is `null` and `collectingData` is `true`, so you know the score is a preview, not a settled number, until more sessions land.
+- **The worst metric family drives the headline, never an average.** `worstMetric` is the lowest-scoring family over the whole range, not a blended score across families. Use it to see which quality dimension needs attention first.
+- **Markers flag context changes.** `markers.metricRevisions` marks when a metric family the monitor scores was edited, and `markers.samplingChanges` marks when the sampling rate changed. Both can explain a shift in the score series that isn't a real quality change. An evaluation the judge never timestamped is dated by the time it ran, so a review never moves a marker.
+- **Spend shows your current billing cycle.** `spend.spentCredits` and `spend.pendingCredits` are the credits already used and reserved for evaluations still running this cycle; `spend.capCredits` is the monthly cap you configured for the monitor (`null` if you did not set one). A user without the `evaluation.readInference` permission, such as a Reader, gets `spentCredits` and `pendingCredits` as `null`. If spend reaches the cap, the monitor's status becomes `CAPPED` and it pauses scoring. Sessions that close while the monitor is capped are skipped for good, like when it is paused: scoring resumes for sessions that close after the next cycle resets the cap, or after you raise it. The monitor never lowers its own sampling rate to fit the budget.
+- **Sessions are listed, not just counted.** `sessions.scored` lists the most recently evaluated sessions (capped at 200), each with the turn count it was scored at. `sessions.waiting` lists production sessions that have not closed yet (capped at 100); a session is scored only once it closes. A session closes when it is explicitly finished, or when the product's auto-close setting closes it after inactivity.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Evaluating Conversations" icon="comments" href="/v5.13/sdk/tutorials/evaluating-conversations">
+    Evaluate full multi-turn production conversations.
+  </Card>
+  <Card title="Tracing Agent Operations" icon="sitemap" href="/v5.13/sdk/tutorials/tracing-agent-operations">
+    Capture and analyze internal agent operations in production.
+  </Card>
+</CardGroup>

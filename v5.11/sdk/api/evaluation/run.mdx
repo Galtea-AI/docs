@@ -1,0 +1,135 @@
+---
+title: 'Run Evaluation'
+sidebarTitle: "Run"
+description: "Run an evaluation pipeline for a version, using either your deployed endpoint or a local agent."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.11. [Read this page in the latest version](/sdk/api/evaluation/run).
+</Warning>
+
+Run an evaluation pipeline for a [Version](/v5.11/concepts/product/version). This resolves all [Specifications](/v5.11/concepts/product/specification) linked to the version's product, collects their linked [Metrics](/v5.11/concepts/metric) and [Datasets](/v5.11/concepts/product/dataset), and runs the evaluation.
+
+## Two Execution Modes
+
+<Tabs>
+  <Tab title="Endpoint Connection">
+    When no `agent` is provided, the evaluation is delegated to the server. The API calls your deployed HTTP endpoint for each test case, generates traces, and evaluates them. Requires the version to have a `conversation_endpoint_connection_id` configured.
+
+    Instead of `version_id`, you can pass `product_id`: the API clones the product's latest properly configured version.
+
+    ### Returns
+    - `jobId` — the inference batch job ID for tracking progress
+    - `versionId` — the version the job runs against: the `version_id` you passed, or the id of the clone created when only `product_id` was given
+    - `testCaseCount` — total number of test cases queued
+    - `message` — a human-readable status message
+    - `specifications` — summary of each specification evaluated
+    - `runId` — the [Run](/v5.11/concepts/product/run) that records this launch
+
+    <Warning>
+      This mode takes no `run_id`. It queues a launch, and the platform opens the run that holds it,
+      so the call raises a `ValueError` when you name a run. A `with galtea.runs.start(...)` block
+      around it is not joined either: read the run the platform opened from the `runId` above. The
+      agent mode below does join the block, and closes it normally.
+    </Warning>
+
+    <Tip>
+      Use [`galtea.jobs.cancel(job_id)`](/v5.11/sdk/api/job/cancel) to stop the batch before it finishes — for example, if you discover a misconfiguration after the job has already been queued.
+    </Tip>
+  </Tab>
+  <Tab title="Agent (SDK-side)">
+    When an `agent` is provided, the SDK runs the agent locally for each test case. The method resolves the datasets linked to the specifications and runs each test case once: it creates a session, executes the agent, and triggers server-side evaluation with every launched specification that the dataset links to.
+
+    ### Returns
+    - `evaluations` — list of all Evaluation objects created
+    - `testCaseCount` — total number of test cases processed
+    - `specifications` — summary of each specification evaluated, including `testCaseCount`
+    - `runId` — the [Run](/v5.11/concepts/product/run) that records this launch. One run covers the whole call, not one per test case.
+
+    <Note>
+      With no `run_id` and no enclosing `galtea.runs.start()` block, the call opens a run of its own and closes it before returning, even when a test case fails.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Examples
+
+**Endpoint connection (no agent):**
+```python
+    # Run evaluation using your deployed endpoint connection
+    result = galtea.evaluations.run(version_id=version_id)
+    print(f"Job {result['jobId']} queued {result['testCaseCount']} test cases")
+    for spec in result["specifications"]:
+        print(f"  Spec {spec['specificationId']}: {spec['testCount']} datasets, {spec['metricCount']} metrics")
+```
+
+**With specific specifications:**
+```python
+    # Evaluate only specific specifications
+    result = galtea.evaluations.run(
+        version_id=version_id,
+        specification_ids=specification_ids,
+    )
+```
+
+**With a local agent:**
+```python
+# Run evaluation with a local agent (SDK-side loop)
+def my_agent(user_message: str) -> str:
+    # Replace with your actual agent logic
+    return "Agent response"
+
+
+result = galtea.evaluations.run(
+    version_id=version_id,
+    agent=my_agent,
+    specification_ids=specification_ids[:1],
+)
+print(f"Processed {result['testCaseCount']} test cases")
+print(f"Created {len(result['evaluations'])} evaluations")
+```
+
+## Parameters
+<ResponseField name="version_id" type="string" optional>
+  The ID of the version to evaluate.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Required (not `product_id`) when `agent` is given, since the local agent loop needs a concrete version.</Note>
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The ID of the product to evaluate, as an alternative to `version_id`, for the endpoint-connection mode only. The API clones the product's latest properly configured version.
+
+  <Note>Provide `version_id` or `product_id` (at least one). If both are given, `version_id` wins and `product_id` is ignored. Not supported when `agent` is given.</Note>
+</ResponseField>
+<ResponseField name="agent" type="AgentType" optional>
+  The agent to execute locally. Accepts:
+  - An `Agent` class instance with a `call()` method
+  - An agent function (sync or async) with one of three signatures: `(str) -> str`, `(list[dict]) -> str`, or `(AgentInput) -> AgentResponse`. See the [AgentInput reference](/v5.11/sdk/api/agent/input) for all available fields.
+
+  When a test case attaches files, only the `AgentInput` signature receives them, as `input_data.input_files`; pass each one to `galtea.storage.download()`. The other two signatures receive the text alone and fail the trace for a file-only test case. See [Reading attached files](/v5.11/sdk/api/agent/input#reading-attached-files).
+
+  When omitted, the server-side endpoint connection pipeline is used. When provided, requires `version_id` (not `product_id`).
+</ResponseField>
+<ResponseField name="specification_ids" type="List[str]" optional>
+  A list of [Specification](/v5.11/concepts/product/specification) IDs to evaluate. When omitted, all specifications for the product that have linked metrics and datasets are used.
+
+  <Note>
+    Specifications without linked metrics or without linked datasets are silently skipped. If no specification has linked metrics, or none of the linked datasets is ready to run, the call returns an error instead of running.
+  </Note>
+</ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/v5.11/concepts/product/run) this launch joins. It applies in agent mode only. It defaults to the run of the enclosing `galtea.runs.start()` block, when there is one, and an explicit value wins over the block.
+
+  <Note>
+    A run you supply stays yours to close. Only a run this method opened itself is closed by it.
+  </Note>
+
+  <Note>
+    The run is checked once before the loop. The call raises a `ValueError` when the run belongs to
+    another product, or when it is pinned to a version other than `version_id`.
+  </Note>
+
+  <Note>
+    Without an agent the call raises a `ValueError` for any `run_id`, because the platform opens the
+    run that holds the queued launch.
+  </Note>
+</ResponseField>

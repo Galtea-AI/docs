@@ -1,0 +1,233 @@
+---
+title: "Endpoint Connection"
+sidebarTitle: "Overview"
+description: "A reusable connection to an external endpoint that defines how to connect to your AI system's API."
+---
+
+import ConceptsOverviewCard from '/v5.14/snippets/cards/concepts-overview-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/concepts/product/endpoint-connection).
+</Warning>
+
+## What is an Endpoint Connection?
+
+An Endpoint Connection tells Galtea how to call your AI system's API. You configure the URL, authentication, request format, and response mapping once, and Galtea uses it to run evaluations against your endpoint automatically.
+
+## Use Cases
+
+- **Automate evaluations** — Galtea calls your endpoint directly for each test case, no manual inference needed
+- **Standardize API calls** — Define reusable configurations with consistent auth and request formatting
+- **Manage multiple environments** — Create separate connections for development, staging, and production
+
+## Creating an Endpoint Connection
+
+To create an Endpoint Connection:
+
+1. Navigate to your product in the [Galtea Dashboard](https://platform.galtea.ai/)
+2. In **Development** view mode, open the **Connections** section in the sidebar (under **Product**), then the **Endpoints** tab
+3. Click "New Endpoint Connection" and choose how to start:
+   - **From cURL** — paste a cURL command and Galtea pre-fills the form (URL, method, headers, authentication, request body, and a suggested connection name) for you. Deterministic fields show an "Auto-filled" badge. For **Conversation** endpoints, when the request body is valid JSON, Galtea also uses AI to produce a richer input template (with conversation history, context fields, an `input_files` slot for any document, image, or audio payload the body carries, and the correct placeholder vocabulary) and to suggest a more descriptive connection name — both of those fields show an "AI Generated" badge instead. For **Initialization** and **Finalization** endpoints, the request body is used verbatim as the input template and the name is derived from the host URL (no AI enrichment for either field). Anything Galtea cannot parse is left for you to complete. You can also open this importer from the **Import from cURL** button inside the form.
+   - **Blank** — start from an empty form.
+4. Configure the connection properties as described below
+
+  <video
+    controls
+    muted
+    playsInline
+    className="w-full aspect-video rounded-xl"
+    src="/videos/endpoint-connection-setup.mp4"
+  ></video>
+
+## Quick Start: Single Conversation Endpoint
+
+Most integrations only need **one Conversation endpoint**. At its simplest, you just need to configure:
+
+- **Input Template** — How to format the request body (using `{{ input.user_message }}` for the simulated user message, and [`input_files`](/v5.14/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) for any file or audio attached to the test case input)
+- **Output Mapping** — How to extract your product's AI response (using a JSONPath expression for the `output` key)
+
+<CodeGroup>
+```json Input Template
+{
+  "message": "{{ input.user_message }}"
+}
+```
+
+```json Output Mapping
+{
+  "output": "$.response"
+}
+```
+</CodeGroup>
+
+This is all you need to start running evaluations against your endpoint. For advanced template syntax, conversation history loops, state management, and output mapping options, see [Templates & Mapping](/v5.14/concepts/product/endpoint-connection-configuration).
+
+## Multi-Step Session Lifecycle (Advanced)
+
+Some AI products expose separate endpoints for session setup and cleanup. In those cases, you can configure up to three endpoint connections:
+
+- **Initialization** (optional): runs before conversation
+- **Conversation** (required): runs for each turn
+- **Finalization** (optional): runs after conversation
+
+### Session Lifecycle Flow
+
+When a version has initialization and/or finalization endpoints configured, the evaluation follows this lifecycle:
+
+```mermaid
+%%{init: {"theme": "neutral"}}%%
+sequenceDiagram
+    participant Galtea
+    participant Init as Initialization Endpoint
+    participant Conv as Conversation Endpoint
+    participant Final as Finalization Endpoint
+
+    Galtea->>Galtea: Create Session
+    opt If Initialization Configured
+        Galtea->>Init: Initialize Session
+        Init-->>Galtea: Return session_id
+        Galtea->>Galtea: Store session_id for future requests
+    end
+    loop For Each Turn
+        Galtea->>Conv: Send Message (with session_id + metadata)
+        Conv-->>Galtea: Return Response
+        Galtea->>Galtea: Store Trace
+    end
+    opt If Finalization Configured
+        Galtea->>Final: Finalize Session (always runs)
+    end
+```
+
+### Example Use Case: Multi-Step Chatbot
+
+Some chatbot APIs require multiple steps:
+
+- **Initialization**: create a session and return a `session_id`
+- **Conversation**: send messages using that `session_id`
+- **Finalization**: clean up the session
+
+In this setup:
+
+- Your **Initialization** connection extracts `session_id` via `outputMapping`.
+- Your **Conversation** connection can reuse it in the URL/body using `{{ session_id }}`.
+- Any additional fields extracted via `outputMapping` are stored in **session metadata** and can also be reused in later turns.
+
+Before each run starts, Galtea runs a health check through the same steps, as one short session with sample input. Each check starts with new `session_id` and `galtea_session_id` values, so no two checks share an id. The steps of one check share them, as in a real run. As in a real run, each step returns metadata that the check carries forward, and the latest `session_id` a step returns replaces the previous one. If the Initialization response returns no `session_id`, the run does not start. When the test cases attach files and the Conversation template uses `input_files`, the check skips the Conversation step, because it has no real file to send. Those turns are checked by the run itself. If a step fails after Initialization succeeded, the check still calls your Finalization connection once, to close the session it opened.
+
+## Endpoint Connection Properties
+
+<ResponseField name="Name" type="Text" required>
+  A unique name for the endpoint connection within the product. **Example**: "Production Chat API" or "Staging Summarizer"
+</ResponseField>
+
+<ResponseField name="Type" type="Enum" required>
+  The purpose of the endpoint connection:
+  - `INITIALIZATION` - Runs before the conversation
+  - `CONVERSATION` - Runs for each turn
+  - `FINALIZATION` - Runs after the conversation
+</ResponseField>
+
+<ResponseField name="URL" type="Text" required>
+  The full URL of the endpoint. Must be a valid HTTPS URL that resolves to a public address. **Example**: "https://api.company.com/v1/chat"
+</ResponseField>
+
+<ResponseField name="HTTP Method" type="Enum" required>
+  The HTTP method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`.
+</ResponseField>
+
+<ResponseField name="Auth Type" type="Enum" required>
+  Authentication method: `NONE`, `BEARER`, `API_KEY`, or `BASIC`.
+</ResponseField>
+
+<ResponseField name="Auth Token" type="Text">
+  The authentication token or credentials. This value is securely stored.
+</ResponseField>
+
+<ResponseField name="Headers" type="JSON">
+  Optional custom headers to include with each request. Secret header values are securely stored and show as `••••••••` after you save them. See [Secret Header Values](/v5.14/concepts/product/endpoint-connection-configuration#secret-header-values).
+</ResponseField>
+
+<ResponseField name="Input Schema" type="JSON Schema">
+  Optional JSON Schema defining the structure of test case inputs (field types, constraints, enums). When set, Galtea generates structured multi-field test data matching this schema. See [Input Schema](/v5.14/concepts/product/endpoint-connection-input-schema) for details and examples.
+</ResponseField>
+
+<ResponseField name="Input Template" type="String (Jinja2)" required>
+  A Jinja2 template defining the request body. See [Structured Input Template Syntax](/v5.14/concepts/product/endpoint-connection-template-syntax) for the full placeholder reference and examples.
+</ResponseField>
+
+<ResponseField name="Output Mapping" type="JSON" required>
+  A JSON object defining how to extract values from the response using JSONPath. See [Templates & Mapping](/v5.14/concepts/product/endpoint-connection-configuration#output-mapping) for special keys and examples.
+</ResponseField>
+
+<ResponseField name="Timeout" type="Number">
+  Request timeout in seconds (1–120). Default: 15 seconds.
+</ResponseField>
+
+<ResponseField name="Rate Limit" type="Number">
+  Optional rate limit for requests per minute.
+</ResponseField>
+
+## HTTP endpoints
+
+HTTPS is required by default. An `http://` URL is allowed only when the connection
+acknowledges the risk: check the box in the dashboard, or pass
+`acknowledged_insecure_http=True` in the SDK.
+
+The risk: an `http://` connection sends traffic unencrypted. Anyone on the network
+path can read the prompts, the responses, and the credentials it sends.
+
+The acceptance covers the connection, not one address. On an inference call the
+platform follows a redirect, so an acknowledged connection can reach any public
+`http://` host and sends its credentials there too. Only blocked addresses, such as
+private and internal ranges, are still refused. A connection test never follows a
+redirect, so it only ever reaches the address you configured.
+
+A connection that has not acknowledged the risk never leaves HTTPS. If its endpoint
+redirects to an `http://` URL, the platform refuses to follow it.
+
+A self-hosted deployment can allow `http://` for every connection by setting
+`USER_SUPPLIED_URL_ALLOW_HTTP`.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use descriptive names">
+    Choose names that clearly identify the endpoint's purpose and environment, such as "Production Chat API" or "Staging Document Analyzer".
+  </Accordion>
+
+  <Accordion title="Configure appropriate timeouts">
+    Set timeouts based on your endpoint's expected response time. For complex AI operations, you may need longer timeouts (60-120 seconds).
+  </Accordion>
+
+  <Accordion title="Use retry configuration">
+    Configure retries for endpoints that may experience transient failures. Start with 2-3 retries with exponential backoff. See [Retry Configuration](/v5.14/concepts/product/endpoint-connection-configuration#retry-configuration).
+  </Accordion>
+
+  <Accordion title="Secure your credentials">
+    Never share your auth tokens. Galtea securely stores and encrypts all authentication credentials.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Input Schema" icon="brackets-curly" href="/v5.14/concepts/product/endpoint-connection-input-schema">
+    Define structured, multi-field inputs for test case generation.
+  </Card>
+  <Card title="Templates & Mapping" icon="code" href="/v5.14/concepts/product/endpoint-connection-configuration">
+    Full reference for Input Templates, Output Mapping, state management, and retry configuration.
+  </Card>
+  <Card title="Structured Input Template Syntax" icon="brackets-curly" href="/v5.14/concepts/product/endpoint-connection-template-syntax">
+    Deep dive into `{{ input.field_name }}` and `{{ context.field_name }}` placeholder syntax, JSON escaping, and missing field behavior.
+  </Card>
+  <Card title="Endpoint Connection Service SDK" icon="plug" href="/v5.14/sdk/api/endpoint-connection/service">
+    Manage endpoint connections programmatically using the Python SDK.
+  </Card>
+  <Card title="Version" icon="code-branch" href="/v5.14/concepts/product/version">
+    Attach endpoint connections to a version for evaluation.
+  </Card>
+  <Card title="Direct Inferences Tutorial" icon="play" href="/v5.14/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
+    Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+</CardGroup>

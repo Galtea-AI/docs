@@ -32,7 +32,7 @@ To get a key, upload the file with the SDK or attach it in the dashboard. The SD
 When you attach a Galtea `file` part of your organization, Galtea does these things:
 
 - It stores the `uri` without its upload signature, so the reference you read back never expires.
-- It fills `mimeType` from the stored file when you leave it out, and `filename` too where the storage keeps the name. It always reads `sizeBytes` from the stored file.
+- It fills `mimeType` from the stored file when you leave it out, and `filename` too where the storage keeps the name. It measures `sizeBytes` from the stored file and ignores a value you send for it. A part that an older release saved can still hold the size its sender gave.
 - It checks the file type. A type that is not accepted fails with the message `"<name>" is not an accepted file type.` The accepted types are listed in [File inputs](/concepts/product/dataset/test-case#file-inputs).
 - It checks the limits: at most 20 files and 20 MB in total for one input or one output.
 

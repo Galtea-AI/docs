@@ -1,0 +1,42 @@
+---
+title: "Knowledge Retention"
+description: "Checks if your product can follow a multi-turn conversation without losing information."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/concepts/metric/knowledge-retention).
+</Warning>
+
+The **Knowledge Retention** metric is one of several [non-deterministic Metric](/v5.16/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to retain and consistently apply factual information shared earlier in a conversation. It analyzes the entire conversational history to determine whether the model recalls and reuses relevant facts when generating new responses.
+
+This is particularly useful for long, multi-turn dialogues where context accumulation and memory play a crucial role in the user experience.
+
+## Evaluation Parameters
+
+To compute the `knowledge_retention` metric, the following parameters are required in every turn of the conversation:
+
+- **`input`**: The user message in the conversation.
+- **`actual_output`**: The LLM-generated response to the user message.
+
+This metric will evaluate the whole conversation, including all turns, to simulate a memory-check process across multiple turns.
+
+## How Is It Calculated?
+
+The `knowledge_retention` score is computed using an LLM-as-a-judge approach:
+
+1. **Identify Knowledge Anchors**: The LLM scans user inputs to identify specific facts, preferences, constraints, or context (e.g., names, locations, specific numbers).
+2. **Verify Recall**: The LLM checks if the agent recalled and applied this information in subsequent turns.
+3. **Check Consistency**: The LLM evaluates whether the agent contradicted previously established information, asked for information already provided, or ignored constraints set earlier.
+
+The metric assigns a **binary score**:
+
+- **Score 1.0 (Good Retention):** The agent correctly recalled relevant information or no specific memory recall was required (and no errors were made).
+- **Score 0.0 (Poor Retention):** The agent forgot information, contradicted itself, or asked redundant questions about known facts.
+
+## Suggested Test Case Types
+
+The Knowledge Retention metric is effective for evaluating Behavior test cases in Galtea, particularly:
+
+- **Long multi-turn conversations** where the user shares preferences, constraints, or facts early on.
+- **Personalized assistant scenarios** where the agent must recall user-provided details.
+- **Complex workflows** where information from one step is needed in a later step.

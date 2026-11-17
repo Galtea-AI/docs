@@ -1,0 +1,255 @@
+---
+title: "Create Metric"
+sidebarTitle: "Create"
+description: "Create a metric for evaluating your products."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/metric/create).
+</Warning>
+
+## Returns
+
+Returns a [Metric](/v5.13/concepts/metric) object for the given parameters, or `None` if an error occurs.
+
+## Examples
+
+<Tabs>
+  <Tab title="AI Evaluation">
+```python
+metric = galtea.metrics.create(
+    name="accuracy_v1_" + run_identifier,
+    evaluator_model_name="GPT-4.1",
+    source="partial_prompt",
+    judge_prompt="Determine whether the actual output is equivalent to the expected output",
+    evaluation_params=["input", "actual_output", "expected_output"],
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric.",
+    judge_generation_settings={"temperature": 0.3, "max_output_tokens": 512},
+    pass_threshold=0.7,
+    applicability_scope="production",
+    applicability_threshold=0.3,
+)
+```
+  </Tab>
+  <Tab title="Human Evaluation">
+```python
+metric = galtea.metrics.create(
+    name="human_eval_v1_" + run_identifier,
+    source="human_evaluation",
+    judge_prompt="Review the actual output and score it based on helpfulness, accuracy, and tone. Score 1 if the response is helpful and accurate. Score 0 if it is unhelpful or incorrect.",
+    evaluation_params=["input", "actual_output", "expected_output"],
+    user_group_ids=[user_group_id],
+    tags=["human", "quality"],
+    description="A human evaluation metric scored by QA annotators.",
+)
+```
+  </Tab>
+  <Tab title="Self-Hosted">
+```python
+metric = galtea.metrics.create(
+    name="accuracy_v1_self_" + run_identifier,
+    source="self_hosted",
+    tags=["custom", "accuracy"],
+    description="A custom accuracy metric calculated by our custom score function.",
+)
+```
+  </Tab>
+  <Tab title="Classifier (Jev)">
+```python
+from galtea import ClassifierScaleQuestion, ClassifierYesNoQuestion, evenly_spaced_levels
+
+card_number_metric = galtea.metrics.create(
+    name="Card number request " + run_identifier,
+    source="classifier",
+    description="The assistant never asks the user for their full card number.",
+    classifier_question=ClassifierYesNoQuestion(
+        instructions="Does {{ actual_output }} ask the user for their full card number?",
+        good_answer="no",
+    ),
+)
+
+human_transfer_metric = galtea.metrics.create(
+    name="Human transfer offer " + run_identifier,
+    source="classifier",
+    description="When the user asks for a human agent, the assistant offers a transfer.",
+    classifier_question=ClassifierScaleQuestion(
+        instructions="Does {{ actual_output }} offer to transfer the user to a human agent?",
+        levels=evenly_spaced_levels(["Does not offer a transfer", "Offers a transfer"]),
+        does_not_apply="Does not apply: {{ input }} does not ask for a human agent",
+    ),
+)
+```
+  </Tab>
+</Tabs>
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  The name of the metric.
+</ResponseField>
+<ResponseField name="test_type" type="string" optional>
+  <Warning>
+    **Deprecated.** This parameter is ignored.
+  </Warning>
+</ResponseField>
+<ResponseField name="evaluator_model_name" type="string" optional>
+  The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.
+  
+  **Available models:**
+  - `"claude-opus-5-5"`
+  - `"claude-sonnet-5-5"`
+  - `"claude-opus-5"`
+  - `"claude-sonnet-5"`
+  - `"claude-sonnet-4-6"`
+  - `"claude-sonnet-4-5"`
+  - `"claude-haiku-4-5"`
+  - `"GPT-6.1-Sol"`
+  - `"GPT-6-Sol"`
+  - `"GPT-6-Luna"`
+  - `"GPT-5.6-Sol"`
+  - `"GPT-5.6-Terra"`
+  - `"GPT-5.6-Luna"`
+  - `"GPT-5.5"`
+  - `"GPT-5.4"`
+  - `"GPT-5.2"`
+  - `"GPT-5.1"`
+  - `"GPT-5"`
+  - `"GPT-5-mini"`
+  - `"GPT-4.1"`
+  - `"GPT-4.1-mini"`
+  - `"GPT-4o"`
+  - `"o3"`
+  - `"Gemini-3.5-Flash"`
+  - `"Gemini-3.1-Flash-Lite"`
+  - `"Gemini-2.5-Pro"`
+  - `"Gemini-2.5-Flash"`
+  - `"Gemini-2.5-Flash-Lite"`
+  - `"DeepSeek-V4-Pro"`
+  - `"DeepSeek-V4-Flash"`
+
+  **EU data zone.** These are the same models, served from European infrastructure. Use them when your data must stay in the EU:
+  - `"eu.claude-sonnet-4-6"`
+  - `"eu.claude-sonnet-4-5"`
+  - `"eu.claude-haiku-4-5"`
+  - `"eu.gpt-5.5"`
+  - `"eu.gpt-5.4"`
+  - `"eu.gpt-5.1"`
+  - `"eu.gpt-5"`
+  - `"eu.gpt-4.1"`
+  - `"eu.gpt-4.1-mini"`
+  - `"eu.gpt-4o"`
+  - `"eu.gpt-4o-mini"`
+  - `"eu.o3"`
+
+  Model names are case-insensitive.
+
+  <Note>
+    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `classifier`: leave it out, and the API picks the classifier model (such as `jev-1.13.0`). A name you send must be a classifier model of your deployment.
+  </Note>
+</ResponseField>
+<ResponseField name="judge_prompt" type="string" optional>
+  A custom prompt that defines the evaluation logic for the metric. For AI Evaluation metrics, write the evaluation criteria and scoring rubric — Galtea will prepend the selected `evaluation_params` automatically. For Human Evaluation metrics, this serves as the annotation rubric. If omitted, the metric is considered a deterministic "Custom Score" metric. Must not be provided when `source` is `classifier`.
+</ResponseField>
+<ResponseField name="source" type="string" optional>
+  The evaluation method for the metric. Possible values:
+  - `"partial_prompt"` — [AI Evaluation](/v5.13/concepts/metric#creating-custom-metrics-via-ai-evaluation): You provide the core evaluation criteria and rubric. Galtea dynamically constructs the final prompt by prepending selected evaluation parameters to your criteria.
+  - `"human_evaluation"` — **Human Evaluation**: Human annotators manually review and score evaluations using the annotation criteria you define. Evaluations enter a `PENDING_HUMAN` status and are completed when an annotator submits a score.
+  - `"self_hosted"` — [Self-Hosted](/v5.13/concepts/metric#self-hosted): For deterministic metrics scored locally using the SDK's `CustomScoreEvaluationMetric`. Your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform.
+  - `"classifier"` — [Classifier (Jev)](/v5.13/concepts/metric/classifier): TypeSafe's Jev answers one typed question, which requires `classifier_question`. On a deployment without the classifier, the API answers 400 and `create` returns `None`.
+
+  Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="evaluation_params" type="list[string]" optional>
+  Evaluation parameters to include in the judge prompt. These parameters are prepended to the judge prompt to construct the final evaluation prompt.
+  To check the available evaluation parameters, see the [Evaluation Parameters](/v5.13/concepts/metric#param-evaluation-parameters) section.
+
+  <Note>
+    Only applicable for AI Evaluation and Human Evaluation metrics. For `classifier`, leave it out: the API derives it from the `{{ param }}` placeholders in every text of the question. If you send it, it must list exactly those names. Only the [allowed placeholders](/v5.13/concepts/metric/classifier#allowed-placeholders) are accepted.
+  </Note>
+</ResponseField>
+<ResponseField name="classifier_question" type="ClassifierYesNoQuestion | ClassifierScaleQuestion" optional>
+  The one question a [classifier](/v5.13/concepts/metric/classifier) metric asks. Required when `source` is `classifier`, and refused for every other source. Write it in English. A plain dict with snake_case or camelCase keys is also accepted; it needs a `type` of `"yes_no"` or `"scale"`.
+
+  `ClassifierYesNoQuestion`:
+  - `instructions`: 1 to 2000 characters, naming at least one evaluation parameter as a `{{ name }}` placeholder.
+  - `good_answer`: `"yes"` or `"no"`. Required, with no default.
+  - `criteria`: optional `ClassifierYesNoCriteria(yes, no)`, each side at most 1000 characters, to refine what yes and no mean.
+
+  `ClassifierScaleQuestion`:
+  - `instructions`: same rules as above.
+  - `levels`: a list of `ClassifierScaleLevel(description, score)`, worst first. 2 to 10 levels, or 2 to 9 with `does_not_apply`. Each `description` is 1 to 1000 characters. Each `score` is from 0 to 1 and must not go down from the worst level to the best. Set a score on every level, or on none: with none, the API spaces the scores evenly. `evenly_spaced_levels(descriptions)` builds the levels with those scores.
+  - `does_not_apply`: optional text of an extra level, 1 to 1000 characters. When it is the most probable answer, the evaluation is skipped.
+
+  Placeholders may also appear in the yes/no criteria, the level descriptions and the `does_not_apply` text. The SDK sends the question as given, and the API checks these rules. When the API refuses it, `create` prints the API's message and returns `None`.
+</ResponseField>
+<ResponseField name="pass_threshold" type="float" optional>
+  The score, from 0 to 1, at or above which an evaluation of this metric passes. When omitted, the API uses `0.5`. It is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.pass_threshold`. See [Pass threshold](/v5.13/concepts/metric#pass-threshold).
+</ResponseField>
+<ResponseField name="applicability_scope" type="string | MetricApplicabilityScope" optional>
+  Which sessions get the [applicability check](/v5.13/concepts/metric#applicability-check) before the metric is judged. A session where the metric does not apply is skipped, with no judge call and no credits spent. Possible values, in any case:
+  - `"production"`: only production sessions. This is the default for a metric the check covers: `partial_prompt`, `classifier`, deterministic, and the DeepEval-based metrics of Galtea.
+  - `"development"`: only development sessions, which are the sessions that are not production.
+  - `"all"`: every session.
+  - `"none"`: no check. This is the default for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric.
+
+  The API refuses any other value than `"none"` for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and `create` returns `None`. A metric that scores `traces` never gets the check: it defaults to `"none"` and refuses any other value. For a classifier metric, the fields it scores are the placeholders of its question, so a `traces` placeholder turns the check off. The check runs only where your deployment enables it. The scope is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.applicability_scope`.
+</ResponseField>
+<ResponseField name="applicability_threshold" type="float" optional>
+  The lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A session below it is skipped. When omitted, the API uses `0.5`, and `metric.applicability_threshold` reads `None`. The API refuses it for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and for a metric that scores `traces`. It is fixed when you create the metric: to use another one, create a revision of the metric. See [Applicability check](/v5.13/concepts/metric#applicability-check).
+</ResponseField>
+<ResponseField name="user_group_ids" type="list[string]" optional>
+  A list of [user group](/v5.13/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`. Each group must belong to your organization.
+  - Only users in the linked groups can annotate evaluations for this metric.
+  - A metric with no linked group reaches nobody: its pending evaluations show up for no one, and its metric page shows a warning.
+</ResponseField>
+<ResponseField name="tags" type="list[string]" optional>
+  Tags to categorize the metric.
+</ResponseField>
+<ResponseField name="description" type="string" optional>
+  A brief description of what the metric evaluates.
+</ResponseField>
+<ResponseField name="documentation_url" type="string" optional>
+  A URL pointing to more detailed documentation about the metric.
+</ResponseField>
+<ResponseField name="judge_generation_settings" type="object" optional>
+  The generation settings the judge runs with, instead of the platform defaults. Only these four keys are accepted, and any you omit keep the provider's own default:
+  - `temperature`
+  - `top_p`
+  - `max_output_tokens`
+  - `reasoning_effort` — a level the model accepts, such as `low`, `medium` or `high`. The set differs per model, so read the settings your evaluator model publishes before choosing one.
+
+  Only applicable to AI Evaluation metrics, which are the only ones with an LLM judge. The settings cannot be changed later: create a revision of the metric to use different ones.
+
+  <Warning>
+    **Check which settings your model accepts before you set them.** Each model accepts a different
+    subset. A setting the model does not accept is discarded when the judge runs, and the evaluation
+    still succeeds, so nothing tells you it had no effect.
+
+    On the CLI, list the models with `galtea evaluator-models list`. Each one reports
+    `generationCapabilities.configurableSettings`, the settings it accepts. A model whose
+    `generationCapabilities` is `null` is one we could not read, so no setting is guaranteed to apply.
+  </Warning>
+
+  <Note>
+    A value the model rejects as out of range, such as a `temperature` above the provider's own
+    ceiling, is reported per evaluation: that evaluation ends as `SKIPPED` carrying the provider's own
+    message, and is never scored at a substituted value.
+
+    To find a rejected value before you create the metric, check it with the
+    [`galtea` CLI](/v5.13/cli/usage). The SDK has no evaluator model surface, so the CLI is the only way
+    to reach this check:
+
+    ```bash
+    galtea evaluator-models test-generation-settings \
+      'evaluatorModelName: gpt-5-nano, judgeGenerationSettings{temperature: 1.5}'
+    ```
+
+    It sends one small completion to the judge model with your settings and consumes no credits.
+    The `outcome` field answers `accepted`, `refused` (with the provider's own message in `error`)
+    or `unreachable`. `accepted` tells you only that the provider took the values, never that they
+    changed how the judge answers.
+
+    The CLI builds its command tree from the API specification, so this command appears only after
+    the API release that carries it. Run `galtea sync` to pick it up.
+  </Note>
+</ResponseField>

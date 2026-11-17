@@ -1,0 +1,27 @@
+---
+title: "Unlink Products"
+sidebarTitle: "Unlink Products"
+description: "Remove products from a user group."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/sdk/api/user-group/unlink-products).
+</Warning>
+
+Only an OWNER or ADMIN can unlink products from a user group. Its MEMBER, READER and HUMAN_EVALUATOR users can no longer reach an unlinked product, unless another of their groups links it or links all products.
+
+## Example
+```python
+galtea.user_groups.unlink_products(
+    user_group_id=user_group_id,
+    product_ids=[product_id_2],
+)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group.
+</ResponseField>
+<ResponseField name="product_ids" type="list[string]" required>
+  List of product IDs to remove from the group.
+</ResponseField>

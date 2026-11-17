@@ -1,0 +1,101 @@
+---
+title: 'Update Endpoint Connection'
+sidebarTitle: "Update"
+description: "Update an existing endpoint connection."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.10. [Read this page in the latest version](/sdk/api/endpoint-connection/update).
+</Warning>
+
+## Returns
+Returns the updated [Endpoint Connection](/v5.10/concepts/product/endpoint-connection) object.
+
+## Example
+```python
+endpoint_connection = galtea.endpoint_connections.update(
+    endpoint_connection_id=endpoint_connection_id,
+    timeout=60,
+    rate_limit=100,
+)
+```
+
+## Parameters
+<ResponseField name="endpoint_connection_id" type="string" required>
+  ID of the endpoint connection to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the endpoint connection.
+</ResponseField>
+<ResponseField name="url" type="string" optional>
+  New endpoint URL. For [multi-step session lifecycles](/v5.10/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), supports a `{{ session_id }}` placeholder (requires an `INITIALIZATION` endpoint).
+</ResponseField>
+<ResponseField name="http_method" type="string" optional>
+  New HTTP method. Valid values: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`. Other string values are
+  sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
+</ResponseField>
+<ResponseField name="auth_type" type="string" optional>
+  New authentication type. Valid values: `NONE`, `BEARER`, `API_KEY`, `BASIC`. Other string values
+  are sent to the API unchanged, so values added in newer API versions can be used; the API rejects
+  invalid ones.
+</ResponseField>
+<ResponseField name="auth_token" type="string" optional>
+  New authentication token.
+</ResponseField>
+<ResponseField name="username" type="string" optional>
+  New username for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="password" type="string" optional>
+  New password for `BASIC` authentication.
+</ResponseField>
+<ResponseField name="headers" type="dict[string, string]" optional>
+  New custom headers. Replaces the whole map. Supports placeholders: credentials (e.g., `{{ bearer_token }}`, `{{ api_key }}`) and call values (e.g., `{{ trace_id }}`, `{{ session_id }}`). A fetched connection returns each secret header value as `••••••••`: send that value back to keep the stored value, or send a new value to replace it. See [Secret Header Values](/v5.10/concepts/product/endpoint-connection-configuration#secret-header-values).
+</ResponseField>
+<ResponseField name="input_template" type="string" optional>
+  New input template with Jinja2 placeholders. Keep `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` in the template if your test cases attach files, because a run over those test cases is refused without it. See [Input Template](/v5.10/concepts/product/endpoint-connection-configuration#input-template).
+</ResponseField>
+<ResponseField name="output_mapping" type="dict[string, string]" optional>
+  New output mapping using JSONPath expressions. See [Output Mapping](/v5.10/concepts/product/endpoint-connection-configuration#output-mapping).
+</ResponseField>
+<ResponseField name="timeout" type="int" optional>
+  New per-attempt request timeout in seconds. Capped at `120`; values above this are rejected by the API.
+</ResponseField>
+<ResponseField name="rate_limit" type="int" optional>
+  New maximum requests per minute. Pass `None` for no limit.
+</ResponseField>
+<ResponseField name="retry_enabled" type="bool" optional>
+  Whether automatic retry is enabled. See [Retry Configuration](/v5.10/concepts/product/endpoint-connection-configuration#retry-configuration).
+</ResponseField>
+<ResponseField name="retry_max_attempts" type="int" optional>
+  New maximum retry attempts (0–10). `0` is only valid when retry is disabled; with retry enabled the minimum is `1`.
+</ResponseField>
+<ResponseField name="retry_initial_delay_ms" type="int" optional>
+  New initial delay in milliseconds before first retry.
+</ResponseField>
+<ResponseField name="retry_backoff_strategy" type="string" optional>
+  New backoff strategy. Valid values: `FIXED`, `EXPONENTIAL`, `LINEAR`. Other string values are sent
+  to the API unchanged, so values added in newer API versions can be used; the API rejects invalid
+  ones.
+</ResponseField>
+<ResponseField name="retry_max_delay_ms" type="int" optional>
+  New maximum delay between retry attempts, in milliseconds. Capped at `60000`; values above this are rejected.
+</ResponseField>
+<ResponseField name="retryable_status_codes" type="list[int]" optional>
+  New HTTP status codes that trigger retry. Each value must be a valid HTTP status code (100–599).
+</ResponseField>
+<ResponseField name="acknowledged_insecure_http" type="bool" optional>
+  Set to `true` to accept an `http://` URL. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/v5.10/concepts/product/endpoint-connection#http-endpoints).
+</ResponseField>
+<ResponseField name="conversation_end_rules" type="list[ConversationEndRule]" optional>
+  New list of replies that mean your agent ended the conversation. It replaces the stored list; pass an empty list to remove every rule. Each `ConversationEndRule` has a `status_code` (100–599) and an optional `body_match` (`ConversationEndBodyMatch` with `path` and `equals`). A `2xx` rule needs a `body_match`. At most 20 rules, and only for `CONVERSATION` type. See [Conversation End Rules](/v5.10/concepts/product/endpoint-connection-configuration#conversation-end-rules).
+</ResponseField>
+
+<Note>
+  All fields except `endpoint_connection_id` default to `PydanticUndefined` (from `pydantic_core`).
+  Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
+  Pass `None` to explicitly clear an optional field.
+  Pass a value to update it.
+
+  `auth_token` and `password` are the exception: `None` or an empty string keeps the stored credential. To remove one, change `auth_type`, which clears the credentials the new type does not use.
+</Note>

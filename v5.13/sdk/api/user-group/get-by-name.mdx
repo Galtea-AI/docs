@@ -1,0 +1,26 @@
+---
+title: "Retrieving User Group by Name"
+sidebarTitle: "Get by Name"
+description: "Get a user group by its name."
+---
+
+import EntityNotFound from '/v5.13/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/user-group/get-by-name).
+</Warning>
+
+## Returns
+Returns a [User Group](/v5.13/concepts/user-group) object.
+
+## Example
+```python
+user_group = galtea.user_groups.get_by_name(name="quality-reviewers-" + run_identifier)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  The name of the user group to retrieve.
+</ResponseField>
+
+<EntityNotFound />

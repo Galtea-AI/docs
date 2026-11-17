@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Evaluation'
+sidebarTitle: "Get"
+description: "Retrieve a specific evaluation by its ID."
+---
+
+import EntityNotFound from '/v5.13/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/evaluation/get).
+</Warning>
+
+## Returns
+Returns an [Evaluation](/v5.13/concepts/product/version/session/evaluation) object for the given evaluation ID.
+
+## Example
+```python
+evaluation = galtea.evaluations.get(evaluation_id=evaluation_id)
+```
+
+## Parameters
+<ResponseField name="evaluation_id" type="string" required>
+  The ID of the evaluation you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

@@ -1,0 +1,61 @@
+---
+title: 'Phone Connection Service'
+sidebarTitle: "Service"
+description: "Phone Connection Service API methods in the Galtea SDK"
+---
+
+import PhoneConnectionCard from '/v5.12/snippets/cards/phone-connection-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.12. [Read this page in the latest version](/sdk/api/phone-connection/service).
+</Warning>
+
+The Phone Connection Service in the Galtea SDK allows you to manage [phone connections](/v5.12/concepts/product/phone-connection) for your products.
+This Service is exposed by the `galtea.phone_connections` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.12/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a phone connection:
+```python
+phone_connection = galtea.phone_connections.create(
+    product_id=product_id,
+    name="production-voice-agent-" + run_identifier,
+    phone_number="+14155552671",
+    agent_speaks_first=False,
+)
+```
+
+List phone connections for a product:
+```python
+phone_connections = galtea.phone_connections.list(
+    product_ids=[product_id],
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+Get a phone connection by ID:
+```python
+phone_connection = galtea.phone_connections.get(phone_connection_id=phone_connection_id)
+```
+
+## Service Methods
+- [Create Phone Connection](/v5.12/sdk/api/phone-connection/create)
+- [List Phone Connections](/v5.12/sdk/api/phone-connection/list)
+- [Get Phone Connection](/v5.12/sdk/api/phone-connection/get)
+- [Get Phone Connection By Name](/v5.12/sdk/api/phone-connection/get-by-name)
+- [Update Phone Connection](/v5.12/sdk/api/phone-connection/update)
+- [Delete Phone Connection](/v5.12/sdk/api/phone-connection/delete)
+
+## Related
+
+<PhoneConnectionCard />

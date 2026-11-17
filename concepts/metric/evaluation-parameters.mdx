@@ -49,12 +49,12 @@ When creating or configuring a metric, you select which parameters are relevant 
     </tr>
     <tr>
       <td>**retrieval_context**</td>
-      <td>The context retrieved by your RAG system before sending the user query to your LLM. Derived from your `RETRIEVER` spans; you can also supply it directly and it is stored as a `RETRIEVER` span, not a directly-readable field. A Galtea file in the output of a `RETRIEVER` span reads as `[File N]`. On deployments that send files to the judge, it is also sent as a file.</td>
+      <td>The context retrieved by your RAG system before sending the user query to your LLM. Derived from your `RETRIEVER` spans; you can also supply it directly and it is stored as a `RETRIEVER` span, not a directly-readable field. A Galtea file in the output of a `RETRIEVER` span reads as `[File N]`. On deployments that send files to the judge, it is also sent to the judge: an image or a PDF as a file, a text file as its text.</td>
       <td>Accuracy, Security & Safety, and Behavior</td>
     </tr>
     <tr>
       <td>**traces**</td>
-      <td>Execution traces from the agent, including tool calls, LLM invocations, and other internal operations. A Galtea file in a span of any type reads as `[File N]`. On deployments that send files to the judge, it is also sent as a file.</td>
+      <td>Execution traces from the agent, including tool calls, LLM invocations, and other internal operations. A Galtea file in a span of any type reads as `[File N]`. On deployments that send files to the judge, it is also sent to the judge: an image or a PDF as a file, a text file as its text.</td>
       <td>All metrics</td>
     </tr>
     <tr>

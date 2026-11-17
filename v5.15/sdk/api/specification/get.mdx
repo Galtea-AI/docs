@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Specification'
+sidebarTitle: "Get"
+description: "Retrieve a specific specification by its ID."
+---
+
+import EntityNotFound from '/v5.15/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/sdk/api/specification/get).
+</Warning>
+
+## Returns
+Returns a [Specification](/v5.15/concepts/product/specification) object for the given specification ID.
+
+## Example
+```python
+specification = galtea.specifications.get(specification_id=specification.id)
+```
+
+## Parameters
+<ResponseField name="specification_id" type="string" required>
+  The ID of the specification you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

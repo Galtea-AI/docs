@@ -1,0 +1,74 @@
+---
+title: 'Updating Monitor'
+sidebarTitle: "Update"
+description: "Update an existing monitor."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.13. [Read this page in the latest version](/sdk/api/monitor/update).
+</Warning>
+
+## Returns
+Returns the updated [Monitor](/v5.13/concepts/product/monitor) object.
+
+## Example
+```python
+# Raise the sampling rate. Only the fields you pass change.
+galtea.monitors.update(monitor.id, sampling_percentage=25)
+```
+
+To change the bound Specifications:
+```python
+# Replace the bound Specifications. Pass an empty list to unbind them all.
+# The monitor must keep at least one metric family or Specification.
+galtea.monitors.update(specification_monitor.id, specification_ids=[specification.id])
+```
+
+To turn the message filter off, so a session is scored whatever its number of messages:
+```python
+# Turn the message filter off, so every session is eligible whatever its number of messages.
+galtea.monitors.update(monitor.id, message_conditions=[])
+```
+
+To pause or resume a monitor, use [`monitors.pause()`](/v5.13/sdk/api/monitor/pause) and [`monitors.resume()`](/v5.13/sdk/api/monitor/resume). Setting `status` here still works. Users may set only `ACTIVE` (resume) or `PAUSED` (pause); `CAPPED`, `NO_CREDITS`, and `FAILING` are system-set and are rejected.
+
+## Parameters
+<ResponseField name="monitor_id" type="string" required>
+  The ID of the monitor to update.
+</ResponseField>
+<ResponseField name="name" type="string" optional>
+  New name for the monitor.
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  New version to watch. Pass `None` to watch every version of the product.
+</ResponseField>
+<ResponseField name="metric_group_ids" type="list[string]" optional>
+  New metric family IDs (`metric.metric_group_id`) to score with. Adding a self-hosted metric family
+  raises an error, for the same reason as on create. So does a newly bound
+  [Classifier (Jev)](/v5.13/concepts/metric/classifier) family when classifier metrics are off on the
+  deployment. A family the monitor already binds can still be resent: only a newly bound family is checked.
+</ResponseField>
+<ResponseField name="sampling_percentage" type="number" optional>
+  New sampling percentage, from just above `0` up to `100`.
+</ResponseField>
+<ResponseField name="monthly_credit_cap" type="int" optional>
+  New monthly credit cap. Must be positive when set. Pass `None` for no cap.
+</ResponseField>
+<ResponseField name="status" type="string | MonitorStatus" optional>
+  New status. Prefer [`pause()`](/v5.13/sdk/api/monitor/pause) and [`resume()`](/v5.13/sdk/api/monitor/resume). Valid user-settable values: `ACTIVE` (resume), `PAUSED` (pause). Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="specification_ids" type="list[string]" optional>
+  New Specification IDs to bind. The list replaces the bound Specifications, and an empty list unbinds them all.
+  Only Policy and Capability Specifications of the monitor's product are accepted. The update is refused when
+  the monitor would be left with nothing to score. Removing a Specification deletes the alert rules on that
+  Specification and on the families that only it brought.
+</ResponseField>
+<ResponseField name="message_conditions" type="list[MonitorMessageCondition]" optional>
+  New conditions on a session's number of messages, joined by AND. The list replaces the stored conditions. Pass `[]` to turn the filter off.
+  `None` is refused. At most `10` conditions. Each `MonitorMessageCondition` has a `count` (`messages` or `user_messages`), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused). A list that no session can meet is refused too, such as `messages` `gt` `5` with `messages` `lte` `3`, or more user messages than the messages allow.
+  The change applies to sessions that close after the update.
+</ResponseField>
+
+<Note>
+  Only the fields you pass are updated. Any field you omit is left unchanged. Pass `None` to clear `version_id` or `monthly_credit_cap`. The other fields refuse `None`: leave them out to keep their value, or pass an empty list to clear `metric_group_ids`, `specification_ids` or `message_conditions`.
+</Note>

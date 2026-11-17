@@ -1,0 +1,111 @@
+---
+title: 'Agent Skill'
+sidebarTitle: 'Agent Skill'
+description: "Install the Galtea Agent Skill so Claude Code, Cursor, and other AI coding assistants can drive Galtea on your behalf."
+icon: "robot"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.14. [Read this page in the latest version](/sdk/integrations/agent-skill).
+</Warning>
+
+The Galtea Agent Skill is an open-source [Agent Skill](https://github.com/anthropics/skills) that teaches AI coding assistants — Claude Code, Cursor, Windsurf, and other Agent-Skills-compatible tools — how to work with Galtea. With the skill installed, your agent authenticates, discovers the right endpoints, runs evaluations, and inspects sessions and spans without you having to explain Galtea first.
+
+Source repository: [`Galtea-AI/skills`](https://github.com/Galtea-AI/skills)
+
+## Why use it
+
+Without the skill, the agent improvises: it guesses endpoints, re-reads the docs from scratch, and often picks a slower path than the one Galtea recommends. With the skill loaded, the agent follows the workflows our team has already validated and sticks to the conventions encoded in the skill itself.
+
+## Install
+
+Install the [Galtea Agent Skill](https://github.com/Galtea-AI/skills) to let your coding agent access all Galtea features.
+
+<Tabs>
+  <Tab title="Ask your coding agent">
+    Ask your coding agent to install the skill by pointing to the GitHub repository:
+
+    ```
+    Install the Galtea Agent Skill from github.com/Galtea-AI/skills.
+    ```
+
+    The agent reads the repo, picks the installation path for its own runtime (Claude Code, Cursor, Windsurf, etc.), and wires the skill up.
+  </Tab>
+  <Tab title="Claude Code plugin">
+    Register the Galtea marketplace in Claude Code:
+
+    ```
+    /plugin marketplace add Galtea-AI/skills
+    ```
+
+    Then install the Galtea plugin:
+
+    ```
+    /plugin install galtea@galtea
+    ```
+
+    Once installed, the skill is active automatically for any Galtea-related task.
+  </Tab>
+  <Tab title="Cursor plugin">
+    A Galtea [Cursor Plugin](https://cursor.com/docs/plugins) that bundles this skill is on the way. Once it's published to the [Cursor marketplace](https://cursor.com/marketplace), it will install the skill in a single click.
+
+    <Info>
+      Until the plugin is live on the marketplace, use the **Ask your coding agent** or **Manual installation** tab to install the skill in Cursor.
+    </Info>
+  </Tab>
+  <Tab title="Manual installation">
+    Install via npm ([skills CLI](https://github.com/anthropics/skills)):
+
+    ```bash
+    npx skills add Galtea-AI/skills --skill "galtea"
+    ```
+
+    If you want to target a specific agent directly:
+
+    ```bash
+    npx skills add Galtea-AI/skills --skill "galtea" --agent "<agent-id>"
+    ```
+
+    <Accordion title="Alternatively, you can manually clone the skill">
+      Clone the repo and symlink the skill into your agent's skills directory:
+
+      ```bash
+      git clone https://github.com/Galtea-AI/skills.git /path/to/galtea-skills
+      mkdir -p ~/.claude/skills
+      ln -s /path/to/galtea-skills/skills/galtea ~/.claude/skills/galtea
+      ```
+
+      Replace `~/.claude/skills/galtea` with your agent's skills path if you're not on Claude Code.
+    </Accordion>
+  </Tab>
+</Tabs>
+
+## Usage examples
+
+Once installed, the agent automatically picks up the skill when the task involves Galtea. Try prompts like:
+
+- *"Set up a new product version and connect my endpoint."*
+- *"Run an evaluation for version `<id>` and show me the failures."*
+- *"List the metrics linked to this product's specifications."*
+- *"Analyze the poor performant evaluations from this version:  `<id>`."*
+- *"Create a test for the spec I just drafted and kick off evaluations."*
+
+The skill handles authentication, calls the right endpoints, polls async evaluations until they settle, and surfaces the results.
+
+## Feedback
+
+Something not working as expected, or want the skill to cover a new workflow? Open an issue on the [`Galtea-AI/skills`](https://github.com/Galtea-AI/skills/issues) repository — the agent can also do this for you via the built-in skill-feedback flow.
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Quickstart" icon="rocket" href="/v5.14/quickstart">
+    Zero-to-first-evaluation walkthrough.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/v5.14/cli/usage">
+    The `galtea` binary that the skill drives under the hood — useful to know if you ever want to run commands by hand.
+  </Card>
+  <Card title="Python SDK" icon="code" href="/v5.14/sdk/installation">
+    Prefer Python? Install the official SDK.
+  </Card>
+</CardGroup>

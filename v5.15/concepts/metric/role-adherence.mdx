@@ -1,0 +1,42 @@
+---
+title: "Role Adherence"
+description: "Checks whether your chatbot stays within its defined role across the entire conversation."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/concepts/metric/role-adherence).
+</Warning>
+
+The **Role Adherence** metric is one of several [non-deterministic Metric](/v5.15/concepts/metric) Galtea uses to evaluate whether your LLM-based chatbot maintains consistency with its assigned role throughout a conversation. This role could be defined by system prompts (e.g., "you are a travel assistant") or contextual constraints (e.g., tone, domain, responsibilities).
+
+This is especially important in enterprise and safety-sensitive applications, where the chatbot must not deviate from its designated behavior or scope.
+
+## Evaluation Parameters
+
+To compute the `role_adherence` metric, the following inputs are required in every turn of the conversation:
+
+- **`input`**: The current user message.
+- **`actual_output`**: The corresponding chatbot response.
+
+This metric will evaluate the whole conversation, including all turns, to evaluate consistency with the assigned role over time.
+
+## How Is It Calculated?
+
+The `role_adherence` score is computed using an LLM-as-a-judge approach:
+
+1. **Define the Persona**: Based on the `product_description`, the LLM identifies the expected persona, tone, professional boundaries, and style.
+2. **Audit the Conversation**: The LLM reviews every response from the agent in the conversation history.
+3. **Check for Deviations**: The LLM evaluates whether the agent broke character, violated tone constraints, strayed from its designated responsibilities, or suddenly deviated from the inferred role.
+
+The metric assigns a **binary score**:
+
+- **Score 1.0 (Adherent):** The agent consistently maintained its role, tone, and persona throughout all turns.
+- **Score 0.0 (Non-Adherent):** The agent deviated from its role, broke character, or adopted an inconsistent tone at any point.
+
+## Suggested Test Case Types
+
+The Role Adherence metric is effective for evaluating Behavior test cases in Galtea, particularly:
+
+- **Persona-driven conversations** where the agent has a defined character or role.
+- **Adversarial prompts** that attempt to make the agent break character.
+- **Enterprise scenarios** where consistent professional tone and scope adherence are required.

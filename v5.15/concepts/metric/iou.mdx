@@ -1,0 +1,60 @@
+---
+title: "IOU"
+description: "Measures the spatial overlap between a predicted bounding box and one or more reference boxes. This metric is commonly used in object detection and layout tasks to quantify how well the predicted region aligns with the ground truth."
+
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.15. [Read this page in the latest version](/concepts/metric/iou).
+</Warning>
+
+The IOU (Intersection Over Union) metric is part of the [Deterministic Metric](/v5.15/concepts/metric) options in Galtea. It evaluates the degree of spatial overlap between a single predicted bounding box and a set of ground truth boxes. This is especially useful for tasks involving layout analysis, bounding box prediction, or image-based text extraction, where location matters as much as content.
+
+## Evaluation Parameters
+
+To compute the iou metric, the following parameters must be provided:
+
+- **`actual_output`**: A list of predicted bounding boxes. Each box must be in `[x1, y1, x2, y2]` format (coordinates of top-left and bottom-right corners). Accepts two formats:
+  - **JSON array**: `"[[10, 10, 50, 50], [100, 100, 120, 120]]"`
+  - **JSON object with "bboxes" key**: `'{"bboxes": [[10, 10, 50, 50], [100, 100, 120, 120]]}'`
+
+- **`expected_output`**: A single ground truth bounding box in `[x1, y1, x2, y2]` format. Accepts two formats:
+  - **JSON array**: `"[10, 10, 50, 50]"`
+  - **JSON object with "bbox" key** (singular): `'{"bbox": [10, 10, 50, 50]}'`
+
+**Important**: Both `actual_output` and `expected_output` must be raw JSON. Unlike [JSON Field Match](/v5.15/concepts/metric/json-field-match), these metrics do not strip markdown code fences, so a fenced block is not read as JSON. The two sides then behave differently:
+
+- **`actual_output` is not a list of boxes** (malformed JSON, no `bboxes` field, the wrong number of coordinates, or a coordinate that is not a finite number): the evaluation is **skipped**, and its error message says what could not be read. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result. An empty box list is not an error: it scores 0.
+- **`expected_output` is not a valid box**: the evaluation **fails**, because a reference box comes from your dataset and you are the one who can fix it. Unparseable JSON, a missing `bbox` field, and a coordinate that is not a finite number all fail. One case still scores: a box with the wrong number of coordinates (`[10, 10, 50]`) scores 0 instead of failing, so check your reference box before reading a 0 as a real mismatch.
+
+A coordinate may be a number or a string that spells one, so `"10"` and `10` score the same. `NaN` and `Infinity` are not readable coordinates on either side.
+
+## How Is It Calculated?
+
+1. The predicted bounding box is compared against each ground truth box.
+
+2. For each comparison, the IoU is calculated as:
+
+   $$
+   \text{IoU} = \frac{\text{Area of Intersection}}{\text{Area of Union}}
+   $$
+
+3. The maximum IoU value across all comparisons is returned as the final score.
+
+This method is particularly useful when the ground truth includes multiple bounding boxes for a single answer (e.g., one box per word in a multi-word phrase).
+
+## Interpretation of Scores
+
+- **≥ 0.7** – Strong spatial alignment.
+- **0.4 – 0.7** – Moderate overlap; may require refinement.
+- **< 0.4** – Poor alignment; predicted box diverges from reference.
+
+Note: These thresholds may be adjusted based on task-specific precision requirements.
+
+## Suggested Test Case Types
+
+Use IoU when evaluating:
+
+- **Layout-aware predictions**, such as bounding boxes in OCR or form extraction.
+- **Visual document understanding**, where spatial positioning is essential.
+- **Object or text region detection** in image or PDF-based tasks.

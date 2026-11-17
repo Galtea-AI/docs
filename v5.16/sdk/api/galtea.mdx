@@ -1,0 +1,121 @@
+---
+title: 'Galtea Client'
+sidebarTitle: "Galtea Client"
+description: "Main entry point for the Galtea SDK"
+icon: "plug"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.16. [Read this page in the latest version](/sdk/api/galtea).
+</Warning>
+
+## Galtea
+
+The `Galtea` class is the main entry point for the Galtea SDK. It provides access to all the functionalities of the SDK.
+
+### Initialization
+
+To initialize the `Galtea` class, you need to provide your API key obtained in the [settings page](https://platform.galtea.ai/settings) of the Galtea platform.
+
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+To call Galtea through an API gateway, pass `base_url` and `headers`, or set `GALTEA_API_URL` and
+`GALTEA_EXTRA_HEADERS`. See [Custom API URL and headers](/v5.16/sdk/installation#custom-api-url-and-headers).
+
+### Services
+
+The `Galtea` class provides access to the following services:
+
+- [`products`](/v5.16/sdk/api/product/service): Access [product](/v5.16/concepts/product) related functionalities.
+- [`endpoint_connections`](/v5.16/sdk/api/endpoint-connection/service): Access [endpoint connection](/v5.16/concepts/product/endpoint-connection) related functionalities.
+- [`phone_connections`](/v5.16/sdk/api/phone-connection/service): Access [phone connection](/v5.16/concepts/product/phone-connection) related functionalities.
+- [`web_rtc_connections`](/v5.16/sdk/api/webrtc-connection/service): Access [WebRTC connection](/v5.16/concepts/product/webrtc-connection) related functionalities.
+- [`storage`](/v5.16/sdk/api/storage/service): Move files between this machine and the platform's object storage.
+- [`versions`](/v5.16/sdk/api/version/service): Access [version](/v5.16/concepts/product/version) related functionalities.
+- [`datasets`](/v5.16/sdk/api/dataset/service): Access [dataset](/v5.16/concepts/product/dataset) related functionalities.
+- [`test_cases`](/v5.16/sdk/api/test-case/service): Access [test cases](/v5.16/concepts/product/dataset/test-case) related functionalities.
+- [`metrics`](/v5.16/sdk/api/metric/service): Access [metric](/v5.16/concepts/metric) related functionalities.
+- [`models`](/v5.16/sdk/api/model/service): Access [model](/v5.16/concepts/model) related functionalities.
+- [`sessions`](/v5.16/sdk/api/session/service): Access [session](/v5.16/concepts/product/version/session) related functionalities.
+- [`traces`](/v5.16/sdk/api/trace/service): Access [trace](/v5.16/concepts/product/version/session/trace) related functionalities.
+- [`spans`](/v5.16/sdk/api/span/service): Access [span](/v5.16/concepts/product/version/session/span) collection and management.
+- [`evaluations`](/v5.16/sdk/api/evaluation/service): Access [evaluation](/v5.16/concepts/product/version/session/evaluation) related functionalities.
+- [`runs`](/v5.16/sdk/api/run/service): Group the sessions and evaluations of one launch into a [run](/v5.16/concepts/product/run).
+- [`jobs`](/v5.16/sdk/api/job/service): Inspect and cancel async jobs (e.g. inference batches started by `evaluations.run()`).
+- [`simulator`](/v5.16/sdk/api/simulator/service): Access [conversation simulator](/v5.16/concepts/product/dataset/test-case/conversation-simulator) related functionalities.
+
+### Example
+
+```python
+products = galtea.products.list(limit=10)
+```
+
+### Errors
+
+Every call reaches the platform over HTTP, so most failures arrive as a `requests` exception. The errors below are the ones the SDK raises itself.
+
+When the platform holds nothing under the id or name you passed, the SDK raises
+`EntityNotFoundException`. It covers every service: `products.get`, `versions.get_by_name`,
+`sessions.get_by_custom_id` and the rest all report a missing entity the same way.
+
+Import it with `from galtea import EntityNotFoundException`.
+
+```python
+try:
+    metric = galtea.metrics.get_by_name(name=metric_name)
+except EntityNotFoundException:
+    metric = galtea.metrics.create(
+        name=metric_name,
+        evaluator_model_name="GPT-4.1",
+        source="partial_prompt",
+        judge_prompt="Determine whether the actual output is polite.",
+        evaluation_params=["input", "actual_output"],
+    )
+```
+
+`EntityNotFoundException` is the name to catch. It covers both ways the SDK learns that nothing
+matched, so you never have to know which one happened.
+
+For a version, you do not need this fallback. [`versions.get_or_create`](/v5.16/sdk/api/version/get-or-create)
+finds or creates the version in one call, and two jobs that run at the same time get the same one.
+
+One lookup can also fail the opposite way. When a version name matches more than one version in the
+product, [`versions.get_by_name`](/v5.16/sdk/api/version/get-by-name) raises `AmbiguousVersionNameException`
+instead of picking one. Import it with `from galtea import AmbiguousVersionNameException`. The
+message lists each match, so you can call [`galtea.versions.get`](/v5.16/sdk/api/version/get) with the ID
+you want. No other service raises it.
+
+A write can also succeed and still fail to return its result. When the platform stores a create or
+an update but cannot send the stored record back, the SDK reads it once more itself. If that read
+fails too, or the platform does not say where the record is, the SDK raises
+`WrittenResourceUnreadableException`, a `RuntimeError` and not a `requests` exception. The record
+exists, so do not write it again: a second create with the same name fails as a duplicate. When the
+SDK knows the id of the stored record, the message names it and `resource_id` holds it: read it with
+the service's `get` method. Otherwise `resource_id` is `None`: find it with the service's `list` method. Import it with `from galtea import WrittenResourceUnreadableException`.
+
+<Note>
+  Only a 404 that names an entity becomes `EntityNotFoundException`. A 404 for a path the API does
+  not serve stays a plain `requests.HTTPError`, so a typo in a base URL never reads as a missing
+  record. Every other status stays a plain `requests.HTTPError` too.
+</Note>
+
+Read the status from `e.status_code`. It is always 404.
+
+### When you need the response
+
+The SDK learns that an entity is missing two ways, and raises a different class for each. Both are
+`EntityNotFoundException`, so catching that name is enough unless you want the difference.
+
+| Raised | When | Carries |
+|---|---|---|
+| `EntityNotFoundException` | a lookup by name found no match in a list the API returned in full | the message and `status_code` |
+| `EntityNotFoundHTTPError` | the API answered 404 | those, plus `response` and `request` |
+
+`EntityNotFoundHTTPError` also derives from `requests.HTTPError`, so a program that already catches
+`requests.HTTPError` around a `get()` call keeps catching it. Nothing forces you to migrate.
+
+The plain `EntityNotFoundException` is not a `requests.HTTPError`, because no request failed: the
+API answered normally and the name was simply not in the result. Reach for `response` only after
+catching `EntityNotFoundHTTPError`, where it is always present.
