@@ -6591,6 +6591,20 @@
           "name"
         ]
       },
+      "CreateMetricsBatchBody": {
+        "type": "object",
+        "properties": {
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateMetricBody"
+            }
+          }
+        },
+        "required": [
+          "metrics"
+        ]
+      },
       "AssembledPrompt": {
         "type": "object",
         "properties": {
@@ -6804,7 +6818,8 @@
           },
           "name": {
             "type": "string",
-            "example": "Accuracy"
+            "example": "Accuracy",
+            "description": "The revision's own name when it has one, else its metric's name. A lookup by a metric's name can answer a revision with its own name."
           },
           "evaluationParams": {
             "type": "array",
@@ -7848,6 +7863,1099 @@
           }
         },
         "additionalProperties": false
+      },
+      "MetricV2": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "metric_123",
+            "description": "Metric ID."
+          },
+          "organizationId": {
+            "type": "string",
+            "nullable": true,
+            "example": "org_123",
+            "description": "The organization of the metric. Null for a Galtea metric."
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true,
+            "example": "user_123"
+          },
+          "name": {
+            "type": "string",
+            "example": "Accuracy",
+            "description": "Metric name, unique in its organization."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Measures the accuracy of responses"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "accuracy",
+              "quality"
+            ]
+          },
+          "documentationUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://docs.example.com/metrics/accuracy"
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SELF_HOSTED",
+              "FULL_PROMPT",
+              "PARTIAL_PROMPT",
+              "HUMAN_EVALUATION",
+              "GEVAL",
+              "DEEPEVAL",
+              "DETERMINISTIC",
+              "CLASSIFIER"
+            ],
+            "example": "PARTIAL_PROMPT",
+            "description": "Evaluation method for the metric. `FULL_PROMPT` is deprecated for creation \u2014 `POST /metrics` rejects it with a 400. Use `PARTIAL_PROMPT` for new AI Evaluation metrics. The value remains in the enum because existing FULL_PROMPT metrics are still returned by reads and filters. `CLASSIFIER` is the Classifier judge, accepted only where the deployment enables it."
+          },
+          "activeRevisionId": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "example": "revision_123",
+            "description": "The revision that evaluations of this metric run. Null when no revision is active."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "disabledAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "The metric's own disabled date. It ignores the evaluator model of each revision: read a revision for that."
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "userId",
+          "name",
+          "description",
+          "tags",
+          "documentationUrl",
+          "source",
+          "activeRevisionId",
+          "createdAt",
+          "disabledAt"
+        ]
+      },
+      "CreateMetricV2Body": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "Accuracy"
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SELF_HOSTED",
+              "FULL_PROMPT",
+              "PARTIAL_PROMPT",
+              "HUMAN_EVALUATION",
+              "GEVAL",
+              "DEEPEVAL",
+              "DETERMINISTIC",
+              "CLASSIFIER"
+            ],
+            "example": "PARTIAL_PROMPT"
+          },
+          "evaluationParams": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 20,
+            "example": [
+              "input",
+              "actual_output"
+            ]
+          },
+          "judgePrompt": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20000
+          },
+          "evaluatorModelName": {
+            "type": "string",
+            "nullable": true,
+            "example": "gpt-4.1",
+            "description": "Required for PARTIAL_PROMPT. For CLASSIFIER: The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+          },
+          "definition": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "documentationUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 20
+          },
+          "areEvalParamsTop": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "nullable": true,
+            "example": "org_123"
+          },
+          "userGroupIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "example": [
+              "ug_123"
+            ]
+          },
+          "specificationIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "example": [
+              "spec_123"
+            ]
+          },
+          "judgeGenerationSettings": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "example": 0.3
+              },
+              "topP": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "maximum": 1,
+                "example": 0.9
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "example": 512,
+                "description": "A new metric needs at least 256, so the judge's structured answer fits. A metric stored before that floor keeps its cap."
+              },
+              "reasoningEffort": {
+                "type": "string",
+                "nullable": true,
+                "example": "low"
+              }
+            },
+            "additionalProperties": false,
+            "description": "The generation settings this metric's judge runs with. Immutable: changing one creates a revision. Only the settings `GET /evaluatorModels` reports as configurable for the chosen model take effect; a value the provider rejects ends that evaluation as SKIPPED carrying the provider's own message."
+          },
+          "passThreshold": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "Score from 0 to 1 at or above which an evaluation of this metric passes. Omitted or null, it defaults to 0.5, or to the parent metric's threshold for a revision."
+          },
+          "applicabilityScope": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "NONE",
+              "DEVELOPMENT",
+              "PRODUCTION",
+              "ALL"
+            ],
+            "example": "PRODUCTION",
+            "description": "Which sessions get the applicability check before this metric is judged: `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE` (no check). A session the check finds the metric does not apply to is skipped and no judge call is made. Omitted or null, it defaults to `PRODUCTION` for a metric the platform scores and `NONE` for any other. A revision keeps the parent metric's value when the check runs for both. Fixed at create: a change creates a revision. Any value but `NONE` is refused with a 400 for a metric the platform does not score. A metric that scores only `traces` is never checked, so it takes `NONE` and refuses any other value. A metric that also scores another field is checked without `traces`: on each turn's input and actual output and its other fields. A FULL_PROMPT metric with empty evaluationParams whose judge prompt reads only `traces` is stored as checked, yet the evaluator judges it without the check. A FULL_PROMPT metric whose evaluationParams list only `traces` takes NONE even when its judge prompt reads another field: list that field in evaluationParams to get the check. The check runs only where the deployment enables it."
+          },
+          "applicabilityThreshold": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores only `traces`. The check runs only where the deployment enables it."
+          },
+          "classifierQuestion": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "yes_no",
+                  "scale"
+                ]
+              },
+              "instructions": {
+                "type": "string",
+                "maxLength": 2000,
+                "description": "The question, in English, naming at least one {{ evaluation_param }}."
+              },
+              "goodAnswer": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "yes",
+                  "no"
+                ],
+                "description": "yes_no only, and required there."
+              },
+              "criteria": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "yes": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  },
+                  "no": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  }
+                },
+                "description": "yes_no only: what yes and no mean."
+              },
+              "levels": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "score": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "From 0 to 1. Omit it on every level to space the scores evenly from 0 (worst) to 1 (best)."
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ]
+                },
+                "maxItems": 10,
+                "description": "scale only: the scored levels, worst first, with non-decreasing scores."
+              },
+              "doesNotApply": {
+                "type": "string",
+                "nullable": true,
+                "maxLength": 1000,
+                "description": "scale only: the text of an extra level that skips the evaluation when the classifier picks it."
+              }
+            },
+            "required": [
+              "type",
+              "instructions"
+            ],
+            "description": "CLASSIFIER only, and required there: the one question the classifier answers. evaluationParams is derived from its {{ param }} placeholders."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "MetricV2Update": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Accuracy"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Measures the accuracy of responses"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "accuracy",
+              "quality"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "Revision": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "revision_123",
+            "description": "Revision ID."
+          },
+          "metricId": {
+            "type": "string",
+            "example": "metric_123",
+            "description": "The metric this revision belongs to."
+          },
+          "parentRevisionId": {
+            "type": "string",
+            "nullable": true,
+            "example": "revision_122",
+            "description": "The revision this one was revised from. Null for the first revision of a metric."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Accuracy (strict judge)",
+            "description": "The name this revision was saved under, when it differs from its metric's name. Null otherwise: read the metric for its name."
+          },
+          "isActive": {
+            "type": "boolean",
+            "readOnly": true,
+            "description": "Whether this is the active revision of its metric: its own legacy date is unset, it is not deleted and it is not being optimized."
+          },
+          "legacyAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Earliest non-null of this revision's own legacy date and its evaluator model's `unselectableAt`, once that date has passed."
+          },
+          "disabledAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Earliest non-null of the metric's disabled date and this revision's evaluator model's `disabledAt`."
+          },
+          "definition": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of the built-in evaluator the metric runs, for example `json_field_match`. Null when the metric names none."
+          },
+          "judgePrompt": {
+            "type": "string",
+            "nullable": true,
+            "example": "Evaluate the accuracy of the response"
+          },
+          "evaluatorModelName": {
+            "type": "string",
+            "nullable": true,
+            "example": "gpt-4"
+          },
+          "evaluationParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "input",
+              "actual_output",
+              "expected_output"
+            ],
+            "description": "Ordered list of trace fields the evaluator needs, written in snake_case (e.g. `input`, `actual_output`, `expected_output`, `retrieval_context`). Determines which data the evaluation engine extracts from each trace. Full list of accepted values: https://docs.galtea.ai/concepts/metric/evaluation-parameters"
+          },
+          "areEvalParamsTop": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "When true, evaluationParams are injected at the top level of the evaluator prompt instead of nested inside the conversation context."
+          },
+          "judgeGenerationSettings": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "example": 0.3
+              },
+              "topP": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "maximum": 1,
+                "example": 0.9
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "example": 512,
+                "description": "A new metric needs at least 256, so the judge's structured answer fits. A metric stored before that floor keeps its cap."
+              },
+              "reasoningEffort": {
+                "type": "string",
+                "nullable": true,
+                "example": "low"
+              }
+            },
+            "additionalProperties": false,
+            "description": "The generation settings this metric's judge runs with. Null runs the platform defaults. Immutable: changing one creates a revision."
+          },
+          "passThreshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "Score from 0 to 1 at or above which an evaluation of this metric passes. Immutable: changing it creates a revision."
+          },
+          "applicabilityScope": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "DEVELOPMENT",
+              "PRODUCTION",
+              "ALL"
+            ],
+            "example": "PRODUCTION",
+            "description": "Which sessions get the applicability check before this metric is judged. `NONE` for a metric the platform does not score. A metric that scores only `traces` is never checked, so it takes `NONE` and refuses any other value. A metric that also scores another field is checked without `traces`: on each turn's input and actual output and its other fields. A FULL_PROMPT metric with empty evaluationParams whose judge prompt reads only `traces` is stored as checked, yet the evaluator judges it without the check. A FULL_PROMPT metric whose evaluationParams list only `traces` takes NONE even when its judge prompt reads another field: list that field in evaluationParams to get the check. Immutable: changing it creates a revision. The check runs only where the deployment enables it."
+          },
+          "applicabilityThreshold": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "The lowest probability that the metric applies to a session at which it is judged. Null means the platform default, 0.5. Immutable: changing it creates a revision."
+          },
+          "classifierQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClassifierQuestion"
+              },
+              {
+                "nullable": true,
+                "description": "The one question of a CLASSIFIER metric; null for every other source."
+              }
+            ]
+          },
+          "isBeingOptimized": {
+            "type": "boolean",
+            "readOnly": true,
+            "description": "Whether the metric is currently being optimized."
+          },
+          "optimizationStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "OPTIMIZING",
+              "READY_FOR_REVIEW",
+              "FAILED",
+              "NO_IMPROVEMENT",
+              "DECLINED",
+              "ACTIVATED"
+            ],
+            "readOnly": true,
+            "example": "READY_FOR_REVIEW",
+            "description": "Where an optimization attempt stands. Null for a metric that did not come from an optimization. A candidate waiting for review is legacy until it is activated."
+          },
+          "optimizationValidation": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "used": {
+                "type": "boolean",
+                "description": "Whether any evaluation was held out for validation. False when none was: too few annotated evaluations and no session kept from an earlier attempt, or no session was eligible for the hold-out."
+              },
+              "heldOutEvaluationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Evaluations held out of the search. Empty when no validation set was used.",
+                "example": [
+                  "evaluation_123"
+                ]
+              },
+              "results": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "optimization": {
+                    "type": "object",
+                    "properties": {
+                      "rowsScored": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows both prompts scored. Only these rows are compared.",
+                        "example": 25
+                      },
+                      "rowsTotal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows in the set.",
+                        "example": 25
+                      },
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "candidate": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "rowsScored",
+                      "rowsTotal",
+                      "source",
+                      "candidate"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "validation": {
+                    "type": "object",
+                    "properties": {
+                      "rowsScored": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows both prompts scored. Only these rows are compared.",
+                        "example": 25
+                      },
+                      "rowsTotal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows in the set.",
+                        "example": 25
+                      },
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "candidate": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "rowsScored",
+                      "rowsTotal",
+                      "source",
+                      "candidate"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "optimization",
+                  "validation"
+                ],
+                "additionalProperties": false,
+                "description": "Both prompts scored on the rows the search used and on the held-out rows. Null when the optimizer reported nothing."
+              },
+              "rows": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "evaluationId": {
+                      "type": "string",
+                      "example": "evaluation_123"
+                    },
+                    "humanScore": {
+                      "type": "number",
+                      "description": "The human label.",
+                      "example": 1
+                    },
+                    "sourceScore": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "The source prompt's judge score on this row, or null when it failed. A score at or above the metric's pass threshold is a positive verdict.",
+                      "example": 0
+                    },
+                    "candidateScore": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "The optimized prompt's judge score on this row, or null when it failed. A score at or above the metric's pass threshold is a positive verdict.",
+                      "example": 1
+                    }
+                  },
+                  "required": [
+                    "evaluationId",
+                    "humanScore",
+                    "sourceScore",
+                    "candidateScore"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "One entry per held-out row the optimizer reported; a score is null when that prompt failed on the row. Null when the optimizer reported nothing."
+              }
+            },
+            "required": [
+              "used",
+              "heldOutEvaluationIds",
+              "results",
+              "rows"
+            ],
+            "additionalProperties": false,
+            "readOnly": true,
+            "description": "How an optimization attempt was validated: the held-out evaluations and, once the optimizer reported, both prompts scored on the search rows and on the held-out rows. Set on an optimization attempt only, and null for any other metric, for an attempt that predates it, and for an attempt copied from another organization."
+          },
+          "optimizationRun": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "strategies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "FIX_FALSE_POSITIVES",
+                    "FIX_FALSE_NEGATIVES",
+                    "ADD_RUBRIC",
+                    "SIMPLIFY",
+                    "BROADEN"
+                  ]
+                },
+                "description": "The strategies the run wrote candidates with.",
+                "example": [
+                  "ADD_RUBRIC",
+                  "SIMPLIFY"
+                ]
+              },
+              "maxSteps": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The run's step budget, after the optimizer applied its own ceiling.",
+                "example": 6
+              },
+              "stepsUsed": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The search steps the run took. 0 when the source prompt already met the target.",
+                "example": 4
+              }
+            },
+            "required": [
+              "strategies",
+              "maxSteps",
+              "stepsUsed"
+            ],
+            "additionalProperties": false,
+            "readOnly": true,
+            "description": "What an optimization attempt ran: the strategies, the step budget and the steps used. Null while the attempt runs, and when it was not reported: an attempt from before the report existed, one run by an older optimizer, a failed run, an attempt copied from another organization, or a metric that is not an optimization attempt. Null never means a run of 0 steps."
+          },
+          "specificationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specifications linked to this revision. A MEMBER caller sees only the specifications of the products it can read.",
+            "example": [
+              "spec_123"
+            ]
+          },
+          "userGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "ug_123"
+            ],
+            "description": "User groups of the caller's organization linked to this revision."
+          },
+          "excludedFromAnalyticsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "When this revision was excluded from analytics. Null when its results still count. The other revisions of the metric are unaffected."
+          },
+          "excludedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "User who excluded this revision from analytics. A repeated exclusion keeps the first user."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "metricId",
+          "parentRevisionId",
+          "name",
+          "isActive",
+          "legacyAt",
+          "disabledAt",
+          "definition",
+          "judgePrompt",
+          "evaluatorModelName",
+          "evaluationParams",
+          "areEvalParamsTop",
+          "judgeGenerationSettings",
+          "passThreshold",
+          "applicabilityScope",
+          "applicabilityThreshold",
+          "classifierQuestion",
+          "isBeingOptimized",
+          "optimizationStatus",
+          "optimizationValidation",
+          "optimizationRun",
+          "specificationIds",
+          "userGroupIds",
+          "excludedFromAnalyticsAt",
+          "excludedByUserId",
+          "createdAt"
+        ]
+      },
+      "CreateRevisionBody": {
+        "type": "object",
+        "properties": {
+          "metricId": {
+            "type": "string",
+            "minLength": 1,
+            "example": "metric_123",
+            "description": "The metric to revise. The new revision becomes the metric's active one, and the previous active one becomes legacy."
+          },
+          "parentRevisionId": {
+            "type": "string",
+            "minLength": 1,
+            "example": "revision_123",
+            "description": "The revision of the metric to revise from. Defaults to the metric's active revision. A revision of another metric answers 404."
+          },
+          "definition": {
+            "type": "string",
+            "nullable": true
+          },
+          "judgePrompt": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20000
+          },
+          "evaluatorModelName": {
+            "type": "string",
+            "nullable": true,
+            "example": "gpt-4.1",
+            "description": "Required for PARTIAL_PROMPT. For CLASSIFIER: The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+          },
+          "evaluationParams": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 20,
+            "example": [
+              "input",
+              "actual_output"
+            ]
+          },
+          "areEvalParamsTop": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "judgeGenerationSettings": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "example": 0.3
+              },
+              "topP": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "maximum": 1,
+                "example": 0.9
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "example": 512,
+                "description": "A new metric needs at least 256, so the judge's structured answer fits. A metric stored before that floor keeps its cap."
+              },
+              "reasoningEffort": {
+                "type": "string",
+                "nullable": true,
+                "example": "low"
+              }
+            },
+            "additionalProperties": false,
+            "description": "The generation settings this metric's judge runs with. Immutable: changing one creates a revision. Only the settings `GET /evaluatorModels` reports as configurable for the chosen model take effect; a value the provider rejects ends that evaluation as SKIPPED carrying the provider's own message."
+          },
+          "passThreshold": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "Score from 0 to 1 at or above which an evaluation of this metric passes. Omitted or null, it defaults to 0.5, or to the parent metric's threshold for a revision."
+          },
+          "applicabilityScope": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "NONE",
+              "DEVELOPMENT",
+              "PRODUCTION",
+              "ALL"
+            ],
+            "example": "PRODUCTION",
+            "description": "Which sessions get the applicability check before this metric is judged: `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE` (no check). A session the check finds the metric does not apply to is skipped and no judge call is made. Omitted or null, it defaults to `PRODUCTION` for a metric the platform scores and `NONE` for any other. A revision keeps the parent metric's value when the check runs for both. Fixed at create: a change creates a revision. Any value but `NONE` is refused with a 400 for a metric the platform does not score. A metric that scores only `traces` is never checked, so it takes `NONE` and refuses any other value. A metric that also scores another field is checked without `traces`: on each turn's input and actual output and its other fields. A FULL_PROMPT metric with empty evaluationParams whose judge prompt reads only `traces` is stored as checked, yet the evaluator judges it without the check. A FULL_PROMPT metric whose evaluationParams list only `traces` takes NONE even when its judge prompt reads another field: list that field in evaluationParams to get the check. The check runs only where the deployment enables it."
+          },
+          "applicabilityThreshold": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores only `traces`. The check runs only where the deployment enables it."
+          },
+          "classifierQuestion": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "yes_no",
+                  "scale"
+                ]
+              },
+              "instructions": {
+                "type": "string",
+                "maxLength": 2000,
+                "description": "The question, in English, naming at least one {{ evaluation_param }}."
+              },
+              "goodAnswer": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "yes",
+                  "no"
+                ],
+                "description": "yes_no only, and required there."
+              },
+              "criteria": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "yes": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  },
+                  "no": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  }
+                },
+                "description": "yes_no only: what yes and no mean."
+              },
+              "levels": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "score": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "From 0 to 1. Omit it on every level to space the scores evenly from 0 (worst) to 1 (best)."
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ]
+                },
+                "maxItems": 10,
+                "description": "scale only: the scored levels, worst first, with non-decreasing scores."
+              },
+              "doesNotApply": {
+                "type": "string",
+                "nullable": true,
+                "maxLength": 1000,
+                "description": "scale only: the text of an extra level that skips the evaluation when the classifier picks it."
+              }
+            },
+            "required": [
+              "type",
+              "instructions"
+            ],
+            "description": "CLASSIFIER only, and required there: the one question the classifier answers. evaluationParams is derived from its {{ param }} placeholders."
+          },
+          "userGroupIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "example": [
+              "ug_123"
+            ],
+            "description": "User groups to link to the revision. Required for a Human Evaluation metric."
+          },
+          "specificationIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "example": [
+              "spec_123"
+            ],
+            "description": "Specifications to link to the revision."
+          }
+        },
+        "required": [
+          "metricId"
+        ],
+        "additionalProperties": false
+      },
+      "RevisionReplayCandidateCount": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "example": "product_123"
+          },
+          "count": {
+            "type": "integer",
+            "example": 4,
+            "description": "Evaluations of the revision's metric in this product that would be replayed against the revision."
+          }
+        },
+        "required": [
+          "productId",
+          "count"
+        ]
       },
       "MonitorAlert": {
         "type": "object",
@@ -14780,7 +15888,7 @@
             "in": "query",
             "style": "form",
             "explode": true,
-            "description": "Filter by metric names (exact match, case insensitive, multiple). A revision also matches its own name, when it differs from its metric's.",
+            "description": "Filter by metric names (exact match, case insensitive, multiple). A name no visible metric has then matches the active revisions whose own name it is, or every such revision with includeLegacy. A response shows a revision's own name when it has one, so a lookup by a metric's name can answer another name. Names change; prefer ids.",
             "required": false,
             "schema": {
               "type": "array",
@@ -14792,7 +15900,7 @@
           {
             "name": "name",
             "in": "query",
-            "description": "Filter by metric name (partial match, case insensitive). A revision also matches its own name, when it differs from its metric's.",
+            "description": "Filter by metric name (partial match, case insensitive). When no visible metric name contains it, it matches the own names of the active revisions instead, or of every revision with includeLegacy.",
             "required": false,
             "schema": {
               "type": "string"
@@ -15004,6 +16112,16 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "A name in `names` is ambiguous. No visible metric has it, and more than one active revision has it as its own name. Use the metric id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -15114,7 +16232,7 @@
           "metrics"
         ],
         "summary": "Delete multiple metrics",
-        "description": "Soft delete multiple metrics by their IDs. Each id names a revision or a metric. A metric id deletes the metric with every revision. A revision is deleted with its evaluations and specification links. A metric whose last live revision is deleted is deleted with it. The active revision is deleted only with the last live revision of its metric. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "description": "Soft delete multiple metrics by their IDs. Each id names a revision or a metric. The revision ids go first, then the metric ids, and each kind is deleted all or nothing on its own; a revision of a metric the batch names is skipped. A metric id deletes the metric with every revision. A revision is deleted with its evaluations and specification links. A metric whose last live revision is deleted is deleted with it. The active revision is deleted only with the last live revision of its metric. See [Metrics](https://docs.galtea.ai/concepts/metric).",
         "operationId": "deleteMetrics",
         "x-cli-name": "delete-batch",
         "security": [
@@ -15181,39 +16299,38 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "An id names no metric or revision, or one of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "post": {
+        "operationId": "batchCreateMetrics",
         "tags": [
           "metrics"
         ],
         "summary": "Create multiple metrics",
-        "description": "Create multiple metrics at once. See [Metrics](https://docs.galtea.ai/concepts/metric).\n\nEach item is validated through the same path as `POST /metrics`. In particular,\n`source=FULL_PROMPT` (explicit or inferred from a `judgePrompt` without\n`evaluationParams`) is rejected with 400 \u2014 use `PARTIAL_PROMPT` instead.\n",
-        "operationId": "batchCreateMetrics",
-        "x-cli-name": "create-batch",
+        "description": "Create multiple metrics at once, at most 100 per call. See [Metrics](https://docs.galtea.ai/concepts/metric).\n\nEach item is validated through the same path as `POST /metrics`. In particular, `source=FULL_PROMPT` (explicit or inferred from a `judgePrompt` without `evaluationParams`) is rejected with 400. Use `PARTIAL_PROMPT` instead.",
         "security": [
           {
             "bearerAuth": []
           }
         ],
+        "x-cli-name": "create-batch",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "metrics"
-                ],
-                "properties": {
-                  "metrics": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/CreateMetricBody"
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/CreateMetricsBatchBody"
               }
             }
           }
@@ -15233,7 +16350,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body (for example, any item with `source=FULL_PROMPT` is no longer accepted)",
+            "description": "Invalid request body (for example, any item with `source=FULL_PROMPT` is no longer accepted), an empty `metrics`, or more than 100 items",
             "content": {
               "application/json": {
                 "schema": {
@@ -15325,7 +16442,7 @@
             }
           },
           "404": {
-            "description": "Metric not found",
+            "description": "Metric not found, or the id names a metric or revision of another organization",
             "content": {
               "application/json": {
                 "schema": {
@@ -15410,7 +16527,7 @@
           "metrics"
         ],
         "summary": "Update metric",
-        "description": "Update an existing metric. See [Metrics](https://docs.galtea.ai/concepts/metric).\n\n`specificationIds` sets the full list of specifications the metric is linked to: a link missing from the list is removed, so `[]` removes every link, and leaving the field out keeps the links as they are. Only POLICY and CAPABILITY specifications of the metric's organization can be linked. Every changed specification is checked before anything is written. A Galtea default metric is updated only by a platform admin, and its list covers only the links of the admin's organization. To link a Galtea default metric to a specification of your organization, use `specifications link-metrics`. A caller limited to the products its user groups grant replaces only the links to specifications of those products.",
+        "description": "Update an existing metric. See [Metrics](https://docs.galtea.ai/concepts/metric).\n\n`name`, `description` and `tags` change the metric, so every revision of it shows them; a revision with its own name keeps showing that name. `userGroupIds` sets the user groups of the metric. `specificationIds` changes the links of the revision the id names. The links are written first, then the metric fields, then the user groups, and a later refusal keeps the earlier writes.\n\n`specificationIds` sets the full list of specifications the metric is linked to: a link missing from the list is removed, so `[]` removes every link, and leaving the field out keeps the links as they are. Only POLICY and CAPABILITY specifications of the metric's organization can be linked. Every changed specification is checked before anything is written. A Galtea default metric is updated only by a platform admin, and its list covers only the links of the admin's organization. To link a Galtea default metric to a specification of your organization, use `specifications link-metrics`. A caller limited to the products its user groups grant replaces only the links to specifications of those products.",
         "security": [
           {
             "bearerAuth": []
@@ -15616,7 +16733,7 @@
             }
           },
           "403": {
-            "description": "The metric or a product belongs to another organization, a requested product is outside the products the caller's user groups grant, none of those products uses the metric, or no user group of the caller lists metric.read",
+            "description": "A requested product is outside the products the caller's user groups grant, none of those products uses the metric, or no user group of the caller lists metric.read",
             "content": {
               "application/json": {
                 "schema": {
@@ -33577,6 +34694,1544 @@
           },
           "502": {
             "description": "The metric generator returned no configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/metrics": {
+      "get": {
+        "operationId": "listMetricsV2",
+        "tags": [
+          "metrics-v2"
+        ],
+        "summary": "List metrics",
+        "description": "List metrics, each once, with the id of its active revision and no revision inline. The list holds the metrics of the caller's organization and the Galtea metrics. A caller limited to the products its user groups grant also sees only the metrics those products use, and the Galtea metrics. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by metric IDs"
+            },
+            "required": false,
+            "description": "Filter by metric IDs",
+            "style": "form",
+            "explode": true,
+            "name": "ids",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by metric name (partial match, case insensitive)"
+            },
+            "required": false,
+            "description": "Filter by metric name (partial match, case insensitive)",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by metric names (exact match, case insensitive, multiple)"
+            },
+            "required": false,
+            "description": "Filter by metric names (exact match, case insensitive, multiple)",
+            "style": "form",
+            "explode": true,
+            "name": "names",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by tags; a metric matches when it holds one of them"
+            },
+            "required": false,
+            "description": "Filter by tags; a metric matches when it holds one of them",
+            "style": "form",
+            "explode": true,
+            "name": "tags",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SELF_HOSTED",
+                  "FULL_PROMPT",
+                  "PARTIAL_PROMPT",
+                  "HUMAN_EVALUATION",
+                  "GEVAL",
+                  "DEEPEVAL",
+                  "DETERMINISTIC",
+                  "CLASSIFIER"
+                ]
+              },
+              "description": "Filter by metric sources"
+            },
+            "required": false,
+            "description": "Filter by metric sources",
+            "style": "form",
+            "explode": true,
+            "name": "sources",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "Also list the metrics whose active revision is excluded from analytics. Defaults to false. A metric named in `ids` is listed either way."
+            },
+            "required": false,
+            "description": "Also list the metrics whose active revision is excluded from analytics. Defaults to false. A metric named in `ids` is listed either way.",
+            "name": "includeExcludedFromAnalytics",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Sort instructions (field and direction pairs). The fields are `name` and `createdAt`."
+            },
+            "required": false,
+            "description": "Sort instructions (field and direction pairs). The fields are `name` and `createdAt`.",
+            "style": "form",
+            "explode": true,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 10000,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metrics retrieved successfully",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `metrics <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `metrics <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MetricV2"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameter, including an unknown source, sort field or sort direction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A metric in `ids` is not found or out of the caller scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMetricV2",
+        "tags": [
+          "metrics-v2"
+        ],
+        "summary": "Create metric",
+        "description": "Create a metric with its first revision. To revise a metric, create a revision under `/v2/revisions`: this body refuses `parentMetricId`. `source` takes the values that `POST /metrics` takes. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "create",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMetricV2Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Metric created successfully. On `Prefer: return=minimal`, or when the read after the write fails, the answer has no body.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the new resource"
+                },
+                "required": true,
+                "description": "The path of the new resource"
+              },
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, including an unknown field such as `parentMetricId`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller's user groups do not list metric.create",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A user group or specification in the body is not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/metrics/{id}": {
+      "get": {
+        "operationId": "getMetricV2",
+        "tags": [
+          "metrics-v2"
+        ],
+        "summary": "Get metric by ID",
+        "description": "Get a metric with the id of its active revision. The id is a metric id. A revision id answers 404. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Metric ID. A revision ID answers 404; read a revision under /v2/revisions.",
+              "example": "metric_123"
+            },
+            "required": true,
+            "description": "Metric ID. A revision ID answers 404; read a revision under /v2/revisions.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metric retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricV2"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The metric belongs to another organization, none of the products the caller's user groups grant uses it, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metric not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMetricV2",
+        "tags": [
+          "metrics-v2"
+        ],
+        "summary": "Update metric",
+        "description": "Change the name, description or tags of a metric. Every revision shows the change. Any other field answers 400: a change to a judge setting is a new revision. The id is a metric id. A revision id answers 404. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "update",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Metric ID. A revision ID answers 404; read a revision under /v2/revisions.",
+              "example": "metric_123"
+            },
+            "required": true,
+            "description": "Metric ID. A revision ID answers 404; read a revision under /v2/revisions.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetricV2Update"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Metric updated successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricV2"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, an unknown field, or a name another metric uses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metric not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMetricV2",
+        "tags": [
+          "metrics-v2"
+        ],
+        "summary": "Delete metric",
+        "description": "Soft delete a metric with every revision, each with its evaluations and specification links. The id is a metric id. A revision id answers 404. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "delete",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Metric ID. A revision ID answers 404; read a revision under /v2/revisions.",
+              "example": "metric_123"
+            },
+            "required": true,
+            "description": "Metric ID. A revision ID answers 404; read a revision under /v2/revisions.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Metric deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not delete the metric, or the metric has results or specifications in a product where the caller's user groups do not together list both `evaluation.softDelete` and `specification.update`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metric not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions": {
+      "get": {
+        "operationId": "listRevisions",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "List the revisions of a metric",
+        "description": "List the live revisions of one metric, legacy ones and in-flight optimizations included. A revision shows its own name only when it differs from the metric's name. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The metric whose revisions to list."
+            },
+            "required": true,
+            "description": "The metric whose revisions to list.",
+            "name": "metricId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "Also list the legacy revisions. Defaults to true."
+            },
+            "required": false,
+            "description": "Also list the legacy revisions. Defaults to true.",
+            "name": "includeLegacy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Sort instructions (field and direction pairs). The only field is `createdAt`."
+            },
+            "required": false,
+            "description": "Sort instructions (field and direction pairs). The only field is `createdAt`.",
+            "style": "form",
+            "explode": true,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 10000,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revisions retrieved successfully",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `revisions <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `revisions <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Revision"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameter, a missing `metricId`, or a sort field other than `createdAt` or a sort direction other than `asc` or `desc`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The metric belongs to another organization, none of the products the caller's user groups grant uses it, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metric not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRevision",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Create revision",
+        "description": "Create a revision of a metric, from its active revision or from the revision that `parentRevisionId` names. The new revision becomes the active one, and the old active one becomes legacy. A revision keeps the metric's name, description, tags and evaluation type, so the body takes the judge settings and links only. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "create",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRevisionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Revision created successfully. On `Prefer: return=minimal`, or when the read after the write fails, the answer has no body.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the new resource"
+                },
+                "required": true,
+                "description": "The path of the new resource"
+              },
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, an unknown field such as `name` or `source`, a metric with no active revision, or a metric the caller does not own, such as a Galtea metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not read or update the metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metric, parent revision, user group or specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}": {
+      "get": {
+        "operationId": "getRevision",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Get revision by ID",
+        "description": "Get one revision, legacy or in flight, with its judge settings. The id is a revision id. A metric id answers 404. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revision retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The revision belongs to another organization, none of the products the caller's user groups grant uses its metric, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/export": {
+      "get": {
+        "operationId": "exportRevision",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Export a revision as a document",
+        "description": "Everything needed to re-run this revision's judge outside Galtea: the assembled system and user prompts with placeholders, the output schema, the model and the generation settings. A revision whose judge prompt Galtea does not build cannot be exported. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "export",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revision export",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/classifier-conversion": {
+      "post": {
+        "operationId": "proposeRevisionClassifierConversion",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Propose Classifier metrics for an LLM judge revision",
+        "description": "Splits the judge prompt of an LLM judge (PARTIAL_PROMPT) revision into one classifier question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the revision unchanged. Answers 400 where the deployment does not enable Classifier metrics. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "propose-classifier-conversion",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The proposed classifier metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassifierConversion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The metrics generator could not split the judge prompt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/replay-candidate-count": {
+      "get": {
+        "operationId": "getRevisionReplayCandidateCount",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Count the replay candidates of a revision",
+        "description": "For each product, count the evaluations of the revision's metric that would be replayed against this revision. The counts keep the order of `productIds`. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get-replay-candidate-count",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The products to count the candidates of. One value per product."
+            },
+            "required": true,
+            "description": "The products to count the candidates of. One value per product.",
+            "style": "form",
+            "explode": true,
+            "name": "productIds",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidate counts per product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RevisionReplayCandidateCount"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A missing or empty `productIds`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A product is outside the products the caller's user groups grant, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision or product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/exclude-from-analytics": {
+      "post": {
+        "operationId": "excludeRevisionFromAnalytics",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Exclude a revision from analytics",
+        "description": "Remove every result of this revision from analytics scores and coverage. The other revisions of the metric keep counting, and no result is deleted or changed. Excluding an excluded revision keeps its first exclusion. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "exclude-from-analytics",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The excluded revision. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "A revision of a Galtea metric, or of a metric of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/include-in-analytics": {
+      "post": {
+        "operationId": "includeRevisionInAnalytics",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Include a revision in analytics",
+        "description": "Count the results of this revision in analytics again. Including an included revision changes nothing. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "include-in-analytics",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The included revision. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "A revision of a Galtea metric, or of a metric of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/analytics-exclusion-impact": {
+      "get": {
+        "operationId": "getRevisionAnalyticsExclusionImpact",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Get the analytics impact of a revision",
+        "description": "Count the results and products affected if this revision is excluded from analytics. The count covers this revision alone. A caller limited to the products its user groups grant gets counts for those products only. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get-analytics-exclusion-impact",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revision analytics exclusion impact",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricAnalyticsExclusionImpactResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A revision of a Galtea metric, or of a metric of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
             "content": {
               "application/json": {
                 "schema": {
