@@ -8250,6 +8250,13 @@
             "example": "metric_123",
             "description": "The metric this revision belongs to."
           },
+          "number": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "example": 3,
+            "description": "The revision number within its metric, allocated once when the revision is created and never reused. The revision shows as \"R\" followed by this number, so 3 is \"R3\"."
+          },
           "parentRevisionId": {
             "type": "string",
             "nullable": true,
@@ -8703,6 +8710,7 @@
         "required": [
           "id",
           "metricId",
+          "number",
           "parentRevisionId",
           "name",
           "isActive",
@@ -8743,6 +8751,13 @@
             "minLength": 1,
             "example": "revision_123",
             "description": "The revision of the metric to revise from. Defaults to the metric's active revision. A revision of another metric answers 404."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "stricter rubric",
+            "description": "The revision's own name. It shows as \"R3: stricter rubric\". Omit it to leave the revision with none, so it shows as its label, \"R3\". A name equal to the metric's name or to the revision's own label stores none. \"R\" followed by digits is refused unless it is the revision's own label. Unique among the live revisions of the metric, legacy ones included, ignoring case."
           },
           "definition": {
             "type": "string",
@@ -8943,6 +8958,21 @@
         },
         "required": [
           "metricId"
+        ],
+        "additionalProperties": false
+      },
+      "RevisionUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "stricter rubric",
+            "description": "The revision's own name. It shows as \"R3: stricter rubric\". Empty or null clears it, so the revision shows as its label, \"R3\". \"R\" followed by digits is refused unless it is this revision's own label. Unique among the live revisions of the metric, ignoring case."
+          }
+        },
+        "required": [
+          "name"
         ],
         "additionalProperties": false
       },
@@ -35473,7 +35503,7 @@
           "revisions"
         ],
         "summary": "Create revision",
-        "description": "Create a revision of a metric, from its active revision or from the revision that `parentRevisionId` names. The new revision becomes the active one, and the old active one becomes legacy. A revision keeps the metric's name, description, tags and evaluation type, so the body takes the judge settings and links only. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "description": "Create a revision of a metric, from its active revision or from the revision that `parentRevisionId` names. The new revision becomes the active one, and the old active one becomes legacy. A revision keeps the metric's name, description, tags and evaluation type, so the body takes its own `name`, the judge settings and links only. See [Metrics](https://docs.galtea.ai/concepts/metric).",
         "security": [
           {
             "bearerAuth": []
@@ -35537,7 +35567,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, an unknown field such as `name` or `source`, a metric with no active revision, or a metric the caller does not own, such as a Galtea metric",
+            "description": "Invalid request body, an unknown field such as `source`, a name of \"R\" followed by digits other than the revision's own label, a metric with no active revision, or a metric the caller does not own, such as a Galtea metric",
             "content": {
               "application/json": {
                 "schema": {
@@ -35568,6 +35598,16 @@
           },
           "404": {
             "description": "Metric, parent revision, user group or specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another live revision of the metric, legacy ones included, already has this name",
             "content": {
               "application/json": {
                 "schema": {
@@ -35641,6 +35681,147 @@
           },
           "404": {
             "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateRevision",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Rename a revision",
+        "description": "Give one revision a name of its own, or clear it. The revision keeps its number and judge settings, no revision is created, and the metric's name stays as it is. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "update",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The renamed revision. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "A name of \"R\" followed by digits that is not this revision's label, a revision of a Galtea metric, or a revision of a metric of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another live revision of the metric, legacy ones included, already has this name",
             "content": {
               "application/json": {
                 "schema": {
