@@ -6,6 +6,14 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Read and Change a Metric and Its Revisions Separately (Alpha)
+
+The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with three changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. And a lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead.
+
+</Update>
+
+<Update label="5.18.0" description="2026-11-17">
+
 ## Docs for Each Galtea Version
 
 The docs site now keeps the docs of every supported Galtea version from 5.10 on. Pick your version in the version menu. A page of an older version shows a banner that links to the same page in the latest version.
@@ -13,10 +21,6 @@ The docs site now keeps the docs of every supported Galtea version from 5.10 on.
 ## Metrics score text and data files
 
 On deployments that send files to the judge, an LLM-as-a-judge metric and a classifier metric now score a Galtea file of text, such as TXT, CSV, Markdown, JSON, XML or HTML, instead of skipping the evaluation. Every LLM judge model reads the file's text, under its name and number. DeepEval-based metrics still skip a turn that carries a file. See [how judges read files](/concepts/product/dataset/test-case#file-inputs).
-
-## Read and Change a Metric and Its Revisions Separately (Alpha)
-
-The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with three changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. And a lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead.
 
 ## Analytics coverage follows the coverage permission
 
