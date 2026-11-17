@@ -7280,6 +7280,13 @@
             "readOnly": true,
             "description": "Earliest non-null of this metric's own disabled date and its evaluator model's `disabledAt` \u2014 a disabled model makes every metric linked to it report as disabled even though the metric row itself is untouched."
           },
+          "unavailableReason": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Why the caller's organization cannot run this metric, or null when it can. Set only for an organization whose data region is EU and a metric whose judge, or whose decision model for a classifier, has no healthy EU deployment: the metric cannot run there until it runs on another one. For a metric of your organization, create a revision. For a Galtea metric, create a metric of your own. Reported by the metric list and read endpoints. An endpoint that returns a metric and does not read the organization's data region, such as the metrics of a specification, leaves the field out: absent means not reported, never that the metric can run.",
+            "example": null
+          },
           "excludedFromAnalyticsAt": {
             "type": "string",
             "nullable": true,
@@ -19825,7 +19832,7 @@
           "versions"
         ],
         "summary": "List metrics annotated with compatibility for a version",
-        "description": "Returns evaluable metrics annotated with whether they can be satisfied by the version's product metadata and conversation endpoint connection output mapping, plus a `relevance` ranking against the tests the evaluation will run against. Span-dependent and runtime-only params are out of scope and treated as always satisfied. A version with no conversation target at all (no endpoint, phone, or WebRTC connection) reports every metric incompatible, since this evaluation has to produce new output before scoring it. Its session counterpart `GET /sessions/{id}/compatible-metrics` scores output that is already recorded, so it assesses each parameter instead. When `testIds` are supplied, each metric is ranked `linked` (linked to a specification of one of those tests), `matching` (linked to a same-product specification whose testType matches one of those tests), or `none`. Without `testIds` every metric is `none`.",
+        "description": "Returns evaluable metrics annotated with whether they can be satisfied by the version's product metadata and conversation endpoint connection output mapping, plus a `relevance` ranking against the tests the evaluation will run against. Span-dependent and runtime-only params are out of scope and treated as always satisfied. A version with no conversation target at all (no endpoint, phone, or WebRTC connection) reports every metric incompatible, since this evaluation has to produce new output before scoring it. Its session counterpart `GET /sessions/{id}/compatible-metrics` scores output that is already recorded, so it assesses each parameter instead. When `testIds` are supplied, each metric is ranked `linked` (linked to a specification of one of those tests), `matching` (linked to a same-product specification whose testType matches one of those tests), or `none`. Without `testIds` every metric is `none`. A metric whose judge has no EU deployment is also incompatible when the product belongs to an EU-only organization, with the same reason as `unavailableReason` on the metric.",
         "operationId": "listCompatibleMetricsByVersion",
         "x-cli-name": "list-compatible-metrics",
         "security": [
@@ -22288,7 +22295,7 @@
           "sessions"
         ],
         "summary": "List metrics annotated with compatibility for a session",
-        "description": "Returns evaluable metrics annotated with whether they can be satisfied by the session's product metadata and test-case availability, plus a `relevance` ranking derived from the session's test case's test (`linked`/`matching`/`none`). A session evaluation scores output that is already stored, so the version needs no conversation target (endpoint, phone, or WebRTC connection) and compatibility never depends on one. Production (monitoring) sessions have no test case, so every metric is `none`, and a metric is incompatible when it needs a test-case param that monitoring cannot supply (expected_output, context, expected_tools, user_persona, goal, scenario, stopping_criterias). A metric is also incompatible when a file on any turn of a side it reads is one its judge would not read, by the metric's source, the file type and the judge model's catalog flags; `incompatibilityReason` names the file and what refused it. A metric reading `input` is incompatible too when no turn yields text and audio on a turn has no transcript, unless the input side carries a file or no judge scores the metric (human evaluation, self-hosted). Span-dependent and runtime-only params are out of scope and treated as always satisfied.",
+        "description": "Returns evaluable metrics annotated with whether they can be satisfied by the session's product metadata and test-case availability, plus a `relevance` ranking derived from the session's test case's test (`linked`/`matching`/`none`). A session evaluation scores output that is already stored, so the version needs no conversation target (endpoint, phone, or WebRTC connection) and compatibility never depends on one. Production (monitoring) sessions have no test case, so every metric is `none`, and a metric is incompatible when it needs a test-case param that monitoring cannot supply (expected_output, context, expected_tools, user_persona, goal, scenario, stopping_criterias). A metric is also incompatible when a file on any turn of a side it reads is one its judge would not read, by the metric's source, the file type and the judge model's catalog flags; `incompatibilityReason` names the file and what refused it. A metric reading `input` is incompatible too when no turn yields text and audio on a turn has no transcript, unless the input side carries a file or no judge scores the metric (human evaluation, self-hosted). Span-dependent and runtime-only params are out of scope and treated as always satisfied. A metric whose judge has no EU deployment is also incompatible when the product belongs to an EU-only organization, with the same reason as `unavailableReason` on the metric.",
         "operationId": "listCompatibleMetricsBySession",
         "x-cli-name": "list-compatible-metrics",
         "security": [
@@ -31939,7 +31946,7 @@
           "evaluator-models"
         ],
         "summary": "Get evaluator models",
-        "description": "Get list of evaluator models with filtering options. See [Models](https://docs.galtea.ai/concepts/model).",
+        "description": "Get list of evaluator models with filtering options. With `selectable=true`, an organization that keeps its data in the EU is offered only the models, judges or decision models, that have an EU deployment. See [Models](https://docs.galtea.ai/concepts/model).",
         "security": [
           {
             "bearerAuth": []
@@ -31990,10 +31997,10 @@
           {
             "schema": {
               "type": "boolean",
-              "description": "Filter by selectable models"
+              "description": "Filter by selectable models. For an organization that keeps its data in the EU, `true` also keeps only the models, judges or decision models, that have an EU deployment."
             },
             "required": false,
-            "description": "Filter by selectable models",
+            "description": "Filter by selectable models. For an organization that keeps its data in the EU, `true` also keeps only the models, judges or decision models, that have an EU deployment.",
             "name": "selectable",
             "in": "query"
           },

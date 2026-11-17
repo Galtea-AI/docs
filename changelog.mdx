@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Metrics Without an EU Judge Show as Unavailable
+
+In an organization with the [EU-only data region](/security/data-region#judge-models-in-an-eu-only-organization), a metric whose judge model has no EU deployment now shows as **Unavailable**, with the reason, in the dashboard and in `unavailableReason` of the API. Its evaluations are skipped before any call leaves the EU. The metric page offers **New Revision**, or **Use as Template** for a Galtea metric, to pick another judge, and the judge picker lists only judges with an EU deployment. A classifier metric follows the same rule through its decision model.
+
 ## The Trend Range Explains Its Dates
 
 In **Is it getting better or worse?** on the product Summary, the range button now shows your pick. A preset shows in days, and presets no longer than the page period are disabled, with the reason on hover. The calendar offers no start after the page period start, and an info icon explains extra days drawn.

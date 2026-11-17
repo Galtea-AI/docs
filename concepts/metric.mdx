@@ -164,6 +164,10 @@ Galtea maintains its own metrics, so you cannot revise them. If your organizatio
 
 If the evaluator model becomes unavailable to Galtea on or after the retirement date, and stays unavailable for six hours, the same recipients get one email naming the metrics that stopped scoring.
 
+## Evaluator model in an EU-only organization
+
+In an organization with the [EU-only data region](/security/data-region), a metric whose judge model has no EU deployment is unavailable. A judge that Galtea has not checked yet keeps running. A classifier metric follows the same rule through its decision model. An unavailable metric shows as **Unavailable**, and the API gives the reason in `unavailableReason`. Its evaluations are skipped. Create a revision with another judge to run it. You cannot revise a Galtea metric, so use it as a template for a metric of your own with another judge. See [Judge models in an EU-only organization](/security/data-region#judge-models-in-an-eu-only-organization).
+
 ## Available Metrics
 
 <Note>
@@ -217,6 +221,10 @@ If the evaluator model becomes unavailable to Galtea on or after the retirement 
 
 <ResponseField name="Evaluator Model" type="Text" optional>
   The model used to score the metric. Does not apply to deterministic metrics. For a [Classifier](/concepts/metric/classifier) metric, it is a classifier model, picked in the form or sent as `evaluator_model_name`. **Example**: "GPT-4.1"
+</ResponseField>
+
+<ResponseField name="Unavailable Reason" type="Text" optional>
+  Read-only, in the REST API response only. Set when the metric cannot run in your organization because its judge model has no deployment in your [data region](/security/data-region#judge-models-in-an-eu-only-organization). It is `null` when the metric can run. An endpoint that does not read your data region, such as the metrics of a specification, leaves it out: absent means not reported, not that the metric can run. **Example**: "The judge gpt-x has no EU deployment available, so this metric cannot run in an EU organization. Create a revision with another judge."
 </ResponseField>
 
 <ResponseField name="Pass Threshold" type="Number" optional>
