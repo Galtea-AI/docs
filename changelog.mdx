@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## The Trend Range Explains Its Dates
+
+In **Is it getting better or worse?** on the product Summary, the range button now shows your pick. A preset shows in days, and presets no longer than the page period are disabled, with the reason on hover. The calendar offers no start after the page period start, and an info icon explains extra days drawn.
+
 ## Read and Change a Metric and Its Revisions Separately (Alpha)
 
 The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with three changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. And a lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead.
