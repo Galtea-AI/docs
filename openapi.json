@@ -6498,7 +6498,7 @@
               "ALL"
             ],
             "example": "PRODUCTION",
-            "description": "Which sessions get the applicability check before this metric is judged: `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE` (no check). A session the check finds the metric does not apply to is skipped and no judge call is made. Omitted or null, it defaults to `PRODUCTION` for a metric the platform scores and `NONE` for any other. A revision keeps the parent metric's value when the check runs for both. Fixed at create: a change creates a revision. Any value but `NONE` is refused with a 400 for a metric the platform does not score. A metric that scores `traces` is never checked, so it takes `NONE` and refuses any other value. A FULL_PROMPT metric whose judge prompt reads `traces` but does not list it in evaluationParams is stored as checked, yet the evaluator judges it without the check. The check runs only where the deployment enables it."
+            "description": "Which sessions get the applicability check before this metric is judged: `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE` (no check). A session the check finds the metric does not apply to is skipped and no judge call is made. Omitted or null, it defaults to `PRODUCTION` for a metric the platform scores and `NONE` for any other. A revision keeps the parent metric's value when the check runs for both. Fixed at create: a change creates a revision. Any value but `NONE` is refused with a 400 for a metric the platform does not score. A metric that scores only `traces` is never checked, so it takes `NONE` and refuses any other value. A metric that also scores another field is checked without `traces`: on each turn's input and actual output and its other fields. A FULL_PROMPT metric with empty evaluationParams whose judge prompt reads only `traces` is stored as checked, yet the evaluator judges it without the check. A FULL_PROMPT metric whose evaluationParams list only `traces` takes NONE even when its judge prompt reads another field: list that field in evaluationParams to get the check. The check runs only where the deployment enables it."
           },
           "applicabilityThreshold": {
             "type": "number",
@@ -6506,7 +6506,7 @@
             "minimum": 0,
             "maximum": 1,
             "example": 0.7,
-            "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores `traces`. The check runs only where the deployment enables it."
+            "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores only `traces`. The check runs only where the deployment enables it."
           },
           "classifierQuestion": {
             "type": "object",
@@ -6943,7 +6943,7 @@
               "ALL"
             ],
             "example": "PRODUCTION",
-            "description": "Which sessions get the applicability check before this metric is judged. `NONE` for a metric the platform does not score. A metric that scores `traces` is never checked, so it takes `NONE` and refuses any other value. A FULL_PROMPT metric whose judge prompt reads `traces` but does not list it in evaluationParams is stored as checked, yet the evaluator judges it without the check. Immutable: changing it creates a revision. The check runs only where the deployment enables it."
+            "description": "Which sessions get the applicability check before this metric is judged. `NONE` for a metric the platform does not score. A metric that scores only `traces` is never checked, so it takes `NONE` and refuses any other value. A metric that also scores another field is checked without `traces`: on each turn's input and actual output and its other fields. A FULL_PROMPT metric with empty evaluationParams whose judge prompt reads only `traces` is stored as checked, yet the evaluator judges it without the check. A FULL_PROMPT metric whose evaluationParams list only `traces` takes NONE even when its judge prompt reads another field: list that field in evaluationParams to get the check. Immutable: changing it creates a revision. The check runs only where the deployment enables it."
           },
           "applicabilityThreshold": {
             "type": "number",
@@ -7377,7 +7377,7 @@
               "ALL"
             ],
             "example": "PRODUCTION",
-            "description": "Which sessions get the applicability check before this metric is judged: `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE` (no check). A session the check finds the metric does not apply to is skipped and no judge call is made. Omitted or null, it defaults to `PRODUCTION`. Fixed at create: a change creates a revision. A metric whose question reads `traces` is never checked, so it takes `NONE` and refuses any other value. The check runs only where the deployment enables it."
+            "description": "Which sessions get the applicability check before this metric is judged: `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE` (no check). A session the check finds the metric does not apply to is skipped and no judge call is made. Omitted or null, it defaults to `PRODUCTION`. Fixed at create: a change creates a revision. A metric whose question reads only `traces` is never checked, so it takes `NONE` and refuses any other value. A question that also reads another field is checked without `traces`: on each turn's input and actual output and its other fields. The check runs only where the deployment enables it."
           },
           "applicabilityThreshold": {
             "type": "number",
@@ -7385,7 +7385,7 @@
             "minimum": 0,
             "maximum": 1,
             "example": 0.7,
-            "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5. Refused for a metric whose question reads `traces`. Fixed at create: a change creates a revision. The check runs only where the deployment enables it."
+            "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5. Refused for a metric whose question reads only `traces`. Fixed at create: a change creates a revision. The check runs only where the deployment enables it."
           }
         },
         "required": [
