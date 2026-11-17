@@ -4,6 +4,8 @@ sidebarTitle: "List"
 description: "List sessions with optional filtering."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns a list of [Session](/concepts/product/version/session) objects.
 
@@ -25,7 +27,8 @@ sessions = galtea.sessions.list(version_id=version_id, limit=10)
 <ResponseField name="dataset_id" type="string | list[string]" optional>
   The ID or IDs of the dataset(s) to filter sessions by.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="from_created_at" type="str | int" default="None">
   Filter sessions created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.

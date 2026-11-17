@@ -5,6 +5,7 @@ description: "Retrieve a specific dataset by its name."
 ---
 
 import EntityNotFound from '/snippets/entity-not-found.mdx';
+import { Deprecated } from '/snippets/version-tags.mdx';
 
 ## Returns
 Returns a [Dataset](/concepts/product/dataset) object for the given product and dataset name.
@@ -21,7 +22,8 @@ dataset = galtea.datasets.get_by_name(product_id=product_id, dataset_name=datase
 <ResponseField name="dataset_name" type="string" required>
   The name of the dataset you want to retrieve.
 
-  <Note>Deprecated alias: `test_name`.</Note>
+  <Deprecated name="test_name" removal="2028-01-17" replacement="dataset_name">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="type" type="string" optional>
   The type of the dataset (e.g., `ACCURACY`, `SECURITY`). This is needed if multiple datasets share the same name but have different types.

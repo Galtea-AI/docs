@@ -5,6 +5,7 @@ description: "Upload a local file so it can be attached to a test case input."
 ---
 
 import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+import { Deprecated } from '/snippets/version-tags.mdx';
 
 Use this when you build the test case input yourself. To attach files while creating a test case, pass `input_file_paths` to [Create Test Case](/sdk/api/test-case/create) instead: it is shorter and does the same upload.
 
@@ -15,6 +16,9 @@ On the answer side, [Upload Output File](/sdk/api/trace/upload-output-file) does
 ## Returns
 
 Returns an `AttachedFile` with `uri`, `filename` and `mime_type`. Place it in the input's `content` list.
+
+<Deprecated name="InputFile" removal="2028-01-17" replacement="AttachedFile">
+</Deprecated>
 
 <Note>
   `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.

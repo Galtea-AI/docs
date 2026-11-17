@@ -4,6 +4,8 @@ sidebarTitle: "Update"
 description: "Update the name, metadata or specifications of an existing dataset"
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Overview
 
 The `update()` method allows you to modify an existing dataset after it has been created.
@@ -22,7 +24,8 @@ The `update()` method allows you to modify an existing dataset after it has been
 <ResponseField name="dataset_id" type="string" required>
   The ID of the dataset to update.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>
 
 <ResponseField name="name" type="string" optional>

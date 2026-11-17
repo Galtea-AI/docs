@@ -57,6 +57,26 @@ description: "Create a new product"
 
 To document a second exception, drop the snippet and write one table that holds both rows. `docs/sdk/api/job/cancel.mdx` is the pattern to copy. Remove the `import EntityNotFound` line too.
 
+## Version tags
+
+The SDK reference serves every compatible SDK version, so it tags what an older SDK cannot do. Import both tags from the snippet on each page that uses one, and write each as a block.
+
+```mdx
+import { Deprecated, Requires } from '/snippets/version-tags.mdx';
+
+<Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+</Deprecated>
+
+<Requires sdk=">5.18">
+</Requires>
+```
+
+- `Deprecated`: `name` is the deprecated name exactly as the SDK writes it, and `removal` is its SDK removal date (`python3 .github/scripts/release-calendar.py removal-date` on the day it was deprecated). Leave out `replacement` when there is none. Keep the tag until that date.
+- `Requires`: a new SDK item. `sdk` is `>` plus the newest release line when you write the page:
+  `{ gh api --paginate repos/Galtea-AI/monorepo/git/matching-refs/heads/releases/ --jq '.[].ref'; gh api --paginate repos/Galtea-AI/monorepo/git/matching-refs/tags/ --jq '.[].ref'; } | python3 .github/scripts/newest-release-line.py`.
+  Remove the tag once every compatible major has the item.
+- `python scripts/version_tags.py` (from `docs/`) fails on a tag that is not on its own line, on one line with double-quoted attributes, a missing import, a removal that is not a release window, and a `Deprecated` tag that no SDK deprecation backs with the same name and date. In a pull request it also warns on an added `Requires` value below the newest release line; a backfill for an older item keeps its lower value.
+
 ## Redirects
 
 When renaming/moving pages, add to `docs.json`:

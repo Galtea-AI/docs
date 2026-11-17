@@ -5,6 +5,7 @@ description: "Create a test case for your dataset."
 ---
 
 import JudgeFileRule from '/snippets/judge-file-rule.mdx';
+import { Deprecated } from '/snippets/version-tags.mdx';
 
 ## Returns
 Returns a [TestCase](/concepts/product/dataset/test-case) object for the given parameters.
@@ -57,7 +58,8 @@ reused = galtea.test_cases.create(
 <ResponseField name="dataset_id" type="string" required>
   The ID of the dataset you want to create the test case for.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="input" type="string" optional>
   The input for the test case. For Accuracy and Safety datasets, this is the question or prompt you want to send to your model for evaluation. For Behavior datasets, this is the first user message to use in the conversation (bypassing the simulator for the first turn).

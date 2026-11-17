@@ -4,6 +4,8 @@ sidebarTitle: "Create"
 description: "Create a metric for evaluating your products."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 
 Returns a [Metric](/concepts/metric) object for the given parameters, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
@@ -84,9 +86,9 @@ human_transfer_metric = galtea.metrics.create(
   The name of the metric.
 </ResponseField>
 <ResponseField name="test_type" type="string" optional>
-  <Warning>
-    **Deprecated.** This parameter is ignored.
-  </Warning>
+  <Deprecated name="test_type" removal="2028-01-17">
+  This parameter is ignored.
+  </Deprecated>
 </ResponseField>
 <ResponseField name="evaluator_model_name" type="string" optional>
   The name of the model used to evaluate the metric. Required for metrics using `judge_prompt`.

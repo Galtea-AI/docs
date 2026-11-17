@@ -4,6 +4,8 @@ sidebarTitle: "List"
 description: "List all test cases associated with a specific dataset."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns a list of [TestCase](/concepts/product/dataset/test-case) objects for the given dataset.
 
@@ -16,7 +18,8 @@ test_cases = galtea.test_cases.list(dataset_id=dataset_id, limit=20)
 <ResponseField name="dataset_id" type="string | list[string]" optional>
   The ID or IDs of the dataset you want to get the test cases from.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="languages" type="list[string]" optional>
   Languages to filter test cases by. Accepts [BCP-47 language tags](https://en.wikipedia.org/wiki/IETF_language_tag) — a bare ISO 639-1 code (`"es"`) or a code with a region subtag (`"es-MX"`).

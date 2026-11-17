@@ -4,6 +4,8 @@ sidebarTitle: "Delete"
 description: "Delete a specific dataset by its ID."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Example
 ```python
 galtea.datasets.delete(dataset_id=dataset_id)
@@ -13,5 +15,6 @@ galtea.datasets.delete(dataset_id=dataset_id)
 <ResponseField name="dataset_id" type="string" required>
   The ID of the dataset you want to delete.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>

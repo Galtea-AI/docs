@@ -4,6 +4,8 @@ sidebarTitle: "Create"
 description: "Create a version for your product."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 <Tip>
   To get the version of one agent state, use [Get or Create Version](/sdk/api/version/get-or-create) instead. It returns the version that holds your facts, and creates it only the first time. So a script that runs again, or two jobs that run at the same time, reuse one version.
 </Tip>
@@ -82,7 +84,8 @@ version = galtea.versions.create(
   The ID of the [WebRTC Connection](/concepts/product/webrtc-connection) Galtea uses to reach your AI agent over WebRTC. A version's conversation target is mutually exclusive: provide one of a WebRTC connection, a phone connection (`phone_connection_id`), or an endpoint connection (`conversation_endpoint_connection_id`), never more than one.
 </ResponseField>
 <ResponseField name="endpoint_connection_id" type="string" optional>
-  <Warning>Deprecated. Use `conversation_endpoint_connection_id` instead.</Warning>
+  <Deprecated name="endpoint_connection_id" removal="2028-01-17" replacement="conversation_endpoint_connection_id">
+  </Deprecated>
   Legacy parameter maintained for backwards compatibility. Maps to `conversation_endpoint_connection_id`.
 </ResponseField>
 <ResponseField name="guardrails" type="string" optional>

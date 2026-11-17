@@ -4,6 +4,8 @@ sidebarTitle: "Download"
 description: "Download the file associated with a specific dataset."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns the local file path to the downloaded dataset file.
 
@@ -16,7 +18,8 @@ downloaded_path = galtea.datasets.download(dataset=dataset, output_directory="./
 <ResponseField name="dataset" type="Dataset object" required>
   The Dataset object (retrieved via `get` or `get_by_name`) for which you want to download the associated file. The dataset must have a `uri` attribute.
 
-  <Note>Deprecated alias: `test`.</Note>
+  <Deprecated name="test" removal="2028-01-17" replacement="dataset">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="output_directory" type="string" default="the current directory" optional>
   The local directory path where the dataset file will be saved.

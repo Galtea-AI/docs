@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## SDK Reference Shows What Your SDK Version Can Call
+
+Each deprecated SDK parameter or method in the [SDK reference](/sdk/api/dataset/get) now shows the date it is removed and what to use instead. A new method or parameter shows the SDK version it needs, so a reader on an older SDK knows to upgrade before using it.
+
 ## Metrics Without an EU Judge Show as Unavailable
 
 In an organization with the [EU-only data region](/security/data-region#judge-models-in-an-eu-only-organization), a metric whose judge model has no EU deployment now shows as **Unavailable**, with the reason, in the dashboard and in `unavailableReason` of the API. Its evaluations are skipped before any call leaves the EU. The metric page offers **New Revision**, or **Use as Template** for a Galtea metric, to pick another judge, and the judge picker lists only judges with an EU deployment. A classifier metric follows the same rule through its decision model.
