@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Clearer Errors When a Model Has No EU Deployment
+
+For an EU-only organization, a call to a model with no EU deployment now fails at once, with an error that says so, instead of after about 15 seconds of retries. When the model has EU deployments that are busy, Galtea still retries for a short time, and the error then says that no EU deployment is available right now. See [Data Region](/security/data-region).
+
 ## EU Jobs No Longer Use Google Translate
 
 For an EU-only organization, no text of a red teaming or gold standard generation job is sent to Google Translate. A red teaming job keeps the instruction of its base64 and hex encoding prompts in English instead of translating it, and a gold standard job translates the expected output and detects the document language with the EU LLM. See [Data Region](/security/data-region).
