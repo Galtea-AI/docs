@@ -4525,6 +4525,17 @@
             "example": 0.9,
             "description": "CLASSIFIER only: how sure the classifier was, from 0 to 1; null for every other source. Values do not compare across question types."
           },
+          "dataRegion": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "GLOBAL",
+              "EU",
+              null
+            ],
+            "example": "EU",
+            "description": "The data region the evaluation was dispatched with: EU keeps its model calls on EU deployments. Null when unknown: an evaluation dispatched before the region was recorded, or never sent to the evaluator."
+          },
           "longInput": {
             "type": "boolean",
             "description": "True for a CLASSIFIER evaluation whose input ran past what the classifier scores reliably (CLASSIFIER_RELIABLE_INPUT_TOKENS judge input tokens) and that no reviewer has scored; false for every other evaluation."
@@ -4568,6 +4579,7 @@
           "testCaseLegacyAt",
           "scoreBreakdown",
           "confidence",
+          "dataRegion",
           "longInput"
         ]
       },

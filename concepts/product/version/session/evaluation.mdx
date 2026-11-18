@@ -138,6 +138,10 @@ Once an evaluation completes, the following fields are available:
   The ID of the [product](/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
 </ResponseField>
 
+<ResponseField name="Data Region" type="Enum" optional>
+  The [data region](/security/data-region) the evaluation was sent to the judge with, read-only and set by the API: `EU` means its model calls stayed on EU deployments, `GLOBAL` means they did not have to. Null when the region is unknown: an evaluation sent before Galtea recorded the region, or never sent to a judge, such as a skipped one. Galtea records it because judge model names no longer carry an `eu.` prefix.
+</ResponseField>
+
 <ResponseField name="Judge Input Tokens" type="Number" optional>
   The tokens the judge model received to score this evaluation, read-only and set by the API. It covers the metric prompt and the session content. Null when the judge model reported no usage, which is different from 0.
 </ResponseField>
@@ -158,7 +162,7 @@ Once an evaluation completes, the following fields are available:
   How a [classifier](/concepts/metric/classifier) metric reached its score, read-only and set by the API. Present only for `CLASSIFIER` metrics. The fields depend on the question type:
 
   - `version`: the breakdown schema version, `2`.
-  - `model`: the classifier model that answered, such as `jev-1.13.0`. A gateway decision model answers with its base group name, so a metric on `eu.microsoft-decision-1` records `microsoft-decision-1`.
+  - `model`: the classifier model that answered, such as `jev-1.13.0`. It is the name the metric stores, such as `microsoft-decision-1`, also when an EU deployment answered.
   - `type`: `yes_no` or `scale`.
   - `value`: the score.
   - `confidence`: the same value as the evaluation's **Confidence**.

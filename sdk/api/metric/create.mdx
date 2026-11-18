@@ -124,18 +124,7 @@ human_transfer_metric = galtea.metrics.create(
   - `"DeepSeek-V4-Pro"`
   - `"DeepSeek-V4-Flash"`
 
-  **EU data zone.** These are the same models, served from European infrastructure. Use them when your data must stay in the EU:
-  - `"eu.claude-sonnet-4-6"`
-  - `"eu.claude-sonnet-4-5"`
-  - `"eu.claude-haiku-4-5"`
-  - `"eu.gpt-5.5"`
-  - `"eu.gpt-5.4"`
-  - `"eu.gpt-5.1"`
-  - `"eu.gpt-5"`
-  - `"eu.gpt-4.1"`
-  - `"eu.gpt-4.1-mini"`
-  - `"eu.gpt-4o"`
-  - `"eu.gpt-4o-mini"`
+  **EU-only organizations.** Use the same names. In an organization whose [data region](/security/data-region) is EU, every call goes to the model's deployments in the EU, and the judge picker lists only the models that have one.
 
   Model names are case-insensitive.
 
