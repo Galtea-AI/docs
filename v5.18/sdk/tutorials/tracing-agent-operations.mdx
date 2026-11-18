@@ -1,0 +1,235 @@
+---
+title: 'Tracing Agent Operations'
+description: "Learn how to capture and analyze the internal operations of your AI agent"
+icon: "diagram-project"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.18. [Read this page in the latest version](/sdk/tutorials/tracing-agent-operations).
+</Warning>
+
+Galtea's tracing feature captures every operation your agent performs—tool calls, retrieval operations, LLM invocations—with minimal code changes. This tutorial shows you how to instrument your agent and collect spans.
+
+<Info>
+  For detailed information about span properties, node types, and hierarchy, see the [Span concept page](/v5.18/concepts/product/version/session/span).
+</Info>
+
+## **Setup**
+
+There are two primary ways to set up tracing in your agent. Choose the option that fits your needs.
+
+### a) The `@traced` Decorator
+
+Add the `@traced` decorator to any function you want to track. It automatically captures: name, inputs, outputs, timing, errors, and parent-child relationships.
+
+```python
+@traced(name="db_call", type=SpanType.TOOL)
+def my_function(query: str) -> str:
+    result = db.query(query)
+    return result
+```
+
+### b) The `start_span` Context Manager
+
+For fine-grained control over specific code blocks, use `start_span`.
+
+```python
+def get_user(user_id: str) -> str:
+    with start_span("database_query", type=SpanType.TOOL, input={"user_id": user_id}) as span:
+        query = f"SELECT * FROM users WHERE id = {user_id}"
+        result = db.query(query)
+        span.update(output=result, metadata={"query": query})
+    return result
+```
+
+The `span.update()` method lets you add output, metadata, or change the type after execution.
+
+<Info>
+  Both `@traced` and `start_span` automatically capture parent-child relationships between operations when they are nested inside each other, giving you a full hierarchical view of your agent’s behavior.
+</Info>
+
+## **Collection**
+
+Spans are built locally. To send them to Galtea, you need to associate them with a `trace_id`. There are two approaches:
+
+### a) Automatic Collection
+
+Use `traces.generate()` or `simulator.simulate()` for hands-free span management. These methods automatically:
+1. Set the span context (with the appropriate setup)
+2. Execute your agent
+3. Flush all collected spans to Galtea
+4. Clean up the context
+
+To achieve this, implement the `Agent` abstract class and decorate your methods with `@traced`:
+
+```python
+@traced(type=SpanType.RETRIEVER)
+def search(query: str) -> list[dict]:
+    return [{"id": "doc_1", "content": "..."}]
+
+
+@traced(type=SpanType.GENERATION)
+def generate_response(context: list, query: str) -> str:
+    return "Based on the context..."
+
+
+@traced(type=SpanType.AGENT)
+def my_agent(input_data: AgentInput) -> AgentResponse:
+    query = input_data.last_user_message_str()
+
+    # For structured inputs, access extra fields via first message metadata
+    # first_msg = input_data.messages[0] if input_data.messages else None
+    # chat_type = first_msg.metadata.get("chat_type") if first_msg and first_msg.metadata else None
+
+    docs = search(query)
+    response = generate_response(docs, query)
+    return AgentResponse(content=response, retrieval_context=str(docs))
+
+
+# Setup
+session = galtea.sessions.create(version_id=version.id, is_production=True)
+```
+
+#### Single-Turn with `generate()`
+
+When using `generate()`, the span context is automatically set for the entire duration of the agent's execution. Just call `generate()` with your agent and session:
+
+```python
+trace = galtea.traces.generate(agent=my_agent, session=session, input="What's the price?")
+# Spans are collected, associated with trace.id, and flushed automatically
+```
+
+#### Multi-Turn with `simulate()`
+
+When using the [Conversation Simulator](/v5.18/sdk/tutorials/simulating-conversations), tracing works out-of-the-box. Decorate your agent methods with `@traced` and run:
+
+```python
+    result = galtea.simulator.simulate(session_id=simulation_session.id, agent=my_agent, max_turns=5)
+    # Spans are saved automatically for each turn
+```
+
+### b) Manual Collection
+
+<Info>
+  If you're using [Direct Inference](/v5.18/sdk/tutorials/direct-inferences-and-evaluations-from-platform) (where Galtea calls your endpoint), the `trace_id` is sent automatically via the `X-Galtea-Inference-Id` HTTP header. Read it in your handler and use `set_context` to collect spans. See [Collecting Spans During Direct Inference](/v5.18/sdk/tutorials/direct-inferences-and-evaluations-from-platform#collecting-spans-during-direct-inference) for the full walkthrough.
+</Info>
+
+For full control, use `set_context()` and `clear_context()` to manually manage the span lifecycle:
+
+```python
+# Define traced functions
+@traced(type=SpanType.RETRIEVER)
+def search(query: str) -> list[dict]:
+    return [{"id": "doc_1", "content": "..."}]
+
+
+@traced(type=SpanType.GENERATION)
+def generate(context: list, query: str) -> str:
+    return "Based on the context..."
+
+
+@traced(type=SpanType.AGENT)
+def run_agent(query: str) -> str:
+    docs = search(query)
+    return generate(docs, query)
+
+
+# Setup
+manual_session = galtea.sessions.create(version_id=version.id, is_production=True)
+user_input = "What's the price?"
+
+# 1. Create trace first (to get the ID)
+manual_trace = galtea.traces.create(
+    session_id=manual_session.id,
+    input=user_input,
+    output=None,  # Will update later
+)
+
+# 2. Set Galtea context with the trace ID
+token = set_context(trace_id=manual_trace.id)
+
+try:
+    # 3. Run your logic - all @traced calls will be associated with this trace
+    response = run_agent(user_input)
+
+    # 4. Update trace with the output
+    galtea.traces.update(trace_id=manual_trace.id, output=response)
+finally:
+    # 5. Clear context and flush spans to Galtea
+    clear_context(token)  # flush=True by default
+```
+
+<Info>
+  `clear_context(token, flush=True)` automatically flushes all pending spans for the trace before clearing. Set `flush=False` if you want to discard spans without sending them.
+</Info>
+
+## Remote Agent Tracing
+
+When your agent runs on a remote server (e.g., deployed as a FastAPI service), OpenTelemetry's thread-local context does not cross the HTTP boundary. The remote server cannot discover the `trace_id` to correlate spans.
+
+To solve this, [`AgentInput`](/v5.18/sdk/api/agent/input) includes a `trace_id` field that is automatically populated during `generate()` and `simulate()` calls. Forward this ID to your remote server so it can attach spans to the same trace.
+
+### Agent / Client Side
+
+In your agent function, read `input_data.trace_id` and send it alongside the request payload:
+
+```python
+import httpx
+
+from galtea import AgentInput, AgentResponse, traced, SpanType
+
+REMOTE_URL = "https://my-remote-agent.example.com/invoke"
+
+
+@traced(type=SpanType.AGENT)
+def remote_agent(input_data: AgentInput) -> AgentResponse:
+    """Forward execution to a remote server, passing the trace_id for span correlation."""
+    response = httpx.post(
+        REMOTE_URL,
+        json={
+            "message": input_data.last_user_message_str(),
+            "session_id": input_data.session_id,
+            "trace_id": input_data.trace_id,
+        },
+    )
+    return AgentResponse(content=response.json()["content"])
+```
+
+### Remote Server Side
+
+On the remote server, use `set_context()` and `clear_context()` with the received `trace_id`:
+
+```python
+# On the remote server (e.g. FastAPI endpoint):
+from galtea import set_context, clear_context
+
+
+def handle_request(message: str, session_id: str, trace_id: str) -> str:
+    # Attach spans to the same trace
+    token = set_context(trace_id=trace_id)
+    try:
+        # All @traced calls here will be associated with the trace
+        response = run_agent_logic(message)
+        return response
+    finally:
+        clear_context(token)
+```
+
+<Info>
+  The remote server must have the Galtea SDK installed (`pip install galtea`) to use `set_context()` and `clear_context()`.
+</Info>
+
+## Next Steps
+
+<Info>
+  If your system already emits OpenTelemetry traces, see [Monitor Real User Traffic via OpenTelemetry](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry) for how to export them to Galtea and turn them into production sessions. For the span attribute reference, see [How span content maps to Span records](/v5.18/sdk/tutorials/send-opentelemetry-traces-to-galtea#how-span-content-maps-to-span-records).
+</Info>
+
+<CardGroup cols={2}>
+  <Card title="Span Concept" icon="sitemap" href="/v5.18/concepts/product/version/session/span">
+    Node types, hierarchy, and best practices.
+  </Card>
+  <Card title="Span API Reference" icon="code" href="/v5.18/sdk/api/span/service">
+    All span service methods.
+  </Card>
+</CardGroup>

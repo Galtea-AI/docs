@@ -1,0 +1,57 @@
+---
+title: 'Get Or Create Session'
+sidebarTitle: "Get Or Create"
+description: "Get an existing session or create a new one if it doesn't exist."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.18. [Read this page in the latest version](/sdk/api/session/get-or-create).
+</Warning>
+
+## Returns
+Returns a [Session](/v5.18/concepts/product/version/session) object.
+
+## Example
+```python
+session = galtea.sessions.get_or_create(
+    custom_id=custom_session_id,
+    version_id=version_id,
+    test_case_id=test_case_id,
+    metadata={"authenticated_user_id": "user-123"},
+)
+```
+
+## Parameters
+<ResponseField name="custom_id" type="string" required>
+  The Custom ID of the session to fetch or create.
+  <Note>
+    This is useful to associate sessions in the Galtea platform with those in your application. It is unique only per version, so a `version_id` or `product_id` anchor is required to resolve it unambiguously.
+  </Note>
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  The version to look the session up on, and to associate with it if it needs to be created.
+
+  <Note>Provide `version_id` or `product_id` (at least one is required) — both for the lookup and if the session needs to be created. If both are given, `version_id` wins and `product_id` is ignored.</Note>
+</ResponseField>
+<ResponseField name="product_id" type="string" optional>
+  The product to search across (any of its versions) for the lookup, and to associate with this session if it needs to be created, as an alternative to `version_id`. If more than one version has a session with this custom ID, the most recently created one is returned. When creating, the API resolves the product's latest version, or creates a default one if the product has none yet.
+
+  <Note>Provide `version_id` or `product_id` (at least one is required) — both for the lookup and if the session needs to be created. If both are given, `version_id` wins and `product_id` is ignored.</Note>
+</ResponseField>
+<ResponseField name="test_case_id" type="string" optional>
+  The test case ID. Forbidden when `is_production=True`. A non-production session may be created without a test case (e.g. externally ingested traces) — the context will then come from the request rather than the test case.
+</ResponseField>
+<ResponseField name="context" type="str" optional>
+  Additional context for the session. Forbidden when `test_case_id` is set (the context is derived from the test case).
+</ResponseField>
+<ResponseField name="is_production" type="boolean" optional>
+  A flag to indicate if the session represents real production traffic. When omitted on a newly created session, the API derives it from `test_case_id` presence: no test case means production.
+</ResponseField>
+<ResponseField name="metadata" type="object" optional>
+  Arbitrary key/value metadata to attach to the session. Applied only when a new session is created; if the session already exists, it is returned unchanged and this value is ignored. Useful, for example, to record who is chatting via `metadata={"authenticated_user_id": ...}`.
+</ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/v5.18/concepts/product/run) the new session belongs to. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+
+  <Note>Applied only when a new session is created. A production session belongs to no run, so the API refuses `run_id` when `is_production=True`.</Note>
+</ResponseField>

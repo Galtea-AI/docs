@@ -4,6 +4,46 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="5.19.0" description="2026-11-18">
+
+## Clearer Errors When a Model Has No EU Deployment
+
+For an EU-only organization, a call to a model with no EU deployment now fails at once, with an error that says so, instead of after about 15 seconds of retries. When the model has EU deployments that are busy, Galtea still retries for a short time, and the error then says that no EU deployment is available right now. See [Data Region](/security/data-region).
+
+## EU Jobs No Longer Use Google Translate
+
+For an EU-only organization, no text of a red teaming or gold standard generation job is sent to Google Translate. A red teaming job keeps the instruction of its base64 and hex encoding prompts in English instead of translating it, and a gold standard job translates the expected output and detects the document language with the EU LLM. See [Data Region](/security/data-region).
+
+## Build Date in Your Local Time
+
+The **Platform version** card in Settings now shows the build date in your local time zone. Hover the date to see the exact UTC time.
+
+## SDK Reference Shows What Your SDK Version Can Call
+
+Each deprecated SDK parameter or method in the [SDK reference](/sdk/api/dataset/get) now shows the date it is removed and what to use instead. A new method or parameter shows the SDK version it needs, so a reader on an older SDK knows to upgrade before using it.
+
+## Metrics Without an EU Judge Show as Unavailable
+
+In an organization with the [EU-only data region](/security/data-region#judge-models-in-an-eu-only-organization), a metric whose judge model has no EU deployment now shows as **Unavailable**, with the reason, in the dashboard and in `unavailableReason` of the API. Its evaluations are skipped before any call leaves the EU. The metric page offers **New Revision**, or **Use as Template** for a Galtea metric, to pick another judge, and the judge picker lists only judges with an EU deployment. A classifier metric follows the same rule through its decision model.
+
+## The Trend Range Explains Its Dates
+
+In **Is it getting better or worse?** on the product Summary, the range button now shows your pick. A preset shows in days, and presets no longer than the page period are disabled, with the reason on hover. The calendar offers no start after the page period start, and an info icon explains extra days drawn.
+
+## Classifier Metrics Stay in the EU
+
+For an EU-only organization, the evaluation of a classifier metric, its "Test on a sample" preview and the applicability check now run on an EU deployment of the decision model. A classifier metric whose decision model has no EU deployment ends SKIPPED, and its preview fails, with no call to another region. See [Data Region](/security/data-region).
+
+## `galtea docs` Shows the Docs of Your Platform
+
+The new `galtea docs` command prints the docs address for your platform version, the `llms.txt` index, and the platform version. It works without a login: then it prints https://docs.galtea.ai and a notice on stderr. Use it to point a coding agent at the right docs.
+
+## Read and Change a Metric and Its Revisions Separately (Alpha)
+
+The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create, rename and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. `galtea revisions update` gives a revision its own name, which must be unique within its metric, and `galtea revisions create` takes the same optional `--name` for a new revision, answering `409` when another revision of the metric holds it. When this release ships, a revision name that repeats within one metric stays on the active revision, or on the newest one when none is active, and each other revision takes ` (R<n>)`, or no name when that is taken too, so monitor alert emails, Markdown and webhooks print the new text. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with four changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. A lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead. And a create on `POST /metrics` with `parentMetricId` stores no name when the name is "R" followed by digits or another live revision of the metric holds it, and still answers 201, so an alert on that revision prints no name of its own.
+
+</Update>
+
 <Update label="5.18.0" description="2026-11-17">
 
 ## Docs for Each Galtea Version

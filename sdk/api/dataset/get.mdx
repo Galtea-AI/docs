@@ -5,6 +5,7 @@ description: "Retrieve a specific dataset by its ID."
 ---
 
 import EntityNotFound from '/snippets/entity-not-found.mdx';
+import { Deprecated } from '/snippets/version-tags.mdx';
 
 ## Returns
 Returns a [Dataset](/concepts/product/dataset) object for the given dataset ID.
@@ -18,7 +19,8 @@ dataset = galtea.datasets.get(dataset_id=dataset_id)
 <ResponseField name="dataset_id" type="string" required>
   The ID of the dataset you want to retrieve.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>
 
 <EntityNotFound />

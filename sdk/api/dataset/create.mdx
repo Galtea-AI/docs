@@ -4,6 +4,8 @@ sidebarTitle: "Create"
 description: "Create a dataset for your product."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns a [Dataset](/concepts/product/dataset) object for the given parameters. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
 
@@ -94,7 +96,9 @@ csv_dataset = galtea.datasets.create(
   The IDs of the [Specifications](/concepts/product/specification) to link the dataset to. They must belong to the same product and share one dataset type. When provided, `type` is auto-resolved from them and becomes optional. A dataset can link to several specifications. An evaluation that names several of them runs the dataset once and scores it with the metrics of all of them. Generation reads only the first specification in the list. An API version that links a dataset to one specification only creates the dataset with no link for several ids, and the SDK then raises a `RuntimeError` that names the dataset.
 </ResponseField>
 <ResponseField name="specification_id" type="string" optional>
-  **Deprecated**: pass `specification_ids=[id]` instead. The SDK sends it as a one-item `specification_ids`. Passing both raises a `ValueError` unless `specification_ids`, once its duplicates are removed, is `[specification_id]`.
+  <Deprecated name="specification_id" removal="2028-01-17" replacement="specification_ids">
+  Pass `specification_ids=[id]`. The SDK sends it as a one-item `specification_ids`. Passing both raises a `ValueError` unless `specification_ids`, once its duplicates are removed, is `[specification_id]`.
+  </Deprecated>
 </ResponseField>
 <ResponseField name="ground_truth_file_path" type="string" optional>
   Path to a local file containing the knowledge base. This file is uploaded to Galtea and used to build the knowledge base for your dataset.
@@ -201,7 +205,8 @@ csv_dataset = galtea.datasets.create(
 
   An optional `input_file_paths` column attaches files to a row's input, for a product that reads documents. Galtea sends each attachment to your endpoint when the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) names `input_files`. Separate several entries with `;` or `|`. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, which is attached without uploading the file again. Any other URL raises a `ValueError` before anything is uploaded. The SDK rewrites the row before the CSV is sent, so the column itself never reaches Galtea. A row may attach files and leave `input` empty. A CSV using this column must be UTF-8 encoded. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
 
-  <Note>Deprecated alias: `test_file_path`.</Note>
+  <Deprecated name="test_file_path" removal="2028-01-17" replacement="dataset_file_path">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="metadata" type="Any" optional>
   An open field where you can store any value for tracking or organizational purposes. Accepts plain text, numbers, JSON objects, arrays, or booleans.

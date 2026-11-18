@@ -4,13 +4,11 @@ sidebarTitle: "Create Single-Turn"
 description: "Create an evaluation for a single-turn interaction, either from a test case or production data."
 ---
 
-<Warning>
-  **Deprecated**: This method is deprecated.
-  
-  Use one of the following alternatives instead:
-  - `galtea.traces.create_and_evaluate()` - Creates a trace and evaluates it in a single call
-  - `galtea.evaluations.create(trace_id=...)` - Evaluates an existing trace
-</Warning>
+import { Deprecated } from '/snippets/version-tags.mdx';
+
+<Deprecated name="create_single_turn" removal="2028-01-17" replacement="galtea.traces.create_and_evaluate()">
+To evaluate a trace that already exists, use `galtea.evaluations.create(trace_id=...)`.
+</Deprecated>
 
 ## Returns
 Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects, one for each metric provided.

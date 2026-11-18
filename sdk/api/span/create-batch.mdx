@@ -4,6 +4,8 @@ sidebarTitle: "Create Batch"
 description: "Create multiple spans in a single API call."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns a list of the created [Span](/concepts/product/version/session/span) objects.
 
@@ -38,7 +40,7 @@ galtea.spans.create_batch(
 | `name` | `str` | Yes | Name of the traced operation |
 | `id` | `str` | No | Client-generated ID (auto-generated if not provided) |
 | `type` | `SpanType` | No | Type: SPAN, GENERATION, EVENT, AGENT, TOOL, CHAIN, RETRIEVER, EVALUATOR, EMBEDDING, GUARDRAIL. See [Span Types](/concepts/product/version/session/span#span-types) |
-| `parent_trace_id` | `str` | No | ID of parent span |
+| `parent_span_id` | `str` | No | ID of parent span |
 | `input_data` | `dict` | No | Input parameters |
 | `output_data` | `dict` | No | Output result |
 | `error` | `str` | No | Error message if failed |
@@ -46,6 +48,9 @@ galtea.spans.create_batch(
 | `start_time` | `str` | No | ISO 8601 timestamp when the span started |
 | `end_time` | `str` | No | ISO 8601 timestamp when the span ended |
 | `metadata` | `dict` | No | Additional custom metadata |
+
+<Deprecated name="parent_trace_id" removal="2028-01-17" replacement="parent_span_id">
+</Deprecated>
 
 A span whose `input_data` or `output_data` holds a Galtea file of another organization is refused on its own; the other spans are created. See [Content Parts](/concepts/product/version/session/content-parts).
 

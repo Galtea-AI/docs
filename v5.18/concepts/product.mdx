@@ -1,0 +1,182 @@
+---
+title: "Product"
+sidebarTitle: "Overview"
+description: "A functionality or service evaluated by Galtea"
+---
+
+import ConceptsOverviewCard from '/v5.18/snippets/cards/concepts-overview-card.mdx';
+import VersionCard from '/v5.18/snippets/cards/version-card.mdx';
+import DatasetCard from '/v5.18/snippets/cards/dataset-card.mdx';
+import SpecificationCard from '/v5.18/snippets/cards/specification-card.mdx';
+import RunCard from '/v5.18/snippets/cards/run-card.mdx';
+import SDKProductServiceCard from '/v5.18/snippets/cards/sdk-product-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.18. [Read this page in the latest version](/concepts/product).
+</Warning>
+
+## What is a Product?
+
+A product in Galtea represents a functionality or service that you want to evaluate. Examples include _QA chat_, _Summarization_, or _Content Generation_.
+
+<Note>Even if your organization has a single public-facing product (like a website or dashboard for all user interactions), you should define separate Galtea products for each distinct functionality you want to evaluate.</Note>
+
+You can **register**, view and manage your products on the [Galtea dashboard](https://platform.galtea.ai/). Products can also be viewed and managed programmatically using the [Galtea SDK](/v5.18/sdk/api/product/service).
+
+<img src="/images/ai-product-form.png" alt="AI-assisted product onboarding flow" style={{ borderRadius: '0.5rem', maxWidth: '600px', display: 'block', margin: '0 auto' }} />
+
+## SDK Integration
+
+The SDK allows you to list existing products, retrieve specific products by their ID or name, and delete products. Product registration is done through the [Galtea dashboard](https://platform.galtea.ai/). See the [Product Service API documentation](/v5.18/sdk/api/product/service) for more details.
+
+<SDKProductServiceCard />
+
+## Product Properties
+
+<ResponseField name="Product Name" type="Text" required>
+  The name of your product.
+  **Example**: "Document Summarizer"
+</ResponseField>
+
+<ResponseField name="Product Description" type="Text" required>
+  Write what the product must do and what you want to test or evaluate: what it must get right, what it must refuse, and where it must be accurate.
+  <Info>
+    <ul>
+      <li><strong>What to include:</strong> The behaviors that must hold, the limits the product must respect, and the results that must be correct.</li>
+      <li><strong>What to avoid:</strong> A marketing summary. Concrete behavior produces specific specifications; a summary produces generic ones that would fit any AI product.</li>
+    </ul>
+  </Info>
+  <strong>Example:</strong> "A mobile sales assistant for smartphones. It must recommend only phones that are in stock, never quote a price it cannot find in the catalog, and hand over to a human when the customer asks about an existing order."
+</ResponseField>
+
+<ResponseField name="Capabilities" type="Text" required>
+  List what your product is designed to do and what information it has access to. This helps Galtea generate targeted test cases.
+
+    <strong>Example:</strong> "Can answer questions about phone specifications, recommend devices based on user preferences, can access past user purchases, compare prices across models, and provide information about warranties and accessories."
+</ResponseField>
+
+<ResponseField name="Inabilities" type="Text" required>
+  List what your product cannot do — information it does not have access to, tools it cannot use, and its general scope boundaries. This prevents generation of irrelevant or misleading test cases.
+
+    <strong>Example:</strong> "Cannot process purchases, access customer account information, or provide technical support for device repairs."
+</ResponseField>
+
+<ResponseField name="Policies" type="Text" optional>
+  Define specific rules and instructions for how the product must behave in certain situations. Policies ensure consistent, safe, and compliant responses.
+  <Info>
+    Policies consist of clear instructions, such as "**always** answer with **x** if asked about **y**" or "add **[specific disclaimer text]** at the end of your responses when asked about **z**."
+  </Info>
+    <strong>Example:</strong> "If asked for guaranteed investment returns, respond that all investments carry risk. Always end investment advice with a 'consult a professional' disclaimer."
+</ResponseField>
+
+<ResponseField name="Risk Level" type="Enum" optional>
+  The risk level of the product under the EU AI Act.
+  Possible values:
+  - `GPAI`: General-Purpose AI Model (Article 3(63), Title VIII A - Chapter 1).
+  - `GPAI Systemic`: General-Purpose AI Model with Systemic Risk (Article 52a, referring to criteria in Article 52c).
+  - `Special System`: AI Systems with Specific Transparency Obligations (Article 50).
+  - `High`: High-Risk AI System (Article 6, Annexes I & III).
+  - `Prohibited`: Prohibited AI Practices (Article 5).
+  <Info>Legal definitions available in the [Rules for trustworthy artificial intelligence in the EU](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng).</Info>
+</ResponseField>
+
+<ResponseField name="Operator Type" type="Enum" optional>
+  The operator type of the product under the EU AI Act.
+  Possible values:
+  - `Authorised Representative`: An entity established in the EU, appointed by a provider from a third country, to act on their behalf regarding AI Act obligations.
+  - `Deployer`: An entity that uses an AI system under its authority, except when the AI system is used in the course of a personal non-professional activity.
+  - `Distributer`: An entity in the supply chain, other than the provider or importer, that makes an AI system available on the Union market.
+  - `Importer`: An entity established in the EU that places on the market or puts into service an AI system bearing the name or trademark of a person established outside the Union.
+  - `Product Manufacturer`: The manufacturer of a product that incorporates an AI system.
+  - `Provider`: An entity that develops an AI system or that has an AI system developed and places it on the market or puts it into service under its own name or trademark.
+  <Info>Legal definitions available in the [EU AI Act](https://artificialintelligenceact.eu/article/3/).</Info>
+</ResponseField>
+
+<ResponseField name="Auto Close Scope" type="Enum" optional>
+  Which sessions Galtea closes automatically after they stay inactive too long. Set it through the API; the SDK only reads it.
+  Possible values:
+  - `None`: never close sessions automatically.
+  - `Development`: only close development (test) sessions.
+  - `Production`: only close production sessions.
+  - `All`: close both development and production sessions.
+  <Info>The API default is `All`.</Info>
+</ResponseField>
+
+<ResponseField name="Auto Close Inactivity Minutes" type="Number" optional>
+  How many minutes a session can stay inactive before Galtea closes it automatically.
+  <Info>The API default is `30`.</Info>
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Product Key Values (otelProductKeyValues)" type="Map" optional>
+  One value for each attribute of the product key, for example `service.namespace` and `service.name`. An OpenTelemetry trace whose resource carries these values, and Galtea fact attributes (or attributes named in the version attributes) but no `galtea.product.id`, goes to this product. Two live products of one organization cannot hold the same values. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Route Traces to a Product by Resource Attributes](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#route-traces-to-a-product-by-resource-attributes).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Product Key (otelProductKey)" type="List of text" optional>
+  The resource attribute names that identify this product, 1 to 10 names. Leave it `null` to follow the product key of the organization. Set it to give this product its own key.
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Version Attributes (otelVersionAttributes)" type="List of text" optional>
+  The resource attribute names whose values make up the facts of a version, for example `service.version` and `app.agent.model`, 1 to 32 names. Leave it `null` to follow the version attributes of the organization, and then it follows every later change. Set it to give this product its own list, which replaces the organization list. A product list cannot be empty. An OpenTelemetry trace that carries no `galtea.version.id` and no `galtea.version.fact.*` attribute goes to the version whose facts these attributes make up. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Name the version](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#name-the-version).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry End User Attributes (otelEndUserAttributes)" type="List of text" optional>
+  The span attribute names that name the end user of a session and of each of its traces, 1 to 8 names. Galtea reads them before the framework attributes, which it always reads. Leave it `null` to follow the end user attributes of the organization. Set it to give this product its own list, which replaces the organization list. A product list cannot be empty. The SDK reads it as `Product.otel_end_user_attributes`. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [End user](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Input Source Rule (otelInputSourceRule)" type="Object" optional>
+  Reads the input of each turn from a named non-LLM span, for a user message that no LLM span carries. It has four parts: `spanName` (the exact span name), `attribute` (the span attribute that holds the JSON), `path` (a JSONPath to the text, starting with `$`, with no filter expression), and an optional `predicate` that applies the rule only when a value matches. Leave it `null` to follow the rule of the organization. A version rule overrides this one. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Recover the Turn Input from a Non-LLM Span](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-the-turn-input-from-a-non-llm-span).
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Output Source Rule (otelOutputSourceRule)" type="Object" optional>
+  Reads the output of each turn from a named non-LLM span, for a reply that no LLM call produced. It has the same four parts as the input source rule. Leave it `null` to follow the rule of the organization. A version rule overrides this one. Set it in **Advanced Options** of the product edit form, or with `POST /products` or `PATCH /products/{id}`. See [Recover Replies That Do Not Come from the LLM](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#recover-replies-that-do-not-come-from-the-llm).
+</ResponseField>
+
+<ResponseField name="Closed Session Inference Creation Policy" type="Enum" optional>
+  What happens when you try to add an inference to a session that is already closed.
+  Possible values:
+  - `Reopen And Reevaluate` (the default): keep the inference and open the session again. The session's monitor evaluations move to the `Outdated` status, so a [Monitor](/v5.18/concepts/product/monitor) scores the session again once it closes for good. A development (test) session reopens the same way and only stores the turn, because it has no monitor evaluations.
+  - `Reject`: refuse the inference and return an error.
+  - `Ignore`: silently drop the inference.
+  <Info>The API default is `Reopen And Reevaluate`.</Info>
+</ResponseField>
+
+<ResponseField name="Interaction Mode" type="Enum" optional>
+  Who consumes the product's output.
+  Possible values:
+  - `Conversational`: a person exchanges several turns with the product.
+  - `Human Direct`: a person reads the output directly, with no dialogue.
+  - `Programmatic`: another system consumes the output and no person reads it directly.
+  <Info>The onboarding AI pre-fills a suggestion. Change it or clear it at any time in the dashboard or through the API; the SDK only reads it. An unset value means the product is unclassified. The dashboard also lays out a session's turns from this value. `Conversational` and an unclassified product show a User and Assistant dialogue. `Human Direct` and `Programmatic` show an Input panel above an Output panel.</Info>
+</ResponseField>
+
+<ResponseField name="Primary Task" type="Enum" optional>
+  The one dominant task the product performs on its input.
+  Possible values:
+  - `Conversational Assistance`: helps a person through a dialogue.
+  - `Question Answering RAG`: answers questions from retrieved documents.
+  - `Document Extraction`: pulls structured fields out of a document.
+  - `Document Generation`: writes a new document from instructions or data.
+  - `Summarization`: shortens a longer input while keeping its meaning.
+  - `Classification`: assigns the input to one of a fixed set of labels.
+  - `Translation`: renders the input in another language.
+  - `Correction`: fixes errors in the input, such as grammar or code.
+  - `Agentic Workflow`: plans and runs several steps or tools to reach a goal.
+  - `Other`: none of the tasks above.
+  <Info>The onboarding AI pre-fills a suggestion. Change it or clear it at any time in the dashboard or through the API; the SDK only reads it. An unset value means the product is unclassified.</Info>
+</ResponseField>
+
+## How Everything Connects
+
+The cross-entity diagram now lives on the [Concepts overview](/v5.18/concepts/overview) — see it there along with reading guidance and per-entity links.
+
+## Related
+
+A product in Galtea is associated with:
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <VersionCard />
+  <DatasetCard />
+  <SpecificationCard />
+  <RunCard />
+</CardGroup>

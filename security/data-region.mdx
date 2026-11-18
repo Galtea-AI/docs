@@ -19,7 +19,7 @@ The region applies to the model calls that Galtea makes for your organization th
 - A request that the API passes to another AI service answers `502`. This covers the metric completion, update and conversion calls, and the next simulated user message.
 - The platform assistant chat answers `200` and sends an error event with the code `upstream_failure`.
 
-The region does not cover the calls that Galtea sends to your own endpoint, and it does not cover the public docs assistant, which has no organization. In voice tests, speech-to-text runs on the Speechmatics EU endpoint, which the deployment sets by default, and text-to-speech runs on an EU endpoint for an EU-only organization. A voice test of an EU-only organization fails when the deployment's text-to-speech provider has no EU endpoint. The region does not yet cover the telephony provider, which carries the call audio. It does not yet cover the decision model: the evaluations of [classifier metrics](/concepts/metric/classifier), their "Test on a sample" preview and the [applicability check](/concepts/metric#applicability-check) run with the normal routing of the deployment, whatever the region.
+The region does not cover the calls that Galtea sends to your own endpoint, and it does not cover the public docs assistant, which has no organization. In voice tests, speech-to-text runs on the Speechmatics EU endpoint, which the deployment sets by default, and text-to-speech runs on an EU endpoint for an EU-only organization. A voice test of an EU-only organization fails when the deployment's text-to-speech provider has no EU endpoint. The region does not yet cover the telephony provider, which carries the call audio. The decision model is covered: the evaluations of [classifier metrics](/concepts/metric/classifier), their "Test on a sample" preview and the [applicability check](/concepts/metric#applicability-check) of an EU-only organization run on an EU deployment of the model. A classifier metric whose decision model has no EU deployment ends SKIPPED for an EU-only organization, and its preview fails, with no call to another region. The applicability check never sends data outside the EU, and it is the one exception to failing an EU call: when the deployment has no EU decision model for it, or the EU model cannot answer in time, the check gives no verdict and the metric is judged.
 
 <Info>
   The data region is an **Enterprise feature**. Contact [support@galtea.ai](mailto:support@galtea.ai) to enable it for your organization.
@@ -39,13 +39,26 @@ The region does not cover the calls that Galtea sends to your own endpoint, and 
 - **Galtea staff** change the region on request. Ask [support@galtea.ai](mailto:support@galtea.ai) to switch it.
 - The region can only be changed on an organization with an active Enterprise subscription. An organization that is frozen must be unfrozen first.
 
+## Judge models in an EU-only organization
+
+A metric runs on one judge model. In an EU-only organization, that judge needs an EU deployment that answers. Galtea reads this from its LLM gateway and refreshes it on a schedule.
+
+- The judge picker offers only judge models that have an EU deployment. A judge that Galtea has not checked yet is not offered.
+- A metric whose judge has no EU deployment shows as **Unavailable** in the dashboard, with the reason. The API returns the reason as `unavailableReason` on the metric, and the field is `null` for a metric that can run. An endpoint that does not read your data region, such as the metrics of a specification, leaves the field out.
+- An evaluation of such a metric is skipped with the same reason. It is not run elsewhere.
+- A metric keeps its judge. For a metric of your organization, create a revision with another judge: the metric page has a **New Revision** button for this. Galtea manages its own metrics, so you cannot revise one. Create a metric of your own with another judge instead: the metric page has a **Use as Template** button for this. Then run the evaluation again with the new revision or metric.
+
+A metric whose judge Galtea has not checked yet keeps running until the check says the judge has no EU deployment.
+
+A classifier metric runs on a decision model, and the same rules apply to it. A decision model has an EU deployment when the model itself or its EU copy answers in the EU. The decision model picker offers only those, and the metric shows as **Unavailable** with the name of the decision model in the reason.
+
 ## What a switch means
 
 The dashboard asks for a confirmation before it switches the region. Galtea records each change of value in the audit log, with the old and the new value.
 
 The two changes mean the following:
 
-- **Global to EU only:** from then on, Galtea processes your organization's data in the EU only. Check that the models you use are available in an EU deployment, because a model that is not available there cannot serve your organization.
+- **Global to EU only:** from then on, Galtea processes your organization's data in the EU only. Check that the judge models of your metrics have an EU deployment, because a metric on a judge that has none cannot run for your organization. See [Judge models in an EU-only organization](#judge-models-in-an-eu-only-organization).
 - **EU only to global:** Galtea goes back to its normal routing, which may process your data outside the EU.
 
 A change applies to processing that starts after it. It does not change processing that already ran.

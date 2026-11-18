@@ -1,0 +1,241 @@
+---
+title: "Version"
+sidebarTitle: "Overview"
+description: "A specific iteration of a product in Galtea"
+---
+
+import ConceptsOverviewCard from '/v5.18/snippets/cards/concepts-overview-card.mdx';
+import SDKVersionServiceCard from '/v5.18/snippets/cards/sdk-version-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.18. [Read this page in the latest version](/concepts/product/version).
+</Warning>
+
+## What is a Version?
+
+A version in Galtea represents a specific iteration of a [product](/v5.18/concepts/product). Versions allow you to track changes to your product over time and compare different implementations against the same datasets.
+
+You can **create**, view and manage your versions on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/v5.18/sdk/api/version/service).
+
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/version-overview.mp4"
+></video>
+
+## How a Version is Identified
+
+A version carries four separate things. Each one has its own job.
+
+| Field | Who sets it | What it is for |
+|---|---|---|
+| **ID** | Galtea | The identity. Every API and SDK call that must point at one exact version uses it. |
+| **Number** | Galtea | A short, ordered label for people. It starts at 1 for each product and counts up. |
+| **Name** | You | An optional label of your own, for example "support release". |
+| **Facts** | You | An optional map of the agent state the version represents, for example its model and its temperature. |
+
+The **number** is local to the product, so every product has its own version 1. Galtea allocates it when the version is created and never changes it. A number is never given to a second version, so a deleted version leaves a permanent gap. Gaps are normal and mean nothing.
+
+Galtea writes the number as `v` followed by the number: `v1`, `v7`, `v42`. This is the version's **label**.
+
+The **name** is your own label, for example "support release". Through the SDK and the API you can leave it out. Galtea then stores the label as the name, so the version reads as `v7`. The dashboard form still asks you for a name.
+
+Galtea combines the two into one label. The label is `v7` when the name is the version's own label, and `v7: support release` when you gave the version a name. Galtea never repeats the label, so a version never reads as `v7: v7`.
+
+<Warning>
+  A name of `v` followed by digits is reserved for version labels. The check ignores upper and lower case, so `V7` follows the same rule as `v7`. Galtea accepts such a name only when it is the version's own label, so version 7 accepts `v7` and refuses `v3`. It also refuses `v01`, `v007` and `v0`, because no version is ever labelled that way. A name such as `v1.0` is outside the reserved shape and stays valid.
+</Warning>
+
+<Note>
+  A version created before numbers existed keeps whatever name it had, even a name such as `v5`. That version and the product's fifth version can therefore both answer to `v5`. So a name does not always identify one version. Use the ID whenever you need an exact match.
+</Note>
+
+## Version Facts
+
+The **facts** are the agent state a version represents. They are a flat map of text to text. One entry is one piece of that state, for example `model: gpt-4o` or `temperature: 0.7`. The facts are optional, so a version with no facts is normal.
+
+You set the facts with the [REST API](/v5.18/api-reference) (`POST /versions`, `PATCH /versions/{id}` and `POST /versions/get-or-create`), with the CLI (`galtea versions create`, `galtea versions update` and `galtea versions get-or-create`), with the [Galtea SDK](/v5.18/sdk/api/version/service) ([`versions.get_or_create`](/v5.18/sdk/api/version/get-or-create) and [`versions.update`](/v5.18/sdk/api/version/update)), or in the dashboard. In the dashboard, use the **Facts** field on the version create and edit forms, below the description. The version's details page shows the stored facts in a **Facts** card.
+
+`POST /versions/get-or-create` asks for the version of one state instead of creating a row. You send a product and a facts map. Galtea answers the live version of that product whose facts are the ones you sent, and creates that version when no version holds them. So two jobs that run at the same time on one state receive the same version, and neither has to list the versions first and guess. The answer is `200` in both cases, and the key order you send does not change the match.
+
+OpenTelemetry traces can supply the facts too. Your organization, or one product, lists the resource attributes that make up a version, for example `service.version` and `app.agent.model`. Galtea builds the facts from the listed attributes a trace carries, with **the attribute name as the key**. So the facts of that trace are `{"service.version": "1.4.0", "app.agent.model": "gpt-4.1"}`. Keys that an SDK test sets, such as `{"version": "1.4.0", "model": "gpt-4.1"}`, are other keys, so the two states are two versions. A listed attribute with a blank, empty, or null value counts as absent. A value of another kind than text or an integer makes the facts invalid. See [Monitor Real User Traffic via OpenTelemetry](/v5.18/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#name-the-version).
+
+The SDK can also record the commit the job runs on, under the `commit_hash` fact. See [Get or Create Version](/v5.18/sdk/api/version/get-or-create).
+
+Read each fact from the same setting your agent runs with, such as an environment variable or a configuration file. Do not type the value a second time. Then a change to the agent's settings gives a new version with no other edit, and the facts always describe the state that was tested. The [GitHub Actions guide](/v5.18/sdk/integrations/github-actions) shows this.
+
+Galtea normalizes the facts on every write:
+
+- It removes the spaces at the start and the end of every key and every value.
+- It drops an entry whose key or value is empty after that.
+- It keeps the remaining text exactly. So `0.7` and `0.70` are two different facts.
+- It stores a map that leaves no entry as no facts.
+
+{/* The two limits below are MAX_FACT_KEYS and MAX_FACTS_BYTES in api/src/modules/product/domain/write/versionFacts.ts. */}
+
+Two limits apply. A version accepts at most 32 keys. The whole map accepts at most 2000 bytes, measured after Galtea encodes it as JSON, so the punctuation of that encoding counts towards the limit too.
+
+A key and a value are text that Galtea must be able to store. Two things cannot be stored: the NUL character (`\u0000`), and half of a surrogate pair. Galtea refuses the whole map when a key or a value holds one of them.
+
+Galtea refuses two keys that become equal after the spaces around them are removed, for example `model` and `  model  `. It never keeps one of the two silently. Two keys that both become empty are the one exception: a blank key names no fact, so Galtea drops both instead of refusing the map. A key repeated with the exact same spelling is a different case: JSON parsing keeps only the last value of such a key, so the request reaches Galtea with one entry and this rule never sees it.
+
+<Warning>
+  Two live versions of one product cannot hold the same facts. The order in which you send the keys does not change this comparison, so `{"model": "gpt-4o", "temperature": "0.7"}` and `{"temperature": "0.7", "model": "gpt-4o"}` are the same facts. A deleted version no longer holds its facts, so a new version can take them.
+</Warning>
+
+<Note>
+  The facts are separate from the name and the number. Only the facts say which state a version represents. The name is a label for people, and the number is Galtea's own sequence.
+</Note>
+
+### Model facts
+
+A model fact links the version to its [model](/v5.18/concepts/model), so you do not state the model twice. A fact is a model fact when its key is `model`, `model_name`, `model-name` or `modelName`. Galtea compares the key without case, `_` and `-`, so `MODEL_NAME` counts too. Every other key links nothing, including a dotted attribute name such as `app.agent.model` that comes from the version attributes of an OpenTelemetry trace.
+
+- The value must be the exact name of a model on the **Models** page of your organization in the dashboard, provider prefix included. `gpt-4o` and `azure/gpt-4o` are two different models, so use the full name of the one you run. Upper and lower case do not matter. An LLM span is matched more loosely: see [Model](/v5.18/sdk/tutorials/send-opentelemetry-traces-to-galtea#model).
+- Your organization's own model wins over a global model with the same name.
+- A `model_id` (`modelId` in the REST API) you send wins over a model fact. It must name a model of your organization or a global model. On a create, a `model_id` of `null` or an empty string counts as not sent. On an update, `model_id: null` clears the model, and an empty string is refused.
+- When model facts name two different models, Galtea links no model and still stores the version.
+- Every way Galtea creates a version from facts links the model: `POST /versions`, `POST /versions/get-or-create` (the SDK's `versions.get_or_create`), and the `galtea.version.fact.<key>` attributes of [OpenTelemetry traces](/v5.18/sdk/tutorials/send-opentelemetry-traces-to-galtea). A version Galtea finds keeps its model.
+- An update links a model only when the request sends `facts` and no `model_id`, and the version has no model yet. An update never replaces a model.
+
+## Comparing Versions
+
+One of the key benefits of tracking versions in Galtea is the ability to compare different implementations of your product. This allows you to:
+
+- Measure improvements between versions
+- Identify regressions in newer versions
+- Compare different model providers or approaches
+- Make data-driven decisions about which version to deploy
+
+<Card title="Run Evaluations" icon="clipboard-check" iconType="solid" href="/v5.18/concepts/product/version/session/evaluation">
+  Learn how to run evaluations for your versions
+</Card>
+
+## Version Lineage
+
+A version can have a **parent version**. The parent is the version you started from when you made a new iteration. The new version is called a **version revision**, and it keeps a link back to its parent.
+
+This link lets you trace where each version came from. When you improve a version (for example, you change its system prompt or its model), you create a revision from it instead of starting from scratch. Over time this builds a parent-child chain, so you can follow the full history of how a version evolved.
+
+A version with no parent is a **root version**. Its parent is empty.
+
+<Info>
+  Lineage is **provenance only**. The parent link records history. It does not change how the version behaves, how it is evaluated, or how it is compared. A revision is a normal, independent version.
+</Info>
+
+On the [Galtea dashboard](https://platform.galtea.ai/), use the **Iterate from version** action when creating a version to pick a parent. The new version's details page then shows an **Evolved from** link back to its parent. The parent must belong to the same [product](/v5.18/concepts/product).
+
+With the [Galtea SDK](/v5.18/sdk/api/version/service), pass `parent_version_id` to `versions.create` to set the parent.
+
+```python
+child_version_name = "Version-docs-child-" + run_identifier
+
+child_version = galtea.versions.create(
+    name=child_version_name,
+    product_id=product_id,
+    description="Iteration of the previous version",
+    parent_version_id=version_id,
+)
+```
+
+## Endpoint Connections
+
+An Endpoint Connection tells Galtea how to call your AI system's API — the URL, authentication, request format, and how to extract the response.
+
+Three roles are available:
+- **Conversation**: Handles each interaction turn. Required once you link a connection, and it is the role used when the Conversation Target is HTTP Endpoint
+- **Initialization** (optional): Runs before the conversation to set up a session
+- **Finalization** (optional): Runs after the conversation to release resources
+
+Most products only need a Conversation endpoint.
+
+<Card title="Configure Endpoint Connections" icon="plug" href="/v5.18/concepts/product/endpoint-connection">
+  Full reference for URLs, auth types, Jinja2 input templates, JSONPath output mapping, session state management, and retry configuration.
+</Card>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage versions programmatically. This is particularly useful for organizations that want to automate their versioning process or integrate it into their CI/CD pipeline.
+
+<CardGroup cols={2}>
+  <SDKVersionServiceCard />
+  <Card title="GitHub Actions" icon="code-compare" href="/v5.18/sdk/integrations/github-actions">
+    Learn how to set up GitHub Actions to automatically create new versions and evaluate them
+  </Card>
+</CardGroup>
+
+## Version Properties
+
+<ResponseField name="Version Number" type="Integer" required>
+  The number Galtea gives the version. It starts at 1 for each product, never changes, and is never reused. See [How a Version is Identified](#how-a-version-is-identified).
+</ResponseField>
+
+<ResponseField name="Version Name" type="Text" optional>
+  Your own label for the version. **Example**: "v1.2.0" or "GPT-4 Implementation". The dashboard asks you for one. Through the SDK and the API you can leave it out, and Galtea then stores the version's label, `v` followed by its number. A name of `v` followed by digits is reserved: see [How a Version is Identified](#how-a-version-is-identified).
+</ResponseField>
+
+<ResponseField name="Version Description" type="Text">
+  A description of the version, typically highlighting what makes it different from other versions. **Example**: "Improved summarization algorithm with better fact retention"
+</ResponseField>
+
+<ResponseField name="Parent Version" type="Version">
+  The version this one was iterated from. See [Version Lineage](#version-lineage). Empty for a root version.
+</ResponseField>
+
+<ResponseField name="Model" type="Model" required>
+  The AI [Model](/v5.18/concepts/model) used by this version. Galtea uses this to track costs, calculate per-evaluation inference spend, and associate the version with the model's pricing and tokenization characteristics. A [model fact](#model-facts) can set it for you.
+</ResponseField>
+
+<ResponseField name="System Prompt" type="Text">
+  The system prompt used for this version. **Example**: "You are an expert legal document summarizer. Provide concise summaries that capture all key legal points."
+</ResponseField>
+
+<ResponseField name="Conversation Endpoint Connection" type="EndpointConnection">
+  The primary [Endpoint Connection](/v5.18/concepts/product/endpoint-connection) used for the main conversational interactions with your AI product. Connections are optional on a version: in the Dashboard they only appear once you turn on the **Link Connection** toggle, and when it is on, the required connection is the one matching the selected Conversation Target (HTTP Endpoint, Phone, or WebRTC).
+
+  **Used for**:
+  - Sending user messages
+  - Receiving AI responses
+  - (Often) creating and maintaining the external session state
+</ResponseField>
+
+<ResponseField name="Initialization Endpoint Connection" type="EndpointConnection">
+  An optional [Endpoint Connection](/v5.18/concepts/product/endpoint-connection) executed **before** the conversation begins. Used to initialize a session with your AI product.
+
+  **Used for**:
+  - Creating a session on the external API
+  - Obtaining a session ID that will be used in subsequent conversation calls
+  - Setting up initial context or configuration
+
+  <Note>
+    The initialization endpoint **must** return a `session_id` in its response. Configure the `outputMapping` with a `session_id` key pointing to the session identifier in the response. This value is stored in Galtea and made available in subsequent calls via `{{ session_id }}`.
+  </Note>
+</ResponseField>
+
+<ResponseField name="Finalization Endpoint Connection" type="EndpointConnection">
+  An optional [Endpoint Connection](/v5.18/concepts/product/endpoint-connection) executed **after** the conversation ends (including after errors). Used to clean up resources on your AI product.
+
+  **Used for**:
+  - Closing sessions on the external API
+  - Releasing resources
+  - Triggering post-conversation processing
+
+  <Note>
+    The finalization step runs in a `finally` block, meaning it executes even if the conversation encounters an error. Errors in the finalization step are logged but do not fail the overall evaluation.
+  </Note>
+</ResponseField>
+
+## Related
+
+<CardGroup cols={3}>
+  <ConceptsOverviewCard />
+  <Card title="Session" icon="comments" href="/v5.18/concepts/product/version/session">
+    A group of traces that make up a full conversation.
+  </Card>
+  <Card title="Endpoint Connection" icon="plug" href="/v5.18/concepts/product/endpoint-connection">
+    Configure how Galtea calls your AI system's API.
+  </Card>
+  <Card title="Evaluation" icon="clipboard-check" href="/v5.18/concepts/product/version/session/evaluation">
+    Run evaluations to assess the performance of your versions.
+  </Card>
+</CardGroup>

@@ -1,0 +1,19 @@
+---
+title: 'Delete Endpoint Connection'
+sidebarTitle: "Delete"
+description: "Delete a specific endpoint connection by its ID."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.18. [Read this page in the latest version](/sdk/api/endpoint-connection/delete).
+</Warning>
+
+## Example
+```python
+galtea.endpoint_connections.delete(endpoint_connection_id=endpoint_connection_id)
+```
+
+## Parameters
+<ResponseField name="endpoint_connection_id" type="string" required>
+  The ID of the endpoint connection to delete.
+</ResponseField>

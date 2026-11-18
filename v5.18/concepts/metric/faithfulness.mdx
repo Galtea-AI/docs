@@ -1,0 +1,40 @@
+---
+title: "Faithfulness"
+description: "Evaluates whether the generated output aligns with the retrieved context in a RAG pipeline."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.18. [Read this page in the latest version](/concepts/metric/faithfulness).
+</Warning>
+
+The **Faithfulness** metric is one of several [non-deterministic Metric](/v5.18/concepts/metric) Galtea uses to evaluate the factual alignment between the model's generated response (`actual_output`) and the information found in the `retrieval_context`. It is a core indicator of hallucination risk in retrieval-augmented generation systems.
+
+A high faithfulness score indicates that the model grounds its answer in retrieved content, rather than introducing unsupported or fabricated information.
+
+## Evaluation Parameters
+
+To compute the `faithfulness` metric, the following inputs are required:
+
+- **`input`**: The user's original prompt.
+- **`actual_output`**: The LLM-generated response.
+- **`retrieval_context`**: The retrieved passages or nodes used by the model. A Galtea file in the output of a `RETRIEVER` span reads as `[File N]`. On deployments that send files to the judge, the judge also receives an image or a PDF as itself, and the evaluation is skipped when the judge model cannot read that kind of file. A text file reaches the judge as its text, on every judge model.
+
+## How Is It Calculated?
+
+The `faithfulness` score is determined using an LLM-as-a-judge process with explicit binary pass criteria:
+
+1. **Fact Extraction**: The LLM extracts factual claims made in `actual_output`.
+2. **Verification Against Source**: Each claim is checked against the `retrieval_context` for substantiation.
+   - If **all** claims are fully supported by the context (no contradictions or hallucinations), the output is considered faithful.
+   - If **any** claim is not supported, contradicted, or hallucinatory relative to the context, the output is considered unfaithful.
+
+The LLM assigns a **binary score**:
+
+- **1 (Faithful):** All factual claims in the response are substantiated by the provided retrieval context with no hallucinations or contradictions.
+- **0 (Unfaithful):** The response contains at least one unsupported, fabricated, or contradictory claim relative to the retrieval context.
+
+This binary scoring system helps teams monitor hallucination risk and improve trust in generated responses.
+
+## Suggested Test Case Types
+
+The Faithfulness metric is effective for evaluating Accuracy test cases in Galtea, for products that use RAG, since it measures the model's ability to maintain alignment with retrieved context.

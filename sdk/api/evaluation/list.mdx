@@ -4,6 +4,8 @@ sidebarTitle: "List"
 description: "List all evaluations associated with a specific session."
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns a list of [Evaluation](/concepts/product/version/session/evaluation) objects.
 
@@ -28,7 +30,8 @@ evaluations = galtea.evaluations.list(session_id=session_id)
 <ResponseField name="dataset_id" type="str | list[str]" default="None">
   The ID or IDs of the dataset(s) for which you want to list evaluations.
 
-  <Note>Deprecated alias: `test_id`.</Note>
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="metric_id" type="str | list[str]" default="None">
   The ID or IDs of the metric(s) for which you want to list evaluations.

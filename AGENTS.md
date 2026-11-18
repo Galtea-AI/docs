@@ -22,4 +22,4 @@
 
 ## Verify
 
-Like CI: `python -m unittest discover -s scripts -p 'test_*.py'`, then `python scripts/run.py --validate` and `ruff format --check .`. A bare `run.py` starts `mint dev`, which never exits. After editing an MDX file, run `mint validate` from `docs/` (Node 22) and read its output for `parsing error`: it exits 0 on one. `mint broken-links` does not check syntax. Components and templates: `component_reference.md`.
+Like CI: `python -m unittest discover -s scripts -p 'test_*.py'`, then `python scripts/run.py --validate`, `python scripts/version_tags.py` and `ruff format --check .`. A bare `run.py` starts `mint dev`, which never exits. After editing an MDX file, run `mint validate` from `docs/` (Node 22) and read its output for `parsing error`: it exits 0 on one. `mint broken-links` does not check syntax. Components and templates: `component_reference.md`.

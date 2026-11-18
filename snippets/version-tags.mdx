@@ -1,0 +1,21 @@
+{/* The version tags of the SDK reference. docs/component_reference.md has their rules, and docs/scripts/version_tags.py checks them. */}
+
+export const Deprecated = ({ name, removal, replacement, children }) => (
+  <Warning>
+    <strong>Deprecated:</strong> <code>{name}</code> is removed on {removal}.{" "}
+    {replacement ? (
+      <>
+        Use <code>{replacement}</code> instead.
+      </>
+    ) : (
+      "It has no replacement."
+    )}{" "}
+    {children}
+  </Warning>
+);
+
+export const Requires = ({ sdk, children }) => (
+  <Note>
+    <strong>Requires a galtea SDK newer than {sdk.replace(">", "")}.</strong> {children}
+  </Note>
+);
