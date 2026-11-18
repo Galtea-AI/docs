@@ -6,6 +6,14 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Analytics Bar Chart Labels Stay on One Line
+
+The value labels at the end of the bars in the Analytics bar charts, such as the Specifications, Metrics and inference charts, no longer wrap onto several lines or overlap on narrow cards. Each label is drawn on one line and keeps the same fade as its bar.
+
+</Update>
+
+<Update label="5.19.0" description="2026-11-18">
+
 ## Clearer Errors When a Model Has No EU Deployment
 
 For an EU-only organization, a call to a model with no EU deployment now fails at once, with an error that says so, instead of after about 15 seconds of retries. When the model has EU deployments that are busy, Galtea still retries for a short time, and the error then says that no EU deployment is available right now. See [Data Region](/security/data-region).
