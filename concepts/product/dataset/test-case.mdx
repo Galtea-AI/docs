@@ -111,7 +111,7 @@ These limits apply to Galtea files, and each one is refused with a clear error r
 - **20 MB in total, and at most 20 files, per test case input.** There is no per-file size limit.
 - **These file types only**: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. The type is read from the file name. Audio belongs on a voice test case instead.
 - **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
-- **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each uploaded file to your endpoint. Your own `file` parts, such as a URL on your own host, are not delivered (see [Content Parts](/concepts/product/version/session/content-parts#your-own-parts)). Without it, the run is refused rather than sent without the document.
+- **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each uploaded file to your endpoint. Your own `file` parts, such as a URL on your own host, are not delivered (see [Content Parts](/concepts/product/version/session/content-parts#your-own-parts)). Without it, a test case with only files is refused, and so is its run. A test case that also has text runs with the text alone and a warning.
 
 **Inline file bytes never reach a judge as text.** A file sent inline in a test case or a trace, as a `data:` URI of any length, reaches an LLM-as-a-judge in one of three ways:
 
@@ -268,6 +268,7 @@ Editing a test case's evaluation content (for example its input, expected output
 - **Past evaluations stay pinned** to the exact content that produced them. An old score always reflects the test case as it was when that evaluation ran.
 - **The list shows the latest revision** of each test case by default. To also see superseded revisions, open **Filters** and turn on **Include legacy**. They are marked with a `Legacy` status.
 - **The details page links back** with an **Evolved from** link to the revision it was created from.
+- **A new revision has a new id.** The update returns it, and the old id keeps naming the superseded revision. The new revision starts with no review.
 - **Outdated evaluations are flagged.** When an evaluation ran against a revision that has since been replaced, it shows an outdated marker next to its score. Run a new evaluation against the current revision for an up-to-date score.
 - **Replay past evaluations in one step.** Right after an edit creates a new revision, a **Re-evaluate with this Test Case** dialog lists the products whose earlier evaluations of this test case can be re-run, all selected by default. Confirming generates fresh responses from your product for the new revision and evaluates them with the same metrics as before. The dialog only appears when at least one product has previous evaluations to replay.
 

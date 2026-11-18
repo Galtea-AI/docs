@@ -2323,7 +2323,8 @@
             "format": "date-time",
             "nullable": true
           }
-        }
+        },
+        "description": "Requires `productId`, `type`, `name` and `description`. A `POLICY` also requires `testType`, and `testVariant` when `testType` is `QUALITY` or `RED_TEAMING`."
       },
       "PhoneConnectionUpdate": {
         "type": "object",
@@ -6371,6 +6372,7 @@
               "maxLength": 64
             },
             "maxItems": 20,
+            "description": "A PARTIAL_PROMPT (AI Evaluation) metric must include `input` and `actual_output`.",
             "example": [
               "input",
               "actual_output"
@@ -6887,7 +6889,7 @@
           "areEvalParamsTop": {
             "type": "boolean",
             "nullable": true,
-            "description": "When true, evaluationParams are injected at the top level of the evaluator prompt instead of nested inside the conversation context."
+            "description": "Whether the parameters block precedes the judge prompt. Unset reads as true."
           },
           "isBeingOptimized": {
             "type": "boolean",
@@ -7997,6 +7999,7 @@
               "maxLength": 64
             },
             "maxItems": 20,
+            "description": "A PARTIAL_PROMPT (AI Evaluation) metric must include `input` and `actual_output`.",
             "example": [
               "input",
               "actual_output"
@@ -8318,7 +8321,7 @@
           "areEvalParamsTop": {
             "type": "boolean",
             "nullable": true,
-            "description": "When true, evaluationParams are injected at the top level of the evaluator prompt instead of nested inside the conversation context."
+            "description": "Whether the parameters block precedes the judge prompt. Unset reads as true."
           },
           "judgeGenerationSettings": {
             "type": "object",
@@ -8783,6 +8786,7 @@
               "maxLength": 64
             },
             "maxItems": 20,
+            "description": "A PARTIAL_PROMPT (AI Evaluation) metric must include `input` and `actual_output`.",
             "example": [
               "input",
               "actual_output"
@@ -16077,7 +16081,7 @@
           {
             "name": "includeLegacy",
             "in": "query",
-            "description": "Include legacy/deprecated metrics. Also includes an optimization candidate waiting for review, which is legacy until it is activated.",
+            "description": "Include legacy/deprecated metrics. Defaults to true, except where `names` or `name` falls back to revision names, which matches only active revisions unless this is true. Also includes an optimization candidate waiting for review, which is legacy until it is activated.",
             "required": false,
             "schema": {
               "type": "boolean"
@@ -26026,7 +26030,7 @@
           {
             "name": "key",
             "in": "query",
-            "description": "Storage key",
+            "description": "The name of the file to upload, such as `report.pdf`. Galtea builds the storage key from it.",
             "required": true,
             "schema": {
               "type": "string"
@@ -30885,7 +30889,7 @@
           "evaluations"
         ],
         "summary": "Evaluate a version",
-        "description": "Automatically evaluates a version by resolving its product's specifications, their linked metrics, and their linked tests. Creates inference generation jobs for every test case across all linked tests. Specifications without tests or without metrics are silently skipped. Provide either `versionId` or `productId`. When `productId` is given without a `versionId`, the product's latest properly configured version (one with a conversation-endpoint, phone, or WebRTC connection) is cloned and the evaluation runs against the clone; the product must already have such a version. Omitting `versionId` clones a version, so it requires permission to create versions (a caller lacking it gets a 403). See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Automatically evaluates a version by resolving its product's specifications, their linked metrics, and their linked tests. Creates inference generation jobs for every test case across all linked tests. Specifications without tests or without metrics are silently skipped, and so is a linked test whose status is not `SUCCESS`. With no test left, it answers 400. Provide either `versionId` or `productId`. When `productId` is given without a `versionId`, the product's latest properly configured version (one with a conversation-endpoint, phone, or WebRTC connection) is cloned and the evaluation runs against the clone; the product must already have such a version. Omitting `versionId` clones a version, so it requires permission to create versions (a caller lacking it gets a 403). See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
