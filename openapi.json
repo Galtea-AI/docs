@@ -37153,6 +37153,129 @@
         }
       }
     },
+    "/v2/revisions/{id}/activate": {
+      "post": {
+        "operationId": "activateRevision",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Mark a revision as active",
+        "description": "Make this legacy revision the active one of its metric, and the current active revision legacy, in one step. The specifications linked to the former active revision link this one instead. Its evaluations, history and name stay. Activating the active revision changes nothing. It answers 400 for four refusals. The revision belongs to a Galtea metric. The revision is being optimized. The revision is an optimization candidate that nobody applied (failed, declined, waiting for review or with no improvement). The judge model of the revision is retired. It also answers 400 when the metric or the revision changed during the call: reload it and retry. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "activate",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The activated revision. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "A revision of a Galtea metric, or one that cannot become active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/revisions/{id}/analytics-exclusion-impact": {
       "get": {
         "operationId": "getRevisionAnalyticsExclusionImpact",
