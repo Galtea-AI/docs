@@ -1729,6 +1729,15 @@
                     "metricId": {
                       "type": "string"
                     },
+                    "metricRevisionNumber": {
+                      "type": "integer",
+                      "description": "The marker revision's number within its metric (R1, R2, R3)."
+                    },
+                    "metricRevisionName": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The marker revision's own name, or null when it has none."
+                    },
                     "at": {
                       "type": "string",
                       "format": "date-time"
@@ -4424,6 +4433,17 @@
             "nullable": true,
             "format": "date-time"
           },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The evaluated revision's number within its metric (R1, R2, R3). Null when the metric is not loaded.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The evaluated revision's own name, or null when it has none or the metric is not loaded."
+          },
           "passed": {
             "type": "boolean",
             "nullable": true,
@@ -6667,6 +6687,17 @@
           "name": {
             "type": "string"
           },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The revision's number within its metric (R1, R2, R3).",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The revision's own name, or null. `name` stays the metric's name."
+          },
           "source": {
             "type": "string",
             "nullable": true,
@@ -6834,6 +6865,20 @@
             "type": "string",
             "example": "Accuracy",
             "description": "The revision's own name when it has one, else its metric's name. A lookup by a metric's name can answer a revision with its own name."
+          },
+          "number": {
+            "type": "integer",
+            "nullable": true,
+            "readOnly": true,
+            "example": 3,
+            "description": "The revision's number within its metric (R1, R2, R3): fixed once saved and never reused."
+          },
+          "revisionName": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "example": "Stricter rubric",
+            "description": "The revision's own name, or null when it has none. `name` reports this value when it is set, else the metric's name."
           },
           "evaluationParams": {
             "type": "array",
@@ -9092,6 +9137,17 @@
             "description": "The metric revision the check counted; null for an alert on a Specification",
             "example": "metric_123"
           },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The counted revision's number within its metric (R1, R2, R3). Null for an alert on a Specification, and when that revision is deleted.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The counted revision's own name. Null when it has none, is deleted, or the alert is on a Specification."
+          },
           "specificationId": {
             "type": "string",
             "nullable": true,
@@ -9192,6 +9248,17 @@
             "type": "integer",
             "description": "Of those sessions, the ones that failed this family. A family with 0 is not a cause of the alert.",
             "example": 5
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The counted revision's number within its metric (R1, R2, R3). Null when that revision is deleted.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The counted revision's own name. Null when it has none or is deleted."
           }
         },
         "required": [
@@ -9483,6 +9550,17 @@
             "nullable": true,
             "description": "The revision the monitor scores. Null for a DELETED family.",
             "example": "metric_123"
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The scored revision's number within its metric (R1, R2, R3). Null for a DELETED family.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The scored revision's own name. Null when it has none, and for a DELETED family."
           }
         },
         "required": [
@@ -12250,6 +12328,17 @@
           "metricName": {
             "type": "string",
             "example": "Factual Accuracy"
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "example": 3,
+            "description": "The scored revision's number within its metric (R1, R2, R3)."
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The scored revision's own name, or null when it has none. `metricName` stays the metric's name."
           },
           "evaluationCount": {
             "type": "integer",
