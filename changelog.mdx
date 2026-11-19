@@ -18,6 +18,10 @@ Red teaming and gold standard generation translate with an LLM by default instea
 
 The value labels at the end of the bars in the Analytics bar charts, such as the Specifications, Metrics and inference charts, no longer wrap onto several lines or overlap on narrow cards. Each label is drawn on one line and keeps the same fade as its bar.
 
+## Failed tests show their status
+
+A test whose generation failed now shows a "Failed" status pill on its details page, so you can tell at a glance that it did not finish.
+
 ## One Name per Evaluator Model
 
 Each judge and classifier model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
