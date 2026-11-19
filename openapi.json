@@ -3433,6 +3433,132 @@
           "sessionsWithoutCostCount"
         ]
       },
+      "Annotation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "annotation_123"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "session_123",
+            "description": "The annotated session."
+          },
+          "metricId": {
+            "type": "string",
+            "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+            "example": "metric_123"
+          },
+          "inferenceResultId": {
+            "type": "string",
+            "nullable": true,
+            "example": "inferenceResult_123",
+            "description": "The annotated turn of the session. Null for an annotation of the whole session."
+          },
+          "annotatorId": {
+            "type": "string",
+            "nullable": true,
+            "example": "user_123",
+            "description": "The user who last wrote the score. Null once that user is deleted."
+          },
+          "score": {
+            "type": "number",
+            "example": 0.75,
+            "description": "The human score, from 0 to 1."
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "example": "Accurate",
+            "description": "Why the annotator gave this score."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "metricId",
+          "inferenceResultId",
+          "annotatorId",
+          "score",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateAnnotationBody": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The session to annotate.",
+            "example": "session_123"
+          },
+          "metricId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+            "example": "metric_123"
+          },
+          "inferenceResultId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "description": "A turn of the session, to annotate that turn alone. Leave it out to annotate the whole session.",
+            "example": "inferenceResult_123"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The human score, from 0 to 1.",
+            "example": 0.75
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the annotator gave this score.",
+            "example": "Accurate"
+          }
+        },
+        "required": [
+          "sessionId",
+          "metricId",
+          "score"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateAnnotationBody": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The human score, from 0 to 1.",
+            "example": 0.75
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the annotator gave this score. Leave it out to keep the current reason; null clears it.",
+            "example": "Accurate"
+          }
+        },
+        "required": [
+          "score"
+        ],
+        "additionalProperties": false
+      },
       "EndpointConnection": {
         "type": "object",
         "properties": {
@@ -4364,28 +4490,29 @@
           "humanEvaluatorId": {
             "type": "string",
             "nullable": true,
-            "description": "User ID of the human evaluator"
+            "description": "The human evaluator of a HUMAN_EVALUATION metric. On an AI-judged metric, the annotator of the case annotation, or null when the case has none."
           },
           "humanEvaluatorStartedAt": {
             "type": "string",
             "nullable": true,
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the human evaluator claimed this HUMAN_EVALUATION evaluation. Always null on an AI-judged metric, because annotating needs no claim."
           },
           "humanScore": {
             "type": "number",
             "nullable": true,
-            "description": "Human-provided annotation score"
+            "description": "Human-provided score. On a metric a judge scores, it is the annotation of the case (the session, or this turn), which every revision of the metric shows."
           },
           "humanReason": {
             "type": "string",
             "nullable": true,
-            "description": "Human-provided annotation reason"
+            "description": "Human-provided reason, from the same annotation as humanScore on a metric a judge scores."
           },
           "humanEvaluatorFinishedAt": {
             "type": "string",
             "nullable": true,
             "format": "date-time",
-            "description": "Timestamp when human evaluation was submitted"
+            "description": "When the human evaluator submitted this HUMAN_EVALUATION evaluation. On an AI-judged metric, when the case annotation was last written."
           },
           "failedTurns": {
             "type": "array",
@@ -4723,12 +4850,14 @@
           },
           "humanEvaluatorId": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "The human evaluator of a HUMAN_EVALUATION metric. On an AI-judged metric, the annotator of the case annotation, or null when the case has none."
           },
           "humanEvaluatorStartedAt": {
             "type": "string",
             "nullable": true,
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the human evaluator claimed this HUMAN_EVALUATION evaluation. Always null on an AI-judged metric, because annotating needs no claim."
           },
           "humanScore": {
             "type": "number",
@@ -4741,7 +4870,8 @@
           "humanEvaluatorFinishedAt": {
             "type": "string",
             "nullable": true,
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the human evaluator submitted this HUMAN_EVALUATION evaluation. On an AI-judged metric, when the case annotation was last written."
           },
           "failedTurns": {
             "type": "array",
@@ -30062,10 +30192,10 @@
               "items": {
                 "type": "string"
               },
-              "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`)."
+              "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. Sorting by `humanScore`, `humanEvaluatorId` or `humanEvaluatorFinishedAt` orders by the value each evaluation reports: the case annotation on an AI-judged metric, the evaluation itself on a HUMAN_EVALUATION one. Evaluations with no such value come last ascending and first descending, and ties go by id. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`)."
             },
             "required": false,
-            "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`).",
+            "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. Sorting by `humanScore`, `humanEvaluatorId` or `humanEvaluatorFinishedAt` orders by the value each evaluation reports: the case annotation on an AI-judged metric, the evaluation itself on a HUMAN_EVALUATION one. Evaluations with no such value come last ascending and first descending, and ties go by id. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`).",
             "style": "form",
             "explode": true,
             "name": "sort",
@@ -30124,10 +30254,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Filter by human evaluator user ID"
+              "description": "Filter by the human evaluator of a HUMAN_EVALUATION metric, or by the annotator of the case annotation on an AI-judged metric."
             },
             "required": false,
-            "description": "Filter by human evaluator user ID",
+            "description": "Filter by the human evaluator of a HUMAN_EVALUATION metric, or by the annotator of the case annotation on an AI-judged metric.",
             "name": "humanEvaluatorId",
             "in": "query"
           },
@@ -31506,7 +31636,7 @@
           "evaluations"
         ],
         "summary": "Claim an evaluation for human review or annotation",
-        "description": "Claim an evaluation to prevent concurrent editing. For HUMAN_EVALUATION metrics, enforces user group permissions (admins skip). For other metrics, works as an annotation claim; a MEMBER needs a user group that grants the product of the evaluation and, when that group has a [permission list](https://docs.galtea.ai/concepts/user-group#permission-lists), the list must hold `evaluation.humanAnnotation`. Works on any evaluation status. Sets humanEvaluatorStartedAt timestamp. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Claim an evaluation of a HUMAN_EVALUATION metric so only you score it. A non-admin needs one of the metric's user groups. Another user's active claim refuses it. The claim sets humanEvaluatorId and humanEvaluatorStartedAt. On an AI-judged metric, annotating needs no claim. The call checks that you may annotate, stores nothing and answers the evaluation. To annotate, a MEMBER needs a user group that grants the product of the evaluation. When that group has a [permission list](https://docs.galtea.ai/concepts/user-group#permission-lists), the list must hold `evaluation.humanAnnotation`. Refused on outdated evaluations. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31524,11 +31654,35 @@
             "description": "Evaluation ID",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
           }
         ],
         "responses": {
           "200": {
-            "description": "Evaluation claimed successfully",
+            "description": "Evaluation claimed successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -31537,8 +31691,24 @@
               }
             }
           },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
           "400": {
-            "description": "Evaluation is already being evaluated or not in PENDING_HUMAN status",
+            "description": "Another user is already evaluating the evaluation, or it is outdated",
             "content": {
               "application/json": {
                 "schema": {
@@ -31558,7 +31728,7 @@
             }
           },
           "403": {
-            "description": "User not authorized to evaluate this metric",
+            "description": "User may not evaluate or annotate this evaluation",
             "content": {
               "application/json": {
                 "schema": {
@@ -31586,8 +31756,8 @@
         "tags": [
           "evaluations"
         ],
-        "summary": "Release a claimed evaluation or annotation",
-        "description": "Release a previously claimed evaluation or annotation without submitting a score. Works on any evaluation status. Clears humanEvaluatorStartedAt. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "summary": "Release a claimed evaluation",
+        "description": "Release your own claim on an evaluation of a HUMAN_EVALUATION metric without submitting a score. Works on any evaluation status. Clears humanEvaluatorId and humanEvaluatorStartedAt. On an AI-judged metric, annotating needs no claim, so the call stores nothing and answers the evaluation. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31698,7 +31868,7 @@
           "evaluations"
         ],
         "summary": "Submit a human evaluation or annotation score",
-        "description": "Submit a score and optional reason. For HUMAN_EVALUATION metrics, enforces user group permissions and updates both score sets. For PENDING_HUMAN evaluations, also sets status to SUCCESS. For other metrics, works as an annotation \u2014 writes only humanScore/humanReason/humanEvaluatorFinishedAt, leaving AI score/reason and status untouched. Works on any evaluation status. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Submit a score and optional reason. On a PENDING_HUMAN evaluation of a HUMAN_EVALUATION metric, it checks user group permissions, writes both score sets on the evaluation and sets its status to SUCCESS. On any other status of a HUMAN_EVALUATION metric, the caller must claim the evaluation first, and the score stays on the evaluation. On an AI-judged metric the score is an annotation, and annotating needs no claim. The annotation belongs to the case (the session, or the turn of a turn-level evaluation) and the metric, not to this evaluation. Every revision of the metric shows it, and a second submit on any revision corrects it. The submit makes the caller the annotator and writes no field of the evaluation, so the AI score, reason and status stay untouched. Refused on outdated evaluations. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31800,7 +31970,7 @@
             }
           },
           "403": {
-            "description": "User not authorized to evaluate this metric or evaluation not claimed by this user",
+            "description": "User may not evaluate or annotate this evaluation, or another user claimed this HUMAN_EVALUATION evaluation",
             "content": {
               "application/json": {
                 "schema": {
@@ -31829,7 +31999,7 @@
           "evaluations"
         ],
         "summary": "Edit a submitted human evaluation",
-        "description": "Edit the score and reason for a previously submitted human evaluation or annotation. On an AI-judged metric, any user who may annotate the evaluation can edit it. On a HUMAN_EVALUATION metric the user must also belong to one of the metric's user groups, which only an admin skips. The edit reassigns the human evaluator to the caller. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Edit the score and reason of a submitted human evaluation or annotation of a completed evaluation. On an AI-judged metric, any user who may annotate the evaluation can edit it, with no claim. The annotation belongs to the case (the session, or the turn of a turn-level evaluation) and the metric. The edit changes it for every revision of the metric, makes the caller the annotator and writes no field of the evaluation. On a HUMAN_EVALUATION metric the user must also belong to one of the metric's user groups, which only an admin skips. There the edit makes the caller the human evaluator. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31960,7 +32130,7 @@
           "evaluations"
         ],
         "summary": "Remove a human annotation",
-        "description": "Clear the human score, reason and evaluator from an evaluation a judge scored, leaving it unclaimed. The AI score, reason and status are untouched. Where the judge produced a score, every reported number goes back to it. Where the judge produced none, as on a FAILED, SKIPPED or CANCELLED evaluation, the evaluation stops being reported altogether, so analytics, the product score, coverage and monitor results all drop it. The removal is permanent. The human score and reason are deleted, not archived, so getting them back means annotating the evaluation again. Refused on HUMAN_EVALUATION metrics, whose human score is the only score by design, on evaluations waiting for a human score, and on outdated evaluations, which accept no annotation at all. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Remove the annotation of an evaluation a judge scored. It writes no field of the evaluation. The annotation belongs to the case (the session, or the turn of a turn-level evaluation) and the metric, so the removal removes it for every revision of the metric. The AI score, reason and status are untouched. Where the judge produced a score, every reported number goes back to it. Where the judge produced none, as on a FAILED, SKIPPED or CANCELLED evaluation, the evaluation stops being reported altogether, so analytics, the product score, coverage and monitor results all drop it. Getting the annotation back means annotating the case again. Refused on HUMAN_EVALUATION metrics, whose human score is the only score by design, on evaluations waiting for a human score, and on outdated evaluations, which accept no annotation at all. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -33705,6 +33875,518 @@
           },
           "404": {
             "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/annotations": {
+      "get": {
+        "operationId": "listAnnotations",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "List annotations",
+        "description": "List the annotations of a metric, of a session, or of both, oldest first. The metricId is a metric id: a revision id matches nothing. The list and its total hold only the products where the caller may read evaluations. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+              "example": "metric_123"
+            },
+            "required": false,
+            "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+            "name": "metricId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Session ID.",
+              "example": "session_123"
+            },
+            "required": false,
+            "description": "Session ID.",
+            "name": "sessionId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "default": 100,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annotations retrieved successfully",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `annotations <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `annotations <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Annotation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameter, or neither `metricId` nor `sessionId`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller lists evaluation.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Create annotation",
+        "description": "Score a session, or one turn of it, on a metric. The caller becomes the annotator. The metricId is a metric id, never a revision id. A Human Evaluation metric is scored on its evaluation instead and answers 400. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "create",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnnotationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Annotation created successfully. On `Prefer: return=minimal`, or when the read after the write fails, the answer has no body.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the new resource"
+                },
+                "required": true,
+                "description": "The path of the new resource"
+              },
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, a score outside 0 to 1, a turn that is not a turn of the session, or a Human Evaluation metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.humanAnnotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session or metric not found, or of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The case already has an annotation on this metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/annotations/{id}": {
+      "get": {
+        "operationId": "getAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Get annotation by ID",
+        "description": "Get one annotation. The id is an annotation id. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Annotation ID.",
+              "example": "annotation_123"
+            },
+            "required": true,
+            "description": "Annotation ID.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annotation retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Annotation not found, or of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Update annotation",
+        "description": "Correct the score and reason of an annotation, for every revision of its metric. The caller becomes the annotator. The id is an annotation id. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "update",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Annotation ID.",
+              "example": "annotation_123"
+            },
+            "required": true,
+            "description": "Annotation ID.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAnnotationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Annotation updated successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotation"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, or a score outside 0 to 1",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.humanAnnotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Annotation not found, or of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Delete annotation",
+        "description": "Remove an annotation from every revision of its metric. The case can then be annotated again. A second delete answers 404. The id is an annotation id. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "delete",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Annotation ID.",
+              "example": "annotation_123"
+            },
+            "required": true,
+            "description": "Annotation ID.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Annotation deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.humanAnnotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Annotation not found, or of another organization",
             "content": {
               "application/json": {
                 "schema": {

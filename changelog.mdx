@@ -30,6 +30,10 @@ Each judge and classifier model now has one name in every environment: the `eu.`
 
 Every screen that shows one metric revision now shows its number, such as **R3**, or **R3: stricter rubric** when you gave it a name. The metric page says **from R2** for the revision it was made from, and **Rename revision** in its menu names or clears a revision's name. When you revise a metric, the name field starts empty and a name you type becomes the revision's own; the API fields are on the [metric page](/concepts/metric).
 
+## Annotations Count for Every Revision of a Metric
+
+A human annotation now belongs to its conversation, or one turn of it, and to the metric. Every revision of the metric shows it, so an evaluation of a new revision shows the existing annotation. Fixing or removing an annotation changes it for every revision. Annotating no longer needs a claim, so nothing locks the conversation. Human evaluation metrics are not part of this: their score stays on each evaluation, and they still need a claim. Annotations given before this change carry over. Where one conversation had different scores, the latest is kept. The evaluation endpoints keep their response field names. On a metric a judge scores, their human evaluator fields now describe the annotator. Sorting the evaluation list by these fields follows the annotation too. The new alpha `/annotations` endpoints read and write annotations directly. See [Human Annotations](/concepts/product/version/session/evaluation#human-annotations).
+
 </Update>
 
 <Update label="5.19.0" description="2026-11-18">
