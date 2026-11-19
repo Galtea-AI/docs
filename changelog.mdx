@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## EU Applicability Check Uses the Decision Model's EU Group
+
+Self-hosted operators: the evaluator setting `DECISION_MODEL_EU` is removed. For an EU-only organization, the applicability check now asks the EU deployment of `DECISION_MODEL`, mapped by `DECISION_MODEL_EU_NAMES` like a classifier metric's model. If you set `DECISION_MODEL_EU`, delete it and add your decision model to `DECISION_MODEL_EU_NAMES`. Until then, the check makes no call for an EU-only organization and the metric is judged.
+
 ## Mistral Workflows Traces Show Each LLM Call
 
 Galtea now reads OpenTelemetry traces from agents built on Mistral Workflows. Your code records each LLM call as an `llm_call_details` event. Galtea now shows that event as a generation span with its input, output and model, as it did on Abraxas. This holds for any sender. Any `llm_call_details` event with `input_messages` or `output_content` now shows as a generation span. Before, it showed as an empty span unless it carried an `abraxas.*` key. [Monitor a Mistral Workflows agent](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#monitor-a-mistral-workflows-agent) lists the settings that control turn text, tokens and redaction.
