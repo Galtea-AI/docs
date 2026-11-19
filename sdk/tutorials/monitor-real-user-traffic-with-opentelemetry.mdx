@@ -179,7 +179,7 @@ Galtea stores each conversation under a Product and one of its Versions. So afte
       <Tab title="Managed platform (vendor-derived)">
         Some platforms cannot attach `galtea.session.custom_id` to their spans. For these, Galtea derives the conversation key from a recognized vendor attribute, so you do not change the platform's instrumentation.
 
-        Temporal is a workflow engine; Mistral's agent platform is built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key, and splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
+        Temporal is a workflow engine; [Mistral Workflows](#monitor-a-mistral-workflows-agent) and its predecessor Abraxas are built on it. For platforms built on Temporal, Galtea uses the `temporalWorkflowID` span attribute as the conversation key, and splits the conversation into turns at workflow-update spans (spans named `HandleUpdate:*`).
 
         [OpenLLMetry](https://github.com/traceloop/openllmetry) (Traceloop's SDK) writes the conversation ID you pass to `Traceloop.set_association_properties` as `traceloop.association.properties.<name>`. Galtea reads it when the name is `session_id`, `conversation_id`, `chat_id` or `thread_id`, or their camelCase form, and one OTel trace becomes one conversation turn. When a trace carries several of these names, they rank in the order listed, and each camelCase form ranks right after its snake_case name. So `sessionId` wins over `conversation_id`. The standard keys win over it. Call `set_association_properties` before the workflow starts, so every span of the trace carries it.
       </Tab>
@@ -409,6 +409,32 @@ Each source rule behaves the same way, and each direction is resolved on its own
 - **A change never empties a field that holds a value.** If your new rule extracts nothing from a turn, Galtea leaves that turn's stored value alone rather than clearing it. Clearing stored values is a separate operation, so an edit to a rule cannot blank recorded traffic as a side effect. A rule change is never what clears a stored field. One platform action can: when a turn's boundary span arrives after its content, Galtea moves that content to the turn it belongs to, and the turn it came from is left empty rather than keeping the next turn's words. That clears only a field those same spans filled.
 - **A rule that matches nothing empties its field.** A configured rule decides its direction outright. When it matches no span of the turn, that field is empty, and the root-span and earliest/latest fallbacks do not apply. Each direction is independent, so an input rule that matches nothing does not stop the output rule. If a rule of yours needs the fallback instead, ask us: it becomes an explicit setting on the rule, never the default.
 - **A recovered field is marked on the span.** A span whose field a rule filled carries `galtea.span.input_from_source_rule` or `galtea.span.output_from_source_rule` in its metadata. Galtea writes and reads these keys itself, and strips them from any value you send. Use them to confirm which span a rule fired on.
+
+## Monitor a Mistral Workflows Agent
+
+Galtea supports agents built on Mistral Workflows (the `mistralai-workflows` package), and on Abraxas, the Mistral runtime before it. Point the worker's OpenTelemetry exporter at Galtea as [Send OpenTelemetry Traces to Galtea](/sdk/tutorials/send-opentelemetry-traces-to-galtea) shows. Galtea then reads sessions and turns from the export with no change to your workflow code. LLM call content and tokens need code from you, as the LLM calls bullet and the tokens setting below say:
+
+- **Sessions.** One workflow is one conversation. Galtea keys it by `temporalWorkflowID`. It opens a turn at each `HandleUpdate:*` span, as [Set a conversation key](#set-a-conversation-key) describes in its managed-platform tab.
+- **LLM calls.** Mistral Workflows writes no `gen_ai.*` attribute of its own, and the library never records `llm_call_details`. Your code must record an `llm_call_details` event with `input_messages`, `output_content` and `model`. Galtea then stores that span as a `GENERATION` span with this input, output and model. Your code writes the event, so its content keys are the ones you pass.
+
+Check these settings on your side. Each one changes what Galtea receives.
+
+- **Turn input and output.** The workflow saves the user message and the reply in an activity span. It writes them to the `wf.arguments` or `wf.result` attribute. Point the [input](#recover-the-turn-input-from-a-non-llm-span) and [output](#recover-replies-that-do-not-come-from-the-llm) source rules at that activity. For example, for an activity that saves each chat message:
+
+  ```json
+  {
+    "spanName": "ExecuteActivity:save_message",
+    "attribute": "wf.arguments",
+    "path": "$[0].message.content",
+    "predicate": { "path": "$[0].message.role", "equals": "user" }
+  }
+  ```
+
+  The output rule is the same, with `"equals": "assistant"`. Without the rules, a turn shows the raw LLM prompt and completion.
+- **Tokens and cost.** The Mistral SDK traces a call only in one of two cases. Either the client comes from `mistralai.workflows.client.get_mistral_client()`, or the worker runs with `MISTRAL_SDK_TELEMETRY=global`. A plain `Mistral(...)` client sends no `gen_ai.*` span, so Galtea gets no token counts. With telemetry on, each call gives two `GENERATION` spans. The SDK's span holds the tokens, and the `llm_call_details` span holds your content. Galtea counts the tokens once. A Mistral span names the model without the `mistral/` prefix, such as `mistral-small-2603`. The global catalog lists it as `mistral/mistral-small-2603`, so the span gets no cost. For a cost, create a [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) in your organization with the bare name and your prices.
+- **Redaction.** By default (`OTEL_REDACTION=default`), the library replaces some values with `[REDACTED]` before export. These are card-like digit runs (13 to 16 digits), email addresses, API tokens and IPv4 addresses. The content Galtea stores and evaluates then has these values masked. A bank account number of 13 to 16 digits is masked. A compact IBAN such as `ES9121000418450200051332` passes unchanged. A grouped IBAN such as `ES91 2100 0418 4502 0005 1332` loses its middle digits and keeps the last four. Phone numbers, national IDs and passwords are not masked. For the original values, set `OTEL_REDACTION=none` in the environment of the worker (or in its `.env` file) and restart it. Write the value in lowercase. Do not use `OTEL_REDACTION=strict` with source rules. It replaces the whole value of keys such as `wf.arguments` with `[REDACTED]`, so a rule cannot read them. It masks only API tokens in other keys, such as `wf.result`, so emails, card numbers and IPv4 addresses pass there.
+- **Large or encrypted payloads.** The library cuts `wf.arguments` and `wf.result` at 512 KB and adds `...`. The value is then no longer valid JSON, so a source rule cannot read it. With payload encryption on, these attributes show `**ENCRYPTED**`.
+- **Sampling.** An `otel_sample_rate` below 1 drops whole workflows, so Galtea never sees those conversations.
 
 ## Learn More
 

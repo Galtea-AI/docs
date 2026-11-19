@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Mistral Workflows Traces Show Each LLM Call
+
+Galtea now reads OpenTelemetry traces from agents built on Mistral Workflows. Your code records each LLM call as an `llm_call_details` event. Galtea now shows that event as a generation span with its input, output and model, as it did on Abraxas. This holds for any sender. Any `llm_call_details` event with `input_messages` or `output_content` now shows as a generation span. Before, it showed as an empty span unless it carried an `abraxas.*` key. [Monitor a Mistral Workflows agent](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#monitor-a-mistral-workflows-agent) lists the settings that control turn text, tokens and redaction.
+
 ## Gemini 2.5 Judges Retire on 4 December 2026
 
 Google has retired Gemini 2.5 Pro, Gemini 2.5 Flash and Gemini 2.5 Flash-Lite, so you can no longer pick them as the judge of a new metric. Metrics that already use them keep evaluating until 4 December 2026, and then their evaluations are skipped. To keep a metric running, create a revision of it with another [model](/concepts/model), for example Gemini 3.5 Flash or Gemini 3.1 Flash-Lite.
