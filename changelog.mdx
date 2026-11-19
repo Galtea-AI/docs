@@ -34,6 +34,10 @@ A test whose generation failed now shows a "Failed" status pill on its details p
 
 Each judge and classifier model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
 
+## Metric Page Separates the Metric From Its Revision
+
+The **Details** tab of a metric now shows a **Metric** card with what every revision shares, and a **Revision** card with the judge settings of the revision you pick. **Edit metric** changes the name, description and tags for every revision, and the links of the active revision. A new revision takes an optional name of its own, and **Convert to classifier** says that it creates new metrics.
+
 ## See and Rename Metric Revisions in the Dashboard
 
 Every screen that shows one metric revision now shows its number, such as **R3**, or **R3: stricter rubric** when you gave it a name. The metric page says **from R2** for the revision it was made from, and **Rename revision** in its menu names or clears a revision's name. When you revise a metric, the name field starts empty and a name you type becomes the revision's own; the API fields are on the [metric page](/concepts/metric).

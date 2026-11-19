@@ -8407,11 +8407,13 @@
         "properties": {
           "name": {
             "type": "string",
+            "maxLength": 200,
             "example": "Accuracy"
           },
           "description": {
             "type": "string",
             "nullable": true,
+            "maxLength": 5000,
             "example": "Measures the accuracy of responses"
           },
           "tags": {

@@ -85,6 +85,8 @@ galtea evaluations get <evaluation-id>
 
 If you do not have sessions yet, you can have the agent generate a baseline set first — for example by simulating conversations against your endpoint, or by connecting the endpoint so Galtea runs your test cases directly. The point of this step is to have a real, scored starting line you can compare against later.
 
+If your product runs in Python, the agent can also run it through the SDK instead: it calls your agent function on each test case, and Galtea scores the answers. See [Ways to Connect Your Agent](/connect-your-agent).
+
 ## Step 2 — Diagnose: What Is Failing, and Why
 
 This is where the agent earns its keep. Instead of clicking through evaluations one by one, ask it to summarize the failures and look for patterns:
@@ -104,6 +106,8 @@ The agent fetches the low-scoring evaluations, reads the judge's reasoning attac
 
 This cross-evaluation pattern-finding is exactly the kind of analysis that takes a long time by hand and that the agent can do in one pass. The judge's per-evaluation reasoning is the signal that makes it possible — the score tells you that something failed, the reason tells you why.
 
+Two habits keep the diagnosis honest. Judge each evaluation by whether it passed: that compares its score with the metric's [pass threshold](/concepts/metric#pass-threshold), so do not invent a cut-off of your own. And set skipped evaluations apart. A skipped evaluation was not scored, which usually points to a setup problem, such as a failed turn, rather than to a weakness in the product.
+
 ## Step 3 — Map Failures Back to Your Product
 
 Now turn the diagnosis into a concrete change. Ask the agent to connect each failure bucket to a likely cause in your system:
@@ -121,6 +125,8 @@ In our example the agent mapped the buckets to:
 - **Weak retrieval** → a retrieval problem, not a prompt problem: too few chunks retrieved, or a chunking/embedding issue worth a separate look.
 
 You do not have to accept every suggestion. Push back, ask for alternatives, or narrow the scope — this is a conversation, and you are the one who knows the product. The first two are quick prompt edits; the third is a deeper retrieval fix you might tackle in its own iteration.
+
+Not every failure is the product's fault. Sometimes the answer is fine and the specification is wrong or vague: then change the specification. Sometimes the judge's reason contradicts the answer: then the metric needs work, as [What's Next](#whats-next) describes. Never change a metric just to make failures disappear.
 
 ## Step 4 — Make the Change and Cut a New Version
 
@@ -166,7 +172,7 @@ Repeat the loop until you stop seeing obvious failures. Each pass is the same fo
 We drove this loop from a small set of existing sessions, but the same approach works with other sources of signal:
 
 - **Production sessions.** If you log real traffic to Galtea, point the loop at production sessions instead of a hand-made set. Be selective — not every production failure is one you want to optimize for.
-- **Specification-driven datasets.** Drive the whole loop from specifications: describe the behavior you expect, let Galtea generate the metrics and datasets, and evaluate against them. This keeps "what good looks like" explicit and reusable across versions.
+- **Specification-driven datasets.** Drive the whole loop from specifications: describe the behavior you expect, let Galtea generate the metrics and datasets, and evaluate against them. This keeps "what good looks like" explicit and reusable across versions. Ask the agent to draft the specifications from your product's code and prompts, and review the list before it creates them.
 - **Human annotations feeding the metrics optimizer.** Annotate a subset of evaluations yourself to define what a correct judgment looks like, then use the agent to apply that standard across a larger corpus — the input the metrics optimizer needs to make your LLM-as-a-judge metrics more reliable.
 
 ## What's Next
