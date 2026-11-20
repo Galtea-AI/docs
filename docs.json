@@ -527,7 +527,7 @@
                   "concepts/metric/evaluation-types",
                   "concepts/metric/evaluation-parameters",
                   "concepts/metric/ai-generation",
-                  "concepts/metric/classifier",
+                  "concepts/metric/decision-model",
                   {
                     "group": "SDK",
                     "icon": "code",
@@ -799,6 +799,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/concepts/metric/classifier",
+      "destination": "/concepts/metric/decision-model"
+    },
     {
       "source": "/concepts/product/version/session/inference-result",
       "destination": "/concepts/product/version/session/trace"

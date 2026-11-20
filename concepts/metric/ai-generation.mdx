@@ -72,7 +72,7 @@ Complete with AI is available for **AI Evaluation** and **Human Evaluation** met
 - For **AI Evaluation**, it produces a binary LLM-judge prompt and sets the platform's default evaluator model, which you can change before saving.
 - For **Human Evaluation**, it produces annotator guidelines on a 0–100 scoring scale (no evaluator model, since a human assigns the score).
 
-For **AI Evaluation** with the **Classifier** judge, it builds the metric's one question from the description:
+For **AI Evaluation** with the **Decision model** judge, it builds the metric's one question from the description:
 
 - One condition that always applies gets a Yes/No question with its **Good answer**, or a Scale question for a graded quality.
 - One condition that applies only sometimes gets a Scale question with a **Does not apply** level.
@@ -80,7 +80,7 @@ For **AI Evaluation** with the **Classifier** judge, it builds the metric's one 
 - Several conditions where some do not always apply get no question. Create one metric per condition.
 - Any part it could not turn into a question (counting, dates, exact text) is listed with a suggested alternative.
 
-The question is a draft for you to review. See [Classifier](/concepts/metric/classifier#complete-with-ai).
+The question is a draft for you to review. See [Decision model](/concepts/metric/decision-model#complete-with-ai).
 
 **Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/concepts/metric/evaluation-types) for the differences between these scoring methods.
 
@@ -93,7 +93,7 @@ The endpoint **persists nothing** — you review the revision and decide whether
 In the dashboard it is available only from the **New Revision** form (open a metric → **New Revision**), not from a blank or template create form. It is a panel beside the form fields, on screen for as long as the form is: you write the instruction in it and the revised values land in the fields next to it.
 
 <Info>
-  Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable. Classifier metrics have no judge prompt, so they cannot be revised with AI.
+  Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable. Decision metrics have no judge prompt, so they cannot be revised with AI.
 </Info>
 
 Applying a revision only fills in the form: the judge prompt and evaluation parameters each get an "AI Generated" badge. The **New Revision** form does not show the description, so the revised description is not applied. Nothing is saved until you submit the **New Revision** form.

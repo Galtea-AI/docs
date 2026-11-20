@@ -10,6 +10,10 @@ icon: "newspaper"
 
 You can now pick Gemini 4 Argon, GPT-6.2 Sol and GPT-6.1 Terra as the judge [model](/concepts/model) of a metric. All three have deployments in the EU, so organizations whose data region is EU can use them too.
 
+## Classifier Is Now Decision Model
+
+The classifier judge is now called the [decision model](/concepts/metric/decision-model), and its metrics are decision metrics. In the SDK, use `source="decision"`, `decision_question` and the `Decision*` classes; the API takes the `DECISION` source and `decisionQuestion`. The old classifier names keep working with a deprecation warning until 2028-01-17, but reads answer the new names: a metric stored as `CLASSIFIER` now answers `source` `DECISION`, and an evaluator model stored as `CLASSIFIER` now answers `kind` `DECISION`, so update any filter that compares to `CLASSIFIER`. A saved `metric.model_dump()` now holds the key `decision_question` instead of `classifier_question`, and the old key gets no warning, so update code that reads it.
+
 ## Update from Document Keeps Your Specifications Specific
 
 An **Updated** suggestion from **Update from document** now rewrites your existing [specification](/concepts/product/specification) instead of replacing it with new text. It keeps every concrete check the document does not change, such as a threshold, a measure or a data source, and adds only what the document changes. A document that only restates a specification no longer produces an **Updated** suggestion for it.
@@ -54,11 +58,11 @@ A test whose generation failed now shows a "Failed" status pill on its details p
 
 ## One Name per Evaluator Model
 
-Each judge and classifier model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
+Each judge and decision model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
 
 ## Metric Page Separates the Metric From Its Revision
 
-The **Details** tab of a metric now shows a **Metric** card with what every revision shares, and a **Revision** card with the judge settings of the revision you pick. **Edit metric** changes the name, description and tags for every revision, and the links of the active revision. A new revision takes an optional name of its own, and **Convert to classifier** says that it creates new metrics.
+The **Details** tab of a metric now shows a **Metric** card with what every revision shares, and a **Revision** card with the judge settings of the revision you pick. **Edit metric** changes the name, description and tags for every revision, and the links of the active revision. A new revision takes an optional name of its own, and **Convert to decision** says that it creates new metrics.
 
 ## See and Rename Metric Revisions in the Dashboard
 

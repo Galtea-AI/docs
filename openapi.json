@@ -494,7 +494,7 @@
               "GEVAL",
               "DEEPEVAL",
               "DETERMINISTIC",
-              "CLASSIFIER"
+              "DECISION"
             ],
             "nullable": true,
             "example": "PARTIAL_PROMPT",
@@ -2459,7 +2459,7 @@
                 "score"
               ]
             },
-            "description": "Per-version overall score, 0-100. Matches `averages.total` on `GET /analytics`, except that every long-input classifier verdict is left out here, including one from a metric of another organization."
+            "description": "Per-version overall score, 0-100. Matches `averages.total` on `GET /analytics`, except that every long-input decision verdict is left out here, including one from a metric of another organization."
           },
           "latestVersion": {
             "type": "object",
@@ -2665,6 +2665,69 @@
           "averages"
         ]
       },
+      "AnalyticsVersionAverage": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string"
+          },
+          "versionName": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number",
+            "description": "The average score, 0 to 100"
+          }
+        },
+        "required": [
+          "versionId",
+          "versionName",
+          "score"
+        ]
+      },
+      "AnalyticsVersionSummary": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "scores": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnalyticsVersionAverage"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "scores"
+              ]
+            },
+            "description": "Per test type, the mean of the metric scores of each version, as `averages.groups[].scores` on `GET /analytics` without coverage"
+          },
+          "total": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsVersionAverage"
+            },
+            "description": "Per version, the mean of the test-type averages, as `averages.total` on `GET /analytics` without coverage"
+          },
+          "excludedResultCount": {
+            "type": "integer",
+            "description": "The results these numbers leave out, as `excludedResultCount` on `GET /analytics`"
+          }
+        },
+        "required": [
+          "groups",
+          "total",
+          "excludedResultCount"
+        ]
+      },
       "CostBreakdownRow": {
         "type": "object",
         "properties": {
@@ -2748,69 +2811,6 @@
         "required": [
           "rows",
           "total"
-        ]
-      },
-      "AnalyticsVersionAverage": {
-        "type": "object",
-        "properties": {
-          "versionId": {
-            "type": "string"
-          },
-          "versionName": {
-            "type": "string"
-          },
-          "score": {
-            "type": "number",
-            "description": "The average score, 0 to 100"
-          }
-        },
-        "required": [
-          "versionId",
-          "versionName",
-          "score"
-        ]
-      },
-      "AnalyticsVersionSummary": {
-        "type": "object",
-        "properties": {
-          "groups": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string"
-                },
-                "scores": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AnalyticsVersionAverage"
-                  }
-                }
-              },
-              "required": [
-                "type",
-                "scores"
-              ]
-            },
-            "description": "Per test type, the mean of the metric scores of each version, as `averages.groups[].scores` on `GET /analytics` without coverage"
-          },
-          "total": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AnalyticsVersionAverage"
-            },
-            "description": "Per version, the mean of the test-type averages, as `averages.total` on `GET /analytics` without coverage"
-          },
-          "excludedResultCount": {
-            "type": "integer",
-            "description": "The results these numbers leave out, as `excludedResultCount` on `GET /analytics`"
-          }
-        },
-        "required": [
-          "groups",
-          "total",
-          "excludedResultCount"
         ]
       },
       "CostOverview": {
@@ -4574,7 +4574,7 @@
           "passed": {
             "type": "boolean",
             "nullable": true,
-            "description": "Whether the reported score (the reviewer's when set, else the judge's) reaches the metric's pass threshold. Null when the evaluation has no reported score, is outdated or deleted, is a long classifier input, or its metric is not loaded."
+            "description": "Whether the reported score (the reviewer's when set, else the judge's) reaches the metric's pass threshold. Null when the evaluation has no reported score, is outdated or deleted, is a long decision input, or its metric is not loaded."
           },
           "metricPassThreshold": {
             "type": "number",
@@ -4662,7 +4662,7 @@
               "value",
               "confidence"
             ],
-            "description": "CLASSIFIER only: what the classifier answered; null for every other source."
+            "description": "DECISION only: what the decision model answered; null for every other source."
           },
           "confidence": {
             "type": "number",
@@ -4670,7 +4670,7 @@
             "minimum": 0,
             "maximum": 1,
             "example": 0.9,
-            "description": "CLASSIFIER only: how sure the classifier was, from 0 to 1; null for every other source. Values do not compare across question types."
+            "description": "DECISION only: how sure the decision model was, from 0 to 1; null for every other source. Values do not compare across question types."
           },
           "dataRegion": {
             "type": "string",
@@ -4685,7 +4685,7 @@
           },
           "longInput": {
             "type": "boolean",
-            "description": "True for a CLASSIFIER evaluation whose input ran past what the classifier scores reliably (CLASSIFIER_RELIABLE_INPUT_TOKENS judge input tokens) and that no reviewer has scored; false for every other evaluation."
+            "description": "True for a DECISION evaluation whose input ran past what the decision model scores reliably (DECISION_RELIABLE_INPUT_TOKENS judge input tokens) and that no reviewer has scored; false for every other evaluation."
           }
         },
         "required": [
@@ -4901,7 +4901,7 @@
           "passed": {
             "type": "boolean",
             "nullable": true,
-            "description": "Whether the reported score (the reviewer's when set, else the judge's) reaches the metric's pass threshold. Null when the evaluation has no reported score, is outdated or deleted, is a long classifier input, or its metric is not loaded."
+            "description": "Whether the reported score (the reviewer's when set, else the judge's) reaches the metric's pass threshold. Null when the evaluation has no reported score, is outdated or deleted, is a long decision input, or its metric is not loaded."
           },
           "metricPassThreshold": {
             "type": "number",
@@ -5594,9 +5594,9 @@
             "type": "string",
             "enum": [
               "LLM_JUDGE",
-              "CLASSIFIER"
+              "DECISION"
             ],
-            "description": "LLM_JUDGE for a judge model of LLM-as-a-judge metrics, CLASSIFIER for a decision model of classifier metrics.",
+            "description": "LLM_JUDGE for a judge model of LLM-as-a-judge metrics, DECISION for a decision model of decision metrics.",
             "example": "LLM_JUDGE"
           },
           "disabledAt": {
@@ -6214,7 +6214,7 @@
           "products"
         ]
       },
-      "ClassifierQuestionInput": {
+      "DecisionQuestionInput": {
         "type": "object",
         "properties": {
           "type": {
@@ -6282,7 +6282,7 @@
             "type": "string",
             "nullable": true,
             "maxLength": 1000,
-            "description": "scale only: the text of an extra level that skips the evaluation when the classifier picks it."
+            "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
           }
         },
         "required": [
@@ -6290,7 +6290,7 @@
           "instructions"
         ]
       },
-      "ClassifierQuestion": {
+      "DecisionQuestion": {
         "type": "object",
         "properties": {
           "type": {
@@ -6356,151 +6356,6 @@
           "instructions"
         ]
       },
-      "ClassifierConversionProposal": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "The name to create the metric with, built from the source name."
-          },
-          "classifierQuestion": {
-            "$ref": "#/components/schemas/ClassifierQuestion"
-          },
-          "evaluationParams": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Derived from the question's placeholders."
-          },
-          "label": {
-            "type": "string",
-            "description": "A few words naming the condition."
-          },
-          "text": {
-            "type": "string",
-            "description": "The condition, copied word for word from the judge prompt."
-          }
-        },
-        "required": [
-          "name",
-          "classifierQuestion",
-          "evaluationParams",
-          "label",
-          "text"
-        ]
-      },
-      "ClassifierConversionMerged": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "The name to create the metric with, built from the source name."
-          },
-          "classifierQuestion": {
-            "$ref": "#/components/schemas/ClassifierQuestion"
-          },
-          "evaluationParams": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Derived from the question's placeholders."
-          }
-        },
-        "required": [
-          "name",
-          "classifierQuestion",
-          "evaluationParams"
-        ]
-      },
-      "ClassifierConversionRefused": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "type": "string",
-            "description": "The part of the judge prompt the classifier cannot check."
-          },
-          "reason": {
-            "type": "string"
-          },
-          "suggestion": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "text",
-          "reason",
-          "suggestion"
-        ]
-      },
-      "ClassifierConversionSpecification": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "productId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "productId"
-        ]
-      },
-      "ClassifierConversion": {
-        "type": "object",
-        "properties": {
-          "proposals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassifierConversionProposal"
-            },
-            "description": "One classifier metric per condition of the judge prompt."
-          },
-          "merged": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClassifierConversionMerged"
-              },
-              {
-                "nullable": true,
-                "description": "One classifier metric whose question lists every condition. Null when there are fewer than two conditions or one of them does not always apply."
-              }
-            ]
-          },
-          "refused": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassifierConversionRefused"
-            },
-            "description": "The parts no classifier question can check."
-          },
-          "specifications": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassifierConversionSpecification"
-            },
-            "description": "The source metric's specifications that the caller may read: a MEMBER gets only those of the products their user groups grant. Send their ids with each metric to link it to them."
-          }
-        },
-        "required": [
-          "proposals",
-          "merged",
-          "refused",
-          "specifications"
-        ]
-      },
       "CreateMetricBody": {
         "type": "object",
         "properties": {
@@ -6521,9 +6376,18 @@
               "GEVAL",
               "DEEPEVAL",
               "DETERMINISTIC",
+              "DECISION",
               "CLASSIFIER"
             ],
-            "example": "PARTIAL_PROMPT"
+            "example": "PARTIAL_PROMPT",
+            "description": "`CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
+            "x-deprecated-values": [
+              {
+                "value": "CLASSIFIER",
+                "x-sunset": "2028-01-17",
+                "x-replacement": "DECISION"
+              }
+            ]
           },
           "evaluationParams": {
             "type": "array",
@@ -6549,7 +6413,7 @@
             "type": "string",
             "nullable": true,
             "example": "gpt-4.1",
-            "description": "Required for PARTIAL_PROMPT. For CLASSIFIER: The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+            "description": "Required for PARTIAL_PROMPT. For DECISION: The selectable decision model to run the question under, as listed by `GET /evaluatorModels` with `kind=DECISION` and `selectable=true`. Omitted or null, the one selectable decision model is used. When several are selectable, the request is refused with 400 and this field must be sent."
           },
           "definition": {
             "type": "string",
@@ -6672,6 +6536,84 @@
             "example": 0.7,
             "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores only `traces`. The check runs only where the deployment enables it."
           },
+          "decisionQuestion": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "yes_no",
+                  "scale"
+                ]
+              },
+              "instructions": {
+                "type": "string",
+                "maxLength": 2000,
+                "description": "The question, in English, naming at least one {{ evaluation_param }}."
+              },
+              "goodAnswer": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "yes",
+                  "no"
+                ],
+                "description": "yes_no only, and required there."
+              },
+              "criteria": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "yes": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  },
+                  "no": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  }
+                },
+                "description": "yes_no only: what yes and no mean."
+              },
+              "levels": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "score": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "From 0 to 1. Omit it on every level to space the scores evenly from 0 (worst) to 1 (best)."
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ]
+                },
+                "maxItems": 10,
+                "description": "scale only: the scored levels, worst first, with non-decreasing scores."
+              },
+              "doesNotApply": {
+                "type": "string",
+                "nullable": true,
+                "maxLength": 1000,
+                "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
+              }
+            },
+            "required": [
+              "type",
+              "instructions"
+            ],
+            "description": "DECISION only, and required there: the one question the decision model answers. evaluationParams is derived from its {{ param }} placeholders."
+          },
           "classifierQuestion": {
             "type": "object",
             "nullable": true,
@@ -6741,14 +6683,17 @@
                 "type": "string",
                 "nullable": true,
                 "maxLength": 1000,
-                "description": "scale only: the text of an extra level that skips the evaluation when the classifier picks it."
+                "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
               }
             },
             "required": [
               "type",
               "instructions"
             ],
-            "description": "CLASSIFIER only, and required there: the one question the classifier answers. evaluationParams is derived from its {{ param }} placeholders."
+            "description": "Deprecated, send `decisionQuestion`. Read as `decisionQuestion`; sending both answers 400 unless they are equal.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": "decisionQuestion"
           }
         },
         "required": [
@@ -6767,6 +6712,179 @@
         },
         "required": [
           "metrics"
+        ]
+      },
+      "DecisionConversionProposal": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name to create the metric with, built from the source name."
+          },
+          "decisionQuestion": {
+            "$ref": "#/components/schemas/DecisionQuestion"
+          },
+          "classifierQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestion"
+              },
+              {
+                "description": "Deprecated, read `decisionQuestion`. The same value.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
+              }
+            ]
+          },
+          "evaluationParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Derived from the question's placeholders."
+          },
+          "label": {
+            "type": "string",
+            "description": "A few words naming the condition."
+          },
+          "text": {
+            "type": "string",
+            "description": "The condition, copied word for word from the judge prompt."
+          }
+        },
+        "required": [
+          "name",
+          "decisionQuestion",
+          "classifierQuestion",
+          "evaluationParams",
+          "label",
+          "text"
+        ]
+      },
+      "DecisionConversionMerged": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name to create the metric with, built from the source name."
+          },
+          "decisionQuestion": {
+            "$ref": "#/components/schemas/DecisionQuestion"
+          },
+          "classifierQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestion"
+              },
+              {
+                "description": "Deprecated, read `decisionQuestion`. The same value.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
+              }
+            ]
+          },
+          "evaluationParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Derived from the question's placeholders."
+          }
+        },
+        "required": [
+          "name",
+          "decisionQuestion",
+          "classifierQuestion",
+          "evaluationParams"
+        ]
+      },
+      "DecisionConversionRefused": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The part of the judge prompt the decision model cannot check."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "text",
+          "reason",
+          "suggestion"
+        ]
+      },
+      "DecisionConversionSpecification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "productId"
+        ]
+      },
+      "DecisionConversion": {
+        "type": "object",
+        "properties": {
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionConversionProposal"
+            },
+            "description": "One decision metric per condition of the judge prompt."
+          },
+          "merged": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionConversionMerged"
+              },
+              {
+                "nullable": true,
+                "description": "One decision metric whose question lists every condition. Null when there are fewer than two conditions or one of them does not always apply."
+              }
+            ]
+          },
+          "refused": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionConversionRefused"
+            },
+            "description": "The parts no decision question can check."
+          },
+          "specifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionConversionSpecification"
+            },
+            "description": "The source metric's specifications that the caller may read: a MEMBER gets only those of the products their user groups grant. Send their ids with each metric to link it to them."
+          }
+        },
+        "required": [
+          "proposals",
+          "merged",
+          "refused",
+          "specifications"
         ]
       },
       "AssembledPrompt": {
@@ -6839,7 +6957,7 @@
               "GEVAL",
               "DEEPEVAL",
               "DETERMINISTIC",
-              "CLASSIFIER",
+              "DECISION",
               null
             ]
           },
@@ -7033,10 +7151,10 @@
               "GEVAL",
               "DEEPEVAL",
               "DETERMINISTIC",
-              "CLASSIFIER"
+              "DECISION"
             ],
             "example": "PARTIAL_PROMPT",
-            "description": "Evaluation method for the metric. `FULL_PROMPT` is deprecated for creation \u2014 `POST /metrics` rejects it with a 400. Use `PARTIAL_PROMPT` for new AI Evaluation metrics. The value remains in the enum because existing FULL_PROMPT metrics are still returned by reads and filters. `CLASSIFIER` is the Classifier judge, accepted only where the deployment enables it."
+            "description": "Evaluation method for the metric. `FULL_PROMPT` is deprecated for creation \u2014 `POST /metrics` rejects it with a 400. Use `PARTIAL_PROMPT` for new AI Evaluation metrics. The value remains in the enum because existing FULL_PROMPT metrics are still returned by reads and filters. `DECISION` is the decision model, accepted only where the deployment enables it."
           },
           "definition": {
             "type": "string",
@@ -7157,14 +7275,28 @@
             "example": 0.7,
             "description": "The lowest probability that the metric applies to a session at which it is judged. Null means the platform default, 0.5. Immutable: changing it creates a revision."
           },
-          "classifierQuestion": {
+          "decisionQuestion": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ClassifierQuestion"
+                "$ref": "#/components/schemas/DecisionQuestion"
               },
               {
                 "nullable": true,
-                "description": "The one question of a CLASSIFIER metric; null for every other source."
+                "description": "The one question of a DECISION metric; null for every other source."
+              }
+            ]
+          },
+          "classifierQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestion"
+              },
+              {
+                "nullable": true,
+                "description": "Deprecated, read `decisionQuestion`. The same value.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
               }
             ]
           },
@@ -7473,7 +7605,7 @@
             "type": "string",
             "nullable": true,
             "readOnly": true,
-            "description": "Why the caller's organization cannot run this metric, or null when it can. Set only for an organization whose data region is EU and a metric whose judge, or whose decision model for a classifier, has no healthy EU deployment: the metric cannot run there until it runs on another one. For a metric of your organization, create a revision. For a Galtea metric, create a metric of your own. Reported by the metric list and read endpoints. An endpoint that returns a metric and does not read the organization's data region, such as the metrics of a specification, leaves the field out: absent means not reported, never that the metric can run.",
+            "description": "Why the caller's organization cannot run this metric, or null when it can. Set only for an organization whose data region is EU and a metric whose judge, or, for a decision metric, whose decision model, has no healthy EU deployment: the metric cannot run there until it runs on another one. For a metric of your organization, create a revision. For a Galtea metric, create a metric of your own. Reported by the metric list and read endpoints. An endpoint that returns a metric and does not read the organization's data region, such as the metrics of a specification, leaves the field out: absent means not reported, never that the metric can run.",
             "example": null
           },
           "excludedFromAnalyticsAt": {
@@ -7512,6 +7644,7 @@
           "passThreshold",
           "applicabilityScope",
           "applicabilityThreshold",
+          "decisionQuestion",
           "classifierQuestion",
           "optimizationValidation",
           "optimizationRun",
@@ -7525,7 +7658,7 @@
           "excludedByUserId"
         ]
       },
-      "ClassifierMetricInput": {
+      "DecisionMetricInput": {
         "type": "object",
         "properties": {
           "name": {
@@ -7545,13 +7678,26 @@
               "type": "string"
             }
           },
+          "decisionQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestionInput"
+              },
+              {
+                "description": "Required, or its deprecated name `classifierQuestion`. The one question the decision model answers. evaluationParams is derived from its {{ param }} placeholders."
+              }
+            ]
+          },
           "classifierQuestion": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ClassifierQuestionInput"
+                "$ref": "#/components/schemas/DecisionQuestionInput"
               },
               {
-                "description": "The one question the classifier answers. evaluationParams is derived from its {{ param }} placeholders."
+                "description": "Deprecated, send `decisionQuestion`. Read as `decisionQuestion`; sending both answers 400 unless they are equal.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
               }
             ]
           },
@@ -7559,7 +7705,7 @@
             "type": "string",
             "nullable": true,
             "example": "jev-1.13.0",
-            "description": "The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+            "description": "The selectable decision model to run the question under, as listed by `GET /evaluatorModels` with `kind=DECISION` and `selectable=true`. Omitted or null, the one selectable decision model is used. When several are selectable, the request is refused with 400 and this field must be sent."
           },
           "specificationIds": {
             "type": "array",
@@ -7600,17 +7746,16 @@
           }
         },
         "required": [
-          "name",
-          "classifierQuestion"
+          "name"
         ]
       },
-      "CreateClassifierMetricsBody": {
+      "CreateDecisionMetricsBody": {
         "type": "object",
         "properties": {
           "metrics": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ClassifierMetricInput"
+              "$ref": "#/components/schemas/DecisionMetricInput"
             },
             "minItems": 1,
             "maxItems": 10
@@ -7775,14 +7920,34 @@
       "TestDraftMetricBody": {
         "type": "object",
         "properties": {
+          "decisionQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestionInput"
+              },
+              {
+                "description": "Required, or its deprecated name `classifierQuestion` (accepted until 2028-01-17)."
+              }
+            ]
+          },
           "classifierQuestion": {
-            "$ref": "#/components/schemas/ClassifierQuestionInput"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestionInput"
+              },
+              {
+                "description": "Deprecated, send `decisionQuestion`. Read as `decisionQuestion`; sending both answers 400 unless they are equal.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
+              }
+            ]
           },
           "evaluatorModelName": {
             "type": "string",
             "nullable": true,
             "example": "jev-1.13.0",
-            "description": "The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+            "description": "The selectable decision model to run the question under, as listed by `GET /evaluatorModels` with `kind=DECISION` and `selectable=true`. Omitted or null, the one selectable decision model is used. When several are selectable, the request is refused with 400 and this field must be sent."
           },
           "sample": {
             "type": "object",
@@ -7809,11 +7974,10 @@
           }
         },
         "required": [
-          "classifierQuestion",
           "sample"
         ]
       },
-      "ClassifierDraftTestResult": {
+      "DecisionDraftTestResult": {
         "type": "object",
         "properties": {
           "outcome": {
@@ -8115,10 +8279,10 @@
               "GEVAL",
               "DEEPEVAL",
               "DETERMINISTIC",
-              "CLASSIFIER"
+              "DECISION"
             ],
             "example": "PARTIAL_PROMPT",
-            "description": "Evaluation method for the metric. `FULL_PROMPT` is deprecated for creation \u2014 `POST /metrics` rejects it with a 400. Use `PARTIAL_PROMPT` for new AI Evaluation metrics. The value remains in the enum because existing FULL_PROMPT metrics are still returned by reads and filters. `CLASSIFIER` is the Classifier judge, accepted only where the deployment enables it."
+            "description": "Evaluation method for the metric. `FULL_PROMPT` is deprecated for creation \u2014 `POST /metrics` rejects it with a 400. Use `PARTIAL_PROMPT` for new AI Evaluation metrics. The value remains in the enum because existing FULL_PROMPT metrics are still returned by reads and filters. `DECISION` is the decision model, accepted only where the deployment enables it."
           },
           "activeRevisionId": {
             "type": "string",
@@ -8173,9 +8337,18 @@
               "GEVAL",
               "DEEPEVAL",
               "DETERMINISTIC",
+              "DECISION",
               "CLASSIFIER"
             ],
-            "example": "PARTIAL_PROMPT"
+            "example": "PARTIAL_PROMPT",
+            "description": "`CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
+            "x-deprecated-values": [
+              {
+                "value": "CLASSIFIER",
+                "x-sunset": "2028-01-17",
+                "x-replacement": "DECISION"
+              }
+            ]
           },
           "evaluationParams": {
             "type": "array",
@@ -8201,7 +8374,7 @@
             "type": "string",
             "nullable": true,
             "example": "gpt-4.1",
-            "description": "Required for PARTIAL_PROMPT. For CLASSIFIER: The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+            "description": "Required for PARTIAL_PROMPT. For DECISION: The selectable decision model to run the question under, as listed by `GET /evaluatorModels` with `kind=DECISION` and `selectable=true`. Omitted or null, the one selectable decision model is used. When several are selectable, the request is refused with 400 and this field must be sent."
           },
           "definition": {
             "type": "string",
@@ -8318,6 +8491,84 @@
             "example": 0.7,
             "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores only `traces`. The check runs only where the deployment enables it."
           },
+          "decisionQuestion": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "yes_no",
+                  "scale"
+                ]
+              },
+              "instructions": {
+                "type": "string",
+                "maxLength": 2000,
+                "description": "The question, in English, naming at least one {{ evaluation_param }}."
+              },
+              "goodAnswer": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "yes",
+                  "no"
+                ],
+                "description": "yes_no only, and required there."
+              },
+              "criteria": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "yes": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  },
+                  "no": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  }
+                },
+                "description": "yes_no only: what yes and no mean."
+              },
+              "levels": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "score": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "From 0 to 1. Omit it on every level to space the scores evenly from 0 (worst) to 1 (best)."
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ]
+                },
+                "maxItems": 10,
+                "description": "scale only: the scored levels, worst first, with non-decreasing scores."
+              },
+              "doesNotApply": {
+                "type": "string",
+                "nullable": true,
+                "maxLength": 1000,
+                "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
+              }
+            },
+            "required": [
+              "type",
+              "instructions"
+            ],
+            "description": "DECISION only, and required there: the one question the decision model answers. evaluationParams is derived from its {{ param }} placeholders."
+          },
           "classifierQuestion": {
             "type": "object",
             "nullable": true,
@@ -8387,14 +8638,17 @@
                 "type": "string",
                 "nullable": true,
                 "maxLength": 1000,
-                "description": "scale only: the text of an extra level that skips the evaluation when the classifier picks it."
+                "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
               }
             },
             "required": [
               "type",
               "instructions"
             ],
-            "description": "CLASSIFIER only, and required there: the one question the classifier answers. evaluationParams is derived from its {{ param }} placeholders."
+            "description": "Deprecated, send `decisionQuestion`. Read as `decisionQuestion`; sending both answers 400 unless they are equal.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": "decisionQuestion"
           }
         },
         "required": [
@@ -8571,14 +8825,28 @@
             "example": 0.7,
             "description": "The lowest probability that the metric applies to a session at which it is judged. Null means the platform default, 0.5. Immutable: changing it creates a revision."
           },
-          "classifierQuestion": {
+          "decisionQuestion": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ClassifierQuestion"
+                "$ref": "#/components/schemas/DecisionQuestion"
               },
               {
                 "nullable": true,
-                "description": "The one question of a CLASSIFIER metric; null for every other source."
+                "description": "The one question of a DECISION metric; null for every other source."
+              }
+            ]
+          },
+          "classifierQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestion"
+              },
+              {
+                "nullable": true,
+                "description": "Deprecated, read `decisionQuestion`. The same value.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
               }
             ]
           },
@@ -8917,6 +9185,7 @@
           "passThreshold",
           "applicabilityScope",
           "applicabilityThreshold",
+          "decisionQuestion",
           "classifierQuestion",
           "isBeingOptimized",
           "optimizationStatus",
@@ -8964,7 +9233,7 @@
             "type": "string",
             "nullable": true,
             "example": "gpt-4.1",
-            "description": "Required for PARTIAL_PROMPT. For CLASSIFIER: The selectable classifier model to run the question under, as listed by `GET /evaluatorModels` with `kind=CLASSIFIER` and `selectable=true`. Omitted or null, the one selectable classifier model is used. When several are selectable, the request is refused with 400 and this field must be sent."
+            "description": "Required for PARTIAL_PROMPT. For DECISION: The selectable decision model to run the question under, as listed by `GET /evaluatorModels` with `kind=DECISION` and `selectable=true`. Omitted or null, the one selectable decision model is used. When several are selectable, the request is refused with 400 and this field must be sent."
           },
           "evaluationParams": {
             "type": "array",
@@ -9046,6 +9315,84 @@
             "example": 0.7,
             "description": "The lowest probability, from 0 to 1, that the metric applies to a session at which it is judged. Below it, the session is skipped. Omitted or null, it defaults to 0.5, or to the parent metric's value for a revision when the check runs for both. Fixed at create: a change creates a revision. Refused with a 400 for a metric the platform does not score, and for a metric that scores only `traces`. The check runs only where the deployment enables it."
           },
+          "decisionQuestion": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "yes_no",
+                  "scale"
+                ]
+              },
+              "instructions": {
+                "type": "string",
+                "maxLength": 2000,
+                "description": "The question, in English, naming at least one {{ evaluation_param }}."
+              },
+              "goodAnswer": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "yes",
+                  "no"
+                ],
+                "description": "yes_no only, and required there."
+              },
+              "criteria": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "yes": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  },
+                  "no": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000
+                  }
+                },
+                "description": "yes_no only: what yes and no mean."
+              },
+              "levels": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "score": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "From 0 to 1. Omit it on every level to space the scores evenly from 0 (worst) to 1 (best)."
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ]
+                },
+                "maxItems": 10,
+                "description": "scale only: the scored levels, worst first, with non-decreasing scores."
+              },
+              "doesNotApply": {
+                "type": "string",
+                "nullable": true,
+                "maxLength": 1000,
+                "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
+              }
+            },
+            "required": [
+              "type",
+              "instructions"
+            ],
+            "description": "DECISION only, and required there: the one question the decision model answers. evaluationParams is derived from its {{ param }} placeholders."
+          },
           "classifierQuestion": {
             "type": "object",
             "nullable": true,
@@ -9115,14 +9462,17 @@
                 "type": "string",
                 "nullable": true,
                 "maxLength": 1000,
-                "description": "scale only: the text of an extra level that skips the evaluation when the classifier picks it."
+                "description": "scale only: the text of an extra level that skips the evaluation when the decision model picks it."
               }
             },
             "required": [
               "type",
               "instructions"
             ],
-            "description": "CLASSIFIER only, and required there: the one question the classifier answers. evaluationParams is derived from its {{ param }} placeholders."
+            "description": "Deprecated, send `decisionQuestion`. Read as `decisionQuestion`; sending both answers 400 unless they are equal.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": "decisionQuestion"
           },
           "userGroupIds": {
             "type": "array",
@@ -9674,7 +10024,7 @@
               "DISABLED",
               "DELETED"
             ],
-            "description": "ACTIVE: its scored revision is active, so it scores (a self-hosted one, or a CLASSIFIER one while classifier metrics are off, still gets a SKIPPED evaluation on each session). RETIRING: still scores, but its metric or evaluator model is planned for retirement. DISABLED: scores nothing, because its metric or evaluator model is retired, or the gateway does not serve its evaluator model right now. DELETED: scores nothing, its scored revision was deleted.",
+            "description": "ACTIVE: its scored revision is active, so it scores (a self-hosted one, or a DECISION one while decision metrics are off, still gets a SKIPPED evaluation on each session). RETIRING: still scores, but its metric or evaluator model is planned for retirement. DISABLED: scores nothing, because its metric or evaluator model is retired, or the gateway does not serve its evaluator model right now. DELETED: scores nothing, its scored revision was deleted.",
             "example": "ACTIVE"
           },
           "metricId": {
@@ -16226,7 +16576,7 @@
             "in": "query",
             "style": "form",
             "explode": true,
-            "description": "Filter by metric sources",
+            "description": "Filter by metric sources. CLASSIFIER is the deprecated name of DECISION, accepted until 2028-01-17.",
             "required": false,
             "schema": {
               "type": "array",
@@ -16240,10 +16590,25 @@
                   "GEVAL",
                   "DEEPEVAL",
                   "DETERMINISTIC",
+                  "DECISION",
                   "CLASSIFIER"
                 ]
+              },
+              "x-deprecated-values": [
+                {
+                  "value": "CLASSIFIER",
+                  "x-sunset": "2028-01-17",
+                  "x-replacement": "DECISION"
+                }
+              ]
+            },
+            "x-deprecated-values": [
+              {
+                "value": "CLASSIFIER",
+                "x-sunset": "2028-01-17",
+                "x-replacement": "DECISION"
               }
-            }
+            ]
           },
           {
             "name": "specificationIds",
@@ -16423,7 +16788,7 @@
           "metrics"
         ],
         "summary": "Create metric",
-        "description": "Create a new metric. See [Metrics](https://docs.galtea.ai/concepts/metric).\n\nAccepted values for `source` on new metrics are `SELF_HOSTED`, `PARTIAL_PROMPT`, `HUMAN_EVALUATION`, and `CLASSIFIER` (the Classifier judge; 400 where the deployment does not enable it). `FULL_PROMPT` is **deprecated for creation** \u2014 requests with `source=FULL_PROMPT` (or that omit `source` and supply a `judgePrompt` without `evaluationParams`, which previously inferred FULL_PROMPT) are rejected with 400. Use `PARTIAL_PROMPT` instead \u2014 it offers the same capabilities with user-configurable evaluation parameters. Existing FULL_PROMPT metrics continue to be listed, read, filtered, and evaluated.",
+        "description": "Create a new metric. See [Metrics](https://docs.galtea.ai/concepts/metric).\n\nAccepted values for `source` on new metrics are `SELF_HOSTED`, `PARTIAL_PROMPT`, `HUMAN_EVALUATION`, and `DECISION` (the decision model; 400 where the deployment does not enable it). `FULL_PROMPT` is **deprecated for creation** \u2014 requests with `source=FULL_PROMPT` (or that omit `source` and supply a `judgePrompt` without `evaluationParams`, which previously inferred FULL_PROMPT) are rejected with 400. Use `PARTIAL_PROMPT` instead \u2014 it offers the same capabilities with user-configurable evaluation parameters. Existing FULL_PROMPT metrics continue to be listed, read, filtered, and evaluated.",
         "security": [
           {
             "bearerAuth": []
@@ -17053,7 +17418,7 @@
           "metrics"
         ],
         "summary": "Generate or complete metric configuration with AI",
-        "description": "Two modes, selected by the request body:\n\n- **Spec mode** (provide `specificationIds`): generates 1-3 metric configurations per\n  specification, optionally creating the metrics automatically.\n- **Completion mode** (\"Complete With AI\", provide `name` + `description` + `evaluationType`):\n  completes a single metric the user is authoring. The name/description/evaluationType/tags\n  are the source of truth; only the judge prompt and evaluation params are generated (for\n  CLASSIFIER, config[0] is { classifierQuestion, evaluationParams, conditions, refused }\n  instead). `specificationIds` may carry at most one id as optional context.\n\nThe evaluator model of every generated AI-evaluated metric is the deployment's setting for\ngenerated metrics, not a choice of the generator. It answers 500 when that model is not\nselectable in the environment. A CLASSIFIER result carries no model.\n\nSee [Metrics](https://docs.galtea.ai/concepts/metric).\n",
+        "description": "Two modes, selected by the request body:\n\n- **Spec mode** (provide `specificationIds`): generates 1-3 metric configurations per\n  specification, optionally creating the metrics automatically.\n- **Completion mode** (\"Complete With AI\", provide `name` + `description` + `evaluationType`):\n  completes a single metric the user is authoring. The name/description/evaluationType/tags\n  are the source of truth; only the judge prompt and evaluation params are generated (for\n  DECISION, config[0] is { decisionQuestion, evaluationParams, conditions, refused }\n  instead). `specificationIds` may carry at most one id as optional context.\n\nThe evaluator model of every generated AI-evaluated metric is the deployment's setting for\ngenerated metrics, not a choice of the generator. It answers 500 when that model is not\nselectable in the environment. A DECISION result carries no model.\n\nSee [Metrics](https://docs.galtea.ai/concepts/metric).\n",
         "operationId": "generateMetricConfig",
         "x-cli-name": "generate-config",
         "security": [
@@ -17106,9 +17471,17 @@
                     "enum": [
                       "PARTIAL_PROMPT",
                       "HUMAN_EVALUATION",
+                      "DECISION",
                       "CLASSIFIER"
                     ],
-                    "description": "Completion mode - PARTIAL_PROMPT (binary LLM judge), HUMAN_EVALUATION (0-100 annotator guidelines) or CLASSIFIER (one Classifier question; 400 where not enabled)"
+                    "description": "Completion mode - PARTIAL_PROMPT (binary LLM judge), HUMAN_EVALUATION (0-100 annotator guidelines) or DECISION (one decision question; 400 where not enabled). CLASSIFIER is the deprecated name of DECISION, accepted until 2028-01-17.",
+                    "x-deprecated-values": [
+                      {
+                        "value": "CLASSIFIER",
+                        "x-sunset": "2028-01-17",
+                        "x-replacement": "DECISION"
+                      }
+                    ]
                   },
                   "tags": {
                     "type": "array",
@@ -17128,7 +17501,7 @@
         },
         "responses": {
           "200": {
-            "description": "Metric configuration generated successfully. For CLASSIFIER, config[0] is { classifierQuestion, evaluationParams, conditions, refused }; classifierQuestion is null when one question cannot cover every condition.",
+            "description": "Metric configuration generated successfully. For DECISION, config[0] is { decisionQuestion, evaluationParams, conditions, refused }; decisionQuestion is null when one question cannot cover every condition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -25541,7 +25914,7 @@
                                       },
                                       "evaluationCount": {
                                         "type": "integer",
-                                        "description": "Evaluations with a reported score behind `score`. A classifier score on an input above `CLASSIFIER_RELIABLE_INPUT_TOKENS` judge input tokens is left out, here and in `score`, unless a reviewer scored it."
+                                        "description": "Evaluations with a reported score behind `score`. A decision score on an input above `DECISION_RELIABLE_INPUT_TOKENS` judge input tokens is left out, here and in `score`, unless a reviewer scored it."
                                       },
                                       "passedCount": {
                                         "type": "integer",
@@ -25599,7 +25972,7 @@
                                       },
                                       "evaluationCount": {
                                         "type": "integer",
-                                        "description": "Evaluations with a reported score behind `score`. A classifier score on an input above `CLASSIFIER_RELIABLE_INPUT_TOKENS` judge input tokens is left out, here and in `score`, unless a reviewer scored it."
+                                        "description": "Evaluations with a reported score behind `score`. A decision score on an input above `DECISION_RELIABLE_INPUT_TOKENS` judge input tokens is left out, here and in `score`, unless a reviewer scored it."
                                       },
                                       "passedCount": {
                                         "type": "integer",
@@ -25634,7 +26007,7 @@
                                       },
                                       "evaluationCount": {
                                         "type": "integer",
-                                        "description": "Evaluations with a reported score behind `score`. A classifier score on an input above `CLASSIFIER_RELIABLE_INPUT_TOKENS` judge input tokens is left out, here and in `score`, unless a reviewer scored it."
+                                        "description": "Evaluations with a reported score behind `score`. A decision score on an input above `DECISION_RELIABLE_INPUT_TOKENS` judge input tokens is left out, here and in `score`, unless a reviewer scored it."
                                       },
                                       "passedCount": {
                                         "type": "integer",
@@ -30179,12 +30552,26 @@
               "items": {
                 "type": "string"
               },
-              "description": "Filter by metric sources"
+              "description": "Filter by metric sources. `CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
+              "x-deprecated-values": [
+                {
+                  "value": "CLASSIFIER",
+                  "x-sunset": "2028-01-17",
+                  "x-replacement": "DECISION"
+                }
+              ]
             },
             "required": false,
-            "description": "Filter by metric sources",
+            "description": "Filter by metric sources. `CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
             "style": "form",
             "explode": true,
+            "x-deprecated-values": [
+              {
+                "value": "CLASSIFIER",
+                "x-sunset": "2028-01-17",
+                "x-replacement": "DECISION"
+              }
+            ],
             "name": "metricSources",
             "in": "query"
           },
@@ -30383,40 +30770,40 @@
           {
             "schema": {
               "type": "number",
-              "description": "Keep evaluations whose classifier confidence is greater than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
+              "description": "Keep evaluations whose decision confidence is greater than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
             },
             "required": false,
-            "description": "Keep evaluations whose classifier confidence is greater than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
+            "description": "Keep evaluations whose decision confidence is greater than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
             "name": "confidenceGt",
             "in": "query"
           },
           {
             "schema": {
               "type": "number",
-              "description": "Keep evaluations whose classifier confidence is greater than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
+              "description": "Keep evaluations whose decision confidence is greater than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
             },
             "required": false,
-            "description": "Keep evaluations whose classifier confidence is greater than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
+            "description": "Keep evaluations whose decision confidence is greater than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
             "name": "confidenceGte",
             "in": "query"
           },
           {
             "schema": {
               "type": "number",
-              "description": "Keep evaluations whose classifier confidence is less than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
+              "description": "Keep evaluations whose decision confidence is less than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
             },
             "required": false,
-            "description": "Keep evaluations whose classifier confidence is less than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
+            "description": "Keep evaluations whose decision confidence is less than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
             "name": "confidenceLt",
             "in": "query"
           },
           {
             "schema": {
               "type": "number",
-              "description": "Keep evaluations whose classifier confidence is less than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
+              "description": "Keep evaluations whose decision confidence is less than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
             },
             "required": false,
-            "description": "Keep evaluations whose classifier confidence is less than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
+            "description": "Keep evaluations whose decision confidence is less than or equal to this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400.",
             "name": "confidenceLte",
             "in": "query"
           },
@@ -32266,13 +32653,28 @@
               "type": "string",
               "enum": [
                 "LLM_JUDGE",
+                "DECISION",
                 "CLASSIFIER"
               ],
               "default": "LLM_JUDGE",
-              "description": "Which kind of model to list. LLM_JUDGE lists the judge models of LLM-as-a-judge metrics, CLASSIFIER the decision models of classifier metrics."
+              "description": "Which kind of model to list. LLM_JUDGE lists the judge models of LLM-as-a-judge metrics, DECISION the decision models of decision metrics. `CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
+              "x-deprecated-values": [
+                {
+                  "value": "CLASSIFIER",
+                  "x-sunset": "2028-01-17",
+                  "x-replacement": "DECISION"
+                }
+              ]
             },
             "required": false,
-            "description": "Which kind of model to list. LLM_JUDGE lists the judge models of LLM-as-a-judge metrics, CLASSIFIER the decision models of classifier metrics.",
+            "description": "Which kind of model to list. LLM_JUDGE lists the judge models of LLM-as-a-judge metrics, DECISION the decision models of decision metrics. `CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
+            "x-deprecated-values": [
+              {
+                "value": "CLASSIFIER",
+                "x-sunset": "2028-01-17",
+                "x-replacement": "DECISION"
+              }
+            ],
             "name": "kind",
             "in": "query"
           },
@@ -34464,8 +34866,8 @@
         "tags": [
           "metrics"
         ],
-        "summary": "Score a draft Classifier question on a sample",
-        "description": "Runs the Classifier on a question that has not been saved, against a session, one turn of it, or typed values. Runs under the classifier model named by `evaluatorModelName`, or under the one selectable classifier model when none is named. Persists nothing and consumes no credits. Answers 400 where the deployment does not enable Classifier metrics, for a name that is not a selectable classifier model, and when none is named while several are selectable.",
+        "summary": "Score a draft decision question on a sample",
+        "description": "Runs the decision model on a question that has not been saved, against a session, one turn of it, or typed values. Runs under the decision model named by `evaluatorModelName`, or under the one selectable decision model when none is named. Persists nothing and consumes no credits. Answers 400 where the deployment does not enable decision metrics, for a name that is not a selectable decision model, and when none is named while several are selectable.",
         "security": [
           {
             "bearerAuth": []
@@ -34488,7 +34890,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClassifierDraftTestResult"
+                  "$ref": "#/components/schemas/DecisionDraftTestResult"
                 }
               }
             }
@@ -34544,7 +34946,7 @@
             }
           },
           "502": {
-            "description": "The evaluator or the classifier model could not score the draft",
+            "description": "The evaluator or the decision model could not score the draft",
             "content": {
               "application/json": {
                 "schema": {
@@ -34558,12 +34960,12 @@
     },
     "/metrics/bulk": {
       "post": {
-        "operationId": "createClassifierMetrics",
+        "operationId": "createDecisionMetrics",
         "tags": [
           "metrics"
         ],
-        "summary": "Create several Classifier metrics at once (classifier metrics only)",
-        "description": "Creates CLASSIFIER metrics only. Each item takes a `classifierQuestion` and an optional `evaluatorModelName`, and no source or judge prompt. To create metrics of any source in one call, use `POST /metrics/batch`. Each metric gets the classifier model its item names, or the one selectable classifier model when the item names none, and is linked to the specifications it names. All or nothing, so a refused item creates no metric and no link. A name already used in the organization is refused with every taken name quoted in the message. Answers 400 where the deployment does not enable Classifier metrics, for a name that is not a selectable classifier model, and for an item that names none while several are selectable.",
+        "summary": "Create several decision metrics at once",
+        "description": "Creates DECISION metrics only. Each item takes a `decisionQuestion` and an optional `evaluatorModelName`, and no source or judge prompt. To create metrics of any source in one call, use `POST /metrics/batch`. Each metric gets the decision model its item names, or the one selectable decision model when the item names none, and is linked to the specifications it names. All or nothing, so a refused item creates no metric and no link. A name already used in the organization is refused with every taken name quoted in the message. Answers 400 where the deployment does not enable decision metrics, for a name that is not a selectable decision model, and for an item that names none while several are selectable.",
         "security": [
           {
             "bearerAuth": []
@@ -34575,7 +34977,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateClassifierMetricsBody"
+                "$ref": "#/components/schemas/CreateDecisionMetricsBody"
               }
             }
           }
@@ -34661,20 +35063,20 @@
         }
       }
     },
-    "/metrics/{id}/classifier-conversion": {
+    "/metrics/{id}/decision-conversion": {
       "post": {
-        "operationId": "proposeClassifierConversion",
+        "operationId": "proposeDecisionConversion",
         "tags": [
           "metrics"
         ],
-        "summary": "Propose Classifier metrics for an LLM judge metric",
-        "description": "Splits an LLM judge (PARTIAL_PROMPT) metric's judge prompt into one classifier question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the source metric unchanged. Create the proposals with `POST /metrics/bulk`. Answers 400 where the deployment does not enable Classifier metrics.",
+        "summary": "Propose decision metrics for an LLM judge metric",
+        "description": "Splits an LLM judge (PARTIAL_PROMPT) metric's judge prompt into one decision question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the source metric unchanged. Create the proposals with `POST /metrics/bulk`. Answers 400 where the deployment does not enable decision metrics.",
         "security": [
           {
             "bearerAuth": []
           }
         ],
-        "x-cli-name": "propose-classifier-conversion",
+        "x-cli-name": "propose-decision-conversion",
         "parameters": [
           {
             "schema": {
@@ -34690,11 +35092,115 @@
         ],
         "responses": {
           "200": {
-            "description": "The proposed classifier metrics",
+            "description": "The proposed decision metrics",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClassifierConversion"
+                  "$ref": "#/components/schemas/DecisionConversion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The metrics generator could not split the judge prompt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics/{id}/classifier-conversion": {
+      "post": {
+        "operationId": "proposeClassifierConversion",
+        "tags": [
+          "metrics"
+        ],
+        "summary": "Propose decision metrics for an LLM judge metric (deprecated)",
+        "description": "Deprecated: call `POST /metrics/{id}/decision-conversion`, which answers the same body. Splits an LLM judge (PARTIAL_PROMPT) metric's judge prompt into one decision question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the source metric unchanged. Create the proposals with `POST /metrics/bulk`. Answers 400 where the deployment does not enable decision metrics.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "propose-classifier-conversion",
+        "deprecated": true,
+        "x-sunset": "2028-01-17",
+        "x-replacement": "proposeDecisionConversion",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The LLM judge (PARTIAL_PROMPT) metric to convert",
+              "example": "metric_123"
+            },
+            "required": true,
+            "description": "The LLM judge (PARTIAL_PROMPT) metric to convert",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The proposed decision metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionConversion"
                 }
               }
             }
@@ -35633,15 +36139,30 @@
                   "GEVAL",
                   "DEEPEVAL",
                   "DETERMINISTIC",
+                  "DECISION",
                   "CLASSIFIER"
                 ]
               },
-              "description": "Filter by metric sources"
+              "description": "Filter by metric sources. `CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
+              "x-deprecated-values": [
+                {
+                  "value": "CLASSIFIER",
+                  "x-sunset": "2028-01-17",
+                  "x-replacement": "DECISION"
+                }
+              ]
             },
             "required": false,
-            "description": "Filter by metric sources",
+            "description": "Filter by metric sources. `CLASSIFIER` is the deprecated name of `DECISION`, accepted until 2028-01-17.",
             "style": "form",
             "explode": true,
+            "x-deprecated-values": [
+              {
+                "value": "CLASSIFIER",
+                "x-sunset": "2028-01-17",
+                "x-replacement": "DECISION"
+              }
+            ],
             "name": "sources",
             "in": "query"
           },
@@ -36705,20 +37226,20 @@
         }
       }
     },
-    "/v2/revisions/{id}/classifier-conversion": {
+    "/v2/revisions/{id}/decision-conversion": {
       "post": {
-        "operationId": "proposeRevisionClassifierConversion",
+        "operationId": "proposeRevisionDecisionConversion",
         "tags": [
           "revisions"
         ],
-        "summary": "Propose Classifier metrics for an LLM judge revision",
-        "description": "Splits the judge prompt of an LLM judge (PARTIAL_PROMPT) revision into one classifier question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the revision unchanged. Answers 400 where the deployment does not enable Classifier metrics. The id is a revision id. A metric id answers 404.",
+        "summary": "Propose decision metrics for an LLM judge revision",
+        "description": "Splits the judge prompt of an LLM judge (PARTIAL_PROMPT) revision into one decision question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the revision unchanged. Answers 400 where the deployment does not enable decision metrics. The id is a revision id. A metric id answers 404.",
         "security": [
           {
             "bearerAuth": []
           }
         ],
-        "x-cli-name": "propose-classifier-conversion",
+        "x-cli-name": "propose-decision-conversion",
         "x-stability-level": "alpha",
         "parameters": [
           {
@@ -36736,11 +37257,117 @@
         ],
         "responses": {
           "200": {
-            "description": "The proposed classifier metrics",
+            "description": "The proposed decision metrics",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClassifierConversion"
+                  "$ref": "#/components/schemas/DecisionConversion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The metrics generator could not split the judge prompt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/classifier-conversion": {
+      "post": {
+        "operationId": "proposeRevisionClassifierConversion",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Propose decision metrics for an LLM judge revision (deprecated)",
+        "description": "Deprecated: call `POST /v2/revisions/{id}/decision-conversion`, which answers the same body. Splits the judge prompt of an LLM judge (PARTIAL_PROMPT) revision into one decision question per condition, plus one question listing them all when every condition always applies. Persists nothing, consumes no credits, and leaves the revision unchanged. Answers 400 where the deployment does not enable decision metrics. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "propose-classifier-conversion",
+        "deprecated": true,
+        "x-sunset": "2028-01-17",
+        "x-replacement": "proposeRevisionDecisionConversion",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The proposed decision metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionConversion"
                 }
               }
             }
