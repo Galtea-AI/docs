@@ -50,6 +50,8 @@ A metric runs on one judge model. In an EU-only organization, that judge needs a
 
 A metric whose judge Galtea has not checked yet keeps running until the check says the judge has no EU deployment.
 
+A judge has one name in every organization. Its EU deployment can retire on another date than its other deployments, so Galtea warns an EU-only organization with the date of the EU deployment. Each evaluation records the region it ran in, as `dataRegion` in the API.
+
 A classifier metric runs on a decision model, and the same rules apply to it. A decision model has an EU deployment when the model itself or its EU copy answers in the EU. The decision model picker offers only those, and the metric shows as **Unavailable** with the name of the decision model in the reason.
 
 ## What a switch means

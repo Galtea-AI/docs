@@ -1,0 +1,110 @@
+---
+title: 'Listing Evaluations'
+sidebarTitle: "List"
+description: "List all evaluations associated with a specific session."
+---
+
+import { Deprecated } from '/v5.19/snippets/version-tags.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/sdk/api/evaluation/list).
+</Warning>
+
+## Returns
+Returns a list of [Evaluation](/v5.19/concepts/product/version/session/evaluation) objects.
+
+## Example
+```python
+evaluations = galtea.evaluations.list(session_id=session_id)
+```
+
+## Parameters
+<ResponseField name="id" type="str | list[str]" default="None">
+  The ID or IDs of the evaluation(s) to retrieve.
+</ResponseField>
+<ResponseField name="session_id" type="str | list[str]" default="None">
+  The ID or IDs of the session(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="version_id" type="str" default="None">
+  The ID of the version for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="test_case_id" type="str | list[str]" default="None">
+  The ID or IDs of the test case(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="dataset_id" type="str | list[str]" default="None">
+  The ID or IDs of the dataset(s) for which you want to list evaluations.
+
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
+</ResponseField>
+<ResponseField name="metric_id" type="str | list[str]" default="None">
+  The ID or IDs of the metric(s) for which you want to list evaluations.
+</ResponseField>
+<ResponseField name="status" type="str | list[str]" default="None">
+  Filter by evaluation status(es). Valid values are `'PENDING'`, `'PENDING_HUMAN'`, `'SUCCESS'`, `'FAILED'`, `'SKIPPED'`, `'CANCELLED'`, `'OUTDATED'`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+</ResponseField>
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter evaluations created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter evaluations created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_created_at`.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort evaluations by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="sort_by_score" type="string" optional>
+  Sort evaluations by score. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of evaluations to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="10000" optional>
+  Maximum number of evaluations to return in a single request.
+  
+  **Default:** `10000`
+</ResponseField>
+<ResponseField name="user_id" type="str | list[str]" default="None">
+  Filter by the ID of the user who launched the evaluation. Null for a monitor-dispatched evaluation. This is an additional filter; it does not satisfy the scoping requirement below.
+</ResponseField>
+<ResponseField name="run_id" type="str | list[str]" default="None">
+  The ID or IDs of the [Runs](/v5.19/concepts/product/run) that launched the evaluations to retrieve. A monitor-dispatched evaluation belongs to no run, so it never matches.
+</ResponseField>
+<ResponseField name="include_excluded_from_analytics" type="bool" default="False">
+  Keyword-only. Include evaluations whose metric revision is excluded from analytics. These results keep their score and reason, but they do not feed any analytics number. See [Metrics](/v5.19/concepts/metric).
+</ResponseField>
+<ResponseField name="score_gt" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is greater than this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="score_gte" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is greater than or equal to this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="score_lt" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is less than this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="score_lte" type="float" default="None">
+  Keyword-only. Keep evaluations whose judge score is less than or equal to this value, on the 0 to 1 scale. This is the judge's score, not the human review. An evaluation with no judge score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_gt" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is greater than this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_gte" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is greater than or equal to this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_lt" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is less than this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="human_score_lte" type="float" default="None">
+  Keyword-only. Keep evaluations whose human review score is less than or equal to this value, on the 0 to 1 scale. An evaluation with no human score never matches. A value outside 0 to 1 raises `ValueError`.
+</ResponseField>
+<ResponseField name="passed" type="bool" default="None">
+  Keyword-only. `True` keeps the evaluations whose score reaches their metric's pass threshold, and `False` keeps the ones below it. An evaluation with no result never matches either value.
+</ResponseField>
+<Tip>
+  To match one exact score, pass the same value as both inclusive bounds: `score_gte=0.5, score_lte=0.5` for the judge score, or `human_score_gte=0.5, human_score_lte=0.5` for the human score.
+</Tip>
+<Note>
+  At least one of the scoping filters (`id`, `session_id`, `version_id`, `test_case_id`, `dataset_id`, `metric_id`, `run_id`) described above must be passed to the method. `status`, `user_id`, `passed` and the score bounds are additional filters and do **not** satisfy this requirement on their own.
+</Note>

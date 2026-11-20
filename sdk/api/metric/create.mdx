@@ -118,24 +118,10 @@ human_transfer_metric = galtea.metrics.create(
   - `"GPT-4o"`
   - `"Gemini-3.5-Flash"`
   - `"Gemini-3.1-Flash-Lite"`
-  - `"Gemini-2.5-Pro"`
-  - `"Gemini-2.5-Flash"`
-  - `"Gemini-2.5-Flash-Lite"`
   - `"DeepSeek-V4-Pro"`
   - `"DeepSeek-V4-Flash"`
 
-  **EU data zone.** These are the same models, served from European infrastructure. Use them when your data must stay in the EU:
-  - `"eu.claude-sonnet-4-6"`
-  - `"eu.claude-sonnet-4-5"`
-  - `"eu.claude-haiku-4-5"`
-  - `"eu.gpt-5.5"`
-  - `"eu.gpt-5.4"`
-  - `"eu.gpt-5.1"`
-  - `"eu.gpt-5"`
-  - `"eu.gpt-4.1"`
-  - `"eu.gpt-4.1-mini"`
-  - `"eu.gpt-4o"`
-  - `"eu.gpt-4o-mini"`
+  **EU-only organizations.** Use the same names. In an organization whose [data region](/security/data-region) is EU, every call goes to the model's deployments in the EU, and the judge picker lists only the models that have one.
 
   Model names are case-insensitive.
 
@@ -194,9 +180,9 @@ human_transfer_metric = galtea.metrics.create(
   The lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A session below it is skipped. When omitted, the API uses `0.5`, and `metric.applicability_threshold` reads `None`. The API refuses it for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and for a metric that scores only `traces`. It is fixed when you create the metric: to use another one, create a revision of the metric. See [Applicability check](/concepts/metric#applicability-check).
 </ResponseField>
 <ResponseField name="user_group_ids" type="list[string]" optional>
-  A list of [user group](/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`. Each group must belong to your organization.
+  A list of [user group](/concepts/user-group) IDs to associate with this metric. Only applicable when `source` is `human_evaluation`, and required then: the API refuses a Human Evaluation metric with no group. Each group must belong to your organization.
   - Only users in the linked groups can annotate evaluations for this metric.
-  - A metric with no linked group reaches nobody: its pending evaluations show up for no one, and its metric page shows a warning.
+  - A metric left with no linked group reaches nobody: its pending evaluations show up for no one, and its metric page shows a warning.
 </ResponseField>
 <ResponseField name="tags" type="list[string]" optional>
   Tags to categorize the metric.

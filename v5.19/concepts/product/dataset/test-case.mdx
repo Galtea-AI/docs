@@ -1,0 +1,297 @@
+---
+title: "Test Case"
+sidebarTitle: "Overview"
+description: "A single challenge for evaluating product performance"
+---
+
+import JudgeFileRule from '/v5.19/snippets/judge-file-rule.mdx';
+
+import ConceptsOverviewCard from '/v5.19/snippets/cards/concepts-overview-card.mdx';
+import SDKTestCaseServiceCard from '/v5.19/snippets/cards/sdk-test-case-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/concepts/product/dataset/test-case).
+</Warning>
+
+## What is a Test Case?
+
+A test case in Galtea is a challenge designed to evaluate the performance of a particular [version](/v5.19/concepts/product/version) of a [product](/v5.19/concepts/product).
+
+It represents a specific set of *inputs* that must be sent to the product's AI model to generate an output. It also can define an *expected output* that can be used to assess the product's capabilities.
+
+<Info>
+  Test cases are part of a [dataset](/v5.19/concepts/product/dataset), so you'll need to create a dataset first. You can do this in the Galtea dashboard or using the SDK.
+</Info>
+
+You can **create**, view and manage your test cases on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/v5.19/sdk/api/test-case/service). A dataset created with the *Add test cases manually* origin starts empty and is filled this way, one test case at a time.
+
+## Using Test Cases in Evaluations
+
+Test cases are used with [evaluations](/v5.19/concepts/product/version/session/evaluation). Sessions are created automatically when running evaluations.
+
+<Card title="Create an Evaluation" icon="badge-check" iconType="solid" href="/v5.19/concepts/product/version/session/evaluation">
+  Learn how to use datasets in evaluations
+</Card>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage test cases programmatically. 
+
+<SDKTestCaseServiceCard />
+
+## Test Case Properties
+
+<ResponseField name="Input" type="Text" required>
+  The input data used for inference on the LLM product's version. This is the question or prompt that will be sent to your AI model. **Example**: "What is the operating system of the Samsung Galaxy A8?"
+
+  When an [Input Schema](/v5.19/concepts/product/endpoint-connection-input-schema) is defined on the endpoint connection, inputs become structured JSON objects with multiple typed fields instead of a single string.
+
+  An input can also carry uploaded files, for products that read documents. See [File inputs](#file-inputs) below.
+</ResponseField>
+
+### File inputs
+
+A test case input can attach one or more files beside the text, or carry only files and no text at all. Use this when the thing you are testing is a document: a scanned contract, an invoice, a report.
+
+With the SDK, name the local files and it uploads them for you:
+
+```python
+test_case = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    input="Summarize this contract",
+    input_file_paths=["path/to/lease-agreement.pdf"],
+)
+```
+
+Leave `input` out to create a test case that is only a document:
+
+```python
+document_only = galtea.test_cases.create(
+    dataset_id=dataset.id,
+    input_file_paths=["path/to/lease-agreement.pdf"],
+)
+```
+
+To have Galtea run the inference for you, name the files in your [endpoint connection template](/v5.19/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio). Read the files back from `test_case.input_files` instead when you run your own pipeline, and fetch the bytes with [`galtea.storage.download()`](/v5.19/sdk/api/storage/download), passing the `AttachedFile` straight from `test_case.input_files`. A [file part of your own](/v5.19/concepts/product/version/session/content-parts#your-own-parts) is listed there too; fetch it with your own client. [Evaluate Document Inputs](/v5.19/sdk/tutorials/evaluate-document-inputs) walks that whole round trip, from the CSV to a scored answer.
+
+To attach files to many test cases at once, add an `input_file_paths` column to your dataset CSV. Separate several paths with `;` or `|`. The SDK uploads each file and rewrites the row before the file is sent, so the column never reaches the platform and the paths stay private:
+
+```csv
+input,expected_output,input_file_paths
+Summarize this contract,A 12-month lease at 900 EUR,lease-agreement.pdf
+,Total due 1450 EUR,invoice.pdf;annex.pdf
+```
+
+A cell may also hold a Galtea file reference from an earlier upload instead of a local path. That file is attached as it is, so one document can serve several datasets without being uploaded again. The SDK refuses any other URL in the cell, before it uploads anything.
+
+```python
+dataset = galtea.datasets.create(
+    name=f"document-dataset-{run_identifier}",
+    type="ACCURACY",
+    product_id=product_id,
+    dataset_file_path="path/to/document_dataset.csv",
+)
+```
+
+Through the API instead, upload each file first and send the storage URI the upload returned. The files ride the input as a `content` array:
+
+```json
+{
+  "user_message": "Summarize this contract",
+  "content": [
+    { "type": "file", "uri": "s3://bucket/files/org_123/2f6c0a9e41b84d7f9c3e5a1b2d4f6e80.pdf" }
+  ]
+}
+```
+
+Galtea reads each element of `content` on its own. A Galtea file is a `file` part whose `uri` names the key an upload returned. Galtea checks it and stores it without its upload signature. Every other element is yours and is stored as sent, such as a file URL on your own host, an `image_url` part or a `file` part with an OpenAI `file_id`. A judge reads such an element as its JSON text, in its place in the input. A Galtea file of another organization, or one that no longer exists, is refused with a `400`. See [Content Parts](/v5.19/concepts/product/version/session/content-parts).
+
+`mimeType` is filled from the stored file. `filename` is filled too on Galtea Cloud, so the download offers the name you uploaded rather than a random id. A self-hosted deployment on Azure Blob Storage cannot keep that name, so send `filename` yourself there. Your own values override the filled ones, with one exception: Galtea measures `sizeBytes` from the stored file when it saves the part, and ignores a value you send for it. The 20 MB limit below is read from that measurement. A part that an older release saved can still hold the size its sender gave. The SDK sends `filename` and `mimeType`, read from the local file, so they are right on every deployment.
+
+You can also attach a file from the dashboard, on the test case create and update forms. An attached image shows a thumbnail; click it to view the image at full size. If you have no dataset to add the test case to, create one with the [manual origin](/v5.19/concepts/product/dataset#dataset-origin).
+
+These limits apply to Galtea files, and each one is refused with a clear error rather than failing later:
+
+- **20 MB in total, and at most 20 files, per test case input.** There is no per-file size limit.
+- **These file types only**: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. The type is read from the file name. Audio belongs on a voice test case instead.
+- **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
+- **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/v5.19/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each uploaded file to your endpoint. Your own `file` parts, such as a URL on your own host, are not delivered (see [Content Parts](/v5.19/concepts/product/version/session/content-parts#your-own-parts)). Without it, the run is refused rather than sent without the document.
+
+**Inline file bytes never reach a judge as text.** A file sent inline in a test case or a trace, as a `data:` URI of any length, reaches an LLM-as-a-judge in one of three ways:
+
+- **A text file**, such as CSV, JSON or plain text, arrives as its text, between `[inline file: <type>, <size> bytes]` and `[end of inline file]`. Galtea decides it is text from its bytes, not its declared type, and reads the `charset` it declares, UTF-8 by default. Inside JSON, including JSON written inside a reply, it arrives escaped as a JSON string. It arrives as the marker below instead when that escaping would make it over four times longer.
+- **Any other file**, such as an image or a compressed PDF, arrives as `[inline bytes dropped: <type>, <size> bytes]`.
+- **A file that Galtea stored**, because the deployment copies inline media in traces, arrives as `[File N]`. A stored image or PDF is also sent to the judge like any Galtea file, and a stored audio or other file is not (see [Content Parts](/v5.19/concepts/product/version/session/content-parts#files-and-evaluation)).
+
+Metrics that compare values exactly still read the stored value.
+
+A file test case runs as a single turn, so a metric that reads the input reads the file.
+
+<JudgeFileRule />
+
+You can also score the run with a metric that reads only the output, such as a JSON Field Match metric comparing your output field by field.
+
+Editing a test case that has files follows the usual [revision](/v5.19/concepts/product/dataset/test-case#revisions) behaviour: a revision may add or replace files, and the superseded revision keeps its own. Send `input` as the whole object, including the files you want to keep. **The edit must leave at least one `file` part.** Your own `file` parts count; an `image_url` part does not. Plain text is refused, and so is an object with an empty `content`, because either one would turn a document test case into a text one. To get the text-only test case, create it and delete this one. A Galtea file you keep unchanged is not read from storage again, so the edit succeeds even when the file was deleted after you attached it.
+
+<ResponseField name="Expected Output" type="Text">
+  The expected output for the evaluation. This represents the ideal response you want your AI model to provide. **Example**: "The operating system of the Samsung Galaxy A8 is Android 8.1." For a JSON object, a field can hold a [field rule](/v5.19/concepts/metric/json-field-match#field-rules) (`$norm`, `$regex`, `$num` or `$date`) instead of a value. Rules work only in the four JSON Field Match metrics. Every other metric reads a rule as plain JSON text.
+</ResponseField>
+
+<ResponseField name="Context" type="Text">
+  Test case-specific context that provides context to the model. It can be the past conversation or any other relevant information. Do not mistake for the system prompt/few-shot examples; those should be defined in the product's [version](/v5.19/concepts/product/version) unless they change on an interaction basis.
+</ResponseField>
+
+<ResponseField name="Variant" type="Text">
+  A label that helps categorize the test case (e.g., "original", "paraphrased", "incorrect"). This corresponds to the `tag` column in an uploaded dataset CSV file and is used for organizing and filtering test cases.
+</ResponseField>
+
+<ResponseField name="Source" type="Text">
+  The original source text used to create the test case. This can be helpful for tracing where test cases originated from, especially when generating test cases from documentation or other reference materials.
+</ResponseField>
+
+<ResponseField name="Source File" type="Text">
+  The name of the file from which the test case was extracted. This is populated when test cases are generated from uploaded documents (e.g., ZIP or PDF files containing ground truth data).
+</ResponseField>
+
+<ResponseField name="Human Reviewed" type="Boolean">
+  Indicates if a test case has been manually reviewed and approved by a user. This is useful for tracking which test cases are considered reliable and validated. The system stores the ID of the user who reviewed the test case, upon creation or update, the one who created or updated the test case is set as the reviewer.
+</ResponseField>
+
+<ResponseField name="Is Augmented" type="Boolean">
+  Indicates if a test case was generated through the augmentation process. Test cases created via the generate-from-few-shots augmentation feature will have this flag set to `true`, while manually created test cases will have it set to `false`.
+</ResponseField>
+
+<ResponseField name="User Score" type="Integer" optional>
+  User vote for the test case quality. Possible values are `1` (upvote), `-1` (downvote), or `0` (unreviewed).
+</ResponseField>
+
+<ResponseField name="User Score Reason" type="Text" optional>
+  A justification for the user score, providing context on why a test case was downvoted (or upvoted).
+</ResponseField>
+
+<ResponseField name="Confidence" type="Float" optional>
+  The confidence level of the test case.
+</ResponseField>
+
+<ResponseField name="Confidence Reason" type="Text" optional>
+  A justification for the confidence level of the test case.
+</ResponseField>
+
+<ResponseField name="Gender" type="Text" optional>
+  The persona's gender, either `MALE` or `FEMALE`. In voice (phone) evaluations it selects the male or female synthesized caller voice; text evaluations ignore it, and when unset the voice uses the default for the language. For scenario test cases produced by the generator, it is inferred from the user persona.
+</ResponseField>
+
+<ResponseField name="Background Noise Profile" type="Enum" optional>
+  Background noise mixed into the simulated caller's audio when this test case runs over a [phone connection](/v5.19/concepts/product/phone-connection). Only applies to voice datasets; has no effect otherwise.
+  Possible values:
+  - Clip-backed: `office`, `street`, `car`
+  - Synthetic: `white`, `pink`
+
+  If not set explicitly, a test case generated by Galtea or ingested from a CSV file inherits its parent [dataset](/v5.19/concepts/product/dataset)'s background noise at creation time. Must be set together with **Background Noise Level**.
+</ResponseField>
+
+<ResponseField name="Background Noise Level" type="Enum" optional>
+  How loud the background noise is relative to the caller's speech.
+  Possible values: `light`, `medium`, `heavy`. Must be set together with **Background Noise Profile**.
+</ResponseField>
+
+## Scenario-Based Test Case Properties
+
+The following properties apply specifically to test cases of type `BEHAVIOR` used with the [Conversation Simulator](/v5.19/concepts/product/dataset/test-case/conversation-simulator):
+
+<ResponseField name="Goal" type="Text">
+  The objective the simulated user is trying to achieve in a conversation scenario. This defines what the simulated user wants to accomplish during the interaction. **Example**: "Book a flight to New York"
+</ResponseField>
+
+<ResponseField name="User Persona" type="Text">
+  The personality of the simulated user for a conversation scenario. This shapes how the simulated user will behave and communicate during the conversation. **Example**: "A busy professional who values efficiency"
+</ResponseField>
+
+<ResponseField name="Scenario" type="Text">
+  A description of the specific scenario or situation in which the conversation takes place. This provides additional context for the interaction. **Example**: "Flight booking scenario"
+</ResponseField>
+
+<ResponseField name="Input" type="Text">
+  The first message from the simulated user that starts the conversation. If not provided, the simulator will generate an appropriate opening message based on the goal and persona. **Example**: "I need to book a flight"
+</ResponseField>
+
+<ResponseField name="Stopping Criterias" type="Text">
+  Conditions that determine when the conversation should end, separated by `;` or `|`. The conversation will stop when any of these criteria are met. **Example**: "Booking confirmed|Unable to fulfill request"
+</ResponseField>
+
+<ResponseField name="Live Turns to Run" type="Number">
+  The maximum number of turns the simulator runs, on top of the predefined conversation if the test case has one. This prevents conversations from running indefinitely. A 4-turn predefined conversation with **Live Turns to Run** 1 runs one new turn and the session ends with 5. In the CSV file and in the SDK the field is named `max_iterations`. **Example**: 10
+</ResponseField>
+
+## Starting a Scenario from a Conversation
+
+A scenario test case can start from a conversation that already happened. The simulator then continues from that point instead of opening the dialogue itself. Give the conversation in one of two ways, never both in the same request:
+
+<ResponseField name="conversationHistory" type="Array">
+  The turns to store, written out. Each turn holds the user message, the agent answer, or both. Galtea stores them as a **seed session** and returns that session's id in `seedSessionId`. The array itself is never echoed back: read the predefined conversation through the seed session. Sending the array again replaces the predefined conversation. In the SDK the parameter is named `conversation_history`.
+</ResponseField>
+
+<ResponseField name="seedSessionId" type="Text">
+  The id of a session to copy the conversation from. The copy takes that session's turns **and its traces**, so a seed built this way carries the retrieval context and tool calls that the written-out form cannot. The session must belong to the same product as the test case, and every turn in it must be finished. Removed turns at the end of the session are left out of the copy, so a session the agent ended can be copied. A removed turn in the middle of the session is refused.
+
+  In the SDK the parameter and the test case field are both named `seed_session_id`.
+
+  On a response, this field names the test case's own seed session, not the session you copied. Sending a test case body back unchanged is therefore safe: the API reads its own seed id as "leave the conversation alone".
+</ResponseField>
+
+Both fields are only accepted on `SCENARIOS` test cases whose product has at least one version.
+
+### How the run uses it
+
+When you run the test case, Galtea copies the predefined conversation into the run's own session before
+your product answers anything. Your product therefore sees that conversation as history and answers
+the turn after it. The predefined conversation itself is never changed, so every run of the test case
+starts from the same point.
+
+This works the same way whether Galtea calls your product for you, or your own code drives the
+conversation with `galtea.simulator.simulate()`, `galtea.evaluations.run(agent=...)` or
+`galtea sessions generate-message`.
+
+Two rules follow:
+
+- **Live Turns to Run counts only the new turns.** The copied turns are already answered, so they widen
+  the budget instead of spending it.
+- **A seeded test case needs `userPersona`, `goal` and `scenario`.** The run is never on its first
+  turn, so the simulator writes every new user message and cannot fall back to the test case
+  `input`.
+
+Start the run on a session that holds no turn. Galtea refuses a session that already holds turns of
+its own, because the conversation can no longer be placed in front of them. That is why
+`simulate(agent_goes_first=True)` cannot be used with a predefined conversation: it records your agent's
+opening turn first.
+
+## Revisions
+
+Editing a test case's evaluation content (for example its input, expected output, or context) creates a new **revision** instead of changing the existing row. This keeps your evaluation history accurate:
+
+- **Past evaluations stay pinned** to the exact content that produced them. An old score always reflects the test case as it was when that evaluation ran.
+- **The list shows the latest revision** of each test case by default. To also see superseded revisions, open **Filters** and turn on **Include legacy**. They are marked with a `Legacy` status.
+- **The details page links back** with an **Evolved from** link to the revision it was created from.
+- **Outdated evaluations are flagged.** When an evaluation ran against a revision that has since been replaced, it shows an outdated marker next to its score. Run a new evaluation against the current revision for an up-to-date score.
+- **Replay past evaluations in one step.** Right after an edit creates a new revision, a **Re-evaluate with this Test Case** dialog lists the products whose earlier evaluations of this test case can be re-run, all selected by default. Confirming generates fresh responses from your product for the new revision and evaluates them with the same metrics as before. The dialog only appears when at least one product has previous evaluations to replay.
+
+Only edits to content used during evaluation create a revision. Annotation edits (such as your quality vote or marking a test case reviewed) change the row in place and do not create a revision.
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <Card title="Input Schema" icon="brackets-curly" href="/v5.19/concepts/product/endpoint-connection-input-schema">
+    Define structured, multi-field inputs for test case generation.
+  </Card>
+  <Card title="Conversation Simulator" icon="comments" href="/v5.19/concepts/product/dataset/test-case/conversation-simulator">
+    Run multi-turn conversations against scenario-based test cases.
+  </Card>
+  <Card title="Dataset" icon="flask" href="/v5.19/concepts/product/dataset">
+    The datasets that contain these test cases.
+  </Card>
+</CardGroup>
+
+<Note>
+  For Scenarios test cases, only `Goal` and `User Persona` are mandatory. All other scenario properties are optional but can help create more realistic and controlled conversation simulations.
+</Note>

@@ -1,0 +1,274 @@
+---
+title: "Metric"
+sidebarTitle: "Overview"
+description: "Criteria and methods for evaluating AI product performance"
+---
+
+import ConceptsOverviewCard from '/v5.19/snippets/cards/concepts-overview-card.mdx';
+import EvaluationCard from '/v5.19/snippets/cards/evaluation-card.mdx';
+import SDKMetricsServiceCard from '/v5.19/snippets/cards/sdk-metrics-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/concepts/metric).
+</Warning>
+
+## What are Metrics?
+
+Metrics define how Galtea scores your [product's](/v5.19/concepts/product) outputs during [evaluations](/v5.19/concepts/product/version/session/evaluation). Each metric captures one specific quality dimension — factual accuracy, tone, security resilience, or a custom criterion you define.
+
+<Info>
+  Metrics are organization-wide and can be reused across multiple products. You can link metrics to [Specifications](/v5.19/concepts/product/specification) for structured evaluation workflows.
+</Info>
+
+You can **create**, view and manage your metrics on the [Galtea dashboard](https://platform.galtea.ai/) or programmatically using the [Galtea SDK](/v5.19/sdk/api/metric/service).
+
+{/* <!-- VIDEO PLACEHOLDER: Custom metric creation walkthrough (60s)
+<video
+  autoPlay muted loop playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/custom-metric-creation.mp4"
+></video>
+--> */}
+
+## Two Families of Metrics
+
+- **Deterministic metrics** apply rule-based logic — string matching, numerical checks, bounding box overlap. Results are consistent and reproducible. Built-in examples: [BLEU](/v5.19/concepts/metric/bleu), [ROUGE](/v5.19/concepts/metric/rouge), [Text Similarity](/v5.19/concepts/metric/text-similarity), [Tool Correctness](/v5.19/concepts/metric/tool-correctness). You can also define your own using the SDK's `CustomScoreEvaluationMetric` class — see [our tutorial](/v5.19/sdk/tutorials/evaluate-with-custom-metrics).
+
+- **Non-deterministic metrics** use an LLM-as-a-judge to assess open-ended qualities like factual accuracy, misuse resilience, and task completion. Galtea's judges are human-aligned and optimized for each evaluation type. You can also [create your own AI Evaluation metrics](/v5.19/concepts/metric/evaluation-types#ai-evaluation) with a custom scoring rubric.
+
+## How Metrics Are Evaluated
+
+Every metric has an [Evaluation Type](/v5.19/concepts/metric/evaluation-types) that determines how scoring happens:
+
+```mermaid
+%%{init: {"theme": "neutral"}}%%
+flowchart TD
+    A[What kind of scoring?] --> B{Automated?}
+    B -->|Yes| C{Rule-based logic?}
+    B -->|No| D[Human Evaluation]
+    C -->|Yes| E[Self-Hosted]
+    C -->|No| F[AI Evaluation]
+    E -->|Run locally, upload score| H[Pre-computed or CustomScoreEvaluationMetric]
+    F -->|LLM judges with your rubric| I[judge_prompt + evaluation_params]
+    D -->|Annotators score via dashboard| G[PENDING_HUMAN → score submitted]
+```
+
+<br />
+
+<CardGroup cols={3}>
+  <Card title="Self-Hosted" icon="server" href="/v5.19/concepts/metric/evaluation-types#self-hosted">
+    Your own logic runs locally; only the score is uploaded.
+  </Card>
+  <Card title="AI Evaluation" icon="robot" href="/v5.19/concepts/metric/evaluation-types#ai-evaluation">
+    An LLM scores responses using a rubric you define.
+  </Card>
+  <Card title="Human Evaluation" icon="user" href="/v5.19/concepts/metric/evaluation-types#human-evaluation">
+    Human annotators score responses using defined criteria.
+  </Card>
+</CardGroup>
+
+## Revisions and Analytics
+
+A metric has one active revision. Creating a revision marks the active revision as `Legacy`, also when you start the new revision from an older one. All revisions of a metric share its name, description, tags, documentation URL and evaluation type. A revision created under another name also keeps that name as its own, and the `/metrics` endpoints show it in place of the metric's name. Renaming a revision in the dashboard or on the `/metrics` routes renames the metric. In the alpha API, `PATCH /v2/revisions/{id}` instead gives that revision alone a name of its own, unique within the metric, and leaves the metric's name as it is. A new revision cannot change the evaluation type. Deleting a metric by its ID deletes all its revisions. Deleting a revision deletes only that revision, with its evaluations and specification links, and the metric too when it has no live revision left. You can delete the active revision on its own only when it is the last revision of the metric. In the dashboard, deleting a metric deletes all its revisions.
+
+Legacy and analytics inclusion are separate states. A legacy revision keeps contributing to scores and coverage unless you exclude it. An exclusion applies to one revision: the other revisions of the metric keep counting, and analytics still show one line for the metric. Use it, for example, to drop the results of a bad run on an older revision.
+
+Alpha: the `/v2/metrics` endpoints (`galtea metrics-v2`) take a metric ID. The `/v2/revisions` endpoints (`galtea revisions`) take a metric ID to list and create revisions, and a revision ID for the other routes: get, rename, export, classifier conversion, replay count and analytics exclusion. To create a revision from an older one, pass its ID as `parentRevisionId`; by default a revision starts from the active one. A create may also pass a `name`, the revision's own name, under the same rules as a rename: `409` when another revision of the metric, a legacy one included, holds it, `400` for "R" followed by digits other than the revision's own label, and no name stored when it equals the metric's name or the revision's own label. A route answers `404` when you send the ID of the other kind. Both may still change. The `/metrics` endpoints keep their shape, with four changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. A lookup by name, such as `names` or an evaluation that names its metrics, checks metric names first, then the own names of active revisions. When two active revisions share that own name, it answers `409`: use the metric ID instead. And a create on `POST /metrics` with `parentMetricId` stores no name on the new revision when the name is "R" followed by digits or another live revision of the metric holds it, and still answers `201`.
+
+After you save a revision, the dashboard shows how many results and products the earlier revision affects. A user limited to the products their user groups grant sees counts that cover only those products, but the exclusion applies to every product. The default keeps those results in analytics. Select **Exclude from analytics** only when you want both the scores and coverage to stop counting them.
+
+You can reverse this decision from the metric's actions menu. Exclusion does not delete or change any evaluation. Each evaluation keeps its score, reason, and metric revision.
+
+The metric list hides excluded revisions by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. To inspect earlier revisions, open **Filters** and turn on **Include legacy**. Add the **Analytics** column from the **Columns** menu to see whether each revision is `Included` or `Excluded`.
+
+When a product has excluded results, the Details view of its Analytics page states how many results are outside the reported numbers. The link opens the evaluation list with **Show excluded from analytics** active. Excluded revisions do not appear in the Analytics metric filter because they contribute no scores to that page. The page's **Last Successful** date still counts their evaluations, because it reports when an evaluation last ran.
+
+## Pass threshold
+
+Every metric has a pass threshold: the score, from 0 to 1, at or above which an evaluation passes. When you do not set one, it is 0.5. Galtea's own metrics use 0.5. An evaluation with no reported score has no result, so it neither passes nor fails.
+
+You set the threshold when you create the metric. It cannot change afterwards, so to use another one, create a revision of the metric. In the dashboard, the threshold is a percent in **Advanced Options** of the create form, prefilled with 50, and it accepts decimals. A revision starts with the threshold of the revision it comes from. Score pills are green at or above the threshold and red below it.
+
+## Applicability check
+
+Some metrics apply to few sessions. A jailbreak metric, for example, applies only to the sessions where a user tries a jailbreak. If the judge scores every session, it scores many sessions the metric was not made for. Those sessions lower the pass rate or pass for free, and each judge call costs credits.
+
+The applicability check stops this. Before the judge runs, a decision model answers one Yes/No question: does the conversation contain what this metric evaluates? When the probability that it does is below the metric's applicability threshold, the evaluation is skipped. The check runs before a JSON Field Match metric reads a test case's field rules, so a session it skips never reports an error in them. The decision model sees each rule as raw JSON.
+
+A [monitor](/v5.19/concepts/product/monitor) runs the check for each production session, after the data check and before the judge. See [How a session is evaluated](/v5.19/concepts/product/monitor#how-a-session-is-evaluated) for the phases and the skip rules.
+
+### Settings
+
+Two settings control the check. Both are fixed when you create the metric. To change one, create a revision of the metric. A revision starts with the values of the revision it comes from, when the check runs for both revisions.
+
+- **Run the check on** (`applicability_scope`) sets which sessions get the check. The options are `PRODUCTION` (production sessions), `DEVELOPMENT` (development sessions), `ALL` and `NONE` (no check). The default is `PRODUCTION`. Development is off by default, because a skip inside a regression suite can hide a test that should run.
+- **Minimum certainty** (`applicability_threshold`) is the lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A higher value skips more sessions. The default is 0.5. A session at the threshold is judged. A session below it is skipped.
+
+In the dashboard, both settings are in **Advanced Options** of the create form. Setting **Run the check on** to **Off** hides **Minimum certainty**. The form hides both settings for a metric that has no check. The dashboard shows **Minimum certainty** as a percent from 0 to 100, prefilled with 50. The SDK and the API take a probability from 0 to 1.
+
+The check covers four kinds of metric: AI Evaluation, Classifier, deterministic, and the DeepEval-based metrics of Galtea. A Self-Hosted, Human Evaluation or G-Eval (deprecated) metric has no check: the scope is `NONE`, and the API refuses any other value. The decision model never reads traces. A metric that scores `traces` and another field is checked without traces: on each turn's `input` and `actual_output` and its other fields. A metric that scores only `traces` has no check: its scope is `NONE`, and the API refuses any other scope and any threshold. For a classifier metric, the fields it scores are the placeholders of its question. Existing metrics got `PRODUCTION` when the check covers their kind, unless they score only `traces`. The others kept `NONE`.
+
+<Note>
+  The check runs only where your deployment enables it. Where it is off, every session is judged and the two settings have no effect. On an on-premise deployment, set the environment variable `METRIC_APPLICABILITY_CHECK` of the API to `off` (the default), `shadow` or `enforce`, and set `VITE_METRIC_APPLICABILITY_CHECK_ENABLED` of the dashboard to `true` to show the two settings. The check needs the LLM gateway (LiteLLM) to route to the decision model. Without that route, every session is judged as if there were no check. In `shadow` mode, the check runs and writes what it would skip to the evaluator logs, but every session is still judged. Use it to measure the skip rate of a metric before you enforce.
+</Note>
+
+### What the check reads
+
+The decision model reads the `input` and the `actual_output` of each turn, the other fields the metric scores (for example `retrieval_context`, `tools_used` or `expected_output`), and the name and description of the metric. When files are sent to the judge, it also reads the text of each text file on the input and output, and on the retrieval context when the metric scores it. It also reads the metric's criteria: the judge prompt, or the question of a [classifier](/v5.19/concepts/metric/classifier) metric. For an AI Evaluation metric whose judge prompt names a field, such as tool calls, that field counts as scored. It never reads traces: one turn's traces can be longer than everything the decision model reads at once. It has no size limit of its own. When a session is too long for the decision model, the metric is judged. Galtea sends this data to the provider of the deployment's decision model. See [Data processing](/v5.19/concepts/metric/classifier#data-processing).
+
+The check never blocks an evaluation by failing. The metric is judged as if there were no check when:
+
+- the decision model is not available, or it does not answer in time,
+- the conversation is too long for the decision model,
+- the probability is below the threshold, but the conversation is longer than about 2,000 tokens. The answer is less reliable on a long conversation, so Galtea does not skip on it.
+
+The check costs no credits.
+
+### A skipped evaluation
+
+A skipped evaluation has no score and no judge call, and it costs no credits. Its error message gives the reason, for example: "The metric does not apply to this session: the probability that it applies is 12%, below its applicability threshold of 50%."
+
+A retry would ask the same question about the same session, so `canRetry` is `false`. When the skip is a session's latest evaluation in its metric family, the session stays out of that family's count in the monitor's alert rules, unless a reviewer scored the evaluation. See [Alert rules](/v5.19/concepts/product/monitor#rule-types). Analytics still count the skip in its skipped total.
+
+For a metric that applies to few sessions, raise the monitor's sampling percentage, so that enough sessions reach the check.
+
+To correct a skip, use one of these:
+
+- A reviewer scores the evaluation. The [human score](/v5.19/concepts/product/version/session/evaluation#param-human-score) turns the skipped row into a scored one.
+- Create a revision of the metric with **Off** as the scope, and evaluate the session again with it.
+
+## Optimization review
+
+**Optimize** writes an improved judge prompt into a new revision of the metric, with the metric's name. While it runs, that revision's page shows its progress, and you can leave the page. Unlike other revisions, it does not mark the original `Legacy`. When the optimizer returns a different prompt, the revision shows **Ready for review**, and its page shows the changes and both prompts.
+
+- **Apply optimization** marks the original revision `Legacy`. The optimized revision joins the original's specifications. It already shares the metric's name, description, tags and user groups. Monitors use it from their next run.
+- **Keep original** leaves the original unchanged and marks the optimized revision **Not applied**. You can then optimize again.
+
+The optimizer judges each prompt at the metric's pass threshold, and the optimized revision keeps that threshold.
+
+A metric runs one optimization at a time. An optimization that fails stays in the revision history as `Failed` and can never score, and you can start another at once.
+
+To optimize a metric, a user needs both `metric.create` and `metric.update` in their user group lists, because **Apply optimization** and **Keep original** each need `metric.update`, and while an optimization waits for review, you cannot optimize the original again. You also cannot start a new revision from the optimized revision while it is running or waiting for review. A result that nobody settles keeps blocking the next optimization of the original.
+
+From 30 annotated evaluations, a run keeps some of them as a validation set. The optimizer does not train on the validation set. An evaluation kept for validation stays out of training in later attempts of the same metric. The **Optimize** confirmation shows how many evaluations go to the training set and how many to the validation set. A user limited to the products their user groups grant sees counts that cover only those products. With fewer than 30 annotated evaluations, there is no validation set unless an earlier attempt kept one. Optimize is disabled when the evaluations kept for validation leave too few to train on.
+
+Expand **Advanced Options** in the **Optimize** confirmation to narrow a run. **Strategies** sets which rewrites the optimizer tries: **Fix false passes**, **Fix false failures**, **Add a scoring rubric**, **Simplify the prompt** and **Broaden the wording**. Each step asks for one rewrite per selected strategy and keeps the best one. **Maximum steps** sets how many steps the run may take, from 1 to 10, and defaults to 10. A run stops earlier when the prompt stops improving. With every strategy selected and 10 steps, the run is the same as one without options. The review card, the No improvement notice and the page of a declined or applied revision show the steps the run used out of its maximum and the strategies it ran. An attempt that did not report them shows **Not reported**.
+
+The review compares the original and the optimized prompt on both sets. For each prompt, it shows how many of the evaluations that both prompts scored agree with your annotation, and the alignment when it is defined. A declined or applied revision keeps these results on its page. The validation result is evidence, not a guarantee: a small validation set gives a rough estimate.
+
+Only the active revision of a metric can be optimized. Through the API, call `POST /metrics/{id}/activate-optimization` or `POST /metrics/{id}/decline-optimization` with the optimized revision's id.
+
+## Evaluator model retirement
+
+The evaluator model of a metric is its LLM judge, or the classifier model of a [Classifier](/v5.19/concepts/metric/classifier) metric. When an evaluator model is retiring, you get an email up to 30 days before the retirement date. It names the affected metrics and the evaluator models you can use instead. It offers only models of the same kind as the retiring one: judge models for a judge model, classifier models for a classifier model. The email goes to the organization owners and admins, and to the creator of each affected metric.
+
+A metric's evaluator model cannot change after you create it. For your own metrics, create a new revision with another evaluator model.
+
+Galtea maintains its own metrics, so you cannot revise them. If your organization used one in the last 90 days, its owners and admins get the email too. Galtea may replace one of its metrics with a new revision on another evaluator model. When it does, the email names the new revision and links to it. Use that revision to keep evaluating. When there is no new revision, create your own metric with one of the listed evaluator models to keep evaluating after the retirement date.
+
+If the evaluator model becomes unavailable to Galtea on or after the retirement date, and stays unavailable for six hours, the same recipients get one email naming the metrics that stopped scoring.
+
+## Evaluator model in an EU-only organization
+
+In an organization with the [EU-only data region](/v5.19/security/data-region), a metric whose judge model has no EU deployment is unavailable. A judge that Galtea has not checked yet keeps running. A classifier metric follows the same rule through its decision model. An unavailable metric shows as **Unavailable**, and the API gives the reason in `unavailableReason`. Its evaluations are skipped. Create a revision with another judge to run it. You cannot revise a Galtea metric, so use it as a template for a metric of your own with another judge. See [Judge models in an EU-only organization](/v5.19/security/data-region#judge-models-in-an-eu-only-organization).
+
+## Available Metrics
+
+<Note>
+  The following table lists the default metrics available in the Galtea platform. You can also [create custom metrics](/v5.19/concepts/metric/evaluation-types#ai-evaluation) or [generate metrics from specifications](/v5.19/concepts/metric/ai-generation).
+</Note>
+
+| Metric | Category | Description |
+| --- | --- | --- |
+| **[Factual Accuracy](/v5.19/concepts/metric/factual-accuracy)** | RAG | Evaluates whether the actual_output factually aligns with the expected_output. |
+| **[Resilience to Noise](/v5.19/concepts/metric/resilience-to-noise)** | RAG | Evaluates whether the output is resilient to noisy input (typos, OCR/ASR errors). |
+| **[Answer Relevancy](/v5.19/concepts/metric/answer-relevancy)** | RAG | Evaluates how relevant the actual_output is compared to the provided input. |
+| **[Faithfulness](/v5.19/concepts/metric/faithfulness)** | RAG | Evaluates whether the actual_output factually aligns with the retrieval_context. |
+| **[Contextual Relevancy](/v5.19/concepts/metric/contextual-relevancy)** | RAG | Evaluates the overall relevance of the retrieval_context for a given input. |
+| **[BLEU](/v5.19/concepts/metric/bleu)** | Deterministic | Measures n-gram overlap between actual and expected output. |
+| **[ROUGE](/v5.19/concepts/metric/rouge)** | Deterministic | Measures longest common subsequence between actual and expected output. |
+| **[METEOR](/v5.19/concepts/metric/meteor)** | Deterministic | Aligns words using exact matches, stems, or synonyms. |
+| **[Text Similarity](/v5.19/concepts/metric/text-similarity)** | Deterministic | Quantifies textual resemblance using character-level fuzzy matching. |
+| **[IOU](/v5.19/concepts/metric/iou)** | Deterministic | Measures spatial overlap between predicted and reference bounding boxes. |
+| **[Spatial Match](/v5.19/concepts/metric/spatial-match)** | Deterministic | Binary evaluation of spatial alignment using IoU score. |
+| **[URL Validation](/v5.19/concepts/metric/url-validation)** | Deterministic | Checks if all URLs in the response are valid and safe. |
+| **[Tool Correctness](/v5.19/concepts/metric/tool-correctness)** | Deterministic | Compares tools used by the agent against expected tools. |
+| **[JSON Field Match](/v5.19/concepts/metric/json-field-match)** | Deterministic | Compares JSON objects field by field, returning the fraction of expected fields that match. An expected field can set a [rule](/v5.19/concepts/metric/json-field-match#field-rules) (`$norm`, `$regex`, `$num` or `$date`) instead of a value. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Normalized)](/v5.19/concepts/metric/json-field-match-normalized)** | Deterministic | Compares JSON objects field by field with case-insensitive and accent-insensitive string matching. Field rules apply as in JSON Field Match. Ignores extra fields in the actual output. |
+| **[JSON Field Match (Strict)](/v5.19/concepts/metric/json-field-match-strict)** | Deterministic | Like JSON Field Match, including field rules, but an unexpected field in the actual output also lowers the score. |
+| **[JSON Field Match (Normalized, Strict)](/v5.19/concepts/metric/json-field-match-normalized-strict)** | Deterministic | Like JSON Field Match (Normalized), including field rules, but an unexpected field in the actual output also lowers the score. |
+| **[Role Adherence](/v5.19/concepts/metric/role-adherence)** | Conversational | Evaluates whether the chatbot adheres to its given role throughout a conversation. |
+| **[Conversation Completeness](/v5.19/concepts/metric/conversation-completeness)** | Conversational | Evaluates whether the chatbot satisfies user needs throughout a conversation. |
+| **[Conversation Relevancy](/v5.19/concepts/metric/conversation-relevancy)** | Conversational | Evaluates whether the chatbot generates relevant responses throughout a conversation. |
+| **[Knowledge Retention](/v5.19/concepts/metric/knowledge-retention)** | Conversational | Assesses factual information retention throughout a conversation. |
+| **[User Satisfaction](/v5.19/concepts/metric/user-satisfaction)** | Conversational | Evaluates user satisfaction with the chatbot interaction. |
+| **[User Objective Accomplished](/v5.19/concepts/metric/user-objective-accomplished)** | Conversational | Evaluates whether the chatbot fulfilled the user's stated objective. |
+| **[Non-Toxic](/v5.19/concepts/metric/non-toxic)** | Security & Safety | Evaluates whether responses are free of toxic language. |
+| **[Unbiased](/v5.19/concepts/metric/unbiased)** | Security & Safety | Evaluates whether output is free of gender, racial, or political bias. |
+| **[Misuse Resilience](/v5.19/concepts/metric/misuse-resilience)** | Security & Safety | Evaluates resilience to misuse and alignment with the product's defined capabilities and inabilities. |
+| **[Data Leakage](/v5.19/concepts/metric/data-leakage)** | Security & Safety | Evaluates whether the LLM returns sensitive information. |
+| **[Jailbreak Resilience](/v5.19/concepts/metric/jailbreak-resilience)** | Security & Safety | Evaluates resistance to adversarial prompt manipulation. |
+
+## SDK Integration
+
+<SDKMetricsServiceCard />
+
+## Metric Properties
+
+<ResponseField name="Name" type="Text" required>
+  The name of the metric. **Example**: "Factual Accuracy"
+</ResponseField>
+
+<ResponseField name="Description" type="Text" optional>
+  A brief description of what the metric evaluates.
+</ResponseField>
+
+<ResponseField name="Evaluator Model" type="Text" optional>
+  The model used to score the metric. Does not apply to deterministic metrics. For a [Classifier](/v5.19/concepts/metric/classifier) metric, it is a classifier model, picked in the form or sent as `evaluator_model_name`. **Example**: "GPT-4.1"
+</ResponseField>
+
+<ResponseField name="Unavailable Reason" type="Text" optional>
+  Read-only, in the REST API response only. Set when the metric cannot run in your organization because its judge model has no deployment in your [data region](/v5.19/security/data-region#judge-models-in-an-eu-only-organization). It is `null` when the metric can run. An endpoint that does not read your data region, such as the metrics of a specification, leaves it out: absent means not reported, not that the metric can run. **Example**: "The judge gpt-x has no EU deployment available, so this metric cannot run in an EU organization. Create a revision with another judge."
+</ResponseField>
+
+<ResponseField name="Pass Threshold" type="Number" optional>
+  The score, from 0 to 1, at or above which an evaluation of this metric passes. Defaults to 0.5. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.pass_threshold`. **Example**: 0.7
+</ResponseField>
+
+<ResponseField name="Applicability Scope" type="Enum" optional>
+  Which sessions get the [applicability check](#applicability-check): `PRODUCTION`, `DEVELOPMENT`, `ALL` or `NONE`. Defaults to `PRODUCTION` for a metric the check covers, and to `NONE` for a Self-Hosted, Human Evaluation or G-Eval (deprecated) metric. A metric that scores only `traces` never gets the check: it defaults to `NONE` and refuses any other value. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.applicability_scope`. **Example**: "PRODUCTION"
+</ResponseField>
+
+<ResponseField name="Applicability Threshold" type="Number" optional>
+  The lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. Defaults to 0.5, and reads `None` in the SDK until you set it. A metric with no check refuses it: a Self-Hosted, Human Evaluation or G-Eval (deprecated) metric, or one that scores only `traces`. It is fixed when you create the metric: create a revision to change it. In the SDK it is `metric.applicability_threshold`. **Example**: 0.3
+</ResponseField>
+
+<ResponseField name="Tags" type="Text List" optional>
+  Tags for categorization. **Example**: ["RAG", "Conversational"]
+</ResponseField>
+
+<ResponseField name="Evaluation Type" type="Enum" required>
+  How outputs are scored: AI Evaluation, Human Evaluation, or Self-Hosted. See [Evaluation Types](/v5.19/concepts/metric/evaluation-types) for full details.
+</ResponseField>
+
+<ResponseField name="User Groups" type="List[String]" optional>
+  [User groups](/v5.19/concepts/user-group) for Human Evaluation metrics. Controls which annotators can score evaluations for this metric.
+</ResponseField>
+
+<ResponseField name="Evaluation Parameters" type="List[Enum]" required>
+  The data fields available to the evaluator. See [Evaluation Parameters](/v5.19/concepts/metric/evaluation-parameters) for the full reference. Not applicable for Self-Hosted metrics. For a Classifier metric, the platform derives them from the placeholders in the question.
+</ResponseField>
+
+<ResponseField name="Classifier Question" type="Object" optional>
+  The one Yes/No or Scale question a classifier metric asks. Only for the classifier source. See [Classifier](/v5.19/concepts/metric/classifier).
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <EvaluationCard />
+  <Card title="Create Custom Metrics" icon="wand-magic-sparkles" href="/v5.19/concepts/metric/evaluation-types#ai-evaluation">
+    Write your own judge prompt and scoring rubric.
+  </Card>
+</CardGroup>

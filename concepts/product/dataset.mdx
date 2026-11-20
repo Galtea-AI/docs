@@ -93,7 +93,7 @@ When uploading a dataset file, the required columns depend on the dataset type:
 
 <CardGroup cols={3}>
   <Card title="Accuracy Dataset Format" icon="star" href="/concepts/product/dataset/accuracy-datasets#example-accuracy-datasets-and-file-format">
-    Required: `input`, `expected_output`. Optional: `context`, `tag`, `source`. The `input` column accepts plain strings or JSON objects for structured inputs.
+    Required: `input`. Optional: `expected_output`, `context`, `tag`, `source`. The `input` column accepts plain strings or JSON objects for structured inputs.
   </Card>
   <Card title="Security & Safety Dataset Format" icon="shield-halved" href="/concepts/product/dataset/security-datasets#example-security--safety-datasets-and-file-format">
     Required: `input`. Optional: `expected_output`, `tag`, `source`.
@@ -102,6 +102,8 @@ When uploading a dataset file, the required columns depend on the dataset type:
     Required: `goal`, `user_persona`, `scenario`. Optional: `input`, `stopping_criterias`, `max_iterations`, `conversation_history`.
   </Card>
 </CardGroup>
+
+One invalid row refuses the whole file, and none of its test cases are written.
 
 ## SDK Integration
 
@@ -145,6 +147,8 @@ The Galtea SDK allows you to create, view, and manage datasets programmatically.
   - [Accuracy](/concepts/product/dataset/accuracy-datasets) (`ACCURACY`): Datasets that evaluate the quality and correctness of outputs
   - [Security & Safety](/concepts/product/dataset/security-datasets) (`SECURITY`): Datasets that evaluate security, safety, and bias aspects
   - [Behavior](/concepts/product/dataset/behavior-datasets) (`BEHAVIOR`): Datasets that use conversation simulation to evaluate multi-turn dialogue interactions
+
+  The REST API and the CLI name these types `QUALITY`, `RED_TEAMING` and `SCENARIOS`.
 </ResponseField>
 
 <ResponseField name="Specifications" type="List[Text]">
@@ -224,7 +228,7 @@ The Galtea SDK allows you to create, view, and manage datasets programmatically.
       The path to a local CSV file containing predefined test cases. This file is uploaded to Galtea. Required if you are providing your own set of test cases instead of having Galtea generate them. **Example**: "path/to/your/test_file.csv"
 
       **File Format Requirements:**
-      - **Accuracy/Security Datasets**: Must include `input`, `expected_output`, `tag`, `source` columns
+      - **Accuracy/Security Datasets**: Must include an `input` column. `expected_output`, `tag` and `source` are optional
       - **Behavior Datasets**: Must include conversation simulation columns (see Behavior Dataset File Format below)
     </ResponseField>
   </Tab>

@@ -1071,7 +1071,7 @@
             "nullable": true,
             "readOnly": true,
             "example": "model_123",
-            "description": "The model that answered this LLM call, matched by name when the span was ingested. Null when no live model of the organization, or global model, had any of the model names of the span. A name also matches without its provider prefix. Deleting the model keeps it, so it can name a deleted model."
+            "description": "The model that answered this LLM call, found by name when the span was ingested. Galtea tries the response model name, then the request model name, each through the model name rule: the name itself, then without its provider prefix, then without a trailing date, then with a provider prefix added. From 2026-11-19 the last two steps exist: a name with a date, or with no provider prefix, links a model where it linked none (a span named 'mistral-small-2603' links 'mistral/mistral-small-2603'). From 2026-11-19 too, the response model name goes through every step before the request model name is tried (a span with response 'openai/gpt-4o' and request 'gpt-4o-mini' links 'gpt-4o'), and a span whose metadata holds a request model name but no span model name (a span that did not come from OTLP) is looked up by it. Null when no live model of the organization, or global model, matched. Deleting the model keeps it, so it can name a deleted model."
           },
           "modelName": {
             "type": "string",
@@ -1113,7 +1113,7 @@
             "nullable": true,
             "readOnly": true,
             "example": 1e-05,
-            "description": "Price of one input token, frozen at ingest from the model of this call, or from the version model when the span names no model. Null when the named model links to nothing or has no price. Null without `evaluation.readInference` on the product."
+            "description": "Price of one input token, frozen at ingest from the model of this call, or from the version model when the span names no model. From 2026-11-19 a span whose metadata holds a request model name but no span model name (a span that did not come from OTLP) is priced at the model that name links, and keeps the version model when it links none. Null when the model name of the span links to nothing (an OTLP span takes its model name from the response model, else the request model), or the model has no price. Null without `evaluation.readInference` on the product."
           },
           "costPerOutputToken": {
             "type": "number",
@@ -1134,7 +1134,7 @@
             "nullable": true,
             "readOnly": true,
             "example": 0.0026,
-            "description": "Cost of this call at the frozen rates. Null when no rates were found. A turn's cost sums the costs of the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it. A span that loses one side to a span below is priced again for the side it keeps. Null without `evaluation.readInference` on the product."
+            "description": "Cost of this call at the frozen rates. Null when no rates were found. A turn's cost sums the costs of the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it. Two sibling spans that report the same call both count, as a Mistral SDK span and its `llm_call_details` event do. A span that loses one side to a span below is priced again for the side it keeps. Null without `evaluation.readInference` on the product."
           }
         }
       },
@@ -1728,6 +1728,15 @@
                     },
                     "metricId": {
                       "type": "string"
+                    },
+                    "metricRevisionNumber": {
+                      "type": "integer",
+                      "description": "The marker revision's number within its metric (R1, R2, R3)."
+                    },
+                    "metricRevisionName": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The marker revision's own name, or null when it has none."
                     },
                     "at": {
                       "type": "string",
@@ -2323,7 +2332,8 @@
             "format": "date-time",
             "nullable": true
           }
-        }
+        },
+        "description": "Requires `productId`, `type`, `name` and `description`. A `POLICY` also requires `testType`, and `testVariant` when `testType` is `QUALITY` or `RED_TEAMING`."
       },
       "PhoneConnectionUpdate": {
         "type": "object",
@@ -2703,7 +2713,7 @@
             "items": {
               "$ref": "#/components/schemas/CostBreakdownRow"
             },
-            "description": "Every value, the highest cost first. Each turn's estimated cost is split over the LLM spans it counts, each LLM call once and under the model it reports; the part of a turn's cost that its spans do not carry goes to the version model. So the rows add up to `total`, which is the `totalCost` of `GET /analytics/cost-overview` for the same filters."
+            "description": "Every value, the highest cost first. Each turn's estimated cost is split over the LLM spans it counts, each under the model it reports. A call counts once, except that two sibling spans that report the same call both count, as a Mistral SDK span and its `llm_call_details` event do. The part of a turn's cost that its spans do not carry goes to the version model. So the rows add up to `total`, which is the `totalCost` of `GET /analytics/cost-overview` for the same filters."
           },
           "total": {
             "type": "object",
@@ -3422,6 +3432,132 @@
           "totalCost",
           "sessionsWithoutCostCount"
         ]
+      },
+      "Annotation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "annotation_123"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "session_123",
+            "description": "The annotated session."
+          },
+          "metricId": {
+            "type": "string",
+            "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+            "example": "metric_123"
+          },
+          "inferenceResultId": {
+            "type": "string",
+            "nullable": true,
+            "example": "inferenceResult_123",
+            "description": "The annotated turn of the session. Null for an annotation of the whole session."
+          },
+          "annotatorId": {
+            "type": "string",
+            "nullable": true,
+            "example": "user_123",
+            "description": "The user who last wrote the score. Null once that user is deleted."
+          },
+          "score": {
+            "type": "number",
+            "example": 0.75,
+            "description": "The human score, from 0 to 1."
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "example": "Accurate",
+            "description": "Why the annotator gave this score."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "metricId",
+          "inferenceResultId",
+          "annotatorId",
+          "score",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateAnnotationBody": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The session to annotate.",
+            "example": "session_123"
+          },
+          "metricId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+            "example": "metric_123"
+          },
+          "inferenceResultId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "description": "A turn of the session, to annotate that turn alone. Leave it out to annotate the whole session.",
+            "example": "inferenceResult_123"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The human score, from 0 to 1.",
+            "example": 0.75
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the annotator gave this score.",
+            "example": "Accurate"
+          }
+        },
+        "required": [
+          "sessionId",
+          "metricId",
+          "score"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateAnnotationBody": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The human score, from 0 to 1.",
+            "example": 0.75
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the annotator gave this score. Leave it out to keep the current reason; null clears it.",
+            "example": "Accurate"
+          }
+        },
+        "required": [
+          "score"
+        ],
+        "additionalProperties": false
       },
       "EndpointConnection": {
         "type": "object",
@@ -4354,28 +4490,29 @@
           "humanEvaluatorId": {
             "type": "string",
             "nullable": true,
-            "description": "User ID of the human evaluator"
+            "description": "The human evaluator of a HUMAN_EVALUATION metric. On an AI-judged metric, the annotator of the case annotation, or null when the case has none."
           },
           "humanEvaluatorStartedAt": {
             "type": "string",
             "nullable": true,
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the human evaluator claimed this HUMAN_EVALUATION evaluation. Always null on an AI-judged metric, because annotating needs no claim."
           },
           "humanScore": {
             "type": "number",
             "nullable": true,
-            "description": "Human-provided annotation score"
+            "description": "Human-provided score. On a metric a judge scores, it is the annotation of the case (the session, or this turn), which every revision of the metric shows."
           },
           "humanReason": {
             "type": "string",
             "nullable": true,
-            "description": "Human-provided annotation reason"
+            "description": "Human-provided reason, from the same annotation as humanScore on a metric a judge scores."
           },
           "humanEvaluatorFinishedAt": {
             "type": "string",
             "nullable": true,
             "format": "date-time",
-            "description": "Timestamp when human evaluation was submitted"
+            "description": "When the human evaluator submitted this HUMAN_EVALUATION evaluation. On an AI-judged metric, when the case annotation was last written."
           },
           "failedTurns": {
             "type": "array",
@@ -4422,6 +4559,17 @@
             "type": "string",
             "nullable": true,
             "format": "date-time"
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The evaluated revision's number within its metric (R1, R2, R3). Null when the metric is not loaded.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The evaluated revision's own name, or null when it has none or the metric is not loaded."
           },
           "passed": {
             "type": "boolean",
@@ -4524,6 +4672,17 @@
             "example": 0.9,
             "description": "CLASSIFIER only: how sure the classifier was, from 0 to 1; null for every other source. Values do not compare across question types."
           },
+          "dataRegion": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "GLOBAL",
+              "EU",
+              null
+            ],
+            "example": "EU",
+            "description": "The data region the evaluation was dispatched with: EU keeps its model calls on EU deployments. Null when unknown: an evaluation dispatched before the region was recorded, or never sent to the evaluator."
+          },
           "longInput": {
             "type": "boolean",
             "description": "True for a CLASSIFIER evaluation whose input ran past what the classifier scores reliably (CLASSIFIER_RELIABLE_INPUT_TOKENS judge input tokens) and that no reviewer has scored; false for every other evaluation."
@@ -4567,6 +4726,7 @@
           "testCaseLegacyAt",
           "scoreBreakdown",
           "confidence",
+          "dataRegion",
           "longInput"
         ]
       },
@@ -4690,12 +4850,14 @@
           },
           "humanEvaluatorId": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "The human evaluator of a HUMAN_EVALUATION metric. On an AI-judged metric, the annotator of the case annotation, or null when the case has none."
           },
           "humanEvaluatorStartedAt": {
             "type": "string",
             "nullable": true,
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the human evaluator claimed this HUMAN_EVALUATION evaluation. Always null on an AI-judged metric, because annotating needs no claim."
           },
           "humanScore": {
             "type": "number",
@@ -4708,7 +4870,8 @@
           "humanEvaluatorFinishedAt": {
             "type": "string",
             "nullable": true,
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the human evaluator submitted this HUMAN_EVALUATION evaluation. On an AI-judged metric, when the case annotation was last written."
           },
           "failedTurns": {
             "type": "array",
@@ -5842,7 +6005,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "The agent state this version represents, as a flat map of text to text. Every key and every value is trimmed, an entry whose key or value is then empty is dropped, and the rest is kept exactly, so \"0.7\" and \"0.70\" are two different facts. At most 32 keys, and at most 2000 bytes once the map is encoded as JSON, which counts its punctuation too. No key and no value may hold the NUL character or half of a surrogate pair. Two keys that become equal after the spaces around them are removed are refused, unless both become empty, which drops them instead because a blank key names no fact; a key repeated with the exact same spelling never reaches that rule, because JSON parsing keeps only its last value. Two live versions of one product may not hold the same facts; the key order you send does not change that comparison. A map that leaves no entry is stored as null. A fact whose key is \"model\" or \"model_name\" (case, \"_\" and \"-\" are ignored, so \"modelName\" counts too) is a model fact. It can link the version to the model whose name equals its value, provider prefix included (for example \"azure/gpt-4o\") and ignoring case. The model must be one the product organization can use: one of its own models or a global one. Its own model wins over a global model of the same name. Model facts that find two different models link none.",
+            "description": "The agent state this version represents, as a flat map of text to text. Every key and every value is trimmed, an entry whose key or value is then empty is dropped, and the rest is kept exactly, so \"0.7\" and \"0.70\" are two different facts. At most 32 keys, and at most 2000 bytes once the map is encoded as JSON, which counts its punctuation too. No key and no value may hold the NUL character or half of a surrogate pair. Two keys that become equal after the spaces around them are removed are refused, unless both become empty, which drops them instead because a blank key names no fact; a key repeated with the exact same spelling never reaches that rule, because JSON parsing keeps only its last value. Two live versions of one product may not hold the same facts; the key order you send does not change that comparison. A map that leaves no entry is stored as null. A fact whose key is \"model\" or \"model_name\" (case, \"_\" and \"-\" are ignored, so \"modelName\" counts too) is a model fact. It can link the version to a model by the same name rule as an LLM span, ignoring case: the value itself, then without its provider prefix, then without a trailing date, then with a provider prefix added (so \"mistral-small-2603\" links \"mistral/mistral-small-2603\"). From 2026-11-19 a value links a model where it linked none when it has a date, when it has no provider prefix, or when its provider prefix is not part of the model name (so \"azure/gpt-4o\" links \"gpt-4o\"). When several providers list the model at different prices, use the full name, such as \"azure/gpt-4o\". The model must be one the product organization can use: one of its own models or a global one. Its own model wins over a global model of the same name. Model facts that find two different models link none.",
             "example": {
               "model": "gpt-4o",
               "temperature": "0.7",
@@ -6371,6 +6534,7 @@
               "maxLength": 64
             },
             "maxItems": 20,
+            "description": "A PARTIAL_PROMPT (AI Evaluation) metric must include `input` and `actual_output`.",
             "example": [
               "input",
               "actual_output"
@@ -6653,6 +6817,17 @@
           "name": {
             "type": "string"
           },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The revision's number within its metric (R1, R2, R3).",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The revision's own name, or null. `name` stays the metric's name."
+          },
           "source": {
             "type": "string",
             "nullable": true,
@@ -6821,6 +6996,20 @@
             "example": "Accuracy",
             "description": "The revision's own name when it has one, else its metric's name. A lookup by a metric's name can answer a revision with its own name."
           },
+          "number": {
+            "type": "integer",
+            "nullable": true,
+            "readOnly": true,
+            "example": 3,
+            "description": "The revision's number within its metric (R1, R2, R3): fixed once saved and never reused."
+          },
+          "revisionName": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "example": "Stricter rubric",
+            "description": "The revision's own name, or null when it has none. `name` reports this value when it is set, else the metric's name."
+          },
           "evaluationParams": {
             "type": "array",
             "items": {
@@ -6887,7 +7076,7 @@
           "areEvalParamsTop": {
             "type": "boolean",
             "nullable": true,
-            "description": "When true, evaluationParams are injected at the top level of the evaluator prompt instead of nested inside the conversation context."
+            "description": "Whether the parameters block precedes the judge prompt. Unset reads as true."
           },
           "isBeingOptimized": {
             "type": "boolean",
@@ -7997,6 +8186,7 @@
               "maxLength": 64
             },
             "maxItems": 20,
+            "description": "A PARTIAL_PROMPT (AI Evaluation) metric must include `input` and `actual_output`.",
             "example": [
               "input",
               "actual_output"
@@ -8217,11 +8407,13 @@
         "properties": {
           "name": {
             "type": "string",
+            "maxLength": 200,
             "example": "Accuracy"
           },
           "description": {
             "type": "string",
             "nullable": true,
+            "maxLength": 5000,
             "example": "Measures the accuracy of responses"
           },
           "tags": {
@@ -8318,7 +8510,7 @@
           "areEvalParamsTop": {
             "type": "boolean",
             "nullable": true,
-            "description": "When true, evaluationParams are injected at the top level of the evaluator prompt instead of nested inside the conversation context."
+            "description": "Whether the parameters block precedes the judge prompt. Unset reads as true."
           },
           "judgeGenerationSettings": {
             "type": "object",
@@ -8783,6 +8975,7 @@
               "maxLength": 64
             },
             "maxItems": 20,
+            "description": "A PARTIAL_PROMPT (AI Evaluation) metric must include `input` and `actual_output`.",
             "example": [
               "input",
               "actual_output"
@@ -9076,6 +9269,17 @@
             "description": "The metric revision the check counted; null for an alert on a Specification",
             "example": "metric_123"
           },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The counted revision's number within its metric (R1, R2, R3). Null for an alert on a Specification, and when that revision is deleted.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The counted revision's own name. Null when it has none, is deleted, or the alert is on a Specification."
+          },
           "specificationId": {
             "type": "string",
             "nullable": true,
@@ -9176,6 +9380,17 @@
             "type": "integer",
             "description": "Of those sessions, the ones that failed this family. A family with 0 is not a cause of the alert.",
             "example": 5
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The counted revision's number within its metric (R1, R2, R3). Null when that revision is deleted.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The counted revision's own name. Null when it has none or is deleted."
           }
         },
         "required": [
@@ -9467,6 +9682,17 @@
             "nullable": true,
             "description": "The revision the monitor scores. Null for a DELETED family.",
             "example": "metric_123"
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The scored revision's number within its metric (R1, R2, R3). Null for a DELETED family.",
+            "example": 3
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The scored revision's own name. Null when it has none, and for a DELETED family."
           }
         },
         "required": [
@@ -11669,7 +11895,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "The agent state this version represents, as a flat map of text to text. Every key and every value is trimmed, an entry whose key or value is then empty is dropped, and the rest is kept exactly, so \"0.7\" and \"0.70\" are two different facts. At most 32 keys, and at most 2000 bytes once the map is encoded as JSON, which counts its punctuation too. No key and no value may hold the NUL character or half of a surrogate pair. Two keys that become equal after the spaces around them are removed are refused, unless both become empty, which drops them instead because a blank key names no fact; a key repeated with the exact same spelling never reaches that rule, because JSON parsing keeps only its last value. Two live versions of one product may not hold the same facts; the key order you send does not change that comparison. A map that leaves no entry is stored as null. A fact whose key is \"model\" or \"model_name\" (case, \"_\" and \"-\" are ignored, so \"modelName\" counts too) is a model fact. It can link the version to the model whose name equals its value, provider prefix included (for example \"azure/gpt-4o\") and ignoring case. The model must be one the product organization can use: one of its own models or a global one. Its own model wins over a global model of the same name. Model facts that find two different models link none. At least one key and value must survive the trimming, or the call is refused. A version this call creates is linked to the model a model fact names; a version it finds keeps its model.",
+            "description": "The agent state this version represents, as a flat map of text to text. Every key and every value is trimmed, an entry whose key or value is then empty is dropped, and the rest is kept exactly, so \"0.7\" and \"0.70\" are two different facts. At most 32 keys, and at most 2000 bytes once the map is encoded as JSON, which counts its punctuation too. No key and no value may hold the NUL character or half of a surrogate pair. Two keys that become equal after the spaces around them are removed are refused, unless both become empty, which drops them instead because a blank key names no fact; a key repeated with the exact same spelling never reaches that rule, because JSON parsing keeps only its last value. Two live versions of one product may not hold the same facts; the key order you send does not change that comparison. A map that leaves no entry is stored as null. A fact whose key is \"model\" or \"model_name\" (case, \"_\" and \"-\" are ignored, so \"modelName\" counts too) is a model fact. It can link the version to a model by the same name rule as an LLM span, ignoring case: the value itself, then without its provider prefix, then without a trailing date, then with a provider prefix added (so \"mistral-small-2603\" links \"mistral/mistral-small-2603\"). From 2026-11-19 a value links a model where it linked none when it has a date, when it has no provider prefix, or when its provider prefix is not part of the model name (so \"azure/gpt-4o\" links \"gpt-4o\"). When several providers list the model at different prices, use the full name, such as \"azure/gpt-4o\". The model must be one the product organization can use: one of its own models or a global one. Its own model wins over a global model of the same name. Model facts that find two different models link none. At least one key and value must survive the trimming, or the call is refused. A version this call creates is linked to the model a model fact names; a version it finds keeps its model.",
             "example": {
               "model": "gpt-4o",
               "temperature": "0.7",
@@ -11735,7 +11961,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "The agent state this version represents, as a flat map of text to text. Every key and every value is trimmed, an entry whose key or value is then empty is dropped, and the rest is kept exactly, so \"0.7\" and \"0.70\" are two different facts. At most 32 keys, and at most 2000 bytes once the map is encoded as JSON, which counts its punctuation too. No key and no value may hold the NUL character or half of a surrogate pair. Two keys that become equal after the spaces around them are removed are refused, unless both become empty, which drops them instead because a blank key names no fact; a key repeated with the exact same spelling never reaches that rule, because JSON parsing keeps only its last value. Two live versions of one product may not hold the same facts; the key order you send does not change that comparison. A map that leaves no entry is stored as null. A fact whose key is \"model\" or \"model_name\" (case, \"_\" and \"-\" are ignored, so \"modelName\" counts too) is a model fact. It can link the version to the model whose name equals its value, provider prefix included (for example \"azure/gpt-4o\") and ignoring case. The model must be one the product organization can use: one of its own models or a global one. Its own model wins over a global model of the same name. Model facts that find two different models link none.",
+            "description": "The agent state this version represents, as a flat map of text to text. Every key and every value is trimmed, an entry whose key or value is then empty is dropped, and the rest is kept exactly, so \"0.7\" and \"0.70\" are two different facts. At most 32 keys, and at most 2000 bytes once the map is encoded as JSON, which counts its punctuation too. No key and no value may hold the NUL character or half of a surrogate pair. Two keys that become equal after the spaces around them are removed are refused, unless both become empty, which drops them instead because a blank key names no fact; a key repeated with the exact same spelling never reaches that rule, because JSON parsing keeps only its last value. Two live versions of one product may not hold the same facts; the key order you send does not change that comparison. A map that leaves no entry is stored as null. A fact whose key is \"model\" or \"model_name\" (case, \"_\" and \"-\" are ignored, so \"modelName\" counts too) is a model fact. It can link the version to a model by the same name rule as an LLM span, ignoring case: the value itself, then without its provider prefix, then without a trailing date, then with a provider prefix added (so \"mistral-small-2603\" links \"mistral/mistral-small-2603\"). From 2026-11-19 a value links a model where it linked none when it has a date, when it has no provider prefix, or when its provider prefix is not part of the model name (so \"azure/gpt-4o\" links \"gpt-4o\"). When several providers list the model at different prices, use the full name, such as \"azure/gpt-4o\". The model must be one the product organization can use: one of its own models or a global one. Its own model wins over a global model of the same name. Model facts that find two different models link none.",
             "example": {
               "model": "gpt-4o",
               "temperature": "0.7",
@@ -12234,6 +12460,17 @@
           "metricName": {
             "type": "string",
             "example": "Factual Accuracy"
+          },
+          "metricRevisionNumber": {
+            "type": "integer",
+            "nullable": true,
+            "example": 3,
+            "description": "The scored revision's number within its metric (R1, R2, R3)."
+          },
+          "metricRevisionName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The scored revision's own name, or null when it has none. `metricName` stays the metric's name."
           },
           "evaluationCount": {
             "type": "integer",
@@ -16077,7 +16314,7 @@
           {
             "name": "includeLegacy",
             "in": "query",
-            "description": "Include legacy/deprecated metrics. Also includes an optimization candidate waiting for review, which is legacy until it is activated.",
+            "description": "Include legacy/deprecated metrics. Defaults to true, except where `names` or `name` falls back to revision names, which matches only active revisions unless this is true. Also includes an optimization candidate waiting for review, which is legacy until it is activated.",
             "required": false,
             "schema": {
               "type": "boolean"
@@ -26026,7 +26263,7 @@
           {
             "name": "key",
             "in": "query",
-            "description": "Storage key",
+            "description": "The name of the file to upload, such as `report.pdf`. Galtea builds the storage key from it.",
             "required": true,
             "schema": {
               "type": "string"
@@ -29957,10 +30194,10 @@
               "items": {
                 "type": "string"
               },
-              "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`)."
+              "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. Sorting by `humanScore`, `humanEvaluatorId` or `humanEvaluatorFinishedAt` orders by the value each evaluation reports: the case annotation on an AI-judged metric, the evaluation itself on a HUMAN_EVALUATION one. Evaluations with no such value come last ascending and first descending, and ties go by id. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`)."
             },
             "required": false,
-            "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`).",
+            "description": "Sort instructions (field and direction pairs). Sorting by `confidence` puts evaluations with no confidence last in both directions. Sorting by `humanScore`, `humanEvaluatorId` or `humanEvaluatorFinishedAt` orders by the value each evaluation reports: the case annotation on an AI-judged metric, the evaluation itself on a HUMAN_EVALUATION one. Evaluations with no such value come last ascending and first descending, and ties go by id. A caller gets 400 for a sort on a field it sees as null on any product the list reaches (`evaluation.readInference`).",
             "style": "form",
             "explode": true,
             "name": "sort",
@@ -30019,10 +30256,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Filter by human evaluator user ID"
+              "description": "Filter by the human evaluator of a HUMAN_EVALUATION metric, or by the annotator of the case annotation on an AI-judged metric."
             },
             "required": false,
-            "description": "Filter by human evaluator user ID",
+            "description": "Filter by the human evaluator of a HUMAN_EVALUATION metric, or by the annotator of the case annotation on an AI-judged metric.",
             "name": "humanEvaluatorId",
             "in": "query"
           },
@@ -30885,7 +31122,7 @@
           "evaluations"
         ],
         "summary": "Evaluate a version",
-        "description": "Automatically evaluates a version by resolving its product's specifications, their linked metrics, and their linked tests. Creates inference generation jobs for every test case across all linked tests. Specifications without tests or without metrics are silently skipped. Provide either `versionId` or `productId`. When `productId` is given without a `versionId`, the product's latest properly configured version (one with a conversation-endpoint, phone, or WebRTC connection) is cloned and the evaluation runs against the clone; the product must already have such a version. Omitting `versionId` clones a version, so it requires permission to create versions (a caller lacking it gets a 403). See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Automatically evaluates a version by resolving its product's specifications, their linked metrics, and their linked tests. Creates inference generation jobs for every test case across all linked tests. Specifications without tests or without metrics are silently skipped, and so is a linked test whose status is not `SUCCESS`. With no test left, it answers 400. Provide either `versionId` or `productId`. When `productId` is given without a `versionId`, the product's latest properly configured version (one with a conversation-endpoint, phone, or WebRTC connection) is cloned and the evaluation runs against the clone; the product must already have such a version. Omitting `versionId` clones a version, so it requires permission to create versions (a caller lacking it gets a 403). See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31401,7 +31638,7 @@
           "evaluations"
         ],
         "summary": "Claim an evaluation for human review or annotation",
-        "description": "Claim an evaluation to prevent concurrent editing. For HUMAN_EVALUATION metrics, enforces user group permissions (admins skip). For other metrics, works as an annotation claim; a MEMBER needs a user group that grants the product of the evaluation and, when that group has a [permission list](https://docs.galtea.ai/concepts/user-group#permission-lists), the list must hold `evaluation.humanAnnotation`. Works on any evaluation status. Sets humanEvaluatorStartedAt timestamp. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Claim an evaluation of a HUMAN_EVALUATION metric so only you score it. A non-admin needs one of the metric's user groups. Another user's active claim refuses it. The claim sets humanEvaluatorId and humanEvaluatorStartedAt. On an AI-judged metric, annotating needs no claim. The call checks that you may annotate, stores nothing and answers the evaluation. To annotate, a MEMBER needs a user group that grants the product of the evaluation. When that group has a [permission list](https://docs.galtea.ai/concepts/user-group#permission-lists), the list must hold `evaluation.humanAnnotation`. Refused on outdated evaluations. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31419,11 +31656,35 @@
             "description": "Evaluation ID",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
           }
         ],
         "responses": {
           "200": {
-            "description": "Evaluation claimed successfully",
+            "description": "Evaluation claimed successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -31432,8 +31693,24 @@
               }
             }
           },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
           "400": {
-            "description": "Evaluation is already being evaluated or not in PENDING_HUMAN status",
+            "description": "Another user is already evaluating the evaluation, or it is outdated",
             "content": {
               "application/json": {
                 "schema": {
@@ -31453,7 +31730,7 @@
             }
           },
           "403": {
-            "description": "User not authorized to evaluate this metric",
+            "description": "User may not evaluate or annotate this evaluation",
             "content": {
               "application/json": {
                 "schema": {
@@ -31481,8 +31758,8 @@
         "tags": [
           "evaluations"
         ],
-        "summary": "Release a claimed evaluation or annotation",
-        "description": "Release a previously claimed evaluation or annotation without submitting a score. Works on any evaluation status. Clears humanEvaluatorStartedAt. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "summary": "Release a claimed evaluation",
+        "description": "Release your own claim on an evaluation of a HUMAN_EVALUATION metric without submitting a score. Works on any evaluation status. Clears humanEvaluatorId and humanEvaluatorStartedAt. On an AI-judged metric, annotating needs no claim, so the call stores nothing and answers the evaluation. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31593,7 +31870,7 @@
           "evaluations"
         ],
         "summary": "Submit a human evaluation or annotation score",
-        "description": "Submit a score and optional reason. For HUMAN_EVALUATION metrics, enforces user group permissions and updates both score sets. For PENDING_HUMAN evaluations, also sets status to SUCCESS. For other metrics, works as an annotation \u2014 writes only humanScore/humanReason/humanEvaluatorFinishedAt, leaving AI score/reason and status untouched. Works on any evaluation status. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Submit a score and optional reason. On a PENDING_HUMAN evaluation of a HUMAN_EVALUATION metric, it checks user group permissions, writes both score sets on the evaluation and sets its status to SUCCESS. On any other status of a HUMAN_EVALUATION metric, the caller must claim the evaluation first, and the score stays on the evaluation. On an AI-judged metric the score is an annotation, and annotating needs no claim. The annotation belongs to the case (the session, or the turn of a turn-level evaluation) and the metric, not to this evaluation. Every revision of the metric shows it, and a second submit on any revision corrects it. The submit makes the caller the annotator and writes no field of the evaluation, so the AI score, reason and status stay untouched. Refused on outdated evaluations. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31695,7 +31972,7 @@
             }
           },
           "403": {
-            "description": "User not authorized to evaluate this metric or evaluation not claimed by this user",
+            "description": "User may not evaluate or annotate this evaluation, or another user claimed this HUMAN_EVALUATION evaluation",
             "content": {
               "application/json": {
                 "schema": {
@@ -31724,7 +32001,7 @@
           "evaluations"
         ],
         "summary": "Edit a submitted human evaluation",
-        "description": "Edit the score and reason for a previously submitted human evaluation or annotation. On an AI-judged metric, any user who may annotate the evaluation can edit it. On a HUMAN_EVALUATION metric the user must also belong to one of the metric's user groups, which only an admin skips. The edit reassigns the human evaluator to the caller. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Edit the score and reason of a submitted human evaluation or annotation of a completed evaluation. On an AI-judged metric, any user who may annotate the evaluation can edit it, with no claim. The annotation belongs to the case (the session, or the turn of a turn-level evaluation) and the metric. The edit changes it for every revision of the metric, makes the caller the annotator and writes no field of the evaluation. On a HUMAN_EVALUATION metric the user must also belong to one of the metric's user groups, which only an admin skips. There the edit makes the caller the human evaluator. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -31855,7 +32132,7 @@
           "evaluations"
         ],
         "summary": "Remove a human annotation",
-        "description": "Clear the human score, reason and evaluator from an evaluation a judge scored, leaving it unclaimed. The AI score, reason and status are untouched. Where the judge produced a score, every reported number goes back to it. Where the judge produced none, as on a FAILED, SKIPPED or CANCELLED evaluation, the evaluation stops being reported altogether, so analytics, the product score, coverage and monitor results all drop it. The removal is permanent. The human score and reason are deleted, not archived, so getting them back means annotating the evaluation again. Refused on HUMAN_EVALUATION metrics, whose human score is the only score by design, on evaluations waiting for a human score, and on outdated evaluations, which accept no annotation at all. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Remove the annotation of an evaluation a judge scored. It writes no field of the evaluation. The annotation belongs to the case (the session, or the turn of a turn-level evaluation) and the metric, so the removal removes it for every revision of the metric. The AI score, reason and status are untouched. Where the judge produced a score, every reported number goes back to it. Where the judge produced none, as on a FAILED, SKIPPED or CANCELLED evaluation, the evaluation stops being reported altogether, so analytics, the product score, coverage and monitor results all drop it. Getting the annotation back means annotating the case again. Refused on HUMAN_EVALUATION metrics, whose human score is the only score by design, on evaluations waiting for a human score, and on outdated evaluations, which accept no annotation at all. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -33600,6 +33877,518 @@
           },
           "404": {
             "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/annotations": {
+      "get": {
+        "operationId": "listAnnotations",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "List annotations",
+        "description": "List the annotations of a metric, of a session, or of both, oldest first. The metricId is a metric id: a revision id matches nothing. The list and its total hold only the products where the caller may read evaluations. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+              "example": "metric_123"
+            },
+            "required": false,
+            "description": "Metric ID, shared by every revision of the metric. A revision ID answers 404.",
+            "name": "metricId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Session ID.",
+              "example": "session_123"
+            },
+            "required": false,
+            "description": "Session ID.",
+            "name": "sessionId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "default": 100,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annotations retrieved successfully",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `annotations <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `annotations <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Annotation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameter, or neither `metricId` nor `sessionId`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller lists evaluation.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Create annotation",
+        "description": "Score a session, or one turn of it, on a metric. The caller becomes the annotator. The metricId is a metric id, never a revision id. A Human Evaluation metric is scored on its evaluation instead and answers 400. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "create",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnnotationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Annotation created successfully. On `Prefer: return=minimal`, or when the read after the write fails, the answer has no body.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the new resource"
+                },
+                "required": true,
+                "description": "The path of the new resource"
+              },
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, a score outside 0 to 1, a turn that is not a turn of the session, or a Human Evaluation metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.humanAnnotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session or metric not found, or of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The case already has an annotation on this metric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/annotations/{id}": {
+      "get": {
+        "operationId": "getAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Get annotation by ID",
+        "description": "Get one annotation. The id is an annotation id. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Annotation ID.",
+              "example": "annotation_123"
+            },
+            "required": true,
+            "description": "Annotation ID.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annotation retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Annotation not found, or of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Update annotation",
+        "description": "Correct the score and reason of an annotation, for every revision of its metric. The caller becomes the annotator. The id is an annotation id. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "update",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Annotation ID.",
+              "example": "annotation_123"
+            },
+            "required": true,
+            "description": "Annotation ID.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAnnotationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Annotation updated successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotation"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, or a score outside 0 to 1",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.humanAnnotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Annotation not found, or of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAnnotation",
+        "tags": [
+          "annotations"
+        ],
+        "summary": "Delete annotation",
+        "description": "Remove an annotation from every revision of its metric. The case can then be annotated again. A second delete answers 404. The id is an annotation id. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "delete",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Annotation ID.",
+              "example": "annotation_123"
+            },
+            "required": true,
+            "description": "Annotation ID.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Annotation deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No user group of the caller grants the session's product with evaluation.humanAnnotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Annotation not found, or of another organization",
             "content": {
               "application/json": {
                 "schema": {
@@ -36325,6 +37114,129 @@
           },
           "400": {
             "description": "A revision of a Galtea metric, or of a metric of another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not update this revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/activate": {
+      "post": {
+        "operationId": "activateRevision",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Mark a revision as active",
+        "description": "Make this legacy revision the active one of its metric, and the current active revision legacy, in one step. The specifications linked to the former active revision link this one instead. Its evaluations, history and name stay. Activating the active revision changes nothing. It answers 400 for four refusals. The revision belongs to a Galtea metric. The revision is being optimized. The revision is an optimization candidate that nobody applied (failed, declined, waiting for review or with no improvement). The judge model of the revision is retired. It also answers 400 when the metric or the revision changed during the call: reload it and retry. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "activate",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The activated revision. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "A revision of a Galtea metric, or one that cannot become active",
             "content": {
               "application/json": {
                 "schema": {

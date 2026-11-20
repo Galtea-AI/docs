@@ -1,0 +1,185 @@
+---
+title: 'Installation'
+description: "Install the Galtea CLI on your platform"
+icon: "box"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/cli/installation).
+</Warning>
+
+The Galtea CLI ships as a single `galtea` binary, repackaged for the channels you already use. Pick the tab that matches your platform.
+
+<Tabs>
+<Tab title="macOS & Linux (Homebrew)">
+If you have [Homebrew](https://brew.sh) (macOS) or [Linuxbrew](https://docs.brew.sh/Homebrew-on-Linux), the tap auto-installs on first use:
+
+```bash
+brew install galtea-ai/tap/galtea
+```
+
+Apple Silicon, Intel macOS, and Linux on `x86_64` / `arm64` are all supported.
+</Tab>
+<Tab title="Linux (Debian/Ubuntu)">
+Add the Galtea APT repository (one-time GPG key + `sources.list` bootstrap), then install the CLI:
+
+```bash
+sudo install -m 0755 -d /etc/apt/keyrings
+
+curl -fsSL https://pkgs.galtea.ai/public.key \
+  | sudo tee /etc/apt/keyrings/galtea.asc > /dev/null
+
+echo "deb [signed-by=/etc/apt/keyrings/galtea.asc] \
+  https://pkgs.galtea.ai/apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/galtea.list
+
+sudo apt update
+sudo apt install galtea
+```
+</Tab>
+<Tab title="Linux (Fedora/RHEL)">
+Add the Galtea YUM repository (one-time GPG key import + repo file), then install the CLI:
+
+```bash
+sudo rpm --import https://pkgs.galtea.ai/public.key
+
+sudo tee /etc/yum.repos.d/galtea.repo <<'EOF'
+[galtea]
+name=Galtea CLI
+baseurl=https://pkgs.galtea.ai/yum
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.galtea.ai/public.key
+EOF
+
+sudo dnf install galtea
+```
+
+Rocky Linux and AlmaLinux are supported via the same repository.
+</Tab>
+<Tab title="Python (any OS)">
+If you already have Python 3.9+ on your machine, you can install the CLI from PyPI:
+
+```bash
+pip install galtea-cli
+```
+
+The PyPI package ships per-platform wheels that bundle the same `galtea` binary used by every other channel. The `galtea` console-script entry point lands on your `PATH` automatically.
+
+For more information, visit the [galtea-cli PyPI page](https://pypi.org/project/galtea-cli/).
+</Tab>
+</Tabs>
+
+### Verify installation
+
+Once installed, confirm the binary is on your `PATH` and prints a version:
+
+```bash
+galtea --version
+```
+
+### Update
+
+Each CLI version ships with the commands of the Galtea API release it was built with, and it does not download new ones. Update the CLI to get the commands of a newer API release. Use the package manager you installed it with:
+
+<Tabs>
+<Tab title="macOS & Linux (Homebrew)">
+```bash
+brew update && brew upgrade galtea
+```
+</Tab>
+<Tab title="Linux (Debian/Ubuntu)">
+```bash
+sudo apt update && sudo apt upgrade galtea
+```
+</Tab>
+<Tab title="Linux (Fedora/RHEL)">
+```bash
+sudo dnf upgrade galtea
+```
+</Tab>
+<Tab title="Python (any OS)">
+```bash
+pip install --upgrade galtea-cli
+```
+</Tab>
+</Tabs>
+
+### Install an older version
+
+A CLI runs only against a Galtea platform of the same version or newer. If your platform is older than the newest CLI, for example a self-hosted platform, install a CLI with the same major and minor version as the platform, or an older one. When the CLI is too new, it stops and prints the version to install.
+
+APT, DNF and pip keep every release from 4.24.0. Homebrew keeps the newest patch of each minor version. The examples install 5.4.0:
+
+<Tabs>
+<Tab title="macOS & Linux (Homebrew)">
+```bash
+# List the versions: one formula per minor version
+brew search galtea-ai/tap/galtea@
+
+# The formulas install the same `galtea` command, so remove the current one first
+brew uninstall galtea
+brew install galtea-ai/tap/galtea@5.4
+```
+
+`galtea@5.4` installs the newest 5.4.x release, and `brew upgrade` moves it only to newer 5.4.x releases.
+</Tab>
+<Tab title="Linux (Debian/Ubuntu)">
+```bash
+sudo apt update
+apt list -a galtea                 # list the versions
+
+sudo apt install galtea=5.4.0      # also downgrades a newer installed CLI
+sudo apt-mark hold galtea          # keep 5.4.0 on `apt upgrade`
+```
+</Tab>
+<Tab title="Linux (Fedora/RHEL)">
+```bash
+dnf list --showduplicates galtea   # list the versions
+
+sudo dnf install galtea-5.4.0      # also downgrades a newer installed CLI
+# Keep 5.4.0 on `dnf upgrade`. On dnf 4 (RHEL 8 and 9), first run:
+#   sudo dnf install python3-dnf-plugin-versionlock
+sudo dnf versionlock add galtea
+```
+</Tab>
+<Tab title="Python (any OS)">
+```bash
+pip install "galtea-cli==5.4.0"
+```
+
+The [galtea-cli PyPI page](https://pypi.org/project/galtea-cli/#history) lists the versions.
+</Tab>
+</Tabs>
+
+### Uninstall
+
+<Tabs>
+<Tab title="macOS & Linux (Homebrew)">
+```bash
+brew uninstall galtea
+
+# Optional: drop the tap entirely
+brew untap galtea-ai/tap
+```
+</Tab>
+<Tab title="Linux (Debian/Ubuntu)">
+```bash
+sudo apt remove galtea
+```
+</Tab>
+<Tab title="Linux (Fedora/RHEL)">
+```bash
+sudo dnf remove galtea
+```
+</Tab>
+<Tab title="Python (any OS)">
+```bash
+pip uninstall galtea-cli
+```
+</Tab>
+</Tabs>
+
+### Troubleshooting
+
+If you run into any issues — installing, verifying, updating, or uninstalling — contact our support team at [support@galtea.ai](mailto:support@galtea.ai).

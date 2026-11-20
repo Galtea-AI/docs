@@ -30,12 +30,22 @@ The evaluation list hides these results by default. To reveal them, open **Filte
 
 Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics. The other revisions of the metric keep counting.
 
+## Human Annotations
+
+An annotator can annotate an evaluation of a metric a judge scores. The annotation holds a human score and an optional reason. It belongs to the case and the metric, not to one evaluation. The case is the session, or one turn for a turn-level evaluation.
+
+Annotating needs no claim, so nothing locks the case. A later annotation of the same case replaces the earlier one.
+
+Every revision of the metric shows the same annotation. An evaluation of a new revision shows it too, so you do not annotate the case again. Fixing or removing the annotation changes it for every revision. The API also reads and writes annotations directly on the `/annotations` endpoints, which take a metric id, never a revision id.
+
+A [Human Evaluation](/concepts/metric/evaluation-types#human-evaluation) metric works differently. A human evaluator can claim an evaluation, so nobody else scores it at the same time. Its human score is the evaluation's own score, kept on each evaluation.
+
 ## Filtering by Score
 
 Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Open **Filters**, then choose one of them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The pill in the filter row shows the condition, for example `≥ 70%`.
 
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
-- **Human Score** reads the reviewer's score only.
+- **Human Score** reads the human score only. On a metric a judge scores, that is the annotation of the case.
 - **Confidence** reads the confidence of a [Classifier](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
 - **Result** (open **Filters**, then choose **Result**) keeps the evaluations that passed or failed their metric's [pass threshold](/concepts/metric#pass-threshold). Pick both options, or none, and the filter does nothing. It follows the reported score, so a human review counts, unlike the Judge Score filter. The **Result** column shows PASS, FAIL or a dash, is hidden by default, and is included in the CSV export.
 - An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
@@ -138,6 +148,10 @@ Once an evaluation completes, the following fields are available:
   The ID of the [product](/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
 </ResponseField>
 
+<ResponseField name="Data Region" type="Enum" optional>
+  The [data region](/security/data-region) the evaluation was sent to the judge with, read-only and set by the API: `EU` means its model calls stayed on EU deployments, `GLOBAL` means they did not have to. Null when the region is unknown: an evaluation sent before Galtea recorded the region, or never sent to a judge, such as a skipped one. Galtea records it because judge model names no longer carry an `eu.` prefix.
+</ResponseField>
+
 <ResponseField name="Judge Input Tokens" type="Number" optional>
   The tokens the judge model received to score this evaluation, read-only and set by the API. It covers the metric prompt and the session content. Null when the judge model reported no usage, which is different from 0.
 </ResponseField>
@@ -158,7 +172,7 @@ Once an evaluation completes, the following fields are available:
   How a [classifier](/concepts/metric/classifier) metric reached its score, read-only and set by the API. Present only for `CLASSIFIER` metrics. The fields depend on the question type:
 
   - `version`: the breakdown schema version, `2`.
-  - `model`: the classifier model that answered, such as `jev-1.13.0`. A gateway decision model answers with its base group name, so a metric on `eu.microsoft-decision-1` records `microsoft-decision-1`.
+  - `model`: the classifier model that answered, such as `jev-1.13.0`. It is the name the metric stores, such as `microsoft-decision-1`, also when an EU deployment answered.
   - `type`: `yes_no` or `scale`.
   - `value`: the score.
   - `confidence`: the same value as the evaluation's **Confidence**.
@@ -177,23 +191,23 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Human Evaluator ID" type="Text" optional>
-  The ID of the human evaluator assigned to this evaluation, if applicable.
+  The ID of the human evaluator of a Human Evaluation metric, if applicable. On a metric a judge scores, it is the annotator who last wrote the annotation of the case.
 </ResponseField>
 
 <ResponseField name="Human Score" type="Number" optional>
-  The human-provided annotation score, separate from the AI-generated score. When a human annotates an AI-evaluated metric, this field stores their score without overwriting the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results. A reviewer can remove the annotation again, which clears this field. Where the AI produced a score, every reported number goes back to it. Where the AI produced none, as on a failed, skipped or cancelled evaluation, the evaluation stops being reported at all. The removal is permanent: the score is deleted, not archived, so getting it back means annotating the evaluation again.
+  The human-provided annotation score, separate from the AI-generated score. On an AI-evaluated metric, it is the score of the [annotation](#human-annotations) of the case, which every revision of the metric shows. It never overwrites the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results. An annotator can remove the annotation again, which clears this field on every revision of the metric. Where the AI produced a score, every reported number goes back to it. Where the AI produced none, as on a failed, skipped or cancelled evaluation, the evaluation stops being reported at all. The removal is permanent: the score is deleted, not archived, so getting it back means annotating the case again.
 </ResponseField>
 
 <ResponseField name="Human Reason" type="Text" optional>
-  The human-provided annotation reason, separate from the AI-generated reason. When a human annotates an AI-evaluated metric, this field stores their reasoning without overwriting the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score. When the reviewer adds evidence from the conversation, the reason ends with an **Evidence from the conversation** footer that lists each quoted phrase and its note, and holds only that footer when no reason was typed.
+  The human-provided annotation reason, separate from the AI-generated reason. On an AI-evaluated metric, it is the reason of the same annotation as the human score. It never overwrites the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score. When the reviewer adds evidence from the conversation, the reason ends with an **Evidence from the conversation** footer that lists each quoted phrase and its note, and holds only that footer when no reason was typed.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Started At" type="Text" optional>
-  The timestamp when the human evaluator started reviewing this evaluation, if applicable.
+  The timestamp when the human evaluator claimed an evaluation of a Human Evaluation metric. It is always empty on a metric a judge scores, because annotating needs no claim.
 </ResponseField>
 
 <ResponseField name="Human Evaluator Finished At" type="Text" optional>
-  The timestamp when the human evaluator submitted their evaluation or annotation.
+  The timestamp when the human evaluator submitted an evaluation of a Human Evaluation metric. On a metric a judge scores, it is when the annotation of the case was last written.
 </ResponseField>
 
 ## Related

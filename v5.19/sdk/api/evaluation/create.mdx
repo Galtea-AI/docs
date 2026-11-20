@@ -1,0 +1,220 @@
+---
+title: 'Create Evaluations'
+sidebarTitle: "Create"
+description: "Create evaluations for all traces within a session, or evaluate a single trace using specified metrics."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/sdk/api/evaluation/create).
+</Warning>
+
+This method evaluates either:
+1. An entire conversation stored in a [Session](/v5.19/concepts/product/version/session) by creating evaluations for each of its [Traces](/v5.19/concepts/product/version/session/trace)
+2. A single [Trace](/v5.19/concepts/product/version/session/trace) by providing its ID
+
+## Returns
+Returns a list of [Evaluation](/v5.19/concepts/product/version/session/evaluation) objects, one for each metric provided.
+
+## Usage
+This method evaluates traces using the specified metrics. It supports both Galtea-hosted metrics and self-hosted custom metrics.
+
+<Note>
+  You must provide **either** `session_id` **or** `trace_id`, but not both. For single-turn evaluations, you can also use `galtea.traces.create_and_evaluate()` which combines creating a trace and evaluating it in one call.
+</Note>
+
+### Development Testing
+
+Evaluate by passing [Specification](/v5.19/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or by listing metric names explicitly.
+
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Resolve metrics automatically from linked specifications instead of listing them
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
+```python
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    metrics=[{"name": "Role Adherence"}, {"name": "Conversation Relevancy"}],
+)
+```
+  </Tab>
+</Tabs>
+
+**If you pre-computed the score (self-hosted metrics)**
+```python
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    metrics=[{"name": self_hosted_metric.name, "score": 0.85}],
+)
+```
+
+### Evaluating a Single Trace
+You can evaluate a specific trace by providing its ID instead of a session ID. Pass [Specification](/v5.19/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Evaluate the trace by resolving metrics from linked specifications
+evaluations = galtea.evaluations.create(
+    trace_id=trace_id,
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
+```python
+# Evaluate a specific trace by providing its ID
+evaluations = galtea.evaluations.create(
+    trace_id=trace_id,
+    metrics=[{"name": "Factual Accuracy"}, {"name": "Answer Relevancy"}],
+)
+```
+  </Tab>
+</Tabs>
+
+### Production Monitoring
+In order to monitor your product in a production environment, you can create evaluations not linked to a specific test case, but you need to set the `is_production` flag of the [Session](/v5.19/concepts/product/version/session) to `True`. Pass [Specification](/v5.19/concepts/product/specification) IDs so the API resolves their linked metrics automatically (recommended), or list metrics explicitly.
+<Tabs>
+  <Tab title="Using specification IDs">
+```python
+# Create a production session and a trace, then evaluate it by
+# resolving metrics from linked specifications (no need to list metrics)
+production_session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+galtea.traces.create(
+    session_id=production_session.id,
+    input="Production user query",
+    output="Production response",
+)
+
+evaluations = galtea.evaluations.create(
+    session_id=production_session.id,
+    specification_ids=[specification.id],
+)
+```
+  </Tab>
+  <Tab title="Using metrics">
+```python
+production_session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+# Create a trace for the production session first
+production_trace = galtea.traces.create(
+    session_id=production_session.id,
+    input="Production user query",
+    output="Production response",
+)
+
+evaluations = galtea.evaluations.create(
+    session_id=production_session.id,
+    metrics=[{"name": self_hosted_metric.name, "score": 0.85}],
+)
+```
+  </Tab>
+</Tabs>
+
+### Advanced Usage
+You can also create evaluations using self-hosted metrics with dynamically calculated scores by utilizing the `CustomScoreEvaluationMetric` class, which allows for more complex evaluation scenarios.
+```python 
+# First, create a session, in this case it is a production session, so we do not need a test case
+session = galtea.sessions.create(version_id=version_id, is_production=True)
+
+# Then, add some traces to the session
+galtea.traces.create_batch(
+    session_id=session.id,
+    conversation_turns=[
+        {"role": "user", "content": "Hi"},
+        {"role": "assistant", "content": "Hello!"},
+        {"role": "user", "content": "How are you?"},
+        {"role": "assistant", "content": "I am fine, thank you."},
+    ],
+)
+
+
+# Define scoring logic as a class
+class PolitenessCheck(CustomScoreEvaluationMetric):
+    def __init__(self):
+        super().__init__(name="politeness-check")
+
+    def measure(self, *args, actual_output: str | None = None, **kwargs) -> float:
+        if actual_output is None:
+            return 0.0
+        polite_words = ["please", "thank you", "you're welcome"]
+        return 1.0 if any(word in actual_output.lower() for word in polite_words) else 0.0
+
+
+# Create the metric in the platform if it doesn't exist yet
+# Note: This can be done via the Dashboard too
+try:
+    metric = galtea.metrics.get_by_name(name="politeness-check")
+except Exception:
+    metric = None
+if metric is None:
+    galtea.metrics.create(
+        name="politeness-check",
+        source="self_hosted",
+        description="Checks if polite words appear in the output",
+    )
+
+# Now, evaluate the entire session
+evaluations = galtea.evaluations.create(
+    session_id=session.id,
+    metrics=[
+        {"name": "Role Adherence"},  # You can use galtea-hosted metrics simultaneously
+        {"score": PolitenessCheck()},  # Self-hosted with dynamic scoring
+        # Note: No 'name' or 'id' in dict - it comes from PolitenessCheck(name="...")
+    ],
+)
+```
+
+<Note>
+  Both options are equally valid for self-hosted metrics. Choose based on your preference: pre-compute for simplicity, or use CustomScoreEvaluationMetric for encapsulation and reusability.
+</Note>
+
+<Info>
+  When using `CustomScoreEvaluationMetric`, your `measure()` method receives a `traces` parameter containing `Trace` objects — all turns for session evaluations, or a single-element list for single trace evaluations. This enables conversation-level custom scoring. See [Evaluate with Custom Metrics](/v5.19/sdk/tutorials/evaluate-with-custom-metrics#multi-turn-custom-metrics) for examples.
+</Info>
+
+## Parameters
+<ResponseField name="session_id" type="string" optional>
+  The ID of the session containing the traces to be evaluated.
+  
+  <Note>Either `session_id` or `trace_id` must be provided, but not both.</Note>
+</ResponseField>
+<ResponseField name="trace_id" type="string" optional>
+  The ID of a specific trace to evaluate.
+  
+  <Note>Either `session_id` or `trace_id` must be provided, but not both.</Note>
+</ResponseField>
+<ResponseField name="specification_ids" type="list[str]" optional>
+  A list of [Specification](/v5.19/concepts/product/specification) IDs. When provided, the evaluation uses the metrics linked to these specifications.
+  
+  Can be combined with `metrics` — the API merges and deduplicates by metric ID. If neither `metrics` nor `specification_ids` is provided, the API falls back to metrics from all specifications linked to the product.
+  
+  <Note>
+    This parameter allows you to evaluate against specific product specifications without manually listing all their associated metrics.
+  </Note>
+</ResponseField>
+<ResponseField name="metrics" type="list[str | CustomScoreEvaluationMetric | dict]" optional>
+  A list of metrics to use for the evaluation. 
+  
+  Optional when `specification_ids` is provided or when the product has specifications with linked metrics (in which case those metrics are used as a fallback).
+  
+  The `MetricInput` dictionary supports the following keys:
+  - `id` (string, optional): The ID of an existing metric
+  - `name` (string, optional): The name of the metric
+  - `score` (float | CustomScoreEvaluationMetric, optional): For self-hosted metrics only
+    - If `float`: Pre-computed score (0.0 to 1.0). Requires `id` or `name` in the dict.
+    - If `CustomScoreEvaluationMetric`: Score will be calculated dynamically. The CustomScoreEvaluationMetric instance must be initialized with `name` or `id`. Do NOT provide `id` or `name` in the dict when using this option.
+  
+  <Note>
+    For self-hosted metrics, both score options are equally valid: pre-compute as a float, or use CustomScoreEvaluationMetric for dynamic calculation. Galtea-hosted metrics automatically compute scores and should not include a `score` field.
+  </Note>
+</ResponseField>
+<ResponseField name="run_id" type="string" optional>
+  The [Run](/v5.19/concepts/product/run) these evaluations join. Defaults to the run of the enclosing `galtea.runs.start()` block, when there is one. An explicit value wins over the block.
+</ResponseField>

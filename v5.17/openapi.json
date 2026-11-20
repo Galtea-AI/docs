@@ -30376,7 +30376,7 @@
           }
         },
         "x-mint": {
-          "content": "<Warning>\n  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/api-reference/evaluations/release-a-claimed-evaluation-or-annotation).\n</Warning>\n"
+          "content": "<Warning>\n  You are reading the docs of Galtea 5.17. [Read this page in the latest version](/api-reference/evaluations/release-a-claimed-evaluation).\n</Warning>\n"
         }
       }
     },

@@ -189,11 +189,11 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Model ID" type="string" optional>
-  The [Model](/concepts/model) the span is linked to: a Model of your organization, or a global one, that has one of the span's model names. A name also matches without its provider prefix, and the first name that matches wins. Empty when no Model had any of them when the span was stored. Deleting the Model keeps the link, so it can name a deleted Model. Read-only.
+  The [Model](/concepts/model) the span is linked to: a Model of your organization, or a global one, that Galtea finds from the span's model names by the [name rule](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model). Empty when no Model had any of them when the span was stored. Deleting the Model keeps the link, so it can name a deleted Model. Read-only.
 </ResponseField>
 
 <ResponseField name="Input Tokens" type="int" optional>
-  Input tokens this LLM call reported, cached input included. Galtea sets this and the seven fields below when it stores the span; see [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost). The counts and cost of a trace are the sums over the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it, and a span that loses one side to a span below is priced again for the side it keeps. All eight are read-only, and `null` for a user without the `evaluation.readInference` permission (see [Roles and permissions](/security/roles-and-permissions)).
+  Input tokens this LLM call reported, cached input included. Galtea sets this and the seven fields below when it stores the span; see [Token usage and cost](/sdk/tutorials/send-opentelemetry-traces-to-galtea#token-usage-and-cost). The counts and cost of a trace are the sums over the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it (two sibling spans that report the same call both count, as a Mistral SDK span and its `llm_call_details` event do), and a span that loses one side to a span below is priced again for the side it keeps. All eight are read-only, and `null` for a user without the `evaluation.readInference` permission (see [Roles and permissions](/security/roles-and-permissions)).
 </ResponseField>
 
 <ResponseField name="Output Tokens" type="int" optional>
@@ -209,7 +209,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Cost Per Input Token" type="float" optional>
-  The input price the call was charged at. Galtea prices the call when it stores the span, at the [Model](/concepts/model) that answered it, and keeps that price if the Model price changes later. A span that names no model is priced at the Model linked to the Version. A span whose model has no price in your organization has no prices and no cost.
+  The input price the call was charged at. Galtea prices the call when it stores the span, at the [Model](/concepts/model) that answered it, and keeps that price if the Model price changes later. A span that names no model is priced at the Model linked to the Version. A span whose model matches no Model, or has no price, has no prices and no cost.
 </ResponseField>
 
 <ResponseField name="Cost Per Output Token" type="float" optional>

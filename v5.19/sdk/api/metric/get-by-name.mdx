@@ -1,0 +1,42 @@
+---
+title: 'Retrieving Metric By Name'
+sidebarTitle: "Get By Name"
+description: "Retrieve a specific metric by its name."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/sdk/api/metric/get-by-name).
+</Warning>
+
+## Returns
+Returns a [Metric](/v5.19/concepts/metric) object for the given metric name.
+
+## Example
+```python
+metric = galtea.metrics.get_by_name(name=metric_name)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  The name of the metric you want to retrieve.
+</ResponseField>
+
+## How a name is resolved
+
+The platform looks for the name in two steps:
+
+1. A metric whose name it is. The call returns that metric's active revision.
+2. Only when no metric you can see holds the name: an active revision saved under that name as its own.
+
+A revision can keep its own name after its metric is renamed. In that case the returned `name` is the revision's own name, so it can differ from the name you asked for. Do not compare the returned `name` with the name you passed.
+
+<Tip>
+  Names can change. When you have a metric's ID, call [`galtea.metrics.get`](/v5.19/sdk/api/metric/get) instead.
+</Tip>
+
+## Errors
+
+| Error | Cause |
+|-------|-------|
+| `EntityNotFoundException` | No metric and no active revision carries that name. Import it with `from galtea import EntityNotFoundException`. |
+| `AmbiguousMetricNameException` | No metric holds the name, and more than one active revision carries it as its own name. The API answers 409. Import it with `from galtea import AmbiguousMetricNameException`, then call [`galtea.metrics.get`](/v5.19/sdk/api/metric/get) with the ID of the metric you mean. |

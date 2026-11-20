@@ -1,0 +1,79 @@
+---
+title: 'observe'
+description: "Drop-in replacement for Langfuse's @observe decorator with Galtea span linking."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/sdk/api/langfuse/observe).
+</Warning>
+
+## Example
+
+```python
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="my-agent", as_type="agent")
+def run_agent(user_input: str) -> str:
+    context = retrieve(user_input)
+    return generate(user_input, context)
+
+
+# Without Galtea correlation (traces go to Langfuse only):
+result = run_agent("What is gestational diabetes?")
+
+# With Galtea correlation (traces go to both Langfuse and Galtea):
+result = run_agent("What is gestational diabetes?", trace_id="trace_abc123")
+```
+
+## Decorator Parameters
+
+These parameters are passed to `@observe(...)` and forwarded directly to Langfuse's `@observe`:
+
+<ResponseField name="name" type="str" optional>
+  Custom span name. Defaults to the decorated function's name.
+</ResponseField>
+<ResponseField name="as_type" type="str" optional>
+  Langfuse observation type: `span` (default), `generation`, `agent`, `tool`, `retriever`, `chain`, `evaluator`, `embedding`, `guardrail`. Mapped to Galtea's `SpanType` automatically. See [observation types](/v5.19/sdk/integrations/langfuse/overview#observation-types).
+</ResponseField>
+
+All other Langfuse `@observe` keyword arguments are forwarded as-is.
+
+## Runtime Kwargs
+
+These kwargs are passed when **calling** the decorated function (not when defining the decorator):
+
+<ResponseField name="trace_id" type="str" optional>
+  Galtea trace ID to link spans to. When provided on the **outermost** `@observe` call, the wrapper manages the span context automatically. Consumed by the wrapper — does not reach the decorated function's parameters.
+</ResponseField>
+
+<Note>
+  If `trace_id` is passed to a nested `@observe` call where an outer context is already active, it is ignored — the outermost context takes precedence.
+</Note>
+
+## Returns
+
+Returns the decorated function with Langfuse tracing and optional Galtea span linking enabled. The return type and signature of the decorated function are preserved.
+
+## Async support
+
+`@observe` works on both `def` and `async def` functions. When the wrapped function is a coroutine, the decorator returns an async wrapper that awaits the coroutine before clearing the Galtea context — so spans inside the awaited body are correctly stamped with `trace_id`.
+
+```python
+import asyncio
+
+from galtea.integrations.langfuse import observe
+
+
+@observe(name="my-async-agent", as_type="agent")
+async def run_async_agent(user_input: str) -> str:
+    # Awaitable retrieval and generation steps inside the agent.
+    context = await retrieve_async(user_input)
+    return await generate_async(user_input, context)
+
+
+# `@observe` detects the wrapped function is `async def` and returns an async
+# wrapper that awaits the coroutine before clearing context. Call it like any
+# other coroutine:
+result = asyncio.run(run_async_agent("What is gestational diabetes?", trace_id="trace_abc123"))
+```

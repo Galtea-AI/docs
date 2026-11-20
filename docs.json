@@ -81,7 +81,7 @@
     },
     "versions": [
       {
-        "version": "5.19",
+        "version": "5.20",
         "default": true,
         "tag": "Latest",
         "tabs": [
@@ -792,6 +792,724 @@
               {
                 "group": "Endpoints",
                 "openapi": "/openapi.json"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "version": "5.19",
+        "tabs": [
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "v5.19/introduction",
+                  "v5.19/registration",
+                  "v5.19/quickstart",
+                  "v5.19/connect-your-agent"
+                ]
+              },
+              {
+                "group": "Core Workflows",
+                "icon": "play",
+                "pages": [
+                  "v5.19/sdk/tutorials/writing-specifications",
+                  "v5.19/sdk/tutorials/specification-driven-evaluations",
+                  "v5.19/sdk/tutorials/simulating-conversations",
+                  "v5.19/sdk/tutorials/evaluating-conversations",
+                  "v5.19/sdk/tutorials/create-dataset",
+                  "v5.19/sdk/tutorials/run-dataset-based-evaluations",
+                  "v5.19/sdk/tutorials/evaluate-document-inputs",
+                  "v5.19/sdk/tutorials/direct-inferences-and-evaluations-from-platform"
+                ]
+              },
+              {
+                "group": "Production & Monitoring",
+                "icon": "chart-line",
+                "pages": [
+                  "v5.19/sdk/tutorials/monitor-production-responses-to-user-queries",
+                  "v5.19/sdk/tutorials/send-opentelemetry-traces-to-galtea",
+                  "v5.19/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry"
+                ]
+              },
+              {
+                "group": "Advanced",
+                "icon": "wand-magic-sparkles",
+                "pages": [
+                  "v5.19/sdk/tutorials/how-to-create-your-llm-as-a-judge-prompt",
+                  "v5.19/sdk/tutorials/evaluate-with-custom-metrics",
+                  "v5.19/sdk/tutorials/tracing-agent-operations",
+                  "v5.19/sdk/tutorials/how-to-evaluate-your-agentic-system",
+                  "v5.19/sdk/tutorials/human-evaluation"
+                ]
+              },
+              {
+                "group": "Playbooks",
+                "icon": "book-open",
+                "pages": [
+                  "v5.19/playbooks/improve-product-with-ai-agent"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "pages": [
+                  "v5.19/sdk/integrations/agent-skill",
+                  "v5.19/sdk/integrations/claude-code-tracing",
+                  {
+                    "group": "Langfuse",
+                    "icon": "eye",
+                    "pages": [
+                      "v5.19/sdk/integrations/langfuse/overview",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/langfuse/service",
+                          "v5.19/sdk/api/langfuse/observe",
+                          "v5.19/sdk/api/langfuse/start-as-current-observation",
+                          "v5.19/sdk/api/langfuse/callback-handler"
+                        ]
+                      },
+                      "v5.19/sdk/integrations/langfuse/integration-guide"
+                    ]
+                  },
+                  "v5.19/sdk/integrations/github-actions",
+                  "v5.19/sdk/integrations/slng"
+                ]
+              },
+              {
+                "group": "Security & Administration",
+                "icon": "shield-halved",
+                "pages": [
+                  "v5.19/security/roles-and-permissions",
+                  "v5.19/security/data-region",
+                  "v5.19/security/verify-galteactl-release",
+                  {
+                    "group": "SAML SSO",
+                    "icon": "building-lock",
+                    "pages": [
+                      "v5.19/security/saml-sso",
+                      "v5.19/security/saml-sso/azure",
+                      "v5.19/security/saml-sso/okta",
+                      "v5.19/security/saml-sso/google"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Migration Guides",
+                "icon": "arrow-right-arrow-left",
+                "pages": [
+                  "v5.19/sdk/migration-guides/entity-renames"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Concepts",
+            "groups": [
+              {
+                "group": "Introduction",
+                "pages": [
+                  "v5.19/concepts/overview"
+                ]
+              },
+              {
+                "group": "SDK",
+                "pages": [
+                  "v5.19/sdk/installation",
+                  "v5.19/sdk/usage",
+                  "v5.19/sdk/api/galtea"
+                ]
+              },
+              {
+                "group": "CLI",
+                "pages": [
+                  "v5.19/cli/installation",
+                  "v5.19/cli/usage"
+                ]
+              },
+              {
+                "group": "Concepts",
+                "pages": [
+                  {
+                    "group": "Product",
+                    "icon": "cube",
+                    "pages": [
+                      "v5.19/concepts/product",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/product/service",
+                          "v5.19/sdk/api/product/list",
+                          "v5.19/sdk/api/product/get",
+                          "v5.19/sdk/api/product/get-by-name",
+                          "v5.19/sdk/api/product/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Specification",
+                    "icon": "bullseye",
+                    "pages": [
+                      "v5.19/concepts/product/specification",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/specification/service",
+                          "v5.19/sdk/api/specification/create",
+                          "v5.19/sdk/api/specification/list",
+                          "v5.19/sdk/api/specification/get",
+                          "v5.19/sdk/api/specification/delete",
+                          "v5.19/sdk/api/specification/link-metrics",
+                          "v5.19/sdk/api/specification/unlink-metrics",
+                          "v5.19/sdk/api/specification/get-metrics",
+                          "v5.19/sdk/api/specification/link-datasets",
+                          "v5.19/sdk/api/specification/unlink-datasets",
+                          "v5.19/sdk/api/specification/get-datasets"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Monitor",
+                    "icon": "gauge-high",
+                    "pages": [
+                      "v5.19/concepts/product/monitor",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/monitor/service",
+                          "v5.19/sdk/api/monitor/create",
+                          "v5.19/sdk/api/monitor/list",
+                          "v5.19/sdk/api/monitor/get",
+                          "v5.19/sdk/api/monitor/update",
+                          "v5.19/sdk/api/monitor/pause",
+                          "v5.19/sdk/api/monitor/resume",
+                          "v5.19/sdk/api/monitor/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Version",
+                    "icon": "code-branch",
+                    "pages": [
+                      "v5.19/concepts/product/version",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/version/service",
+                          "v5.19/sdk/api/version/create",
+                          "v5.19/sdk/api/version/get-or-create",
+                          "v5.19/sdk/api/version/list",
+                          "v5.19/sdk/api/version/get",
+                          "v5.19/sdk/api/version/get-by-name",
+                          "v5.19/sdk/api/version/update",
+                          "v5.19/sdk/api/version/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Endpoint Connection",
+                    "icon": "plug",
+                    "pages": [
+                      "v5.19/concepts/product/endpoint-connection",
+                      "v5.19/concepts/product/endpoint-connection-input-schema",
+                      "v5.19/concepts/product/endpoint-connection-configuration",
+                      "v5.19/concepts/product/endpoint-connection-template-syntax",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/endpoint-connection/service",
+                          "v5.19/sdk/api/endpoint-connection/create",
+                          "v5.19/sdk/api/endpoint-connection/list",
+                          "v5.19/sdk/api/endpoint-connection/get",
+                          "v5.19/sdk/api/endpoint-connection/get-by-name",
+                          "v5.19/sdk/api/endpoint-connection/update",
+                          "v5.19/sdk/api/endpoint-connection/delete",
+                          "v5.19/sdk/api/endpoint-connection/test-connection"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Phone Connection",
+                    "icon": "phone",
+                    "pages": [
+                      "v5.19/concepts/product/phone-connection",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/phone-connection/service",
+                          "v5.19/sdk/api/phone-connection/create",
+                          "v5.19/sdk/api/phone-connection/list",
+                          "v5.19/sdk/api/phone-connection/get",
+                          "v5.19/sdk/api/phone-connection/get-by-name",
+                          "v5.19/sdk/api/phone-connection/update",
+                          "v5.19/sdk/api/phone-connection/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "WebRTC Connection",
+                    "icon": "tower-broadcast",
+                    "pages": [
+                      "v5.19/concepts/product/webrtc-connection",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/webrtc-connection/service",
+                          "v5.19/sdk/api/webrtc-connection/create",
+                          "v5.19/sdk/api/webrtc-connection/list",
+                          "v5.19/sdk/api/webrtc-connection/get",
+                          "v5.19/sdk/api/webrtc-connection/get-by-name",
+                          "v5.19/sdk/api/webrtc-connection/update",
+                          "v5.19/sdk/api/webrtc-connection/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Dataset",
+                    "icon": "vial-circle-check",
+                    "pages": [
+                      "v5.19/concepts/product/dataset",
+                      "v5.19/concepts/product/dataset/data-augmentation",
+                      "v5.19/concepts/product/dataset/extend-test-cases",
+                      {
+                        "group": "Accuracy",
+                        "icon": "certificate",
+                        "pages": [
+                          "v5.19/concepts/product/dataset/accuracy-datasets"
+                        ]
+                      },
+                      {
+                        "group": "Security & Safety",
+                        "icon": "shield-check",
+                        "pages": [
+                          "v5.19/concepts/product/dataset/security-datasets",
+                          "v5.19/concepts/product/dataset/security-threats",
+                          "v5.19/concepts/product/dataset/security-strategies"
+                        ]
+                      },
+                      {
+                        "group": "Behavior",
+                        "icon": "person-walking",
+                        "pages": [
+                          "v5.19/concepts/product/dataset/behavior-datasets"
+                        ]
+                      },
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/dataset/service",
+                          "v5.19/sdk/api/dataset/create",
+                          "v5.19/sdk/api/dataset/list",
+                          "v5.19/sdk/api/dataset/get",
+                          "v5.19/sdk/api/dataset/get-by-name",
+                          "v5.19/sdk/api/dataset/update",
+                          "v5.19/sdk/api/dataset/delete",
+                          "v5.19/sdk/api/dataset/download"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Test Case",
+                    "icon": "list",
+                    "pages": [
+                      "v5.19/concepts/product/dataset/test-case",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/test-case/service",
+                          "v5.19/sdk/api/test-case/create",
+                          "v5.19/sdk/api/test-case/upload-input-file",
+                          "v5.19/sdk/api/test-case/list",
+                          "v5.19/sdk/api/test-case/get",
+                          "v5.19/sdk/api/test-case/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Conversation Simulator",
+                    "icon": "comments",
+                    "pages": [
+                      "v5.19/concepts/product/dataset/test-case/conversation-simulator",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/simulator/service",
+                          "v5.19/sdk/api/simulator/simulate"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Agent",
+                    "icon": "robot",
+                    "pages": [
+                      "v5.19/sdk/api/agent/input"
+                    ]
+                  },
+                  {
+                    "group": "Session",
+                    "icon": "clock-rotate-left",
+                    "pages": [
+                      "v5.19/concepts/product/version/session",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/session/service",
+                          "v5.19/sdk/api/session/create",
+                          "v5.19/sdk/api/session/get-or-create",
+                          "v5.19/sdk/api/session/list",
+                          "v5.19/sdk/api/session/get",
+                          "v5.19/sdk/api/session/get-by-custom-id",
+                          "v5.19/sdk/api/session/delete",
+                          "v5.19/sdk/api/session/update",
+                          "v5.19/sdk/api/session/finish"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Trace",
+                    "icon": "arrow-right-from-bracket",
+                    "pages": [
+                      "v5.19/concepts/product/version/session/trace",
+                      "v5.19/concepts/product/version/session/content-parts",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/trace/service",
+                          "v5.19/sdk/api/trace/generate",
+                          "v5.19/sdk/api/trace/create",
+                          "v5.19/sdk/api/trace/create-and-evaluate",
+                          "v5.19/sdk/api/trace/create-batch",
+                          "v5.19/sdk/api/trace/update",
+                          "v5.19/sdk/api/trace/upload-output-file",
+                          "v5.19/sdk/api/trace/list",
+                          "v5.19/sdk/api/trace/get",
+                          "v5.19/sdk/api/trace/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Span",
+                    "icon": "sitemap",
+                    "pages": [
+                      "v5.19/concepts/product/version/session/span",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/span/service",
+                          "v5.19/sdk/api/span/start-span",
+                          "v5.19/sdk/api/span/set-context",
+                          "v5.19/sdk/api/span/clear-context",
+                          "v5.19/sdk/api/span/create",
+                          "v5.19/sdk/api/span/create-batch",
+                          "v5.19/sdk/api/span/list",
+                          "v5.19/sdk/api/span/get",
+                          "v5.19/sdk/api/span/delete",
+                          "v5.19/sdk/api/span/traced-decorator"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Metrics",
+                    "icon": "gauge",
+                    "pages": [
+                      "v5.19/concepts/metric",
+                      "v5.19/concepts/metric/evaluation-types",
+                      "v5.19/concepts/metric/evaluation-parameters",
+                      "v5.19/concepts/metric/ai-generation",
+                      "v5.19/concepts/metric/classifier",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/metric/service",
+                          "v5.19/sdk/api/metric/create",
+                          "v5.19/sdk/api/metric/list",
+                          "v5.19/sdk/api/metric/get",
+                          "v5.19/sdk/api/metric/get-by-name",
+                          "v5.19/sdk/api/metric/delete",
+                          "v5.19/sdk/api/metric/set-analytics-exclusion",
+                          "v5.19/sdk/api/metric/get-analytics-exclusion-impact"
+                        ]
+                      },
+                      {
+                        "group": "RAG",
+                        "icon": "magnifying-glass-chart",
+                        "pages": [
+                          "v5.19/concepts/metric/factual-accuracy",
+                          "v5.19/concepts/metric/resilience-to-noise",
+                          "v5.19/concepts/metric/answer-relevancy",
+                          "v5.19/concepts/metric/faithfulness",
+                          "v5.19/concepts/metric/contextual-relevancy"
+                        ]
+                      },
+                      {
+                        "group": "Conversational",
+                        "icon": "message",
+                        "pages": [
+                          "v5.19/concepts/metric/knowledge-retention",
+                          "v5.19/concepts/metric/role-adherence",
+                          "v5.19/concepts/metric/conversation-completeness",
+                          "v5.19/concepts/metric/conversation-relevancy",
+                          "v5.19/concepts/metric/user-satisfaction",
+                          "v5.19/concepts/metric/user-objective-accomplished"
+                        ]
+                      },
+                      {
+                        "group": "Security & Safety",
+                        "icon": "shield-check",
+                        "pages": [
+                          "v5.19/concepts/metric/misuse-resilience",
+                          "v5.19/concepts/metric/non-toxic",
+                          "v5.19/concepts/metric/unbiased",
+                          "v5.19/concepts/metric/jailbreak-resilience",
+                          "v5.19/concepts/metric/data-leakage"
+                        ]
+                      },
+                      {
+                        "group": "Deterministic",
+                        "icon": "calculator",
+                        "pages": [
+                          "v5.19/concepts/metric/bleu",
+                          "v5.19/concepts/metric/rouge",
+                          "v5.19/concepts/metric/meteor",
+                          "v5.19/concepts/metric/text-similarity",
+                          "v5.19/concepts/metric/iou",
+                          "v5.19/concepts/metric/spatial-match",
+                          "v5.19/concepts/metric/url-validation",
+                          "v5.19/concepts/metric/tool-correctness",
+                          "v5.19/concepts/metric/json-field-match",
+                          "v5.19/concepts/metric/json-field-match-normalized",
+                          "v5.19/concepts/metric/json-field-match-strict",
+                          "v5.19/concepts/metric/json-field-match-normalized-strict"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Evaluation",
+                    "icon": "clipboard-check",
+                    "pages": [
+                      "v5.19/concepts/product/version/session/evaluation",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/evaluation/service",
+                          "v5.19/sdk/api/evaluation/run",
+                          "v5.19/sdk/api/evaluation/create-single-turn",
+                          "v5.19/sdk/api/evaluation/create",
+                          "v5.19/sdk/api/evaluation/wait-for",
+                          "v5.19/sdk/api/evaluation/list",
+                          "v5.19/sdk/api/evaluation/get",
+                          "v5.19/sdk/api/evaluation/retry",
+                          "v5.19/sdk/api/evaluation/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Run",
+                    "icon": "rocket",
+                    "pages": [
+                      "v5.19/concepts/product/run",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/run/service",
+                          "v5.19/sdk/api/run/start",
+                          "v5.19/sdk/api/run/list",
+                          "v5.19/sdk/api/run/get",
+                          "v5.19/sdk/api/run/get-by-custom-id",
+                          "v5.19/sdk/api/run/close",
+                          "v5.19/sdk/api/run/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Job",
+                    "icon": "circle-stop",
+                    "pages": [
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/job/service",
+                          "v5.19/sdk/api/job/get-status",
+                          "v5.19/sdk/api/job/cancel"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Storage",
+                    "icon": "box",
+                    "pages": [
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/storage/service",
+                          "v5.19/sdk/api/storage/upload",
+                          "v5.19/sdk/api/storage/download",
+                          "v5.19/sdk/api/storage/read"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "User Group",
+                    "icon": "users",
+                    "pages": [
+                      "v5.19/concepts/user-group",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/user-group/service",
+                          "v5.19/sdk/api/user-group/create",
+                          "v5.19/sdk/api/user-group/list",
+                          "v5.19/sdk/api/user-group/get",
+                          "v5.19/sdk/api/user-group/get-by-name",
+                          "v5.19/sdk/api/user-group/update",
+                          "v5.19/sdk/api/user-group/delete",
+                          "v5.19/sdk/api/user-group/link-users",
+                          "v5.19/sdk/api/user-group/unlink-users",
+                          "v5.19/sdk/api/user-group/link-metrics",
+                          "v5.19/sdk/api/user-group/unlink-metrics",
+                          "v5.19/sdk/api/user-group/link-products",
+                          "v5.19/sdk/api/user-group/unlink-products"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Model",
+                    "icon": "microchip",
+                    "pages": [
+                      "v5.19/concepts/model",
+                      {
+                        "group": "SDK",
+                        "icon": "code",
+                        "pages": [
+                          "v5.19/sdk/api/model/service",
+                          "v5.19/sdk/api/model/create",
+                          "v5.19/sdk/api/model/list",
+                          "v5.19/sdk/api/model/get",
+                          "v5.19/sdk/api/model/get-by-name",
+                          "v5.19/sdk/api/model/update",
+                          "v5.19/sdk/api/model/delete"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Deployment",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "compass",
+                "pages": [
+                  "v5.19/deployment/executive-summary",
+                  "v5.19/deployment/choosing-a-model",
+                  "v5.19/deployment/reference-architecture"
+                ]
+              },
+              {
+                "group": "Deployment Models",
+                "icon": "layer-group",
+                "pages": [
+                  "v5.19/deployment/model-shared-saas",
+                  "v5.19/deployment/model-enterprise-organization",
+                  "v5.19/deployment/model-private-tenant",
+                  "v5.19/deployment/model-managed-in-your-cluster",
+                  "v5.19/deployment/model-self-hosted"
+                ]
+              },
+              {
+                "group": "Install and Operate",
+                "icon": "rocket",
+                "pages": [
+                  "v5.19/deployment/prerequisites-checklist",
+                  "v5.19/deployment/cloud-specifics",
+                  "v5.19/deployment/install-and-lifecycle",
+                  "v5.19/deployment/installation-examples",
+                  "v5.19/deployment/observability-and-operations"
+                ]
+              },
+              {
+                "group": "Connectivity and Security",
+                "icon": "shield-halved",
+                "pages": [
+                  "v5.19/deployment/security-assurance",
+                  "v5.19/deployment/connectivity-implementation",
+                  "v5.19/deployment/connectivity-reference",
+                  "v5.19/deployment/connecting-to-the-galtea-vpn"
+                ]
+              },
+              {
+                "group": "Reference",
+                "icon": "book",
+                "pages": [
+                  "v5.19/deployment/responsibilities",
+                  "v5.19/deployment/boundaries",
+                  "v5.19/deployment/glossary-and-faq"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "REST API",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "v5.19/api-reference/write-responses",
+                  "v5.19/api-reference/enum-values"
+                ]
+              },
+              {
+                "group": "Endpoints",
+                "openapi": {
+                  "source": "/v5.19/openapi.json",
+                  "directory": "v5.19/api-reference"
+                }
               }
             ]
           }
@@ -7648,6 +8366,410 @@
       "destination": "/sdk/integrations/langfuse/integration-guide"
     },
     {
+      "source": "/v5.19/concepts/product/version/session/inference-result",
+      "destination": "/v5.19/concepts/product/version/session/trace"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/service",
+      "destination": "/v5.19/sdk/api/trace/service"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/generate",
+      "destination": "/v5.19/sdk/api/trace/generate"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/create",
+      "destination": "/v5.19/sdk/api/trace/create"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/create-and-evaluate",
+      "destination": "/v5.19/sdk/api/trace/create-and-evaluate"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/create-batch",
+      "destination": "/v5.19/sdk/api/trace/create-batch"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/update",
+      "destination": "/v5.19/sdk/api/trace/update"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/list",
+      "destination": "/v5.19/sdk/api/trace/list"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/get",
+      "destination": "/v5.19/sdk/api/trace/get"
+    },
+    {
+      "source": "/v5.19/sdk/api/inference-result/delete",
+      "destination": "/v5.19/sdk/api/trace/delete"
+    },
+    {
+      "source": "/v5.19/sdk/api/trace/start-trace",
+      "destination": "/v5.19/sdk/api/span/start-span"
+    },
+    {
+      "source": "/v5.19/sdk/api/trace/set-context",
+      "destination": "/v5.19/sdk/api/span/set-context"
+    },
+    {
+      "source": "/v5.19/sdk/api/trace/clear-context",
+      "destination": "/v5.19/sdk/api/span/clear-context"
+    },
+    {
+      "source": "/v5.19/sdk/api/trace/trace-decorator",
+      "destination": "/v5.19/sdk/api/span/traced-decorator"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/monitor-production-with-opentelemetry",
+      "destination": "/v5.19/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry"
+    },
+    {
+      "source": "/v5.19/concepts/product#how-everything-connects",
+      "destination": "/v5.19/concepts/overview"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/quality-tests",
+      "destination": "/v5.19/concepts/product/dataset/accuracy-datasets"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/red-teaming-tests",
+      "destination": "/v5.19/concepts/product/dataset/security-datasets"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/red-teaming-threats",
+      "destination": "/v5.19/concepts/product/dataset/security-threats"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/red-teaming-strategies",
+      "destination": "/v5.19/concepts/product/dataset/security-strategies"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/scenario-tests",
+      "destination": "/v5.19/concepts/product/dataset/behavior-datasets"
+    },
+    {
+      "source": "/v5.19/concepts/product/test",
+      "destination": "/v5.19/concepts/product/dataset"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/data-augmentation",
+      "destination": "/v5.19/concepts/product/dataset/data-augmentation"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/extend-test-cases",
+      "destination": "/v5.19/concepts/product/dataset/extend-test-cases"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/accuracy-tests",
+      "destination": "/v5.19/concepts/product/dataset/accuracy-datasets"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/security-tests",
+      "destination": "/v5.19/concepts/product/dataset/security-datasets"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/security-threats",
+      "destination": "/v5.19/concepts/product/dataset/security-threats"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/security-strategies",
+      "destination": "/v5.19/concepts/product/dataset/security-strategies"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/behavior-tests",
+      "destination": "/v5.19/concepts/product/dataset/behavior-datasets"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/case",
+      "destination": "/v5.19/concepts/product/dataset/test-case"
+    },
+    {
+      "source": "/v5.19/concepts/product/test/case/conversation-simulator",
+      "destination": "/v5.19/concepts/product/dataset/test-case/conversation-simulator"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/service",
+      "destination": "/v5.19/sdk/api/dataset/service"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/create",
+      "destination": "/v5.19/sdk/api/dataset/create"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/list",
+      "destination": "/v5.19/sdk/api/dataset/list"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/get",
+      "destination": "/v5.19/sdk/api/dataset/get"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/get-by-name",
+      "destination": "/v5.19/sdk/api/dataset/get-by-name"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/update",
+      "destination": "/v5.19/sdk/api/dataset/update"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/delete",
+      "destination": "/v5.19/sdk/api/dataset/delete"
+    },
+    {
+      "source": "/v5.19/sdk/api/test/download",
+      "destination": "/v5.19/sdk/api/dataset/download"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/create-test",
+      "destination": "/v5.19/sdk/tutorials/create-dataset"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/run-test-based-evaluations",
+      "destination": "/v5.19/sdk/tutorials/run-dataset-based-evaluations"
+    },
+    {
+      "source": "/v5.19/sdk/api/specification/get-tests",
+      "destination": "/v5.19/sdk/api/specification/get-datasets"
+    },
+    {
+      "source": "/v5.19/sdk/api/specification/link-tests",
+      "destination": "/v5.19/sdk/api/specification/link-datasets"
+    },
+    {
+      "source": "/v5.19/sdk/api/specification/unlink-tests",
+      "destination": "/v5.19/sdk/api/specification/unlink-datasets"
+    },
+    {
+      "source": "/v5.19/sdk/api/version/evaluate",
+      "destination": "/v5.19/sdk/api/evaluation/run"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation/launch",
+      "destination": "/v5.19/sdk/api/evaluation/run"
+    },
+    {
+      "source": "/v5.19/sdk/introduction",
+      "destination": "/v5.19/sdk/installation"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type",
+      "destination": "/v5.19/concepts/metric"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/answer-relevancy",
+      "destination": "/v5.19/concepts/metric/answer-relevancy"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/bleu",
+      "destination": "/v5.19/concepts/metric/bleu"
+    },
+    {
+      "source": "/v5.19/concepts/metric/contextual-precision",
+      "destination": "/v5.19/concepts/metric"
+    },
+    {
+      "source": "/v5.19/concepts/metric/contextual-recall",
+      "destination": "/v5.19/concepts/metric"
+    },
+    {
+      "source": "/v5.19/concepts/metric/text-match",
+      "destination": "/v5.19/concepts/metric/text-similarity"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/contextual-precision",
+      "destination": "/v5.19/concepts/metric"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/contextual-recall",
+      "destination": "/v5.19/concepts/metric"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/contextual-relevancy",
+      "destination": "/v5.19/concepts/metric/contextual-relevancy"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/conversation-completeness",
+      "destination": "/v5.19/concepts/metric/conversation-completeness"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/conversation-relevancy",
+      "destination": "/v5.19/concepts/metric/conversation-relevancy"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/custom-judge",
+      "destination": "/v5.19/concepts/metric/evaluation-types#ai-evaluation"
+    },
+    {
+      "source": "/v5.19/concepts/metric/custom-judge",
+      "destination": "/v5.19/concepts/metric/evaluation-types#ai-evaluation"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/data-leakage",
+      "destination": "/v5.19/concepts/metric/data-leakage"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/factual-accuracy",
+      "destination": "/v5.19/concepts/metric/factual-accuracy"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/faithfulness",
+      "destination": "/v5.19/concepts/metric/faithfulness"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/iou",
+      "destination": "/v5.19/concepts/metric/iou"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/jailbreak-resilience",
+      "destination": "/v5.19/concepts/metric/jailbreak-resilience"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/jailbreak-resilience-v2",
+      "destination": "/v5.19/concepts/metric/jailbreak-resilience"
+    },
+    {
+      "source": "/v5.19/concepts/metric/jailbreak-resilience-v2",
+      "destination": "/v5.19/concepts/metric/jailbreak-resilience"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/knowledge-retention",
+      "destination": "/v5.19/concepts/metric/knowledge-retention"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/meteor",
+      "destination": "/v5.19/concepts/metric/meteor"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/misuse-resilience",
+      "destination": "/v5.19/concepts/metric/misuse-resilience"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/non-toxic",
+      "destination": "/v5.19/concepts/metric/non-toxic"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/resilience-to-noise",
+      "destination": "/v5.19/concepts/metric/resilience-to-noise"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/role-adherence",
+      "destination": "/v5.19/concepts/metric/role-adherence"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/rouge",
+      "destination": "/v5.19/concepts/metric/rouge"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/spatial-match",
+      "destination": "/v5.19/concepts/metric/spatial-match"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/text-match",
+      "destination": "/v5.19/concepts/metric/text-similarity"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/text-similarity",
+      "destination": "/v5.19/concepts/metric/text-similarity"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/unbiased",
+      "destination": "/v5.19/concepts/metric/unbiased"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/url-validation",
+      "destination": "/v5.19/concepts/metric/url-validation"
+    },
+    {
+      "source": "/v5.19/concepts/metric-type/tool-correctness",
+      "destination": "/v5.19/concepts/metric/tool-correctness"
+    },
+    {
+      "source": "/v5.19/concepts/product/version/session/evaluation/task",
+      "destination": "/v5.19/concepts/product/version/session/evaluation"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics",
+      "destination": "/v5.19/sdk/api/metric"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics/service",
+      "destination": "/v5.19/sdk/api/metric/service"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics/create",
+      "destination": "/v5.19/sdk/api/metric/create"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics/list",
+      "destination": "/v5.19/sdk/api/metric/list"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics/get",
+      "destination": "/v5.19/sdk/api/metric/get"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics/get-by-name",
+      "destination": "/v5.19/sdk/api/metric/get-by-name"
+    },
+    {
+      "source": "/v5.19/sdk/api/metrics/delete",
+      "destination": "/v5.19/sdk/api/metric/delete"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task",
+      "destination": "/v5.19/sdk/api/evaluation"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task/service",
+      "destination": "/v5.19/sdk/api/evaluation/service"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task/create-single-turn",
+      "destination": "/v5.19/sdk/api/evaluation/create-single-turn"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task/create",
+      "destination": "/v5.19/sdk/api/evaluation/create"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task/list",
+      "destination": "/v5.19/sdk/api/evaluation/list"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task/get",
+      "destination": "/v5.19/sdk/api/evaluation/get"
+    },
+    {
+      "source": "/v5.19/sdk/api/evaluation-task/delete",
+      "destination": "/v5.19/sdk/api/evaluation/delete"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/create-product-description",
+      "destination": "/v5.19/sdk/tutorials/writing-specifications"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/create-evaluation",
+      "destination": "/v5.19/sdk/tutorials/run-dataset-based-evaluations"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/create-evaluation-with-custom-scores",
+      "destination": "/v5.19/sdk/tutorials/evaluate-with-custom-metrics"
+    },
+    {
+      "source": "/v5.19/sdk/tutorials/specifications",
+      "destination": "/v5.19/sdk/tutorials/specification-driven-evaluations"
+    },
+    {
+      "source": "/v5.19/sdk/integrations/langfuse/migration-guide",
+      "destination": "/v5.19/sdk/integrations/langfuse/integration-guide"
+    },
+    {
+      "source": "/v5.19/changelog",
+      "destination": "/changelog"
+    },
+    {
       "source": "/v5.18/concepts/product/version/session/inference-result",
       "destination": "/v5.18/concepts/product/version/session/trace"
     },
@@ -11212,7 +12334,7 @@
       "destination": "/changelog"
     },
     {
-      "source": "/v5.19/:slug*",
+      "source": "/v5.20/:slug*",
       "destination": "/:slug*"
     },
     {

@@ -4,6 +4,64 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="5.20.0" description="2026-11-20">
+
+## Mistral Workflows Calls Take Their Tokens From the Event
+
+A Mistral Workflows LLM call that the Mistral SDK does not trace, such as a call through your own HTTP gateway, can now report its tokens. Add `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` and `gen_ai.usage.cache_read.input_tokens` to its `llm_call_details` event. Galtea stores these counts on the span and prices the call from its model. See [Monitor a Mistral Workflows agent](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#monitor-a-mistral-workflows-agent).
+
+## LLM Spans Find Their Model Price in More Cases
+
+An LLM span now finds its [model](/concepts/model) when its name has a date or lacks the provider prefix of the catalog: `gpt-realtime-mini-2025-10-06` is priced as `gpt-realtime-mini`, and `mistral-small-2603` as `mistral/mistral-small-2603`. A version's `model` fact uses the same rule, so a fact such as `mistral-small-2603` or `azure/gpt-4o` now links a model where it linked none (`azure/gpt-4o` links `gpt-4o` when the catalog has no `azure/gpt-4o`).
+
+The response model now wins over the requested model: a span with response `openai/gpt-4o` and request `gpt-4o-mini` links `gpt-4o`, where it linked `gpt-4o-mini`. Spans already stored keep their link. See [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) for the full order.
+
+## EU Applicability Check Uses the Decision Model's EU Group
+
+Self-hosted operators: the evaluator setting `DECISION_MODEL_EU` is removed. For an EU-only organization, the applicability check now asks the EU deployment of `DECISION_MODEL`, mapped by `DECISION_MODEL_EU_NAMES` like a classifier metric's model. If you set `DECISION_MODEL_EU`, delete it and add your decision model to `DECISION_MODEL_EU_NAMES`. Until then, the check makes no call for an EU-only organization and the metric is judged.
+
+## Mistral Workflows Traces Show Each LLM Call
+
+Galtea now reads OpenTelemetry traces from agents built on Mistral Workflows. Your code records each LLM call as an `llm_call_details` event. Galtea now shows that event as a generation span with its input, output and model, as it did on Abraxas. This holds for any sender. Any `llm_call_details` event with `input_messages` or `output_content` now shows as a generation span. Before, it showed as an empty span unless it carried an `abraxas.*` key. [Monitor a Mistral Workflows agent](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#monitor-a-mistral-workflows-agent) lists the settings that control turn text, tokens and redaction.
+
+## Gemini 2.5 Judges Retire on 4 December 2026
+
+Google has retired Gemini 2.5 Pro, Gemini 2.5 Flash and Gemini 2.5 Flash-Lite, so you can no longer pick them as the judge of a new metric. Metrics that already use them keep evaluating until 4 December 2026, and then their evaluations are skipped. To keep a metric running, create a revision of it with another [model](/concepts/model), for example Gemini 3.5 Flash or Gemini 3.1 Flash-Lite.
+
+## Generators Translate With an LLM
+
+Red teaming and gold standard generation translate with an LLM by default instead of Google Translate. Red teaming tests in another language now get their encoding instructions and prefixes in that language, also on installs without a Google key, and translations keep email addresses, URLs, codes and product names as written.
+
+## Analytics Bar Chart Labels Stay on One Line
+
+The value labels at the end of the bars in the Analytics bar charts, such as the Specifications, Metrics and inference charts, no longer wrap onto several lines or overlap on narrow cards. Each label is drawn on one line and keeps the same fade as its bar.
+
+## Failed tests show their status
+
+A test whose generation failed now shows a "Failed" status pill on its details page, so you can tell at a glance that it did not finish.
+
+## One Name per Evaluator Model
+
+Each judge and classifier model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
+
+## Metric Page Separates the Metric From Its Revision
+
+The **Details** tab of a metric now shows a **Metric** card with what every revision shares, and a **Revision** card with the judge settings of the revision you pick. **Edit metric** changes the name, description and tags for every revision, and the links of the active revision. A new revision takes an optional name of its own, and **Convert to classifier** says that it creates new metrics.
+
+## See and Rename Metric Revisions in the Dashboard
+
+Every screen that shows one metric revision now shows its number, such as **R3**, or **R3: stricter rubric** when you gave it a name. The metric page says **from R2** for the revision it was made from, and **Rename revision** in its menu names or clears a revision's name. When you revise a metric, the name field starts empty and a name you type becomes the revision's own; the API fields are on the [metric page](/concepts/metric).
+
+## Make an Older Metric Revision Active Again
+
+You can now make an older [revision](/concepts/metric#revisions-and-analytics) of a metric the active one with `POST /v2/revisions/{id}/activate`, or `galtea revisions activate <revisionId>` in the CLI. The current active revision becomes `Legacy`, its specifications link the activated revision instead, and every evaluation, name and history stays. The endpoint is alpha and may still change; it answers `400` for a revision that cannot become active, such as one whose judge model is retired.
+
+## Annotations Count for Every Revision of a Metric
+
+A human annotation now belongs to its conversation, or one turn of it, and to the metric. Every revision of the metric shows it, so an evaluation of a new revision shows the existing annotation. Fixing or removing an annotation changes it for every revision. Annotating no longer needs a claim, so nothing locks the conversation. Human evaluation metrics are not part of this: their score stays on each evaluation, and they still need a claim. Annotations given before this change carry over. Where one conversation had different scores, the latest is kept. The evaluation endpoints keep their response field names. On a metric a judge scores, their human evaluator fields now describe the annotator. Sorting the evaluation list by these fields follows the annotation too. The new alpha `/annotations` endpoints read and write annotations directly. See [Human Annotations](/concepts/product/version/session/evaluation#human-annotations).
+
+</Update>
+
 <Update label="5.19.0" description="2026-11-18">
 
 ## Clearer Errors When a Model Has No EU Deployment
@@ -40,7 +98,7 @@ The new `galtea docs` command prints the docs address for your platform version,
 
 ## Read and Change a Metric and Its Revisions Separately (Alpha)
 
-The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create, rename and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. `galtea revisions update` gives a revision its own name, which must be unique within its metric, and `galtea revisions create` takes the same optional `--name` for a new revision, answering `409` when another revision of the metric holds it. When this release ships, a revision name that repeats within one metric stays on the active revision, or on the newest one when none is active, and each other revision takes ` (R<n>)`, or no name when that is taken too, so monitor alert emails, Markdown and webhooks print the new text. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with four changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. A lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead. And a create on `POST /metrics` with `parentMetricId` stores no name when the name is "R" followed by digits or another live revision of the metric holds it, and still answers 201, so an alert on that revision prints no name of its own.
+The new `/v2/metrics` endpoints read and change a metric by its metric ID, with the ID of its active revision, and the new `/v2/revisions` endpoints list, read, create, rename and export the revisions of a metric. In the CLI, `galtea metrics-v2` and `galtea revisions` run them, for example `galtea metrics-v2 get <metricId>` and `galtea revisions list --metric-id <metricId>`. A new revision can start from any revision of the metric, not only the active one. `galtea revisions update` gives a revision its own name, which must be unique within its metric, and `galtea revisions create` takes the same optional `--name` for a new revision, answering `409` when another revision of the metric holds it. When this release ships, a revision name that repeats within one metric stays on the active revision, or on the newest one when none is active, and each other revision takes ` (R<n>)`, or no name when that is taken too, so monitor alert emails, Markdown and webhooks print the new text. Both are alpha and may still change; the `/metrics` endpoints and `galtea metrics` keep working as before, with five changes. Excluding a revision that is already excluded keeps the first date and user. An ID of another organization answers `404`, like an ID that does not exist, where some routes answered `403`. A lookup by name checks metric names first, then the own names of active revisions, and answers `409` when two of them share the name. In the Python SDK, `metrics.get_by_name` raises the new `AmbiguousMetricNameException` for that `409`; pass the metric ID instead. A `/metrics` response also carries the revision's `number` (R1, R2, R3) and `revisionName` (its own name, or `null`), while `name` stays the revision's own name when it has one, else the metric's. And a create on `POST /metrics` with `parentMetricId` stores no name when the name is "R" followed by digits or another live revision of the metric holds it, and still answers 201, so an alert on that revision prints no name of its own.
 
 </Update>
 
