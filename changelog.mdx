@@ -6,6 +6,18 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Gemini 4 Argon, GPT-6.2 Sol and GPT-6.1 Terra Judges
+
+You can now pick Gemini 4 Argon, GPT-6.2 Sol and GPT-6.1 Terra as the judge [model](/concepts/model) of a metric. All three have deployments in the EU, so organizations whose data region is EU can use them too.
+
+## Update from Document Keeps Your Specifications Specific
+
+An **Updated** suggestion from **Update from document** now rewrites your existing [specification](/concepts/product/specification) instead of replacing it with new text. It keeps every concrete check the document does not change, such as a threshold, a measure or a data source, and adds only what the document changes. A document that only restates a specification no longer produces an **Updated** suggestion for it.
+
+</Update>
+
+<Update label="5.20.0" description="2026-11-20">
+
 ## Mistral Workflows Calls Take Their Tokens From the Event
 
 A Mistral Workflows LLM call that the Mistral SDK does not trace, such as a call through your own HTTP gateway, can now report its tokens. Add `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` and `gen_ai.usage.cache_read.input_tokens` to its `llm_call_details` event. Galtea stores these counts on the span and prices the call from its model. See [Monitor a Mistral Workflows agent](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#monitor-a-mistral-workflows-agent).
@@ -59,10 +71,6 @@ You can now make an older [revision](/concepts/metric#revisions-and-analytics) o
 ## Annotations Count for Every Revision of a Metric
 
 A human annotation now belongs to its conversation, or one turn of it, and to the metric. Every revision of the metric shows it, so an evaluation of a new revision shows the existing annotation. Fixing or removing an annotation changes it for every revision. Annotating no longer needs a claim, so nothing locks the conversation. Human evaluation metrics are not part of this: their score stays on each evaluation, and they still need a claim. Annotations given before this change carry over. Where one conversation had different scores, the latest is kept. The evaluation endpoints keep their response field names. On a metric a judge scores, their human evaluator fields now describe the annotator. Sorting the evaluation list by these fields follows the annotation too. The new alpha `/annotations` endpoints read and write annotations directly. See [Human Annotations](/concepts/product/version/session/evaluation#human-annotations).
-
-## Update from Document Keeps Your Specifications Specific
-
-An **Updated** suggestion from **Update from document** now rewrites your existing [specification](/concepts/product/specification) instead of replacing it with new text. It keeps every concrete check the document does not change, such as a threshold, a measure or a data source, and adds only what the document changes. A document that only restates a specification no longer produces an **Updated** suggestion for it.
 
 </Update>
 
