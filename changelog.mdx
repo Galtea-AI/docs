@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Mistral Workflows Calls Take Their Tokens From the Event
+
+A Mistral Workflows LLM call that the Mistral SDK does not trace, such as a call through your own HTTP gateway, can now report its tokens. Add `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` and `gen_ai.usage.cache_read.input_tokens` to its `llm_call_details` event. Galtea stores these counts on the span and prices the call from its model. See [Monitor a Mistral Workflows agent](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#monitor-a-mistral-workflows-agent).
+
 ## LLM Spans Find Their Model Price in More Cases
 
 An LLM span now finds its [model](/concepts/model) when its name has a date or lacks the provider prefix of the catalog: `gpt-realtime-mini-2025-10-06` is priced as `gpt-realtime-mini`, and `mistral-small-2603` as `mistral/mistral-small-2603`. A version's `model` fact uses the same rule, so a fact such as `mistral-small-2603` or `azure/gpt-4o` now links a model where it linked none (`azure/gpt-4o` links `gpt-4o` when the catalog has no `azure/gpt-4o`).

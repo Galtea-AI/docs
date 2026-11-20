@@ -1134,7 +1134,7 @@
             "nullable": true,
             "readOnly": true,
             "example": 0.0026,
-            "description": "Cost of this call at the frozen rates. Null when no rates were found. A turn's cost sums the costs of the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it. A span that loses one side to a span below is priced again for the side it keeps. Null without `evaluation.readInference` on the product."
+            "description": "Cost of this call at the frozen rates. Null when no rates were found. A turn's cost sums the costs of the spans it counts. A call counts once for each side, input and output, from the deepest span that reports it. Two sibling spans that report the same call both count, as a Mistral SDK span and its `llm_call_details` event do. A span that loses one side to a span below is priced again for the side it keeps. Null without `evaluation.readInference` on the product."
           }
         }
       },
@@ -2713,7 +2713,7 @@
             "items": {
               "$ref": "#/components/schemas/CostBreakdownRow"
             },
-            "description": "Every value, the highest cost first. Each turn's estimated cost is split over the LLM spans it counts, each LLM call once and under the model it reports; the part of a turn's cost that its spans do not carry goes to the version model. So the rows add up to `total`, which is the `totalCost` of `GET /analytics/cost-overview` for the same filters."
+            "description": "Every value, the highest cost first. Each turn's estimated cost is split over the LLM spans it counts, each under the model it reports. A call counts once, except that two sibling spans that report the same call both count, as a Mistral SDK span and its `llm_call_details` event do. The part of a turn's cost that its spans do not carry goes to the version model. So the rows add up to `total`, which is the `totalCost` of `GET /analytics/cost-overview` for the same filters."
           },
           "total": {
             "type": "object",
