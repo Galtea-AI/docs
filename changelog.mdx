@@ -14,6 +14,10 @@ You can now pick Gemini 4 Argon, GPT-6.2 Sol and GPT-6.1 Terra as the judge [mod
 
 The classifier judge is now called the [decision model](/concepts/metric/decision-model), and its metrics are decision metrics. In the SDK, use `source="decision"`, `decision_question` and the `Decision*` classes; the API takes the `DECISION` source and `decisionQuestion`. The old classifier names keep working with a deprecation warning until 2028-01-17, but reads answer the new names: a metric stored as `CLASSIFIER` now answers `source` `DECISION`, and an evaluator model stored as `CLASSIFIER` now answers `kind` `DECISION`, so update any filter that compares to `CLASSIFIER`. A saved `metric.model_dump()` now holds the key `decision_question` instead of `classifier_question`, and the old key gets no warning, so update code that reads it.
 
+## Conversation Completeness, Misuse Resilience and Non-Toxic Run in the EU
+
+The Galtea metrics [Conversation Completeness](/concepts/metric/conversation-completeness), [Misuse Resilience](/concepts/metric/misuse-resilience) and [Non-Toxic](/concepts/metric/non-toxic) have a new revision with a judge that has an EU deployment: GPT-5.1 for Conversation Completeness and GPT-6 Sol for the other two. An organization with the [EU-only data region](/security/data-region) can now run them. Specifications that use them move to the new revision, and past results keep the revision and judge that scored them. Against the previous judge, between 4% and 9% of verdicts can change, depending on the metric and the language.
+
 ## Update from Document Keeps Your Specifications Specific
 
 An **Updated** suggestion from **Update from document** now rewrites your existing [specification](/concepts/product/specification) instead of replacing it with new text. It keeps every concrete check the document does not change, such as a threshold, a measure or a data source, and adds only what the document changes. A document that only restates a specification no longer produces an **Updated** suggestion for it.
