@@ -6,6 +6,12 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## LLM Spans Find Their Model Price in More Cases
+
+An LLM span now finds its [model](/concepts/model) when its name has a date or lacks the provider prefix of the catalog: `gpt-realtime-mini-2025-10-06` is priced as `gpt-realtime-mini`, and `mistral-small-2603` as `mistral/mistral-small-2603`. A version's `model` fact uses the same rule, so a fact such as `mistral-small-2603` or `azure/gpt-4o` now links a model where it linked none (`azure/gpt-4o` links `gpt-4o` when the catalog has no `azure/gpt-4o`).
+
+The response model now wins over the requested model: a span with response `openai/gpt-4o` and request `gpt-4o-mini` links `gpt-4o`, where it linked `gpt-4o-mini`. Spans already stored keep their link. See [Model](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) for the full order.
+
 ## EU Applicability Check Uses the Decision Model's EU Group
 
 Self-hosted operators: the evaluator setting `DECISION_MODEL_EU` is removed. For an EU-only organization, the applicability check now asks the EU deployment of `DECISION_MODEL`, mapped by `DECISION_MODEL_EU_NAMES` like a classifier metric's model. If you set `DECISION_MODEL_EU`, delete it and add your decision model to `DECISION_MODEL_EU_NAMES`. Until then, the check makes no call for an EU-only organization and the metric is judged.
