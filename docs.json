@@ -166,6 +166,7 @@
             "pages": [
               "security/roles-and-permissions",
               "security/data-region",
+              "security/usage-report",
               "security/verify-galteactl-release",
               {
                 "group": "SAML SSO",
