@@ -3814,6 +3814,49 @@
             "default": [],
             "description": "Responses that mean the agent closed the conversation on its own. Only a CONVERSATION connection accepts rules. A rule matches a response with its status code and, when bodyMatch is set, a response body whose first JSONPath match equals the expected value as text. The rules are checked before the retry policy, and a matching response is never retried, even when its status code is in retryableStatusCodes. A matching 2xx response with an agent output keeps its turn as the last one, on any turn and in a single-turn test. A matching response with no agent output (a non-2xx response, or a 2xx response with no output) removes the rejected turn on a later turn of a scenario test. In both cases the session completes with the turns so far and is evaluated, with the stopping reason \"The agent ended the conversation (HTTP <code>)\". A match with no agent output on the first turn, or on a single-turn test, still fails the session. An empty list keeps the default behaviour."
           },
+          "streamFormat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly."
+          },
+          "streamAssembly": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "textPath": {
+                "type": "string",
+                "description": "JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "example": "$.choices[0].delta.content"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "APPEND",
+                  "LAST"
+                ],
+                "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "example": "APPEND"
+              },
+              "eventField": {
+                "type": "string",
+                "nullable": true,
+                "description": "JSONPath to the event name in each chunk, starting with $. Unset uses the SSE event name, or \"message\" when a chunk names none.",
+                "example": "$.type"
+              },
+              "terminalEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "example": "response.completed"
+              }
+            },
+            "additionalProperties": false,
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused."
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -4098,6 +4141,53 @@
             "maxItems": 20,
             "default": [],
             "description": "Responses that mean the agent closed the conversation on its own. Only a CONVERSATION connection accepts rules. A rule matches a response with its status code and, when bodyMatch is set, a response body whose first JSONPath match equals the expected value as text. The rules are checked before the retry policy, and a matching response is never retried, even when its status code is in retryableStatusCodes. A matching 2xx response with an agent output keeps its turn as the last one, on any turn and in a single-turn test. A matching response with no agent output (a non-2xx response, or a 2xx response with no output) removes the rejected turn on a later turn of a scenario test. In both cases the session completes with the turns so far and is evaluated, with the stopping reason \"The agent ended the conversation (HTTP <code>)\". A match with no agent output on the first turn, or on a single-turn test, still fails the session. An empty list keeps the default behaviour."
+          },
+          "streamFormat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+          },
+          "streamAssembly": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "textPath": {
+                "type": "string",
+                "description": "JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "example": "$.choices[0].delta.content"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "APPEND",
+                  "LAST"
+                ],
+                "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "example": "APPEND"
+              },
+              "eventField": {
+                "type": "string",
+                "nullable": true,
+                "description": "JSONPath to the event name in each chunk, starting with $. Unset uses the SSE event name, or \"message\" when a chunk names none.",
+                "example": "$.type"
+              },
+              "terminalEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "example": "response.completed"
+              }
+            },
+            "required": [
+              "textPath",
+              "mode"
+            ],
+            "additionalProperties": false,
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused."
           },
           "authToken": {
             "type": "string",
@@ -4394,6 +4484,53 @@
             "maxItems": 20,
             "default": [],
             "description": "Responses that mean the agent closed the conversation on its own. Only a CONVERSATION connection accepts rules. A rule matches a response with its status code and, when bodyMatch is set, a response body whose first JSONPath match equals the expected value as text. The rules are checked before the retry policy, and a matching response is never retried, even when its status code is in retryableStatusCodes. A matching 2xx response with an agent output keeps its turn as the last one, on any turn and in a single-turn test. A matching response with no agent output (a non-2xx response, or a 2xx response with no output) removes the rejected turn on a later turn of a scenario test. In both cases the session completes with the turns so far and is evaluated, with the stopping reason \"The agent ended the conversation (HTTP <code>)\". A match with no agent output on the first turn, or on a single-turn test, still fails the session. An empty list keeps the default behaviour."
+          },
+          "streamFormat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+          },
+          "streamAssembly": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "textPath": {
+                "type": "string",
+                "description": "JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "example": "$.choices[0].delta.content"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "APPEND",
+                  "LAST"
+                ],
+                "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "example": "APPEND"
+              },
+              "eventField": {
+                "type": "string",
+                "nullable": true,
+                "description": "JSONPath to the event name in each chunk, starting with $. Unset uses the SSE event name, or \"message\" when a chunk names none.",
+                "example": "$.type"
+              },
+              "terminalEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "example": "response.completed"
+              }
+            },
+            "required": [
+              "textPath",
+              "mode"
+            ],
+            "additionalProperties": false,
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused."
           }
         }
       },
@@ -21650,6 +21787,21 @@
                       "type": "string"
                     },
                     "description": "JSONPath expressions applied to a successful response. The result is returned in `extractedOutput`. It is not read from the stored connection."
+                  },
+                  "streamFormat": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "SSE",
+                      "NDJSON",
+                      ""
+                    ],
+                    "description": "How the agent frames a streamed reply. Null or an empty string reads one plain reply. Set together with streamAssembly. With an ID, the stored value applies when omitted."
+                  },
+                  "streamAssembly": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (textPath, mode, eventField, terminalEvent). An unknown key is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }

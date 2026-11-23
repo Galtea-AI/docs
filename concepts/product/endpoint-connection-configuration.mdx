@@ -128,6 +128,7 @@ A JSON object defining how to extract values from the API response using [JSONPa
 | `[*]` | Wildcard (all elements) |
 | `[0]` | First array element |
 | `[-1:]` | The last array element, as a one-element list |
+| `['a.b']` | A child whose name holds a dot or another special character, e.g. `$.byEvent['response.output_text.delta']` |
 
 Filter and script expressions such as `[?(...)]` and `[(...)]` are refused when you save the mapping, because they would run code on every response.
 
@@ -221,6 +222,55 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 }
 ```
 </CodeGroup>
+
+### Streamed Replies
+
+If your agent streams its reply, Galtea reads the whole stream and joins its chunks into one object. The Output Mapping then reads that object, so every special key works as on a plain reply. Set two fields on the connection:
+
+- **`streamFormat`**: `SSE` for [Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html), or `NDJSON` for one JSON value per line. Leave it empty for a plain reply.
+- **`streamAssembly`**: how the chunks become one object. Set both fields or neither: the API refuses one without the other.
+
+| `streamAssembly` field | Description |
+|------------------------|-------------|
+| `textPath` | **Required.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. |
+| `mode` | **Required.** `APPEND` joins the text of every chunk, for a stream of deltas. `LAST` keeps the text of the last chunk that has one, for a stream that resends the whole answer. |
+| `eventField` | The JSONPath of the event name inside each chunk, e.g. `$.type`. Leave it null to use the SSE `event:` name. A chunk with no name is a `message` event. |
+| `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. |
+
+The Output Mapping reads this object:
+
+| Path | Value |
+|------|-------|
+| `$.text` | The joined text. |
+| `$.byEvent.<name>` | Every chunk of that event, in order, e.g. `$.byEvent.source[*].content`. Use the bracket form for a name with a dot. |
+| `$.final` | The last chunk that holds a JSON object or list, e.g. `$.final.conversation_id`. A raw end marker such as `[DONE]` is not kept. |
+
+<CodeGroup>
+```json Stream Assembly
+{
+  "textPath": "$.delta",
+  "mode": "APPEND",
+  "eventField": null,
+  "terminalEvent": "done"
+}
+```
+
+```json Output Mapping
+{
+  "output": "$.text",
+  "retrieval_context": "$.byEvent.source[*].content",
+  "session_id": "$.final.conversation_id"
+}
+```
+</CodeGroup>
+
+- **SSE request header:** for `SSE`, Galtea sends `Accept: text/event-stream` unless a custom header sets `Accept`.
+- **Timeout:** the connection [timeout](#timeout) covers the whole stream, not only the first byte. Set it for your longest answer.
+- **Plain-text tokens in `SSE`:** with `textPath` set to `$`, a token that is a whole JSON string, such as `"sí"` with its quotes, loses its quotes: the text is `sí`. A token that is not a whole JSON string stays as sent.
+- **Size limit:** the limit is an approximate memory limit of the assembled reply, 32 MiB by default, not its raw size. Each chunk, and each `{`, `[` and `,` of its JSON, counts 64 bytes more than its size, so a stream of very many tiny chunks or small values reaches the limit sooner. An OpenAI-style stream of one token per event fits about 31,000 events. Each line of an event that has not ended yet, such as an `SSE` event with no blank line after it, also counts 64 bytes until the event ends. A longer stream fails the turn and is not retried. A self-hosted deployment can change the limit with `ENDPOINT_STREAM_MAX_BYTES`.
+- **Bad lines:** in `NDJSON`, a line that is not JSON fails the turn and is not retried, unless Galtea stopped reading at the terminal event before that line. Blank lines are skipped.
+- **Connection types:** Conversation and Initialization connections can stream. The API refuses both fields on a Finalization connection.
+- **Test Connection:** it accepts both fields, reads the stream the same way and shows the joined object. The health check before a run reads it the same way. Both read at most 1 MB of the reply (more when the output mapping reads output files), so a longer stream fails them even though a turn accepts up to the size limit.
 
 ## Custom Headers
 
@@ -344,6 +394,8 @@ How long Galtea waits for a single HTTP call to your endpoint before giving up. 
   Per-attempt request timeout in seconds. Default: `15`. Maximum: `120` (values above this are rejected at the API).
 </ResponseField>
 
+For a [streamed reply](#streamed-replies), it covers the whole stream.
+
 A timeout counts as a retryable failure. If retry is enabled, a timed-out call is retried like any other transient error.
 
 ## Rate Limit
@@ -426,6 +478,7 @@ The rule is status code `409`, Body JSONPath `$.error.code`, and Expected Value 
 - Galtea checks the rules **before** the [retry policy](#retry-configuration). A matching reply is never retried, even when its status code is in Retryable Status Codes.
 - A reply matches when the status code is equal and, if the rule has a body match, the first value the JSONPath finds is a string, number, or boolean whose text equals the Expected Value. So the number `42` matches the Expected Value `42`.
 - A missing field, an object, an array, `null`, or a body that is not JSON never matches.
+- On a [streamed](#streamed-replies) connection, the body of a `2xx` reply is the joined object, so the path reads `$.text`, `$.byEvent` or `$.final`. The body of any other status stays as your agent sent it.
 - Rules apply only to the conversation calls of text sessions. Initialization and finalization calls, voice sessions, and the connection test ignore them.
 
 ### What happens to the session

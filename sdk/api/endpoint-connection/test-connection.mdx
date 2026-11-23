@@ -9,7 +9,7 @@ Returns a `TestConnectionResult` object containing:
 - `success` (bool): Whether the test request succeeded.
 - `status_code` (int): The HTTP status code returned by the endpoint.
 - `latency` (float): Round-trip latency in milliseconds.
-- `response` (any): The raw response body from the endpoint.
+- `response` (any): The raw response body from the endpoint. On a [streamed](/concepts/product/endpoint-connection-configuration#streamed-replies) connection, the body of a `2xx` reply is the joined object (`text`, `byEvent`, `final`).
 - `error` (string | None): Error message if the request failed.
 - `extracted_output` (dict | None): Values extracted via `output_mapping`, if provided.
 - `extraction_error` (string | None): Error message if extraction failed.
