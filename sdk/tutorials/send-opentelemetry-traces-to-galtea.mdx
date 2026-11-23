@@ -277,11 +277,11 @@ So a span imported from an instrumented platform is typed without any Galtea att
     | Attribute Key | Type | Maps To | Description |
     |---|---|---|---|
     | `galtea.span.type` | `string` | `type` | Span type. One of: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. Any other value is normalized to one of these types instead of being rejected, and your original label is kept in `metadata` under `galtea.span.original_type`. |
-    | `galtea.span.description` | `string` | `description` | Human-readable description of the operation. Max 1MB. |
-    | `galtea.span.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10MB. |
-    | `galtea.span.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10MB. |
+    | `galtea.span.description` | `string` | `description` | Human-readable description of the operation. Max 1 MB by default ([configurable on request](mailto:support@galtea.ai)). |
+    | `galtea.span.input` | `string` (JSON) | `inputData` | Input data, JSON-serialized. Max 10 MB by default ([configurable on request](mailto:support@galtea.ai)). |
+    | `galtea.span.output` | `string` (JSON) | `outputData` | Output data, JSON-serialized. Max 10 MB by default ([configurable on request](mailto:support@galtea.ai)). |
     | `galtea.span.error` | `string` | `error` | Error message. Takes precedence over OTel span status error. |
-    | `galtea.span.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 10MB. |
+    | `galtea.span.metadata` | `string` (JSON) | `metadata` | Custom metadata, JSON-serialized. Max 10 MB by default ([configurable on request](mailto:support@galtea.ai)). |
     | `galtea.trace.id` | `string` | `inferenceResultId` | Links the span to a Trace that already exists. See [Spans of a Trace that already exists](#spans-of-a-trace-that-already-exists). |
   </Tab>
   <Tab title="OTel GenAI conventions">

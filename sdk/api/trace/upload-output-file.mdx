@@ -42,7 +42,7 @@ for question in ["Send me the lease again", "And a copy for my records"]:
 ## Parameters
 
 <ResponseField name="file_path" type="string" required>
-  Path to the file on the machine running the SDK. One output accepts at most 20 files, 20 MB in total, and each must be one of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. A storage URI is refused: there is nothing on this machine to upload, so attach it directly instead.
+  Path to the file on the machine running the SDK. One output accepts at most 20 files, 20 MB in total by default ([configurable on request](/concepts/product/version/session/content-parts)), and each must be one of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. A storage URI is refused: there is nothing on this machine to upload, so attach it directly instead.
 </ResponseField>
 
 <JudgeFileRule />

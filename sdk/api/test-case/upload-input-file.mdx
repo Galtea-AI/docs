@@ -41,7 +41,7 @@ for question in ["Which clauses limit the cover?", "What is the excess?"]:
 ## Parameters
 
 <ResponseField name="file_path" type="string" required>
-  Path to the file on the machine running the SDK. One file may be up to 20 MB, and must be one of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. A storage URI is refused: there is nothing on this machine to upload, so attach it directly instead.
+  Path to the file on the machine running the SDK. One file may be up to the total of one input (20 MB by default, [configurable on request](/concepts/product/version/session/content-parts)), and must be one of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. A storage URI is refused: there is nothing on this machine to upload, so attach it directly instead.
 </ResponseField>
 
 <JudgeFileRule />

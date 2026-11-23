@@ -108,7 +108,7 @@ You can also attach a file from the dashboard, on the test case create and updat
 
 These limits apply to Galtea files, and each one is refused with a clear error rather than failing later:
 
-- **20 MB in total, and at most 20 files, per test case input.** There is no per-file size limit.
+- **20 MB in total, and at most 20 files, per test case input, by default ([configurable on request](/concepts/product/version/session/content-parts)).** There is no per-file size limit.
 - **These file types only**: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. The type is read from the file name. Audio belongs on a voice test case instead.
 - **Single turn only.** The document is the first turn, so a scenario that would keep a simulated user going has nothing to say after it.
 - **Galtea runs the inference only when your template asks for the file.** Add `{{ input_files[0].url }}` or `{{ input_files[0].base64 }}` to the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio), and Galtea delivers each uploaded file to your endpoint. Your own `file` parts, such as a URL on your own host, are not delivered (see [Content Parts](/concepts/product/version/session/content-parts#your-own-parts)). Without it, a test case with only files is refused, and so is its run. A test case that also has text runs with the text alone and a warning.

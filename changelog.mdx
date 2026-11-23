@@ -22,6 +22,10 @@ An Endpoint Connection can now call an agent that streams its reply, as Server-S
 
 To skip the other assembly settings for a known framework, set `streamFormat` to `SSE` and `streamAssembly` to a [stream preset](/concepts/product/endpoint-connection-configuration#stream-presets) such as `{ "preset": "OPENAI_RESPONSES" }`.
 
+## File Limits Are Configurable on Request
+
+A test case input, a trace input and a trace output accept at most 20 files and 20 MB in total by default. If your files need more, contact [support@galtea.ai](mailto:support@galtea.ai) and ask for higher limits. See [Content Parts](/concepts/product/version/session/content-parts).
+
 ## Cost and Tokens of Each Span
 
 The span page now shows the cost of an LLM call as a bill: its input, cache read and output tokens, the price per million tokens of each, and the total. Check what one call cost without adding up the turn. The turn's metrics tab shows its cost in the same bill.

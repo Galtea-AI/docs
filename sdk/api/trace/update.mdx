@@ -19,7 +19,7 @@ The `update()` method allows you to modify an existing trace after it has been c
 ### Input Fields
 
 <ParamField path="input" type="string | object">
-  The input text or prompt for the trace. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/concepts/product/version/session/content-parts).
+  The input text or prompt for the trace. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB by default ([configurable on request](/concepts/product/version/session/content-parts)). Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/concepts/product/version/session/content-parts).
 </ParamField>
 
 <ParamField path="input_file_paths" type="list[str]">
@@ -27,7 +27,7 @@ The `update()` method allows you to modify an existing trace after it has been c
 
   The files are merged into `input`. An update replaces the whole field, so passing files without an `input` writes an input of files alone.
 
-  One input accepts at most 20 files, 20 MB in total, of the same types a test case input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list.
+  One input accepts at most 20 files, 20 MB in total by default ([configurable on request](/concepts/product/version/session/content-parts)), of the same types a test case input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list.
 
   <JudgeFileRule />
 </ParamField>
@@ -35,7 +35,7 @@ The `update()` method allows you to modify an existing trace after it has been c
 ### Output Fields
 
 <ParamField path="output" type="string | object">
-  The generated output or response from the AI model. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/concepts/product/version/session/content-parts).
+  The generated output or response from the AI model. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB by default ([configurable on request](/concepts/product/version/session/content-parts)). Every other element, such as a file URL on your own host, is stored as sent. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/concepts/product/version/session/content-parts).
 </ParamField>
 
 <ParamField path="output_file_paths" type="list[str]">
@@ -43,7 +43,7 @@ The `update()` method allows you to modify an existing trace after it has been c
 
   The files are merged into `output`. An update replaces the whole field, so passing files without an `output` writes an answer of files alone, and its `actual_output` then reads back as `None`.
 
-  One output accepts at most 20 files, 20 MB in total, of the same types an input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list and for reusing one upload across turns.
+  One output accepts at most 20 files, 20 MB in total by default ([configurable on request](/concepts/product/version/session/content-parts)), of the same types an input accepts. See [Upload Output File](/sdk/api/trace/upload-output-file) for the list and for reusing one upload across turns.
 
   Output files follow the same rule as `input_file_paths` above.
 </ParamField>

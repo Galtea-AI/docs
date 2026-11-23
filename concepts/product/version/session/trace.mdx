@@ -47,7 +47,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 <ResponseField name="Input Files" type="AttachedFile[]" optional>
   The files attached to the input. They come from the test case, or from `input_file_paths` on a trace you log yourself with [Create Trace](/sdk/api/trace/create), [Update Trace](/sdk/api/trace/update) or [Create and Evaluate Trace](/sdk/api/trace/create-and-evaluate). Galtea stores each file without its upload signature. Read them with the SDK's `.input_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/sdk/api/storage/download) or [`galtea.storage.read()`](/sdk/api/storage/read), except a [file part of your own](/concepts/product/version/session/content-parts#your-own-parts). An agent callback receives the same objects as [`input_data.input_files`](/sdk/api/agent/input#reading-attached-files).
 
-  One input accepts at most 20 Galtea files, 20 MB in total, of the same types a test case input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
+  One input accepts at most 20 Galtea files, 20 MB in total by default ([configurable on request](/concepts/product/version/session/content-parts)), of the same types a test case input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
 
   <JudgeFileRule />
 
@@ -71,7 +71,7 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
 
   On a run Galtea makes through an endpoint connection, the files come from the response instead: the connection's `output_files` key names them, and Galtea stores a copy of each, or links a file already in Galtea. See [Files in the Response](/concepts/product/endpoint-connection-configuration#files-in-the-response).
 
-  One output accepts at most 20 Galtea files, 20 MB in total, of the same types an input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
+  One output accepts at most 20 Galtea files, 20 MB in total by default ([configurable on request](/concepts/product/version/session/content-parts)), of the same types an input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/concepts/product/version/session/content-parts).
 
   Output files follow the same rule as [Input Files](#param-input-files): a metric scores a file only when its judge model reads that kind of file.
 </ResponseField>
