@@ -3,10 +3,18 @@
 ## Callouts
 
 ```mdx
-<Note>Important information.</Note>
-<Tip>Helpful tips.</Tip>
-<Warning>Caution about potential issues.</Warning>
-<Info>Additional context.</Info>
+<Note>
+Important information.
+</Note>
+<Tip>
+Helpful tips.
+</Tip>
+<Warning>
+Caution about potential issues.
+</Warning>
+<Info>
+Additional context.
+</Info>
 ```
 
 ## Tabs

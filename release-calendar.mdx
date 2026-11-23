@@ -1,0 +1,64 @@
+---
+title: "Versions and support"
+description: "Galtea's release calendar: which SDK and CLI versions are compatible, which are maintained, and when each major reaches end of life."
+icon: "calendar"
+---
+
+import { releaseCalendar } from "/snippets/release-calendar-data.mdx";
+import { LifecycleChart, MajorsTable, NextWindows } from "/snippets/release-calendar.mdx";
+
+{/* Hidden on purpose: no docs.json navigation entry, so the page stays out of the sidebar, search and llms.txt until we decide when to publish it. */}
+
+The platform, the SDK and the CLI share one version number and follow semantic versioning: a minor or a patch never breaks your code. From 18 Jan 2027, a major ships only in a release window: the third Monday of January and of July.
+
+## Compatible and maintained
+
+- **Compatible:** every minor of a major works with the platform until that major's end of life (EOL).
+- **Maintained:** only the latest minor of each major gets fixes. To get a fix, update to the latest minor of your major.
+
+From major 5 on, a major reaches EOL two release windows (12 months) after the next major ships. So each major lives about 18 months, and at most three majors are compatible at once.
+
+| Major | Compatible | Maintained |
+| --- | --- | --- |
+| Newest | Every minor | Latest minor |
+| Older, before EOL | Every minor | Latest minor |
+| After EOL | None | None |
+
+The newest major gets fixes in new minors. An older major gets a patch every month. A patch holds only security fixes, dependency updates and critical bug fixes. A critical security fix ships as soon as it is ready, on any day.
+
+## Current versions
+
+<MajorsTable calendar={releaseCalendar} />
+
+<LifecycleChart calendar={releaseCalendar} />
+
+<NextWindows calendar={releaseCalendar} />
+
+## Deprecations
+
+A minor can deprecate an item but never removes one. The removal date is the EOL of the major that deprecated the item: the third release window after the deprecation, 12 to 18 months later.
+
+Where the removal date appears:
+
+- **SDK:** a `GalteaDeprecationWarning` that ends with `Removal: YYYY-MM-DD.`
+- **CLI:** a warning when you run the command or flag.
+- **API:** `deprecated`, `x-sunset` and `x-replacement` in the OpenAPI spec, and the `Deprecation` and `Sunset` response headers.
+- **Docs:** a **Deprecated** note on the reference page.
+
+The SDK and the CLI stop using a deprecated API item in the same minor that deprecates it. If you call the API directly, migrate before the removal date.
+
+## Moving off an older major
+
+1. Update to the latest minor of your major to get fixes. No code change is needed.
+2. Fix every deprecation warning. Each one names the replacement.
+3. Move to the next major before your EOL. Moving one major at a time keeps each migration small. When a major needs code changes, its guide is in [Migration Guides](/sdk/migration-guides/entity-renames), such as the one from 4.x to 5.x.
+
+The SDK raises an error at startup when its major is not compatible with the platform. When the platform reports the EOL date of the SDK's major, the SDK prints it at startup.
+
+## Dedicated and self-hosted installs
+
+The same calendar applies. Your platform stays on the major you installed until you upgrade it. Each major before EOL gets a new package every month. Use an SDK and a CLI that are not newer than your platform.
+
+## Alpha features
+
+An item marked `alpha` is outside these rules and can change in any minor.
