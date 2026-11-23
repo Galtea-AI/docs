@@ -1415,13 +1415,19 @@
         "properties": {
           "error": {
             "type": "string",
-            "example": "Error type"
+            "example": "NotFound",
+            "description": "The HTTP status name in PascalCase, such as `BadRequest` or `NotFound`."
           },
           "message": {
             "type": "string",
-            "example": "Error message description"
+            "example": "Product not found",
+            "description": "What went wrong, for a person."
           }
-        }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
       },
       "TraceImportResponse": {
         "type": "object",
@@ -12624,6 +12630,575 @@
         },
         "additionalProperties": false
       },
+      "UsageReportUser": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Only with `peopleDetail` `names`. Never an email."
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "UsageReportCreatedCounts": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "type": "integer",
+            "description": "Versions created in the window"
+          },
+          "tests": {
+            "type": "integer",
+            "description": "Tests created in the window"
+          },
+          "testCases": {
+            "type": "integer",
+            "description": "Test cases created in the window"
+          },
+          "specifications": {
+            "type": "integer",
+            "description": "Specifications created in the window"
+          },
+          "runs": {
+            "type": "integer",
+            "description": "Runs created in the window"
+          },
+          "sessions": {
+            "type": "integer",
+            "description": "Sessions created in the window, seed sessions left out"
+          },
+          "evaluations": {
+            "type": "integer",
+            "description": "Evaluations created in the window"
+          }
+        },
+        "required": [
+          "versions",
+          "tests",
+          "testCases",
+          "specifications",
+          "runs",
+          "sessions",
+          "evaluations"
+        ]
+      },
+      "UsageReportUserCount": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "user",
+          "count"
+        ]
+      },
+      "UsageReportSourceStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable",
+              "failed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "not_configured",
+              "not_requested",
+              "timeout",
+              "upstream_error"
+            ],
+            "description": "Why the source is not `ok`. `unavailable`: `not_configured` or `not_requested`. `failed`: `timeout` or `upstream_error`."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "UsageReportProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "The latest external activity before the window end, looking back 180 days."
+          },
+          "created": {
+            "$ref": "#/components/schemas/UsageReportCreatedCounts"
+          },
+          "sessionsByUser": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportUserCount"
+            },
+            "description": "Empty with `peopleDetail` `aggregate`."
+          },
+          "evaluationsByUser": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportUserCount"
+            },
+            "description": "Empty with `peopleDetail` `aggregate`."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "lastActivityAt",
+          "created",
+          "sessionsByUser",
+          "evaluationsByUser"
+        ]
+      },
+      "UsageReportClientTypes": {
+        "type": "object",
+        "properties": {
+          "dashboard": {
+            "type": "integer"
+          },
+          "sdk": {
+            "type": "integer"
+          },
+          "cli": {
+            "type": "integer"
+          },
+          "api": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dashboard",
+          "sdk",
+          "cli",
+          "api"
+        ]
+      },
+      "UsageReportPerson": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "isStaff": {
+            "type": "boolean",
+            "description": "Platform staff, or a staff email domain the deployment names."
+          },
+          "created": {
+            "$ref": "#/components/schemas/UsageReportCreatedCounts"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "clientTypes": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageReportClientTypes"
+              },
+              {
+                "description": "API requests per client, only when the `loki` source is `ok`."
+              }
+            ]
+          }
+        },
+        "required": [
+          "user",
+          "isStaff",
+          "created",
+          "lastActivityAt"
+        ]
+      },
+      "UsageReportVisitor": {
+        "type": "object",
+        "properties": {
+          "visitorRef": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "identified",
+              "high",
+              "low",
+              "conflict",
+              "none"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "posthog_identified",
+              "write_minutes",
+              "audit_minutes"
+            ]
+          },
+          "pageviews": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "visitorRef",
+          "confidence",
+          "method",
+          "pageviews"
+        ]
+      },
+      "UsageReportDashboard": {
+        "type": "object",
+        "properties": {
+          "visitors": {
+            "type": "integer"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "pageviews": {
+            "type": "integer"
+          },
+          "rageClicks": {
+            "type": "integer"
+          },
+          "errors": {
+            "type": "integer"
+          },
+          "visitorList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportVisitor"
+            },
+            "description": "Empty with `peopleDetail` `aggregate`."
+          }
+        },
+        "required": [
+          "visitors",
+          "sessions",
+          "pageviews",
+          "rageClicks",
+          "errors",
+          "visitorList"
+        ]
+      },
+      "UsageReportRecording": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activeSeconds": {
+            "type": "integer"
+          },
+          "durationSeconds": {
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "identified",
+              "high",
+              "low",
+              "conflict",
+              "none"
+            ]
+          }
+        },
+        "required": [
+          "url",
+          "startedAt",
+          "activeSeconds",
+          "durationSeconds",
+          "confidence"
+        ]
+      },
+      "UsageReportOrganization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "client",
+              "self_serve",
+              null
+            ],
+            "description": "Client or self-serve, where the deployment names its clients; null elsewhere."
+          },
+          "dataRegion": {
+            "type": "string",
+            "description": "Where the organization keeps its data, for example `EU`."
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "The latest external activity before the window end, looking back 180 days."
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "first_evaluation",
+                "first_session_outside_run",
+                "back_after_quiet_week",
+                "quiet_14_days"
+              ]
+            },
+            "description": "`first_evaluation` and `first_session_outside_run`: the first in 180 days falls in the window. `back_after_quiet_week`: active in the window after 7 quiet days. `quiet_14_days`: no external activity in the 14 days before the window end."
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportProduct"
+            },
+            "description": "Products with external activity in the window, most active first, at most 200."
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportPerson"
+            },
+            "description": "Authors with activity in the window, staff included and marked, at most 200. Empty with `aggregate`."
+          },
+          "dashboard": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageReportDashboard"
+              },
+              {
+                "description": "Only when the `posthog` source is `ok`. Visitors the attribution names as staff (identified or high) are left out of every count and list."
+              }
+            ]
+          },
+          "recordings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportRecording"
+            },
+            "description": "Only when the `posthog` source is `ok`. Recordings of staff visitors are left out."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "segment",
+          "dataRegion",
+          "lastActivityAt",
+          "flags",
+          "products",
+          "people"
+        ]
+      },
+      "UsageReportV1": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "window": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "timeZone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "timeZone"
+            ]
+          },
+          "scope": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "organization",
+                  "all"
+                ]
+              },
+              "organizationId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "peopleDetail": {
+            "type": "string",
+            "enum": [
+              "aggregate",
+              "ids",
+              "names"
+            ]
+          },
+          "sources": {
+            "type": "object",
+            "properties": {
+              "db": {
+                "$ref": "#/components/schemas/UsageReportSourceStatus"
+              },
+              "posthog": {
+                "$ref": "#/components/schemas/UsageReportSourceStatus"
+              },
+              "loki": {
+                "$ref": "#/components/schemas/UsageReportSourceStatus"
+              }
+            },
+            "required": [
+              "db",
+              "posthog",
+              "loki"
+            ]
+          },
+          "excluded": {
+            "type": "object",
+            "properties": {
+              "organizations": {
+                "type": "integer",
+                "description": "Organizations the internal pattern left out that were active in the window"
+              },
+              "staffRows": {
+                "type": "integer",
+                "description": "Rows staff created in the window, left out of every organization and product count"
+              }
+            },
+            "required": [
+              "organizations",
+              "staffRows"
+            ],
+            "description": "Only for the `all` scope."
+          },
+          "organizations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportOrganization"
+            },
+            "description": "The organization asked for, or every organization with external activity in the window (and every client), most active first, then those only the `posthog` or `loki` source saw, at most 1,000. Counts leave out soft-deleted rows, seed sessions, demo clones and rows staff created."
+          },
+          "truncated": {
+            "type": "object",
+            "properties": {
+              "organizations": {
+                "type": "boolean"
+              },
+              "products": {
+                "type": "boolean"
+              },
+              "people": {
+                "type": "boolean"
+              },
+              "dashboard": {
+                "type": "boolean",
+                "description": "A `posthog` query answered its row limit, so some dashboard visits, or the evidence that names visitors, are missing."
+              },
+              "recordings": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "organizations",
+              "products",
+              "people",
+              "dashboard",
+              "recordings"
+            ]
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "generatedAt",
+          "window",
+          "scope",
+          "peopleDetail",
+          "sources",
+          "organizations",
+          "truncated"
+        ]
+      },
+      "UsageReportPdf": {
+        "type": "object",
+        "properties": {
+          "downloadUrl": {
+            "type": "string",
+            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
+            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
+          }
+        },
+        "required": [
+          "downloadUrl"
+        ]
+      },
+      "UsageReportWithPdf": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "$ref": "#/components/schemas/UsageReportV1"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
+            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
+          }
+        },
+        "required": [
+          "report",
+          "downloadUrl"
+        ]
+      },
       "Run": {
         "type": "object",
         "properties": {
@@ -14421,575 +14996,6 @@
           "userName",
           "userEmail",
           "createdAt"
-        ]
-      },
-      "UsageReportUser": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string",
-            "description": "Only with `peopleDetail` `names`. Never an email."
-          }
-        },
-        "required": [
-          "userId"
-        ]
-      },
-      "UsageReportCreatedCounts": {
-        "type": "object",
-        "properties": {
-          "versions": {
-            "type": "integer",
-            "description": "Versions created in the window"
-          },
-          "tests": {
-            "type": "integer",
-            "description": "Tests created in the window"
-          },
-          "testCases": {
-            "type": "integer",
-            "description": "Test cases created in the window"
-          },
-          "specifications": {
-            "type": "integer",
-            "description": "Specifications created in the window"
-          },
-          "runs": {
-            "type": "integer",
-            "description": "Runs created in the window"
-          },
-          "sessions": {
-            "type": "integer",
-            "description": "Sessions created in the window, seed sessions left out"
-          },
-          "evaluations": {
-            "type": "integer",
-            "description": "Evaluations created in the window"
-          }
-        },
-        "required": [
-          "versions",
-          "tests",
-          "testCases",
-          "specifications",
-          "runs",
-          "sessions",
-          "evaluations"
-        ]
-      },
-      "UsageReportUserCount": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "count": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "user",
-          "count"
-        ]
-      },
-      "UsageReportSourceStatus": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "ok",
-              "unavailable",
-              "failed"
-            ]
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "not_configured",
-              "not_requested",
-              "timeout",
-              "upstream_error"
-            ],
-            "description": "Why the source is not `ok`. `unavailable`: `not_configured` or `not_requested`. `failed`: `timeout` or `upstream_error`."
-          }
-        },
-        "required": [
-          "status"
-        ]
-      },
-      "UsageReportProduct": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "lastActivityAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "The latest external activity before the window end, looking back 180 days."
-          },
-          "created": {
-            "$ref": "#/components/schemas/UsageReportCreatedCounts"
-          },
-          "sessionsByUser": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportUserCount"
-            },
-            "description": "Empty with `peopleDetail` `aggregate`."
-          },
-          "evaluationsByUser": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportUserCount"
-            },
-            "description": "Empty with `peopleDetail` `aggregate`."
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "lastActivityAt",
-          "created",
-          "sessionsByUser",
-          "evaluationsByUser"
-        ]
-      },
-      "UsageReportClientTypes": {
-        "type": "object",
-        "properties": {
-          "dashboard": {
-            "type": "integer"
-          },
-          "sdk": {
-            "type": "integer"
-          },
-          "cli": {
-            "type": "integer"
-          },
-          "api": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "dashboard",
-          "sdk",
-          "cli",
-          "api"
-        ]
-      },
-      "UsageReportPerson": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "isStaff": {
-            "type": "boolean",
-            "description": "Platform staff, or a staff email domain the deployment names."
-          },
-          "created": {
-            "$ref": "#/components/schemas/UsageReportCreatedCounts"
-          },
-          "lastActivityAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          },
-          "clientTypes": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UsageReportClientTypes"
-              },
-              {
-                "description": "API requests per client, only when the `loki` source is `ok`."
-              }
-            ]
-          }
-        },
-        "required": [
-          "user",
-          "isStaff",
-          "created",
-          "lastActivityAt"
-        ]
-      },
-      "UsageReportVisitor": {
-        "type": "object",
-        "properties": {
-          "visitorRef": {
-            "type": "string"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "confidence": {
-            "type": "string",
-            "enum": [
-              "identified",
-              "high",
-              "low",
-              "conflict",
-              "none"
-            ]
-          },
-          "method": {
-            "type": "string",
-            "enum": [
-              "posthog_identified",
-              "write_minutes",
-              "audit_minutes"
-            ]
-          },
-          "pageviews": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "visitorRef",
-          "confidence",
-          "method",
-          "pageviews"
-        ]
-      },
-      "UsageReportDashboard": {
-        "type": "object",
-        "properties": {
-          "visitors": {
-            "type": "integer"
-          },
-          "sessions": {
-            "type": "integer"
-          },
-          "pageviews": {
-            "type": "integer"
-          },
-          "rageClicks": {
-            "type": "integer"
-          },
-          "errors": {
-            "type": "integer"
-          },
-          "visitorList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportVisitor"
-            },
-            "description": "Empty with `peopleDetail` `aggregate`."
-          }
-        },
-        "required": [
-          "visitors",
-          "sessions",
-          "pageviews",
-          "rageClicks",
-          "errors",
-          "visitorList"
-        ]
-      },
-      "UsageReportRecording": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          },
-          "startedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "activeSeconds": {
-            "type": "integer"
-          },
-          "durationSeconds": {
-            "type": "integer"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "confidence": {
-            "type": "string",
-            "enum": [
-              "identified",
-              "high",
-              "low",
-              "conflict",
-              "none"
-            ]
-          }
-        },
-        "required": [
-          "url",
-          "startedAt",
-          "activeSeconds",
-          "durationSeconds",
-          "confidence"
-        ]
-      },
-      "UsageReportOrganization": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "segment": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "client",
-              "self_serve",
-              null
-            ],
-            "description": "Client or self-serve, where the deployment names its clients; null elsewhere."
-          },
-          "dataRegion": {
-            "type": "string",
-            "description": "Where the organization keeps its data, for example `EU`."
-          },
-          "lastActivityAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "The latest external activity before the window end, looking back 180 days."
-          },
-          "flags": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "first_evaluation",
-                "first_session_outside_run",
-                "back_after_quiet_week",
-                "quiet_14_days"
-              ]
-            },
-            "description": "`first_evaluation` and `first_session_outside_run`: the first in 180 days falls in the window. `back_after_quiet_week`: active in the window after 7 quiet days. `quiet_14_days`: no external activity in the 14 days before the window end."
-          },
-          "products": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportProduct"
-            },
-            "description": "Products with external activity in the window, most active first, at most 200."
-          },
-          "people": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportPerson"
-            },
-            "description": "Authors with activity in the window, staff included and marked, at most 200. Empty with `aggregate`."
-          },
-          "dashboard": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UsageReportDashboard"
-              },
-              {
-                "description": "Only when the `posthog` source is `ok`. Visitors the attribution names as staff (identified or high) are left out of every count and list."
-              }
-            ]
-          },
-          "recordings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportRecording"
-            },
-            "description": "Only when the `posthog` source is `ok`. Recordings of staff visitors are left out."
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "segment",
-          "dataRegion",
-          "lastActivityAt",
-          "flags",
-          "products",
-          "people"
-        ]
-      },
-      "UsageReportV1": {
-        "type": "object",
-        "properties": {
-          "schemaVersion": {
-            "type": "number",
-            "enum": [
-              1
-            ]
-          },
-          "generatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "window": {
-            "type": "object",
-            "properties": {
-              "from": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "to": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "timeZone": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "from",
-              "to",
-              "timeZone"
-            ]
-          },
-          "scope": {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "organization",
-                  "all"
-                ]
-              },
-              "organizationId": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "kind"
-            ]
-          },
-          "peopleDetail": {
-            "type": "string",
-            "enum": [
-              "aggregate",
-              "ids",
-              "names"
-            ]
-          },
-          "sources": {
-            "type": "object",
-            "properties": {
-              "db": {
-                "$ref": "#/components/schemas/UsageReportSourceStatus"
-              },
-              "posthog": {
-                "$ref": "#/components/schemas/UsageReportSourceStatus"
-              },
-              "loki": {
-                "$ref": "#/components/schemas/UsageReportSourceStatus"
-              }
-            },
-            "required": [
-              "db",
-              "posthog",
-              "loki"
-            ]
-          },
-          "excluded": {
-            "type": "object",
-            "properties": {
-              "organizations": {
-                "type": "integer",
-                "description": "Organizations the internal pattern left out that were active in the window"
-              },
-              "staffRows": {
-                "type": "integer",
-                "description": "Rows staff created in the window, left out of every organization and product count"
-              }
-            },
-            "required": [
-              "organizations",
-              "staffRows"
-            ],
-            "description": "Only for the `all` scope."
-          },
-          "organizations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportOrganization"
-            },
-            "description": "The organization asked for, or every organization with external activity in the window (and every client), most active first, then those only the `posthog` or `loki` source saw, at most 1,000. Counts leave out soft-deleted rows, seed sessions, demo clones and rows staff created."
-          },
-          "truncated": {
-            "type": "object",
-            "properties": {
-              "organizations": {
-                "type": "boolean"
-              },
-              "products": {
-                "type": "boolean"
-              },
-              "people": {
-                "type": "boolean"
-              },
-              "dashboard": {
-                "type": "boolean",
-                "description": "A `posthog` query answered its row limit, so some dashboard visits, or the evidence that names visitors, are missing."
-              },
-              "recordings": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "organizations",
-              "products",
-              "people",
-              "dashboard",
-              "recordings"
-            ]
-          }
-        },
-        "required": [
-          "schemaVersion",
-          "generatedAt",
-          "window",
-          "scope",
-          "peopleDetail",
-          "sources",
-          "organizations",
-          "truncated"
-        ]
-      },
-      "UsageReportPdf": {
-        "type": "object",
-        "properties": {
-          "downloadUrl": {
-            "type": "string",
-            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
-            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
-          }
-        },
-        "required": [
-          "downloadUrl"
-        ]
-      },
-      "UsageReportWithPdf": {
-        "type": "object",
-        "properties": {
-          "report": {
-            "$ref": "#/components/schemas/UsageReportV1"
-          },
-          "downloadUrl": {
-            "type": "string",
-            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
-            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
-          }
-        },
-        "required": [
-          "report",
-          "downloadUrl"
         ]
       },
       "Prefer": {
