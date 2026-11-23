@@ -86,6 +86,43 @@ galtea help
 
 For parameter, request body, and response shape details, see the [**REST API**](/api-reference) tab.
 
+### Connecting a streaming agent
+
+An endpoint connection reads a [streamed reply](/concepts/product/endpoint-connection-configuration#streamed-replies) when it has `streamFormat` (`SSE` or `NDJSON`) and `streamAssembly`. The usual `streamAssembly` is a named preset alone, such as `OPENAI_CHAT_COMPLETIONS`. The joined reply is `{ text, byEvent, final }`, so the output mapping reads `$.text`.
+
+Pass a body with an input template as JSON on stdin, because the template's `{{ }}` breaks the inline `key: value` form. Save it as `streaming-connection.json`:
+
+```json
+{
+  "productId": "YOUR_PRODUCT_ID",
+  "name": "streaming-agent",
+  "url": "https://api.example.com/v1/chat/completions",
+  "type": "CONVERSATION",
+  "authType": "BEARER",
+  "authToken": "YOUR_AUTH_TOKEN",
+  "inputTemplate": "{\"model\": \"my-agent\", \"stream\": true, \"messages\": [{\"role\": \"user\", \"content\": \"{{ input.user_message }}\"}]}",
+  "outputMapping": { "output": "$.text" },
+  "streamFormat": "SSE",
+  "streamAssembly": { "preset": "OPENAI_CHAT_COMPLETIONS" }
+}
+```
+
+```bash
+# List the presets, with the stream format and settings of each one
+galtea endpoint-connections list-stream-presets
+
+# Create the connection from the JSON body above
+galtea endpoint-connections create < streaming-connection.json
+
+# Try a preset on the saved connection before you change it
+galtea endpoint-connections test id: YOUR_CONNECTION_ID, streamFormat: SSE, streamAssembly.preset: OPENAI_CHAT_COMPLETIONS
+
+# Turn streaming off again: the agent answers with one JSON reply
+galtea endpoint-connections update YOUR_CONNECTION_ID streamFormat: null, streamAssembly: null
+```
+
+On a streamed reply, `test` answers the joined object in `response`. When the stream closed before its terminal event, the answer also holds `streamTruncated: true`, and `response` is the partial reply.
+
 ### Finding the docs of your platform
 
 Run `galtea docs` to see where the docs of your platform version live.

@@ -111,6 +111,10 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
   The customer of your agent who sent this turn. It is not a Galtea user. Read-only: OpenTelemetry ingest sets it from the spans of this trace only, so two traces of one session can name different end users. Spans that arrive later fill it while it is empty, and never change a stored value. Null when no span of the trace names one. Spans of an existing Trace, such as a Direct Inference turn, set none. A trace file import never sets it. The [session](/concepts/product/version/session) keeps the first end user of all its traces. See [End user](/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).
 </ResponseField>
 
+<ResponseField name="Stream Truncated" type="bool" optional>
+  True when the streamed reply of your agent closed before the terminal event of its [endpoint connection](/concepts/product/endpoint-connection-configuration#streamed-replies), so the output is partial. Read-only. Null when the API does not report it. In the SDK it is `Trace.stream_truncated`.
+</ResponseField>
+
 ## Related
 
 <CardGroup cols={3}>

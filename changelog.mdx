@@ -16,6 +16,10 @@ Through the API, `POST /sessions` and `PATCH /sessions/{id}` now return the sess
 
 The REST API now answers an error with the body `{ "error": "NotFound", "message": "Product not found" }`. `error` is the HTTP status name and `message` says what went wrong, so your code can read `message`. Before, some routes put the message text in `error`, and a rate-limited request or a request body that is not valid JSON answered plain text or an HTML page. The 404 for a route that does not exist (an HTML page) and the replies to webhooks keep their old shape.
 
+## Streaming Endpoint Connections in the SDK and the CLI
+
+The Python SDK and the CLI now create, update and test an Endpoint Connection that reads a [streamed reply](/concepts/product/endpoint-connection-configuration#streamed-replies). In the SDK, pass `stream_format="SSE"` and `stream_assembly=StreamAssembly(preset="OPENAI_CHAT_COMPLETIONS")`. In the CLI, send `streamFormat` and `streamAssembly` in the body, and run `galtea endpoint-connections list-stream-presets` to see the presets.
+
 ## Endpoint Connections Read Streamed Replies
 
 An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. In the dashboard, choose **Streamed reply** in the connection form and pick your agent stack, or set `streamFormat` and `streamAssembly` through the API. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).

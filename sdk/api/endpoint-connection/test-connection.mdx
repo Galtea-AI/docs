@@ -4,6 +4,8 @@ sidebarTitle: "Test Connection"
 description: "Test an endpoint connection by making a sample request."
 ---
 
+import { Requires } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns a `TestConnectionResult` object containing:
 - `success` (bool): Whether the test request succeeded.
@@ -13,6 +15,25 @@ Returns a `TestConnectionResult` object containing:
 - `error` (string | None): Error message if the request failed.
 - `extracted_output` (dict | None): Values extracted via `output_mapping`, if provided.
 - `extraction_error` (string | None): Error message if extraction failed.
+- `stream_truncated` (bool | None): `True` when a streamed reply closed before its terminal event, so `response` and `extracted_output` hold the partial reply, and `success` stays `True`. `None` when the reply was complete, or when the API does not report it. A stream that stalls or sends its error event gives `success` `False` and an `error` text.
+  <Requires sdk=">5.20">
+  </Requires>
+
+For example, a streamed reply that sent its text in two `reply.delta` chunks and ended with a `reply.done` chunk gives this `response`:
+
+```json
+{
+  "text": "Our store opens at nine.",
+  "byEvent": {
+    "reply.delta": [
+      { "kind": "reply.delta", "delta": { "text": "Our store " } },
+      { "kind": "reply.delta", "delta": { "text": "opens at nine." } }
+    ],
+    "reply.done": [{ "kind": "reply.done", "conversation_id": "conv_1" }]
+  },
+  "final": { "kind": "reply.done", "conversation_id": "conv_1" }
+}
+```
 
 ## Modes
 
@@ -37,6 +58,12 @@ This method can be called in two ways:
         type=EndpointConnectionType.CONVERSATION,
         timeout=30,
     )
+```
+
+**A streaming connection.** The call is the same, and `response` holds the joined reply:
+```python
+    test_result = galtea.endpoint_connections.test(id=streaming_connection.id)
+    # On a streamed reply, test_result.response is the joined object { text, byEvent, final }.
 ```
 
 ## Parameters
@@ -89,6 +116,18 @@ This method can be called in two ways:
 </ResponseField>
 <ResponseField name="acknowledged_insecure_http" type="bool" optional>
   Set to `true` to test an `http://` URL that is not saved yet. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+</ResponseField>
+<ResponseField name="stream_format" type="string" optional>
+  How your agent frames a streamed reply: `SSE` or `NDJSON`. With an `id`, the stored value applies when omitted. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+
+  <Requires sdk=">5.20">
+  </Requires>
+</ResponseField>
+<ResponseField name="stream_assembly" type="StreamAssembly" optional>
+  How a streamed reply becomes one object: a named preset alone, or `CUSTOM` with `text_path` and `mode`, as in [Create](/sdk/api/endpoint-connection/create). Set it together with `stream_format`. With an `id`, the stored value applies when omitted.
+
+  <Requires sdk=">5.20">
+  </Requires>
 </ResponseField>
 
 <Note>
