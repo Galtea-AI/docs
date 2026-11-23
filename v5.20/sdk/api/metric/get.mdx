@@ -1,0 +1,26 @@
+---
+title: 'Retrieving Metric'
+sidebarTitle: "Get"
+description: "Retrieve a specific metric by its ID."
+---
+
+import EntityNotFound from '/v5.20/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/sdk/api/metric/get).
+</Warning>
+
+## Returns
+Returns a [Metric](/v5.20/concepts/metric) object for the given metric ID.
+
+## Example
+```python
+metric = galtea.metrics.get(metric_id=metric_id)
+```
+
+## Parameters
+<ResponseField name="metric_id" type="string" required>
+  The ID of the metric you want to retrieve.
+</ResponseField>
+
+<EntityNotFound />

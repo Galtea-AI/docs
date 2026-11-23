@@ -1,0 +1,107 @@
+---
+title: "Usage Report"
+description: "See what your organization created on Galtea in a period and who did the work, as a table, a JSON file or a PDF"
+icon: "chart-simple"
+---
+
+## Overview
+
+The usage report counts what your organization created on Galtea in a period you choose, product by product, and who created it. Use it to see how much your teams use the platform and to share that with a manager or an auditor.
+
+Only an **OWNER** of the organization, or Galtea staff, can read it. See [Roles and permissions](/security/roles-and-permissions).
+
+## What it counts
+
+For each product with activity in the period, the report counts the rows created in it:
+
+- Versions
+- Tests and test cases
+- Specifications
+- Runs
+- Sessions
+- Evaluations
+
+It also gives the date of the last activity of each product and of the organization. The counts leave out deleted rows, seed sessions, demo copies and rows created by Galtea staff. A product with no activity in the period is not listed.
+
+The report reads the Galtea database only. The other sources the API accepts are not available to organization owners.
+
+## In the dashboard
+
+<Steps>
+  <Step title="Open the Usage tab">
+    Go to the organization settings and open the **Usage** tab (`?tab=usage` in the page address). The tab shows to an OWNER.
+  </Step>
+  <Step title="Choose the period">
+    Pick the first and the last day. The default is the last 30 days. The period can span at most 92 days.
+  </Step>
+  <Step title="Choose how people appear">
+    **Names** lists people by name, and **Ids** by user id. Emails never appear.
+  </Step>
+  <Step title="Generate and download">
+    Select **Generate report** to see the products table. Then select **Download JSON** to save the full report, or **Download PDF** to save a printable copy of the same report.
+  </Step>
+</Steps>
+
+## With the CLI
+
+An on-premise install can read the report with the [Galtea CLI](/cli/usage) and the API key of an OWNER. The command is generated from the Galtea API, so it takes the same parameters as `GET /reports/usage`. A CLI build gets it only in the first release made after the endpoint exists. If `galtea reports --help` does not list `usage`, [update the CLI](/cli/installation#update).
+
+```bash
+galtea reports usage \
+  --organization-id <organizationId> \
+  --from 2026-09-30T22:00:00Z \
+  --to 2026-10-31T23:00:00Z \
+  --time-zone Europe/Madrid \
+  --people names \
+  -o json > usage-report.json
+```
+
+| Flag | Meaning |
+| --- | --- |
+| `--organization-id` | The organization to report on. |
+| `--from` | Start of the period, inclusive, as an ISO 8601 date and time. |
+| `--to` | End of the period, exclusive. At most 92 days after `--from`, plus one hour of slack that always applies, so 92 local days fit across a clock change. |
+| `--time-zone` | IANA time zone copied into `window` as a label. It does not move the period or change any count, so give `--from` and `--to` with the offset of your local days. Default `UTC`. |
+| `--people` | `names`, `ids` (default) or `aggregate`, which lists no one. |
+| `--format` | `json` (default) answers the report. `pdf` answers `downloadUrl`, the stored PDF. `both` answers `report` and `downloadUrl`. |
+
+`downloadUrl` is where the PDF is stored, not a link. Exchange it for a short-lived link with `galtea storage generate-get-url --uri <downloadUrl>`. The PDF is stored under your organization, so only its members and Galtea staff can get that link.
+
+<Note>
+  The report is alpha, so its fields may still change. The `schemaVersion` field of the file tells you which format you have.
+</Note>
+
+## The JSON format
+
+The file has one object with these fields:
+
+| Field | Content |
+| --- | --- |
+| `schemaVersion` | The format version, currently `1`. |
+| `generatedAt` | When the report was made. |
+| `window` | `from`, `to` and `timeZone` of the period. |
+| `scope` | `kind` is `organization` for your report, with the `organizationId`. |
+| `peopleDetail` | How people are shown: `names`, `ids` or `aggregate`. |
+| `sources` | The status of each source, with a reason when it is not `ok`. |
+| `organizations` | One entry for your organization, with its `products` and `people`. |
+| `truncated` | Five flags, `organizations`, `products`, `people`, `dashboard` and `recordings`, each `true` when that list or source was cut at its limit. |
+
+Each entry of `products` has an `id`, a `name`, a `lastActivityAt` and a `created` object with the counts above. It also has `sessionsByUser` and `evaluationsByUser`, which count by person.
+
+Each entry of `people` has a `user` with a `userId`, plus a `name` when `peopleDetail` is `names`. It also has a `created` object and a `lastActivityAt`, and `isStaff`, which is `true` for Galtea staff or a staff email domain the deployment names. With `aggregate`, the people lists are empty.
+
+Each entry of `organizations` also has a `segment` (`client`, `self_serve`, or `null` where the deployment names no clients), a `dataRegion` such as `EU`, and a `flags` list. The flags are `first_evaluation` and `first_session_outside_run` (the first in 180 days falls in the period), `back_after_quiet_week` (active in the period after 7 quiet days) and `quiet_14_days` (no external activity in the 14 days before the period ends). The `UsageReportV1` schema in the API reference lists every field.
+
+## The PDF
+
+The PDF holds the same report as the JSON file, in this order:
+
+| Section | Content |
+| --- | --- |
+| Header | The organization, the days of the period in its time zone, and the sources read. |
+| Summary | Five rows: organizations that created anything, organizations that ran an evaluation, people active, sessions created and evaluations created. With `aggregate`, the people active row is not shown. |
+| Organizations | For each organization, a table of its products with the counts above and the last activity, then a table of people with what each created. |
+| Galtea staff and demos | Rows created by Galtea staff, which the counts leave out. |
+| Sources | The status of each source. |
+
+With `aggregate`, the PDF names no one and says so under the header.

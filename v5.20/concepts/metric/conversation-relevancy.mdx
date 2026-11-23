@@ -1,0 +1,42 @@
+---
+title: "Conversation Relevancy"
+description: "Checks if your product consistently responds in a contextually relevant way during a multi-turn conversation."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/concepts/metric/conversation-relevancy).
+</Warning>
+
+The **Conversation Relevancy** metric is one of several [non-deterministic Metric](/v5.20/concepts/metric) Galtea uses to evaluate your LLM-based chatbot's ability to generate contextually appropriate and relevant responses across the course of a multi-turn dialogue. It assesses whether each response aligns with the user's intent, prior inputs, and the evolving context of the conversation.
+
+This metric is particularly useful for ensuring coherent, on-topic conversations that maintain engagement and avoid misunderstandings or irrelevant diversions.
+
+## Evaluation Parameters
+
+To compute the `conversation_relevancy` metric, the following parameters are required in every turn of the conversation:
+
+- **`input`**: The user message in the conversation.
+- **`actual_output`**: The chatbot's corresponding response.
+
+This metric will evaluate the whole conversation, including all turns, to evaluate the relevance of the response in context, not just in isolation.
+
+## How Is It Calculated?
+
+The `conversation_relevancy` score is computed using an LLM-as-a-judge approach:
+
+1. **Analyze Context Flow**: The LLM reads the conversation sequentially to understand the evolving context.
+2. **Evaluate Each Turn**: For every agent response, the LLM determines if it directly addresses the user's immediate input, makes sense given previous turns, and stays on-topic.
+3. **Consider Natural Conversation Dynamics**: The LLM accounts for minor clarifications or brief tangents that serve a purpose, and focuses on **significant** relevance failures rather than minor imperfections.
+
+The metric assigns a **binary score**:
+
+- **Score 1.0 (Relevant):** The agent maintains overall coherence with only minor or justifiable deviations. Responses align with the user's intent and conversation history.
+- **Score 0.0 (Irrelevant):** The agent demonstrates significant irrelevance issues—repeatedly ignoring context, contradicting established information, or going off-topic without justification.
+
+## Suggested Test Case Types
+
+The Conversation Relevancy metric is effective for evaluating Behavior test cases in Galtea, particularly:
+
+- **Open-ended dialogues** where maintaining topical coherence is critical.
+- **Multi-turn scenarios** with shifting context or follow-up questions.
+- **Edge-case conversations** that test the agent's ability to stay on-topic under pressure.

@@ -46,7 +46,7 @@ Every evaluation list has a **Judge Score** filter and a **Human Score** filter.
 
 - **Judge Score** reads the score the metric's judge gave. It ignores a human review.
 - **Human Score** reads the human score only. On a metric a judge scores, that is the annotation of the case.
-- **Confidence** reads the confidence of a [Classifier](/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Confidence** reads the confidence of a [decision](/concepts/metric/decision-model) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where decision metrics are on. Add the column from the **Columns** menu.
 - **Result** (open **Filters**, then choose **Result**) keeps the evaluations that passed or failed their metric's [pass threshold](/concepts/metric#pass-threshold). Pick both options, or none, and the filter does nothing. It follows the reported score, so a human review counts, unlike the Judge Score filter. The **Result** column shows PASS, FAIL or a dash, is hidden by default, and is included in the CSV export.
 - An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
 - Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
@@ -96,7 +96,7 @@ Once an evaluation completes, the following fields are available:
     - A file attached to the evaluated turns cannot reach the judge. On deployments that send files to the judge, this covers a file that the judge model does not read, a file that is missing, empty or over the size limit, and a judge model that refuses the file. The error message names the files, and for a refusal it adds the provider's own reason. No credits are charged, and `canRetry` is `false`, because a retry sends the same files. Pick a metric whose judge model reads that kind of file, or log the extracted text as the turn input or output. The [file rule on the Trace page](/concepts/product/version/session/trace#param-input-files) lists every cause.
     - The evaluator model's content safety filter blocked the request. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model. For G-Eval based built-in metrics, a blocked request also ends as Skipped, and a filtered reply can end as Failed. Neither shows this advice.
     - The judge's answer was cut off by the metric's own `max_output_tokens`. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same metric and the same limit, so create a revision of the metric with a higher `max_output_tokens`, or none, and evaluate the session again with that revision.
-    - A [classifier](/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, the input was too long for the classifier, or the classifier model's content safety filter blocked the request. After a block, a retry uses the same model, so evaluate the session with a metric that uses a different classifier model.
+    - A [decision](/concepts/metric/decision-model) question's **Does not apply** level was the most probable answer, the input was too long for the decision model, or the decision model's content safety filter blocked the request. After a block, a retry uses the same model, so evaluate the session with a metric that uses a different decision model.
     - The [applicability check](/concepts/metric#applicability-check) found that the metric does not apply to the session. The message gives the probability that it applies and the metric's threshold. No credits are charged, and `canRetry` is `false`, because a retry asks the same question about the same session.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
@@ -111,7 +111,7 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Passed" type="Boolean" optional>
-  Whether the reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). Null when the evaluation has no reported score, when it is outdated or deleted, or when it is a classifier result marked **Long input**. In the SDK it is `evaluation.passed`.
+  Whether the reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). Null when the evaluation has no reported score, when it is outdated or deleted, or when it is a decision result marked **Long input**. In the SDK it is `evaluation.passed`.
 </ResponseField>
 
 <ResponseField name="Metric Pass Threshold" type="Number" optional>
@@ -166,13 +166,13 @@ Once an evaluation completes, the following fields are available:
 
 <Note>The API returns `creditsUsed` and the three judge token fields as `null` to a user without the `evaluation.readInference` permission, such as a MEMBER whose user groups hold their own list without it. See [Roles and permissions](/security/roles-and-permissions).</Note>
 
-<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/concepts/metric/classifier) metric, these token fields count the classifier model's tokens.</Note>
+<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [decision](/concepts/metric/decision-model) metric, these token fields count the decision model's tokens.</Note>
 
 <ResponseField name="Score Breakdown" type="Object" optional>
-  How a [classifier](/concepts/metric/classifier) metric reached its score, read-only and set by the API. Present only for `CLASSIFIER` metrics. The fields depend on the question type:
+  How a [decision](/concepts/metric/decision-model) metric reached its score, read-only and set by the API. Present only for `DECISION` metrics. The fields depend on the question type:
 
   - `version`: the breakdown schema version, `2`.
-  - `model`: the classifier model that answered, such as `jev-1.13.0`. It is the name the metric stores, such as `microsoft-decision-1`, also when an EU deployment answered.
+  - `model`: the decision model that answered, such as `jev-1.13.0`. It is the name the metric stores, such as `microsoft-decision-1`, also when an EU deployment answered.
   - `type`: `yes_no` or `scale`.
   - `value`: the score.
   - `confidence`: the same value as the evaluation's **Confidence**.
@@ -183,11 +183,11 @@ Once an evaluation completes, the following fields are available:
 </ResponseField>
 
 <ResponseField name="Confidence" type="Number" optional>
-  How sure the classifier was of its answer, from 0 to 1, read-only and set by the API. Present only for `CLASSIFIER` metrics, and null for every other source. Confidence values do not compare across question types. In the SDK it is `evaluation.confidence`.
+  How sure the decision model was of its answer, from 0 to 1, read-only and set by the API. Present only for `DECISION` metrics, and null for every other source. Confidence values do not compare across question types. In the SDK it is `evaluation.confidence`.
 </ResponseField>
 
 <ResponseField name="Long Input" type="Boolean" optional>
-  True for a `CLASSIFIER` evaluation whose input is longer than the classifier reads reliably (about 2,000 tokens) and that no reviewer has scored. The evaluation keeps its score, but analytics leave it out of pass rates and score averages. False for every other evaluation. In the SDK it is `evaluation.long_input`.
+  True for a `DECISION` evaluation whose input is longer than the decision model reads reliably (about 2,000 tokens) and that no reviewer has scored. The evaluation keeps its score, but analytics leave it out of pass rates and score averages. False for every other evaluation. In the SDK it is `evaluation.long_input`.
 </ResponseField>
 
 <ResponseField name="Human Evaluator ID" type="Text" optional>

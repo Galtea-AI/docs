@@ -53,15 +53,15 @@ metric = galtea.metrics.create(
 )
 ```
   </Tab>
-  <Tab title="Classifier">
+  <Tab title="Decision model">
 ```python
-from galtea import ClassifierScaleQuestion, ClassifierYesNoQuestion, evenly_spaced_levels
+from galtea import DecisionScaleQuestion, DecisionYesNoQuestion, evenly_spaced_levels
 
 card_number_metric = galtea.metrics.create(
     name="Card number request " + run_identifier,
-    source="classifier",
+    source="decision",
     description="The assistant never asks the user for their full card number.",
-    classifier_question=ClassifierYesNoQuestion(
+    decision_question=DecisionYesNoQuestion(
         instructions="Does {{ actual_output }} ask the user for their full card number?",
         good_answer="no",
     ),
@@ -69,9 +69,9 @@ card_number_metric = galtea.metrics.create(
 
 human_transfer_metric = galtea.metrics.create(
     name="Human transfer offer " + run_identifier,
-    source="classifier",
+    source="decision",
     description="When the user asks for a human agent, the assistant offers a transfer.",
-    classifier_question=ClassifierScaleQuestion(
+    decision_question=DecisionScaleQuestion(
         instructions="Does {{ actual_output }} offer to transfer the user to a human agent?",
         levels=evenly_spaced_levels(["Does not offer a transfer", "Offers a transfer"]),
         does_not_apply="Does not apply: {{ input }} does not ask for a human agent",
@@ -96,12 +96,15 @@ human_transfer_metric = galtea.metrics.create(
   **Available models:**
   - `"claude-opus-5-5"`
   - `"claude-sonnet-5-5"`
+  - `"claude-haiku-5-5"`
   - `"claude-opus-5"`
   - `"claude-sonnet-5"`
   - `"claude-sonnet-4-6"`
   - `"claude-sonnet-4-5"`
   - `"claude-haiku-4-5"`
+  - `"GPT-6.2-Sol"`
   - `"GPT-6.1-Sol"`
+  - `"GPT-6.1-Terra"`
   - `"GPT-6-Sol"`
   - `"GPT-6-Luna"`
   - `"GPT-5.6-Sol"`
@@ -116,6 +119,7 @@ human_transfer_metric = galtea.metrics.create(
   - `"GPT-4.1"`
   - `"GPT-4.1-mini"`
   - `"GPT-4o"`
+  - `"Gemini-4-Argon"`
   - `"Gemini-3.5-Flash"`
   - `"Gemini-3.1-Flash-Lite"`
   - `"DeepSeek-V4-Pro"`
@@ -126,18 +130,18 @@ human_transfer_metric = galtea.metrics.create(
   Model names are case-insensitive.
 
   <Note>
-    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `classifier` and your deployment has one selectable classifier model (such as `jev-1.13.0`): leave it out, and the API uses that model. With several selectable classifier models, the API answers 400 until you name one. A name you send must be a selectable classifier model of your deployment.
+    It should not be provided if the metric is "self hosted" (has no `judge_prompt`) since it does not require a model for evaluation. Optional when `source` is `decision` and your deployment has one selectable decision model (such as `jev-1.13.0`): leave it out, and the API uses that model. With several selectable decision models, the API answers 400 until you name one. A name you send must be a selectable decision model of your deployment.
   </Note>
 </ResponseField>
 <ResponseField name="judge_prompt" type="string" optional>
-  A custom prompt that defines the evaluation logic for the metric. For AI Evaluation metrics, write the evaluation criteria and scoring rubric — Galtea will prepend the selected `evaluation_params` automatically. For Human Evaluation metrics, this serves as the annotation rubric. If omitted, the metric is considered a deterministic "Custom Score" metric. Must not be provided when `source` is `classifier`.
+  A custom prompt that defines the evaluation logic for the metric. For AI Evaluation metrics, write the evaluation criteria and scoring rubric — Galtea will prepend the selected `evaluation_params` automatically. For Human Evaluation metrics, this serves as the annotation rubric. If omitted, the metric is considered a deterministic "Custom Score" metric. Must not be provided when `source` is `decision`.
 </ResponseField>
 <ResponseField name="source" type="string" optional>
   The evaluation method for the metric. Possible values:
   - `"partial_prompt"` — [AI Evaluation](/concepts/metric#creating-custom-metrics-via-ai-evaluation): You provide the core evaluation criteria and rubric. Galtea dynamically constructs the final prompt by prepending selected evaluation parameters to your criteria.
   - `"human_evaluation"` — **Human Evaluation**: Human annotators manually review and score evaluations using the annotation criteria you define. Evaluations enter a `PENDING_HUMAN` status and are completed when an annotator submits a score.
   - `"self_hosted"` — [Self-Hosted](/concepts/metric#self-hosted): For deterministic metrics scored locally using the SDK's `CustomScoreEvaluationMetric`. Your custom logic runs on your infrastructure, and the resulting score is uploaded to the platform.
-  - `"classifier"` — [Classifier](/concepts/metric/classifier): a classifier model answers one typed question, which requires `classifier_question`. On a deployment without the classifier, the API answers 400 and `create` returns `None`.
+  - `"decision"` — [Decision model](/concepts/metric/decision-model): a decision model answers one typed question, which requires `decision_question`. On a deployment without decision metrics, the API answers 400 and `create` returns `None`. `"classifier"` is the deprecated name of `"decision"`: it still works, warns, and is removed on 2028-01-17.
 
   Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
 </ResponseField>
@@ -146,35 +150,39 @@ human_transfer_metric = galtea.metrics.create(
   To check the available evaluation parameters, see the [Evaluation Parameters](/concepts/metric#param-evaluation-parameters) section.
 
   <Note>
-    Only applicable for AI Evaluation and Human Evaluation metrics. For `classifier`, leave it out: the API derives it from the `{{ param }}` placeholders in every text of the question. If you send it, it must list exactly those names. Only the [allowed placeholders](/concepts/metric/classifier#allowed-placeholders) are accepted.
+    Only applicable for AI Evaluation and Human Evaluation metrics. For `decision`, leave it out: the API derives it from the `{{ param }}` placeholders in every text of the question. If you send it, it must list exactly those names. Only the [allowed placeholders](/concepts/metric/decision-model#allowed-placeholders) are accepted.
   </Note>
 </ResponseField>
-<ResponseField name="classifier_question" type="ClassifierYesNoQuestion | ClassifierScaleQuestion" optional>
-  The one question a [classifier](/concepts/metric/classifier) metric asks. Required when `source` is `classifier`, and refused for every other source. Write it in English. A plain dict with snake_case or camelCase keys is also accepted; it needs a `type` of `"yes_no"` or `"scale"`.
+<ResponseField name="decision_question" type="DecisionYesNoQuestion | DecisionScaleQuestion" optional>
+  The one question a [decision](/concepts/metric/decision-model) metric asks. Required when `source` is `decision`, and refused for every other source. Write it in English. A plain dict with snake_case or camelCase keys is also accepted; it needs a `type` of `"yes_no"` or `"scale"`.
 
-  `ClassifierYesNoQuestion`:
+  `DecisionYesNoQuestion`:
   - `instructions`: 1 to 2000 characters, naming at least one evaluation parameter as a `{{ name }}` placeholder.
   - `good_answer`: `"yes"` or `"no"`. Required, with no default.
-  - `criteria`: optional `ClassifierYesNoCriteria(yes, no)`, each side at most 1000 characters, to refine what yes and no mean.
+  - `criteria`: optional `DecisionYesNoCriteria(yes, no)`, each side at most 1000 characters, to refine what yes and no mean.
 
-  `ClassifierScaleQuestion`:
+  `DecisionScaleQuestion`:
   - `instructions`: same rules as above.
-  - `levels`: a list of `ClassifierScaleLevel(description, score)`, worst first. 2 to 10 levels, or 2 to 9 with `does_not_apply`. Each `description` is 1 to 1000 characters. Each `score` is from 0 to 1 and must not go down from the worst level to the best. Set a score on every level, or on none: with none, the API spaces the scores evenly. `evenly_spaced_levels(descriptions)` builds the levels with those scores.
+  - `levels`: a list of `DecisionScaleLevel(description, score)`, worst first. 2 to 10 levels, or 2 to 9 with `does_not_apply`. Each `description` is 1 to 1000 characters. Each `score` is from 0 to 1 and must not go down from the worst level to the best. Set a score on every level, or on none: with none, the API spaces the scores evenly. `evenly_spaced_levels(descriptions)` builds the levels with those scores.
   - `does_not_apply`: optional text of an extra level, 1 to 1000 characters. When it is the most probable answer, the evaluation is skipped.
 
   Placeholders may also appear in the yes/no criteria, the level descriptions and the `does_not_apply` text. The SDK sends the question as given, and the API checks these rules. When the API refuses it, `create` prints the API's message and returns `None`.
+</ResponseField>
+<ResponseField name="classifier_question" type="DecisionYesNoQuestion | DecisionScaleQuestion" optional>
+  <Deprecated name="classifier_question" removal="2028-01-17" replacement="decision_question">
+  </Deprecated>
 </ResponseField>
 <ResponseField name="pass_threshold" type="float" optional>
   The score, from 0 to 1, at or above which an evaluation of this metric passes. When omitted, the API uses `0.5`. It is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.pass_threshold`. See [Pass threshold](/concepts/metric#pass-threshold).
 </ResponseField>
 <ResponseField name="applicability_scope" type="string | MetricApplicabilityScope" optional>
   Which sessions get the [applicability check](/concepts/metric#applicability-check) before the metric is judged. A session where the metric does not apply is skipped, with no judge call and no credits spent. Possible values, in any case:
-  - `"production"`: only production sessions. This is the default for a metric the check covers: `partial_prompt`, `classifier`, deterministic, and the DeepEval-based metrics of Galtea.
+  - `"production"`: only production sessions. This is the default for a metric the check covers: `partial_prompt`, `decision`, deterministic, and the DeepEval-based metrics of Galtea.
   - `"development"`: only development sessions, which are the sessions that are not production.
   - `"all"`: every session.
   - `"none"`: no check. This is the default for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric.
 
-  The API refuses any other value than `"none"` for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and `create` returns `None`. A metric that scores only `traces` never gets the check: it defaults to `"none"` and refuses any other value. A metric that scores `traces` and another field is checked without traces: on each turn's `input` and `actual_output` and its other fields. For a classifier metric, the fields it scores are the placeholders of its question, so a question whose only placeholder is `traces` turns the check off. The check runs only where your deployment enables it. The scope is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.applicability_scope`.
+  The API refuses any other value than `"none"` for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and `create` returns `None`. A metric that scores only `traces` never gets the check: it defaults to `"none"` and refuses any other value. A metric that scores `traces` and another field is checked without traces: on each turn's `input` and `actual_output` and its other fields. For a decision metric, the fields it scores are the placeholders of its question, so a question whose only placeholder is `traces` turns the check off. The check runs only where your deployment enables it. The scope is fixed when you create the metric: to use another one, create a revision of the metric. Read it back as `metric.applicability_scope`.
 </ResponseField>
 <ResponseField name="applicability_threshold" type="float" optional>
   The lowest probability, from 0 to 1, that the metric applies to a session at which the metric is judged. A session below it is skipped. When omitted, the API uses `0.5`, and `metric.applicability_threshold` reads `None`. The API refuses it for a `self_hosted`, `human_evaluation` or G-Eval (deprecated) metric, and for a metric that scores only `traces`. It is fixed when you create the metric: to use another one, create a revision of the metric. See [Applicability check](/concepts/metric#applicability-check).

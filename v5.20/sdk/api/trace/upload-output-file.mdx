@@ -1,0 +1,58 @@
+---
+title: 'Upload Output File'
+sidebarTitle: "Upload Output File"
+description: "Upload a local file so it can be attached to a trace output."
+---
+
+import JudgeFileRule from '/v5.20/snippets/judge-file-rule.mdx';
+import { Deprecated } from '/v5.20/snippets/version-tags.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/sdk/api/trace/upload-output-file).
+</Warning>
+
+Use this when you build the trace output yourself. To attach files while logging a turn, pass `output_file_paths` to [Create Trace](/v5.20/sdk/api/trace/create), [Update Trace](/v5.20/sdk/api/trace/update) or [Create and Evaluate Trace](/v5.20/sdk/api/trace/create-and-evaluate) instead: it is shorter and does the same upload.
+
+The one thing this method gives you that `output_file_paths` does not is reuse. Upload a document once and attach the same `AttachedFile` to many turns, rather than uploading it per turn.
+
+This is the answer-side twin of [Upload Input File](/v5.20/sdk/api/test-case/upload-input-file).
+
+## Returns
+
+Returns an `AttachedFile` with `uri`, `filename` and `mime_type`. Place it in the output's `content` list.
+
+The `uri` still carries the upload's signature and expires. The API replaces it with a signature-free storage reference when the turn is written, so `trace.actual_output_files` reads back a uri that does not expire and grants nobody the bytes on its own. Never treat either form as a link to the bytes: ask for a fresh one with [`galtea.storage.download()`](/v5.20/sdk/api/storage/download) or [`galtea.storage.read()`](/v5.20/sdk/api/storage/read).
+
+<Deprecated name="InputFile" removal="2028-01-17" replacement="AttachedFile">
+</Deprecated>
+
+<Note>
+  `AttachedFile` is the object that used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
+</Note>
+
+## Example
+
+```python
+lease = galtea.traces.upload_output_file("path/to/lease-agreement.pdf")
+
+for question in ["Send me the lease again", "And a copy for my records"]:
+    galtea.traces.create(
+        session_id=session.id,
+        input=question,
+        output={"assistant_message": "Attached.", "content": [lease.model_dump(by_alias=True)]},
+    )
+```
+
+## Parameters
+
+<ResponseField name="file_path" type="string" required>
+  Path to the file on the machine running the SDK. One output accepts at most 20 files, 20 MB in total, and each must be one of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. A storage URI is refused: there is nothing on this machine to upload, so attach it directly instead.
+</ResponseField>
+
+<JudgeFileRule />
+
+## Related Methods
+
+- [Create Trace](/v5.20/sdk/api/trace/create) - Log a turn and attach files in one call
+- [Update Trace](/v5.20/sdk/api/trace/update) - Attach files to a turn you already logged
+- [Upload Input File](/v5.20/sdk/api/test-case/upload-input-file) - The same method on the input side

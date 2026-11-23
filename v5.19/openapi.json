@@ -34330,7 +34330,7 @@
           }
         },
         "x-mint": {
-          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/metrics/score-a-draft-classifier-question-on-a-sample).\n</Warning>\n"
+          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/metrics/score-a-draft-decision-question-on-a-sample).\n</Warning>\n"
         }
       }
     },
@@ -34438,7 +34438,7 @@
           }
         },
         "x-mint": {
-          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/metrics/create-several-classifier-metrics-at-once-classifier-metrics-only).\n</Warning>\n"
+          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/metrics/create-several-decision-metrics-at-once).\n</Warning>\n"
         }
       }
     },
@@ -34542,7 +34542,7 @@
           }
         },
         "x-mint": {
-          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/metrics/propose-classifier-metrics-for-an-llm-judge-metric).\n</Warning>\n"
+          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/metrics/propose-decision-metrics-for-an-llm-judge-metric-deprecated).\n</Warning>\n"
         }
       }
     },
@@ -36645,7 +36645,7 @@
           }
         },
         "x-mint": {
-          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/revisions/propose-classifier-metrics-for-an-llm-judge-revision).\n</Warning>\n"
+          "content": "<Warning>\n  You are reading the docs of Galtea 5.19. [Read this page in the latest version](/api-reference/revisions/propose-decision-metrics-for-an-llm-judge-revision-deprecated).\n</Warning>\n"
         }
       }
     },

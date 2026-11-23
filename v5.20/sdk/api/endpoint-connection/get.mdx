@@ -1,0 +1,26 @@
+---
+title: 'Get Endpoint Connection'
+sidebarTitle: "Get"
+description: "Retrieve a specific endpoint connection by its ID."
+---
+
+import EntityNotFound from '/v5.20/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/sdk/api/endpoint-connection/get).
+</Warning>
+
+## Returns
+Returns an [Endpoint Connection](/v5.20/concepts/product/endpoint-connection) object for the given ID.
+
+## Example
+```python
+endpoint_connection = galtea.endpoint_connections.get(endpoint_connection_id=endpoint_connection_id)
+```
+
+## Parameters
+<ResponseField name="endpoint_connection_id" type="string" required>
+  The ID of the endpoint connection to retrieve.
+</ResponseField>
+
+<EntityNotFound />

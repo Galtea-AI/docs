@@ -5,6 +5,10 @@ description: "Score an AI Evaluation metric with one typed question that a class
 icon: "bolt"
 ---
 
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/concepts/metric/decision-model).
+</Warning>
+
 ## What the classifier is
 
 The classifier is a judge for an **AI Evaluation** metric. A classifier model answers one typed question about the conversation and returns a probability for each answer. It writes no reasoning.
@@ -26,9 +30,9 @@ A classifier model is a decision model that the LLM gateway of your deployment s
 
 - **Classifier**: a clear rule that a reply must follow or must never break, or a graded quality whose levels you can describe as concrete situations.
 - **LLM judge**: the check needs reasoning, a written explanation of the score, or files.
-- **Deterministic metric**: exact text or JSON matching. Use one of Galtea's metrics, such as [Text Similarity](/concepts/metric/text-similarity) or [JSON Field Match](/concepts/metric/json-field-match).
-- **Regex, number or date checks on a JSON field**: use the `$regex`, `$num` and `$date` [field rules](/concepts/metric/json-field-match#field-rules) of JSON Field Match.
-- **Counting, arithmetic, dates or time limits**: use an LLM judge metric or a [Self-Hosted](/concepts/metric/evaluation-types#self-hosted) metric.
+- **Deterministic metric**: exact text or JSON matching. Use one of Galtea's metrics, such as [Text Similarity](/v5.20/concepts/metric/text-similarity) or [JSON Field Match](/v5.20/concepts/metric/json-field-match).
+- **Regex, number or date checks on a JSON field**: use the `$regex`, `$num` and `$date` [field rules](/v5.20/concepts/metric/json-field-match#field-rules) of JSON Field Match.
+- **Counting, arithmetic, dates or time limits**: use an LLM judge metric or a [Self-Hosted](/v5.20/concepts/metric/evaluation-types#self-hosted) metric.
 
 ## Question types
 
@@ -49,7 +53,7 @@ A question can use only these names. Any other name is refused, including the de
 - `traces`
 - `tools_used`
 
-See [Evaluation Parameters](/concepts/metric/evaluation-parameters) for what each name holds.
+See [Evaluation Parameters](/v5.20/concepts/metric/evaluation-parameters) for what each name holds.
 
 ### Yes/No
 
@@ -92,7 +96,7 @@ The same rule can give different numbers in the two forms. A Yes/No score is the
 
 Each result shows a **confidence** next to the score, from 0 to 1. For a Yes/No question, it is the probability of the more probable answer. For a Scale question, the classifier model reports it. Confidence values do not compare across question types.
 
-The reason is a fixed sentence, for example `The classifier answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` The metric applies no threshold to the score. An evaluation passes when its reported score reaches the metric's [pass threshold](/concepts/metric#pass-threshold). The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/concepts/product/version/session/evaluation)).
+The reason is a fixed sentence, for example `The classifier answered Yes with probability 0.99. The good answer is No.` or `Expected score 0.90. Most probable level: "Offers a transfer" (0.90).` The metric applies no threshold to the score. An evaluation passes when its reported score reaches the metric's [pass threshold](/v5.20/concepts/metric#pass-threshold). The evaluation page and `score_breakdown` in the SDK show the probabilities (see [Evaluation](/v5.20/concepts/product/version/session/evaluation)).
 
 ## One question per metric
 
@@ -145,7 +149,7 @@ To see each condition's result on its own, create one metric per condition in bo
   </Accordion>
 
   <Accordion title="Do not ask the classifier to count, do arithmetic, compare dates or match exact text">
-    The classifier cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching. For a pattern, a number or a date in a JSON field, use the [field rules](/concepts/metric/json-field-match#field-rules) of JSON Field Match.
+    The classifier cannot do these checks reliably. Use an LLM judge metric or a Self-Hosted metric for them, and a deterministic metric for exact matching. For a pattern, a number or a date in a JSON field, use the [field rules](/v5.20/concepts/metric/json-field-match#field-rules) of JSON Field Match.
   </Accordion>
 
   <Accordion title="Test the question before you save it">
@@ -161,7 +165,7 @@ To see each condition's result on its own, create one metric per condition in bo
 - When some of the conditions do not always apply, it writes no question. A hint tells you to create one metric per condition.
 - It lists any part of the description it could not turn into a question, such as counting or dates, with a suggested alternative.
 
-Read the draft and test it before you save. See [Generate Metrics with AI](/concepts/metric/ai-generation).
+Read the draft and test it before you save. See [Generate Metrics with AI](/v5.20/concepts/metric/ai-generation).
 
 ## Convert an LLM judge metric
 
@@ -192,7 +196,7 @@ A new revision keeps the evaluation type of its metric, so it cannot switch a me
 
 ## Limits
 
-- **Text only**: the classifier does not read images, audio, PDFs or other binary files. It reads a text [Galtea file](/concepts/product/version/session/content-parts#galtea-files) (TXT, CSV, Markdown, JSON, XML or HTML) as its text, under the file's name and number. Any other Galtea file on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host is not sent as a file: the classifier reads its entry as JSON text, in its place in the turn. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
+- **Text only**: the classifier does not read images, audio, PDFs or other binary files. It reads a text [Galtea file](/v5.20/concepts/product/version/session/content-parts#galtea-files) (TXT, CSV, Markdown, JSON, XML or HTML) as its text, under the file's name and number. Any other Galtea file on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host is not sent as a file: the classifier reads its entry as JSON text, in its place in the turn. See [Troubleshooting skipped evaluations](/v5.20/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
 - **Input size**: the classifier model accepts about 32,000 tokens of conversation plus the question. File text counts toward this limit. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
 - **Long input**: when the classifier model reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
 - **Skipped evaluations**: analytics show how many evaluations were skipped, next to the passed and not passed counts.
@@ -206,7 +210,7 @@ To score a classifier metric, Galtea sends the question and the fields it names 
 - **A `jev-*` model**: the data goes to TypeSafe, which processes it in the United States. See [TypeSafe legal](https://typesafe.ai/legal).
 - **Any other decision model**: the data goes to the provider that serves that model on your deployment.
 
-Where the deployment enables the [applicability check](/concepts/metric#applicability-check), the provider of the deployment's decision model also receives data for every metric that gets the check, not only for classifier metrics. That decision model is the evaluator setting `DECISION_MODEL`: a Jev version by default, or another decision model. For an EU-only organization, the check uses the EU deployment of that decision model. When it has none, the check makes no call for that organization and the metric is judged. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. When files are sent to the judge, it also sends the text of each text file on the input and output, and on the retrieval context when the metric scores it. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
+Where the deployment enables the [applicability check](/v5.20/concepts/metric#applicability-check), the provider of the deployment's decision model also receives data for every metric that gets the check, not only for classifier metrics. That decision model is the evaluator setting `DECISION_MODEL`: a Jev version by default, or another decision model. For an EU-only organization, the check uses the EU deployment of that decision model. When it has none, the check makes no call for that organization and the metric is judged. For each check, Galtea sends the `input` and `actual_output` of each turn, the other fields the metric scores (such as retrieval context, tool calls or the expected output), and the metric's name, description and criteria. When files are sent to the judge, it also sends the text of each text file on the input and output, and on the retrieval context when the metric scores it. Traces are never sent. The criteria are the judge prompt, or the question for a classifier metric.
 
 ## Create a classifier metric with the SDK
 
@@ -235,4 +239,4 @@ human_transfer_metric = galtea.metrics.create(
 )
 ```
 
-The API derives `evaluation_params` from the placeholders in every text of the question: here `actual_output` for the first metric, and `actual_output` and `input` for the second. The snippet leaves out `evaluator_model_name`, which works when your deployment has one selectable classifier model. With several, pass one as `evaluator_model_name`. The API checks every rule of the question, including the placeholder names, and refuses a question that breaks one. See [Create a metric](/sdk/api/metric/create).
+The API derives `evaluation_params` from the placeholders in every text of the question: here `actual_output` for the first metric, and `actual_output` and `input` for the second. The snippet leaves out `evaluator_model_name`, which works when your deployment has one selectable classifier model. With several, pass one as `evaluator_model_name`. The API checks every rule of the question, including the placeholder names, and refuses a question that breaks one. See [Create a metric](/v5.20/sdk/api/metric/create).

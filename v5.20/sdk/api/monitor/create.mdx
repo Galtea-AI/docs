@@ -1,0 +1,78 @@
+---
+title: "Create Monitor"
+sidebarTitle: "Create"
+description: "Create a monitor for a product."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/sdk/api/monitor/create).
+</Warning>
+
+## Returns
+
+Returns a [Monitor](/v5.20/concepts/product/monitor) object for the given parameters, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/v5.20/sdk/api/galtea#errors) instead: do not create it again.
+
+Raises `ValueError` before any request when both `metric_group_ids` and `specification_ids` are empty.
+
+## Example
+```python
+monitor = galtea.monitors.create(
+    name="Production quality monitor",
+    product_id=product_id,
+    metric_group_ids=[metric_group_id],
+    # Optional: watch a single version. Omit to watch every version of the product.
+    # version_id="your-version-id",
+    sampling_percentage=10,  # score 10% of production sessions (default)
+    monthly_credit_cap=5000,  # stop scoring after 5000 credits this month; None means uncapped
+    message_conditions=[
+        MonitorMessageCondition(count="messages", operator="gt", value=1)
+    ],  # the default: skip a session where only the agent spoke once
+)
+```
+
+To bind a Specification instead of picking metric families:
+```python
+specification_monitor = galtea.monitors.create(
+    name="Production specification monitor",
+    product_id=product_id,
+    specification_ids=[specification.id],
+    # Optional: add metric families too. The monitor scores the union of both.
+    # metric_group_ids=[metric_group_id],
+)
+```
+
+## Parameters
+<ResponseField name="name" type="string" required>
+  Name of the monitor.
+</ResponseField>
+<ResponseField name="product_id" type="string" required>
+  The ID of the product whose production sessions this monitor scores.
+</ResponseField>
+<ResponseField name="metric_group_ids" type="list[string]" optional>
+  The metric family IDs (`metric.metric_group_id`) the monitor scores with. Pass this, `specification_ids`, or both.
+  The monitor binds the family, not a specific revision, so revising a metric is picked up automatically.
+  A self-hosted metric family is refused, because a monitor has no caller to supply the score. A
+  [Classifier](/v5.20/concepts/metric/classifier) family is refused when classifier metrics are off on
+  the deployment. In both cases `create` returns `None` instead of a Monitor.
+</ResponseField>
+<ResponseField name="version_id" type="string" optional>
+  The ID of a single version to watch. Omit to watch every version of the product.
+</ResponseField>
+<ResponseField name="sampling_percentage" type="number" default="10">
+  Percentage of production sessions to score, from just above `0` up to `100`. Defaults to `10` (10%).
+</ResponseField>
+<ResponseField name="monthly_credit_cap" type="int" optional>
+  Maximum credits to spend per month. Must be positive when set. `None` (default) means uncapped.
+  The effective budget is `min(organization balance, cap)`, so a cap may exceed the monthly allocation.
+</ResponseField>
+<ResponseField name="specification_ids" type="list[string]" optional>
+  The IDs of [Specifications](/v5.20/concepts/product/specification) of the product to bind. Pass this, `metric_group_ids`, or both.
+  The monitor scores the metric families the Specifications link, and follows a change to those links from its next scan.
+  Only Policy and Capability Specifications can be bound: an Inability, or a Specification of another product, is refused,
+  and `create` returns `None`. The monitor scores the union of the bound Specifications and the picked families.
+</ResponseField>
+<ResponseField name="message_conditions" type="list[MonitorMessageCondition]" optional>
+  Conditions on a session's number of messages, joined by AND. A session must meet every condition to be scored. At most `10` conditions.
+  Omit it, or pass `None`, to use the API default: `messages` above `1`, so a session where only the agent spoke once is skipped. Pass `[]` to score every session.
+  Each `MonitorMessageCondition` has a `count` (`messages` counts user and agent messages, `user_messages` counts only user messages), an `operator` (`lt`, `lte`, `eq`, `gte` or `gt`) and a `value` (an integer from `0` to `200`; `lt` with `0` is refused). A list that no session can meet is refused too, such as `messages` `gt` `5` with `messages` `lte` `3`, or more user messages than the messages allow. A message is a non-empty turn input or output: text, a file or audio. Sessions that fail a condition are skipped and spend no credits.
+</ResponseField>

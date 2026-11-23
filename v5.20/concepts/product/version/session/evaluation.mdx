@@ -1,0 +1,226 @@
+---
+title: "Evaluation"
+sidebarTitle: "Overview"
+description: "An evaluation that assesses traces from a session using a metric"
+---
+
+import ConceptsOverviewCard from '/v5.20/snippets/cards/concepts-overview-card.mdx';
+import MetricCard from '/v5.20/snippets/cards/metric-card.mdx';
+import SDKEvaluationServiceCard from '/v5.20/snippets/cards/sdk-evaluation-service-card.mdx';
+import SessionCard from '/v5.20/snippets/cards/session-card.mdx';
+import DatasetCard from '/v5.20/snippets/cards/dataset-card.mdx';
+import TestCaseCard from '/v5.20/snippets/cards/test-case-card.mdx';
+import RunCard from '/v5.20/snippets/cards/run-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.20. [Read this page in the latest version](/concepts/product/version/session/evaluation).
+</Warning>
+
+## What is an Evaluation?
+
+An evaluation in Galtea represents the assessment of traces from a [session](/v5.20/concepts/product/version/session) using the evaluation criteria of a [metric](/v5.20/concepts/metric). Evaluations are now directly linked to sessions, allowing for comprehensive evaluation of full sessions containing multiple traces for multi-turn dialogues.
+
+<Note>Evaluations do not call your AI product — they score outputs that have already been generated. Run your product first to produce outputs, then trigger the evaluation to score them.</Note>
+
+You can create evaluations from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/v5.20/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/v5.20/sdk/api/evaluation/service).
+
+Every launch you trigger creates a [Run](/v5.20/concepts/product/run), and each evaluation of that launch points back at it. An evaluation produced by a [Monitor](/v5.20/concepts/product/monitor) has no Run, because it comes from a rule instead of a launch.
+
+## Results Excluded from Analytics
+
+A metric revision can be excluded from analytics. Its evaluations stay available and keep their original score, reason, and status. They stop contributing to scores, coverage, insights, and monitor aggregates.
+
+The evaluation list hides these results by default. To reveal them, open **Filters** and turn on **Show excluded from analytics**. Add the **Analytics** column from the **Columns** menu to see which results are excluded. An excluded evaluation's detail page explains who excluded its metric revision and when, then links to the metric where you can restore it.
+
+Exclusion belongs to the metric revision, not to one evaluation. Restoring that revision returns all its results to analytics. The other revisions of the metric keep counting.
+
+## Human Annotations
+
+An annotator can annotate an evaluation of a metric a judge scores. The annotation holds a human score and an optional reason. It belongs to the case and the metric, not to one evaluation. The case is the session, or one turn for a turn-level evaluation.
+
+Annotating needs no claim, so nothing locks the case. A later annotation of the same case replaces the earlier one.
+
+Every revision of the metric shows the same annotation. An evaluation of a new revision shows it too, so you do not annotate the case again. Fixing or removing the annotation changes it for every revision. The API also reads and writes annotations directly on the `/annotations` endpoints, which take a metric id, never a revision id.
+
+A [Human Evaluation](/v5.20/concepts/metric/evaluation-types#human-evaluation) metric works differently. A human evaluator can claim an evaluation, so nobody else scores it at the same time. Its human score is the evaluation's own score, kept on each evaluation.
+
+## Filtering by Score
+
+Every evaluation list has a **Judge Score** filter and a **Human Score** filter. Open **Filters**, then choose one of them to find the evaluations that scored low. Pick a condition (is below, is at most, equals, is at least, is above) and type a percentage from 0 to 100, with at most one decimal. The pill in the filter row shows the condition, for example `≥ 70%`.
+
+- **Judge Score** reads the score the metric's judge gave. It ignores a human review.
+- **Human Score** reads the human score only. On a metric a judge scores, that is the annotation of the case.
+- **Confidence** reads the confidence of a [Classifier](/v5.20/concepts/metric/classifier) result, from 0 to 1 with two decimals. The column and the filter (open **Filters**, then choose **Confidence**) show only on a deployment where classifier metrics are on. Add the column from the **Columns** menu.
+- **Result** (open **Filters**, then choose **Result**) keeps the evaluations that passed or failed their metric's [pass threshold](/v5.20/concepts/metric#pass-threshold). Pick both options, or none, and the filter does nothing. It follows the reported score, so a human review counts, unlike the Judge Score filter. The **Result** column shows PASS, FAIL or a dash, is hidden by default, and is included in the CSV export.
+- An evaluation with no score of that kind never matches the filter. An evaluation with no confidence never matches a Confidence bound.
+- Every condition compares the score as it displays. For example, a stored score of 0.4252 shows as 42.5%, so it matches `= 42.5%` and `≤ 42.5%`, and not `< 42.5%`.
+
+The API takes the same bounds on `GET /evaluations` as `scoreGt`, `scoreGte`, `scoreLt`, `scoreLte` and `humanScoreGt`, `humanScoreGte`, `humanScoreLt`, `humanScoreLte`, on the stored 0 to 1 scale. It also takes `confidenceGt`, `confidenceGte`, `confidenceLt` and `confidenceLte`, and can sort by `confidence`, with evaluations that have no confidence last in both directions. These bounds compare the stored value exactly, and a bound outside 0 to 1 returns a 400 error. To match one exact score, send the same value as both inclusive bounds, for example `scoreGte=0.5&scoreLte=0.5`. It also takes `passed=true` or `passed=false`, which sends the same verdict filter as the Result filter. The SDK takes `passed` and the score bounds as keyword arguments of [`evaluations.list()`](/v5.20/sdk/api/evaluation/list). It does not take the confidence bounds.
+
+## Evaluation Lifecycle
+
+Evaluations follow a specific lifecycle:
+
+<Steps>
+  <Step title="Creation">[Trigger an evaluation](/v5.20/sdk/tutorials/run-dataset-based-evaluations). It will appear in the session's details page with the status "pending"</Step>
+  <Step title="Processing">Galtea's evaluation system processes the evaluation using the evaluation criteria of the selected [metric](/v5.20/concepts/metric)</Step>
+  <Step title="Completion">Once processed, the status changes to "completed" and the [results](/v5.20/concepts/product/version/session/evaluation#evaluation-properties) are available</Step>
+</Steps>
+
+## SDK Integration
+
+The Galtea SDK allows you to create, view, and manage evaluations programmatically. This is particularly useful for organizations that want to automate their evaluation process or integrate it into their CI/CD pipeline.
+
+<CardGroup cols={2}>
+  <SDKEvaluationServiceCard />
+  <Card title="GitHub Actions" icon="code-compare" href="/v5.20/sdk/integrations/github-actions">
+    Learn how to set up GitHub Actions to automatically evaluate new versions
+  </Card>
+</CardGroup>
+
+## Evaluation Properties
+
+### Result Properties
+
+Once an evaluation completes, the following fields are available:
+
+<ResponseField name="Status" type="Enum">
+  The current status of the evaluation.
+  Possible values:
+  - **Pending**: The evaluation has been created but not yet processed.
+  - **Pending Human**: The evaluation is waiting for a human annotator to review and score it. This status is used for metrics with `source: "human_evaluation"`.
+  - **Success**: The evaluation was processed successfully.
+  - **Failed**: The evaluation encountered an error during processing. Check the `canRetry` field to determine if this evaluation can be retried. An evaluation that stays **Pending** for longer than 24 hours (configurable with `EVALUATION_PENDING_TIMEOUT_HOURS` on an on-premise deployment) is marked **Failed** with `canRetry` set, so you can retry it.
+  - **Skipped**: The evaluation could not produce a score. The error message names the cause. Common causes are:
+    - Metric validation failed, for example a required parameter is missing.
+    - The organization ran out of credits.
+    - The metric could not read the actual output, for example plain text where [JSON Field Match](/v5.20/concepts/metric/json-field-match) expects a JSON object. `canRetry` is `true`, but a retry reads the same stored output.
+    - A [JSON Field Match](/v5.20/concepts/metric/json-field-match) metric could not use the test case's expected output: it is not valid JSON, it is nested too deeply or holds a number too long to read, it is not a JSON object, or a [field rule](/v5.20/concepts/metric/json-field-match#field-rules) in it is invalid. The error message names the field and the problem. Fix the test case and retry: a retry reads the current test case.
+    - The judge model was unavailable.
+    - A file attached to the evaluated turns cannot reach the judge. On deployments that send files to the judge, this covers a file that the judge model does not read, a file that is missing, empty or over the size limit, and a judge model that refuses the file. The error message names the files, and for a refusal it adds the provider's own reason. No credits are charged, and `canRetry` is `false`, because a retry sends the same files. Pick a metric whose judge model reads that kind of file, or log the extracted text as the turn input or output. The [file rule on the Trace page](/v5.20/concepts/product/version/session/trace#param-input-files) lists every cause.
+    - The evaluator model's content safety filter blocked the request. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same model, so evaluate the session with a metric that uses a different evaluator model. For G-Eval based built-in metrics, a blocked request also ends as Skipped, and a filtered reply can end as Failed. Neither shows this advice.
+    - The judge's answer was cut off by the metric's own `max_output_tokens`. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same metric and the same limit, so create a revision of the metric with a higher `max_output_tokens`, or none, and evaluate the session again with that revision.
+    - A [classifier](/v5.20/concepts/metric/classifier) question's **Does not apply** level was the most probable answer, the input was too long for the classifier, or the classifier model's content safety filter blocked the request. After a block, a retry uses the same model, so evaluate the session with a metric that uses a different classifier model.
+    - The [applicability check](/v5.20/concepts/metric#applicability-check) found that the metric does not apply to the session. The message gives the probability that it applies and the metric's threshold. No credits are charged, and `canRetry` is `false`, because a retry asks the same question about the same session.
+
+    Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
+
+    A credit shortage skips only the metrics the judge scores, and you can retry them. A self-hosted score you send in the same request is still stored. A mistake in the request itself, such as a metric of another organization or a malformed body, is not a skipped evaluation. A request for one session, and a batch request that names its metrics, answer with a 4xx error and create nothing. A batch request that takes its metrics from each session's specification lists the mistake for that session in its answer instead.
+  - **Cancelled**: The evaluation was deleted while it was still waiting to be scored, so the platform stopped it before it produced a score. Deleting the evaluation, or something it belongs to such as its session, its run or its metric, cancels every pending evaluation the delete removes. The same step deletes the evaluation, so it no longer appears in lists. Cancelling a run does not cancel its evaluations.
+  - **Outdated**: The evaluation was produced by a [Monitor](/v5.20/concepts/product/monitor), and the session then reopened and gained a new turn. The score describes an older version of the conversation, so it no longer counts as current: charts and averages leave it out, and the monitor scores the session again once it closes. The row keeps its score and its reason, so you can still read what it found.
+</ResponseField>
+
+<ResponseField name="Score" type="Number">
+  The score assigned to the output by the metric's evaluation criteria. **Example**: 0.85
+</ResponseField>
+
+<ResponseField name="Passed" type="Boolean" optional>
+  Whether the reported score reaches the metric's [pass threshold](/v5.20/concepts/metric#pass-threshold). Null when the evaluation has no reported score, when it is outdated or deleted, or when it is a classifier result marked **Long input**. In the SDK it is `evaluation.passed`.
+</ResponseField>
+
+<ResponseField name="Metric Pass Threshold" type="Number" optional>
+  The pass threshold of the metric revision that scored this evaluation, from 0 to 1. In the SDK it is `evaluation.metric_pass_threshold`.
+</ResponseField>
+
+<ResponseField name="Reason" type="Text">
+  The explanation of the score assigned to the output by the [metric's](/v5.20/concepts/metric) evaluation criteria.
+</ResponseField>
+
+<ResponseField name="Error" type="Text">
+  The error message if the evaluation failed during processing.
+</ResponseField>
+
+<ResponseField name="Retries Attempted" type="Number">
+  The number of retry attempts made for this evaluation. Starts at 0 and increments each time the evaluation is retried. Used to track retry history and enforce retry limits.
+</ResponseField>
+
+<ResponseField name="Can Retry" type="Boolean" default="false">
+  Indicates whether the evaluation is eligible for the retry operation. When `false`, it cannot be retried at all. When `true`, it can (only a `FAILED` or `SKIPPED` evaluation carries it), but a retry does not always help: `canRetry` is a permission, not a promise. A retry re-scores the output already stored on the session, so it succeeds for a temporary cause (an evaluation processing error, insufficient credits, a judge model that was unavailable) and skips again when the cause is the stored output itself. Defaults to `false`.
+
+  A row for a metric with `source: "self_hosted"` is never eligible for retry, whatever its status: a self-hosted score comes from you, not the judge, so there is nothing stored to re-send. Send the score again in a new evaluation instead.
+</ResponseField>
+
+<ResponseField name="Launched By" type="User" optional>
+  The user who launched this evaluation, read-only and set by the API. For an evaluation launched through the SDK, this is the owner of the API key used. Null for a [Monitor](/v5.20/concepts/product/monitor)-dispatched evaluation.
+</ResponseField>
+
+<ResponseField name="Run ID" type="Text" optional>
+  The ID of the [Run](/v5.20/concepts/product/run) that launched this evaluation (`runId` in the API). It is empty for an evaluation produced by a [Monitor](/v5.20/concepts/product/monitor), because an evaluation carries a Run or a Monitor, never both. A retried evaluation keeps the Run it was created with.
+</ResponseField>
+
+<ResponseField name="Product ID" type="Text" optional>
+  The ID of the [product](/v5.20/concepts/product) whose session produced this evaluation, read-only and set by the API. Useful when a list spans several products, for example listing every evaluation for one metric.
+</ResponseField>
+
+<ResponseField name="Data Region" type="Enum" optional>
+  The [data region](/v5.20/security/data-region) the evaluation was sent to the judge with, read-only and set by the API: `EU` means its model calls stayed on EU deployments, `GLOBAL` means they did not have to. Null when the region is unknown: an evaluation sent before Galtea recorded the region, or never sent to a judge, such as a skipped one. Galtea records it because judge model names no longer carry an `eu.` prefix.
+</ResponseField>
+
+<ResponseField name="Judge Input Tokens" type="Number" optional>
+  The tokens the judge model received to score this evaluation, read-only and set by the API. It covers the metric prompt and the session content. Null when the judge model reported no usage, which is different from 0.
+</ResponseField>
+
+<ResponseField name="Judge Output Tokens" type="Number" optional>
+  The tokens the judge model produced to score this evaluation, read-only and set by the API. The judge's total is `judgeInputTokens` plus `judgeOutputTokens`. Null when the judge model reported no usage.
+</ResponseField>
+
+<ResponseField name="Judge Reasoning Tokens" type="Number" optional>
+  The part of `judgeOutputTokens` the judge model spent on reasoning, read-only and set by the API. It is a subset of the output tokens, so do not add it to the total. A judge model that does not reason reports 0, not null. Null means no reasoning count was recorded, which almost always means the whole measurement is missing and the other two fields are null too.
+</ResponseField>
+
+<Note>The API returns `creditsUsed` and the three judge token fields as `null` to a user without the `evaluation.readInference` permission, such as a MEMBER whose user groups hold their own list without it. See [Roles and permissions](/v5.20/security/roles-and-permissions).</Note>
+
+<Note>These token counts measure the judge model, not your AI product. They are not Galtea credits: Galtea charges a flat credit cost per evaluation. Use them to predict what the same judge costs on your own model provider. For a [classifier](/v5.20/concepts/metric/classifier) metric, these token fields count the classifier model's tokens.</Note>
+
+<ResponseField name="Score Breakdown" type="Object" optional>
+  How a [classifier](/v5.20/concepts/metric/classifier) metric reached its score, read-only and set by the API. Present only for `CLASSIFIER` metrics. The fields depend on the question type:
+
+  - `version`: the breakdown schema version, `2`.
+  - `model`: the classifier model that answered, such as `jev-1.13.0`. It is the name the metric stores, such as `microsoft-decision-1`, also when an EU deployment answered.
+  - `type`: `yes_no` or `scale`.
+  - `value`: the score.
+  - `confidence`: the same value as the evaluation's **Confidence**.
+  - For `yes_no`: `pYes` (the probability of "yes") and `goodAnswer` (`yes` or `no`).
+  - For `scale`: `probabilities` (the probability of each level, keyed by its index as a string, worst level first, with the Does not apply level last when the question has one), `levelScores` (the score of each scored level, worst first), and `doesNotApply` (whether the question has a Does not apply level).
+
+  In the SDK it is `evaluation.score_breakdown`, with snake_case keys (`p_yes`, `good_answer`, `level_scores`, `does_not_apply`).
+</ResponseField>
+
+<ResponseField name="Confidence" type="Number" optional>
+  How sure the classifier was of its answer, from 0 to 1, read-only and set by the API. Present only for `CLASSIFIER` metrics, and null for every other source. Confidence values do not compare across question types. In the SDK it is `evaluation.confidence`.
+</ResponseField>
+
+<ResponseField name="Long Input" type="Boolean" optional>
+  True for a `CLASSIFIER` evaluation whose input is longer than the classifier reads reliably (about 2,000 tokens) and that no reviewer has scored. The evaluation keeps its score, but analytics leave it out of pass rates and score averages. False for every other evaluation. In the SDK it is `evaluation.long_input`.
+</ResponseField>
+
+<ResponseField name="Human Evaluator ID" type="Text" optional>
+  The ID of the human evaluator of a Human Evaluation metric, if applicable. On a metric a judge scores, it is the annotator who last wrote the annotation of the case.
+</ResponseField>
+
+<ResponseField name="Human Score" type="Number" optional>
+  The human-provided annotation score, separate from the AI-generated score. On an AI-evaluated metric, it is the score of the [annotation](#human-annotations) of the case, which every revision of the metric shows. It never overwrites the original AI score. Once set, this score replaces the AI score in every reported number: analytics, the product score, coverage, and monitor results. An annotator can remove the annotation again, which clears this field on every revision of the metric. Where the AI produced a score, every reported number goes back to it. Where the AI produced none, as on a failed, skipped or cancelled evaluation, the evaluation stops being reported at all. The removal is permanent: the score is deleted, not archived, so getting it back means annotating the case again.
+</ResponseField>
+
+<ResponseField name="Human Reason" type="Text" optional>
+  The human-provided annotation reason, separate from the AI-generated reason. On an AI-evaluated metric, it is the reason of the same annotation as the human score. It never overwrites the original AI reason. Galtea reports this reason wherever it reports the human score. Leave it blank, and the reported reason is blank too; it never falls back to the AI reason. Removing the annotation clears this field with the human score. When the reviewer adds evidence from the conversation, the reason ends with an **Evidence from the conversation** footer that lists each quoted phrase and its note, and holds only that footer when no reason was typed.
+</ResponseField>
+
+<ResponseField name="Human Evaluator Started At" type="Text" optional>
+  The timestamp when the human evaluator claimed an evaluation of a Human Evaluation metric. It is always empty on a metric a judge scores, because annotating needs no claim.
+</ResponseField>
+
+<ResponseField name="Human Evaluator Finished At" type="Text" optional>
+  The timestamp when the human evaluator submitted an evaluation of a Human Evaluation metric. On a metric a judge scores, it is when the annotation of the case was last written.
+</ResponseField>
+
+## Related
+
+<CardGroup cols={2}>
+  <ConceptsOverviewCard />
+  <DatasetCard />
+  <TestCaseCard />
+  <SessionCard />
+  <MetricCard />
+  <RunCard />
+</CardGroup>

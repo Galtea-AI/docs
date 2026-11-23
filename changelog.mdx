@@ -4,6 +4,30 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="5.21.0" description="2026-11-23">
+
+## See Your Organization's Usage by Product (Alpha)
+
+An OWNER can now open the **Usage** tab of the organization settings, pick up to 92 days, and see the versions, tests, test cases, sessions and evaluations each product created in that period. **Download JSON** saves the full report, **Download PDF** a printable copy of it, and `galtea reports usage` reads the same report from the CLI once you update it to a release that includes the command. The report is alpha and its fields may still change; see [Usage Report](/security/usage-report).
+
+## Gemini 4 Argon, GPT-6.2 Sol and GPT-6.1 Terra Judges
+
+You can now pick Gemini 4 Argon, GPT-6.2 Sol and GPT-6.1 Terra as the judge [model](/concepts/model) of a metric. All three have deployments in the EU, so organizations whose data region is EU can use them too.
+
+## Classifier Is Now Decision Model
+
+The classifier judge is now called the [decision model](/concepts/metric/decision-model), and its metrics are decision metrics. In the SDK, use `source="decision"`, `decision_question` and the `Decision*` classes; the API takes the `DECISION` source and `decisionQuestion`. The old classifier names keep working with a deprecation warning until 2028-01-17, but reads answer the new names: a metric stored as `CLASSIFIER` now answers `source` `DECISION`, and an evaluator model stored as `CLASSIFIER` now answers `kind` `DECISION`, so update any filter that compares to `CLASSIFIER`. A saved `metric.model_dump()` now holds the key `decision_question` instead of `classifier_question`, and the old key gets no warning, so update code that reads it.
+
+## Conversation Completeness, Misuse Resilience and Non-Toxic Run in the EU
+
+The Galtea metrics [Conversation Completeness](/concepts/metric/conversation-completeness), [Misuse Resilience](/concepts/metric/misuse-resilience) and [Non-Toxic](/concepts/metric/non-toxic) have a new revision with a judge that has an EU deployment: GPT-5.1 for Conversation Completeness and GPT-6 Sol for the other two. An organization with the [EU-only data region](/security/data-region) can now run them. Specifications that use them move to the new revision, and past results keep the revision and judge that scored them. Against the previous judge, between 4% and 9% of verdicts can change, depending on the metric and the language.
+
+## Update from Document Keeps Your Specifications Specific
+
+An **Updated** suggestion from **Update from document** now rewrites your existing [specification](/concepts/product/specification) instead of replacing it with new text. It keeps every concrete check the document does not change, such as a threshold, a measure or a data source, and adds only what the document changes. A document that only restates a specification no longer produces an **Updated** suggestion for it.
+
+</Update>
+
 <Update label="5.20.0" description="2026-11-20">
 
 ## Mistral Workflows Calls Take Their Tokens From the Event
@@ -42,11 +66,11 @@ A test whose generation failed now shows a "Failed" status pill on its details p
 
 ## One Name per Evaluator Model
 
-Each judge and classifier model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
+Each judge and decision model now has one name in every environment: the `eu.` names, such as `eu.gpt-4.1` and `eu.microsoft-decision-1`, are gone, and a metric that used one now names the plain model. An organization with the [EU-only data region](/security/data-region) still reaches only the model's EU deployments under the plain name. Each evaluation now reports the region it ran in, as `dataRegion` in the API.
 
 ## Metric Page Separates the Metric From Its Revision
 
-The **Details** tab of a metric now shows a **Metric** card with what every revision shares, and a **Revision** card with the judge settings of the revision you pick. **Edit metric** changes the name, description and tags for every revision, and the links of the active revision. A new revision takes an optional name of its own, and **Convert to classifier** says that it creates new metrics.
+The **Details** tab of a metric now shows a **Metric** card with what every revision shares, and a **Revision** card with the judge settings of the revision you pick. **Edit metric** changes the name, description and tags for every revision, and the links of the active revision. A new revision takes an optional name of its own, and **Convert to decision** says that it creates new metrics.
 
 ## See and Rename Metric Revisions in the Dashboard
 
