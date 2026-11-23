@@ -6,6 +6,12 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Invalid Session Status Answers 400
+
+Creating or updating a [session](/concepts/product/version/session) with a `status` other than `PENDING`, `COMPLETED` or `FAILED` now answers `400`, with a message that names the field and the accepted values. It answered `500` before. Nothing is written, and a session created with `productId` alone no longer creates the product's default version when the status is refused.
+
+Through the API, `POST /sessions` and `PATCH /sessions/{id}` now return the session as `GET /sessions/{id}` returns it, with a `Content-Location` header, and `POST` adds a `Location` header. Send `Prefer: return=minimal` to get no body.
+
 ## API Errors Share One Body
 
 The REST API now answers an error with the body `{ "error": "NotFound", "message": "Product not found" }`. `error` is the HTTP status name and `message` says what went wrong, so your code can read `message`. Before, some routes put the message text in `error`, and a rate-limited request or a request body that is not valid JSON answered plain text or an HTML page. The 404 for a route that does not exist (an HTML page) and the replies to webhooks keep their old shape.

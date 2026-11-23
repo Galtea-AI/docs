@@ -740,71 +740,6 @@
           "narrativeGeneratedByAi"
         ]
       },
-      "SessionInput": {
-        "type": "object",
-        "description": "Session creation input. `versionId` is optional: when omitted, provide `productId` and the API reuses the product's latest version (creating a default first version if the product has none). One of `versionId` or `productId` is required. `testCaseId` and `isProduction` are independent: a session can be production (no testCaseId), test-driven non-production (testCaseId set, isProduction defaults to false), or externally-ingested non-production (no testCaseId, isProduction explicitly false \u2014 typical for imported traces). The only forbidden combination is `testCaseId` set together with `isProduction=true`. When `testCaseId` is set, `context` is rejected because it would be derived from the test case.",
-        "properties": {
-          "versionId": {
-            "type": "string",
-            "description": "Version ID to create the session for. Optional when productId is provided; one of versionId or productId is required.",
-            "example": "ver_123"
-          },
-          "productId": {
-            "type": "string",
-            "description": "Product to anchor the session when versionId is omitted. The API reuses the product's latest version or creates a default one. Ignored when versionId is provided.",
-            "example": "prod_123"
-          },
-          "customId": {
-            "type": "string",
-            "description": "Optional caller-defined identifier for the session",
-            "example": "my-session-1"
-          },
-          "testCaseId": {
-            "type": "string",
-            "description": "Test case to link this session to. Forbidden when isProduction=true. Defaults to omitted, in which case isProduction defaults to true.",
-            "example": "tc_123"
-          },
-          "isProduction": {
-            "type": "boolean",
-            "nullable": true,
-            "description": "Whether the session represents real production traffic. Defaults to true when testCaseId is omitted and false when testCaseId is set. May be set explicitly to false without a testCaseId for externally-ingested sessions (e.g. trace imports)."
-          },
-          "context": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "additionalProperties": true
-              }
-            ],
-            "description": "Additional context for the session. Accepts a plain string or a structured JSON object. Forbidden when testCaseId is set (the context is derived from the test case)."
-          },
-          "metadata": {
-            "type": "object",
-            "description": "Arbitrary key-value metadata",
-            "example": {
-              "key": "value"
-            }
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "FAILED"
-            ],
-            "default": "PENDING",
-            "description": "Initial session status. Defaults to PENDING (open, accepts new turns); the session closes on an explicit finish or the product auto-close sweep (#3384)."
-          },
-          "runId": {
-            "type": "string",
-            "description": "Run to attribute this session to, so several sessions a client creates are grouped together. It must name a run you opened with POST /runs: a run a platform launch opened settles with that launch and is rejected here, as is a deleted, finished, other-product or other-version run. Forbidden when isProduction is true.",
-            "example": "run_123"
-          }
-        }
-      },
       "InferenceResult": {
         "type": "object",
         "description": "A trace: one conversation turn, holding the input and the agent output. The schema name, the `/inferenceResults` path and every `inferenceResult*` field still carry the old name of this entity, \"inference result\". Only the wording changed so far; the wire contract is renamed in a later API release.",
@@ -13748,6 +13683,82 @@
           "max"
         ]
       },
+      "SessionCreate": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Version ID to create the session for. Optional when productId is provided; one of versionId or productId is required.",
+            "example": "ver_123"
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Product to anchor the session when versionId is omitted. The API reuses the product's latest version or creates a default one. Ignored when versionId is provided.",
+            "example": "prod_123"
+          },
+          "customId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional caller-defined identifier for the session",
+            "example": "my-session-1"
+          },
+          "testCaseId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Test case to link this session to. Forbidden when isProduction=true. Defaults to omitted, in which case isProduction defaults to true.",
+            "example": "tc_123"
+          },
+          "isProduction": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the session represents real production traffic. Defaults to true when testCaseId is omitted and false when testCaseId is set. May be set explicitly to false without a testCaseId for externally-ingested sessions (e.g. trace imports)."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "nullable": true
+                }
+              },
+              {
+                "nullable": true
+              }
+            ],
+            "description": "Additional context for the session. Accepts a plain string or a structured JSON object. Forbidden when testCaseId is set (the context is derived from the test case)."
+          },
+          "metadata": {
+            "nullable": true,
+            "description": "Arbitrary metadata, stored as sent.",
+            "example": {
+              "key": "value"
+            }
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "FAILED",
+              null
+            ],
+            "default": "PENDING",
+            "description": "Initial session status. Defaults to PENDING (open, accepts new turns); the session closes on an explicit finish or the product auto-close sweep."
+          },
+          "runId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Run to attribute this session to, so several sessions a client creates are grouped together. It must name a run you opened with POST /runs: a run a platform launch opened settles with that launch and is rejected here, as is a deleted, finished, other-product or other-version run. Forbidden when isProduction is true.",
+            "example": "run_123"
+          }
+        }
+      },
       "TraceImportUpload": {
         "type": "object",
         "properties": {
@@ -13949,110 +13960,6 @@
           "deletedAt"
         ]
       },
-      "SessionUpdate": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "session_123"
-          },
-          "customId": {
-            "type": "string",
-            "nullable": true,
-            "example": "custom_session_123"
-          },
-          "versionId": {
-            "type": "string",
-            "example": "ver_123"
-          },
-          "userId": {
-            "type": "string",
-            "nullable": true,
-            "example": "user_123"
-          },
-          "testCaseId": {
-            "type": "string",
-            "nullable": true,
-            "example": "tc_123"
-          },
-          "context": {
-            "type": "object",
-            "nullable": true,
-            "additionalProperties": {
-              "nullable": true
-            },
-            "description": "Structured context data. For plain text context, format is { value: \"...\" }",
-            "example": {
-              "value": "Session context information"
-            }
-          },
-          "stoppingReason": {
-            "type": "string",
-            "nullable": true,
-            "example": "GOAL_ACHIEVED"
-          },
-          "recordingUri": {
-            "type": "string",
-            "nullable": true,
-            "description": "Storage URI of the full-call recording for a telephony-evaluation session, returned under `STORAGE_PUBLIC_BASE_URL` when the deployment configures one. Null for non-telephony sessions or before the recording is processed. Resolve to a playable URL via GET /storage?uri=.",
-            "example": "https://files.galtea.ai/audio/org_123/session_abc-recording.mp3"
-          },
-          "error": {
-            "type": "string",
-            "nullable": true,
-            "example": "External API responded with HTTP 422: Unprocessable Entity \u2014 {\"detail\":\"model not found\"}"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "FAILED"
-            ],
-            "example": "PENDING"
-          },
-          "isProduction": {
-            "type": "boolean",
-            "description": "True when the session represents real production traffic (no associated test case).",
-            "example": false
-          },
-          "isSeed": {
-            "type": "boolean",
-            "readOnly": true,
-            "description": "True when the session holds the predefined conversation of a test case and is never executed. Server-managed and read-only.",
-            "example": false
-          },
-          "metadata": {
-            "nullable": true,
-            "description": "Arbitrary metadata, returned as stored. Usually an object, but any JSON value is accepted.",
-            "example": {
-              "key": "value"
-            }
-          },
-          "runId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The run that created this session. Null for a session created outside a launch (production traffic, an imported trace). A session a run only scored names no run here; filter with `involvedInRunIds` to reach those too.",
-            "example": "run_123"
-          },
-          "endUser": {
-            "type": "string",
-            "nullable": true,
-            "readOnly": true,
-            "description": "The end user of the session, set by OTel ingest from the first trace that names one. Read-only.",
-            "example": "customer_42"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          }
-        }
-      },
       "SessionListItem": {
         "type": "object",
         "properties": {
@@ -14180,6 +14087,117 @@
           "deletedAt",
           "turnCount"
         ]
+      },
+      "SessionUpdate": {
+        "type": "object",
+        "properties": {
+          "customId": {
+            "type": "string",
+            "nullable": true,
+            "example": "custom_session_123"
+          },
+          "stoppingReason": {
+            "type": "string",
+            "nullable": true,
+            "example": "GOAL_ACHIEVED"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": "External API responded with HTTP 422"
+          },
+          "recordingUri": {
+            "type": "string",
+            "nullable": true,
+            "example": "audio/org_123/session_abc-recording.mp3"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "FAILED"
+            ],
+            "example": "COMPLETED"
+          },
+          "metadata": {
+            "nullable": true,
+            "description": "Arbitrary metadata, stored as sent.",
+            "example": {
+              "key": "value"
+            }
+          },
+          "id": {
+            "type": "string",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "versionId": {
+            "type": "string",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "testCaseId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "context": {
+            "type": "object",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "isProduction": {
+            "type": "boolean",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "runId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "deletedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          }
+        }
       },
       "BuildInfo": {
         "type": "object",
@@ -19351,13 +19369,34 @@
             "description": "Datasets linked successfully"
           },
           "400": {
-            "description": "Invalid request body"
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Specification not found"
+            "description": "Specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -19412,13 +19451,34 @@
             "description": "Datasets unlinked successfully"
           },
           "400": {
-            "description": "Invalid request body"
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Specification not found"
+            "description": "Specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -19461,10 +19521,24 @@
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Specification not found"
+            "description": "Specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -23926,663 +24000,6 @@
         }
       }
     },
-    "/sessions": {
-      "post": {
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Create session",
-        "description": "Create a new session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "operationId": "createSession",
-        "x-cli-name": "create",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Session created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "\"id\" was provided in the request body. Use \"customId\" instead; \"id\" is server-generated.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "operationId": "getSessions",
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Get sessions",
-        "description": "Get list of sessions with pagination and filtering. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cli-name": "list",
-        "parameters": [
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by session IDs"
-            },
-            "required": false,
-            "description": "Filter by session IDs",
-            "style": "form",
-            "explode": true,
-            "name": "ids",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by session custom IDs"
-            },
-            "required": false,
-            "description": "Filter by session custom IDs",
-            "style": "form",
-            "explode": true,
-            "name": "customIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by product IDs"
-            },
-            "required": false,
-            "description": "Filter by product IDs",
-            "style": "form",
-            "explode": true,
-            "name": "productIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test"
-            },
-            "required": false,
-            "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test",
-            "style": "form",
-            "explode": true,
-            "name": "testIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test"
-            },
-            "required": false,
-            "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test",
-            "style": "form",
-            "explode": true,
-            "name": "excludeTestIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by version IDs"
-            },
-            "required": false,
-            "description": "Filter by version IDs",
-            "style": "form",
-            "explode": true,
-            "name": "versionIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)"
-            },
-            "required": false,
-            "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)",
-            "style": "form",
-            "explode": true,
-            "name": "monitorIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
-              "maxItems": 10
-            },
-            "required": false,
-            "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
-            "style": "form",
-            "explode": true,
-            "name": "monitorAlertIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR."
-            },
-            "required": false,
-            "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR.",
-            "style": "form",
-            "explode": true,
-            "name": "specificationIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
-              "maxItems": 25
-            },
-            "required": false,
-            "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
-            "style": "form",
-            "explode": true,
-            "name": "failedSpecificationIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match."
-            },
-            "required": false,
-            "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match.",
-            "style": "form",
-            "explode": true,
-            "name": "userIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`."
-            },
-            "required": false,
-            "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`.",
-            "style": "form",
-            "explode": true,
-            "name": "runIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count."
-            },
-            "required": false,
-            "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count.",
-            "style": "form",
-            "explode": true,
-            "name": "involvedInRunIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by test case IDs"
-            },
-            "required": false,
-            "description": "Filter by test case IDs",
-            "style": "form",
-            "explode": true,
-            "name": "testCaseIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "maxLength": 255,
-              "description": "Only sessions whose end user is exactly this value. An empty value is no filter."
-            },
-            "required": false,
-            "description": "Only sessions whose end user is exactly this value. An empty value is no filter.",
-            "name": "endUser",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "boolean",
-              "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick."
-            },
-            "required": false,
-            "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick.",
-            "name": "isProduction",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "PENDING",
-                  "COMPLETED",
-                  "FAILED"
-                ]
-              },
-              "description": "Filter by session statuses. Multiple values combine as OR."
-            },
-            "required": false,
-            "description": "Filter by session statuses. Multiple values combine as OR.",
-            "style": "form",
-            "explode": true,
-            "name": "statuses",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label."
-            },
-            "required": false,
-            "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label.",
-            "style": "form",
-            "explode": true,
-            "name": "commentLabels",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters."
-            },
-            "required": false,
-            "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters.",
-            "style": "form",
-            "explode": true,
-            "name": "sort",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 9007199254740991,
-              "default": 10000,
-              "description": "Maximum number of results"
-            },
-            "required": false,
-            "description": "Maximum number of results",
-            "name": "limit",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "description": "Number of results to skip"
-            },
-            "required": false,
-            "description": "Number of results to skip",
-            "name": "offset",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "description": "Filter sessions created at or after this timestamp (ISO 8601 format)"
-            },
-            "required": false,
-            "description": "Filter sessions created at or after this timestamp (ISO 8601 format)",
-            "name": "fromCreatedAt",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "description": "Filter sessions created at or before this timestamp (ISO 8601 format)"
-            },
-            "required": false,
-            "description": "Filter sessions created at or before this timestamp (ISO 8601 format)",
-            "name": "toCreatedAt",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Sessions retrieved successfully",
-            "headers": {
-              "Content-Range": {
-                "schema": {
-                  "type": "string",
-                  "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
-                },
-                "required": true,
-                "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SessionListItem"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/sessions/{id}": {
-      "patch": {
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Update session",
-        "description": "Update an existing session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "operationId": "updateSession",
-        "x-cli-name": "update",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Session ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Session updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Session not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Delete session",
-        "description": "Soft delete a session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "operationId": "deleteSession",
-        "x-cli-name": "delete",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Session ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Session deleted successfully"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Session not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "operationId": "getSessionById",
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Get session by ID",
-        "description": "Get a specific session by ID. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cli-name": "get",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Session ID",
-              "example": "session_123"
-            },
-            "required": true,
-            "description": "Session ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Session retrieved successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/sessions/{id}/finish": {
       "patch": {
         "tags": [
@@ -24739,6 +24156,256 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}": {
+      "delete": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Delete session",
+        "description": "Soft delete a session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "operationId": "deleteSession",
+        "x-cli-name": "delete",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Session ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getSessionById",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get session by ID",
+        "description": "Get a specific session by ID. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Session ID",
+              "example": "session_123"
+            },
+            "required": true,
+            "description": "Session ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateSession",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Update session",
+        "description": "Update an existing session. A field the body leaves out keeps its value. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "update",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Session ID",
+              "example": "session_123"
+            },
+            "required": true,
+            "description": "Session ID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: a malformed field, or a status outside the session statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -33792,6 +33459,536 @@
           },
           "503": {
             "description": "The organization keeps its data in the EU and the model has no EU deployment that answered, so no probe ran. A provider that never answers is an `outcome` of the 200 body, not this error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "get": {
+        "operationId": "getSessions",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get sessions",
+        "description": "Get list of sessions with pagination and filtering. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list",
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by session IDs"
+            },
+            "required": false,
+            "description": "Filter by session IDs",
+            "style": "form",
+            "explode": true,
+            "name": "ids",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by session custom IDs"
+            },
+            "required": false,
+            "description": "Filter by session custom IDs",
+            "style": "form",
+            "explode": true,
+            "name": "customIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by product IDs"
+            },
+            "required": false,
+            "description": "Filter by product IDs",
+            "style": "form",
+            "explode": true,
+            "name": "productIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test"
+            },
+            "required": false,
+            "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test",
+            "style": "form",
+            "explode": true,
+            "name": "testIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test"
+            },
+            "required": false,
+            "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test",
+            "style": "form",
+            "explode": true,
+            "name": "excludeTestIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by version IDs"
+            },
+            "required": false,
+            "description": "Filter by version IDs",
+            "style": "form",
+            "explode": true,
+            "name": "versionIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)"
+            },
+            "required": false,
+            "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)",
+            "style": "form",
+            "explode": true,
+            "name": "monitorIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
+              "maxItems": 10
+            },
+            "required": false,
+            "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
+            "style": "form",
+            "explode": true,
+            "name": "monitorAlertIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR."
+            },
+            "required": false,
+            "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR.",
+            "style": "form",
+            "explode": true,
+            "name": "specificationIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
+              "maxItems": 25
+            },
+            "required": false,
+            "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
+            "style": "form",
+            "explode": true,
+            "name": "failedSpecificationIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match."
+            },
+            "required": false,
+            "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match.",
+            "style": "form",
+            "explode": true,
+            "name": "userIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`."
+            },
+            "required": false,
+            "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`.",
+            "style": "form",
+            "explode": true,
+            "name": "runIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count."
+            },
+            "required": false,
+            "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count.",
+            "style": "form",
+            "explode": true,
+            "name": "involvedInRunIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by test case IDs"
+            },
+            "required": false,
+            "description": "Filter by test case IDs",
+            "style": "form",
+            "explode": true,
+            "name": "testCaseIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "Only sessions whose end user is exactly this value. An empty value is no filter."
+            },
+            "required": false,
+            "description": "Only sessions whose end user is exactly this value. An empty value is no filter.",
+            "name": "endUser",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick."
+            },
+            "required": false,
+            "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick.",
+            "name": "isProduction",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "COMPLETED",
+                  "FAILED"
+                ]
+              },
+              "description": "Filter by session statuses. Multiple values combine as OR."
+            },
+            "required": false,
+            "description": "Filter by session statuses. Multiple values combine as OR.",
+            "style": "form",
+            "explode": true,
+            "name": "statuses",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label."
+            },
+            "required": false,
+            "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label.",
+            "style": "form",
+            "explode": true,
+            "name": "commentLabels",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters."
+            },
+            "required": false,
+            "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters.",
+            "style": "form",
+            "explode": true,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 10000,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Filter sessions created at or after this timestamp (ISO 8601 format)"
+            },
+            "required": false,
+            "description": "Filter sessions created at or after this timestamp (ISO 8601 format)",
+            "name": "fromCreatedAt",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Filter sessions created at or before this timestamp (ISO 8601 format)"
+            },
+            "required": false,
+            "description": "Filter sessions created at or before this timestamp (ISO 8601 format)",
+            "name": "toCreatedAt",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved successfully",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionListItem"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createSession",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Create session",
+        "description": "Create a new session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "create",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SessionCreate"
+                  },
+                  {
+                    "description": "Session creation input. `versionId` is optional: when omitted, provide `productId` and the API reuses the product's latest version (creating a default first version if the product has none). One of `versionId` or `productId` is required. `testCaseId` and `isProduction` are independent: a session can be production (no testCaseId), test-driven non-production (testCaseId set, isProduction defaults to false), or externally-ingested non-production (no testCaseId, isProduction explicitly false, typical for imported traces). The only forbidden combination is `testCaseId` set together with `isProduction=true`. When `testCaseId` is set, `context` is rejected because it would be derived from the test case."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session created successfully. On `Prefer: return=minimal`, or when the read after the write fails, the answer has no body.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the new resource"
+                },
+                "required": true,
+                "description": "The path of the new resource"
+              },
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: a malformed field, a status outside the session statuses, or an internal field (\"id\", \"launchedRunId\")",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Version, product, test case or run not found",
             "content": {
               "application/json": {
                 "schema": {
