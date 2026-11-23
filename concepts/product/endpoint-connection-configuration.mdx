@@ -232,10 +232,12 @@ If your agent streams its reply, Galtea reads the whole stream and joins its chu
 
 | `streamAssembly` field | Description |
 |------------------------|-------------|
-| `textPath` | **Required.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. |
-| `mode` | **Required.** `APPEND` joins the text of every chunk, for a stream of deltas. `LAST` keeps the text of the last chunk that has one, for a stream that resends the whole answer. |
+| `preset` | A named [stream preset](#stream-presets), or `CUSTOM` (the default) to set the fields below yourself. A named preset fills them, and the API refuses it with any of them. |
+| `textPath` | **Required with `CUSTOM`.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. |
+| `mode` | **Required with `CUSTOM`.** `APPEND` joins the text of every chunk, for a stream of deltas. `LAST` keeps the text of the last chunk that has one, for a stream that resends the whole answer. |
 | `eventField` | The JSONPath of the event name inside each chunk, e.g. `$.type`. Leave it null to use the SSE `event:` name. A chunk with no name is a `message` event. |
 | `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. With `SSE`, the event needs a `data:` line, which may be empty. |
+| `textEvent` | The only event whose chunks add text, e.g. `response.output_text.delta`. Use it when other events carry a field at the same `textPath`. Leave it null to read text from every event. |
 | `errorEvent` | The event name that reports a failure, e.g. `error`. That event fails the turn, with its data in the error. Leave it null to read every event as data. With `SSE`, the event needs a `data:` line, which may be empty. With `NDJSON`, set `eventField` too: an NDJSON line has no event name of its own. |
 
 The Output Mapping reads this object:
@@ -277,6 +279,43 @@ The Output Mapping reads this object:
 - **Connection types:** Conversation and Initialization connections can stream. The API refuses both fields on a Finalization connection.
 - **Test Connection:** it accepts both fields, reads the stream the same way and shows the joined object. The health check before a run reads it the same way. Both read at most 1 MB of the reply (more when the output mapping reads output files), so a longer stream fails them even though a turn accepts up to the size limit. It reports an idle timeout and an error event with the same message as a turn. For a cut stream it shows the partial text, says it is partial (`streamTruncated` in the API), and gives the same error as a turn when no output came.
 - **A stream on a plain connection:** when a connection with no `streamFormat` gets a reply that looks like SSE or NDJSON, the turn and Test Connection say so and name the fields to set.
+
+#### Stream Presets
+
+A preset sets `streamAssembly` for a known agent framework, so you pick its name and add no other `streamAssembly` field. Send `streamFormat` with it:
+
+```json Stream Assembly
+{ "streamFormat": "SSE", "streamAssembly": { "preset": "OPENAI_RESPONSES" } }
+```
+
+- **Follows the name:** the connection stores the preset name, and Galtea reads its settings at each call. A read of the connection returns `{ "preset": "OPENAI_RESPONSES" }` only. `GET /endpointConnections/streamPresets` lists every preset with its settings.
+- **Fixed format:** every preset below streams `SSE`. Set `streamFormat` yourself: the API does not fill it, and it refuses a preset with another format.
+- **Your own settings:** to change one field, use `CUSTOM` and copy the preset's settings from the list.
+- **Error event:** `OPENAI_CHATKIT`, `OPENAI_RESPONSES`, `ANTHROPIC_MESSAGES` and `VERCEL_AI_SDK` set `errorEvent` to `error`, so that event fails the turn with the vendor's error text. `OPENAI_CHAT_COMPLETIONS` and `GOOGLE_ADK` set none: their documentation names no error event.
+- **Refusals:** `OPENAI_RESPONSES` and `OPENAI_CHAT_COMPLETIONS` read the answer text only. A model refusal comes in its own event (`response.refusal.delta`) or field (`delta.refusal`), so such a turn has an empty output. `CUSTOM` reads the refusal alone when `textEvent` is `response.refusal.delta`. With `textEvent` unset, every chunk that matches `textPath` joins the output, so a refusal joins the answer text.
+- **Retrieval context:** no preset has a `retrieval_context` mapping, because Galtea has not tested one for these stacks. If your agent sends the passages it retrieved in an event of its own, map them from `$.byEvent`, as in the [example above](#streamed-replies).
+- **Source:** each preset is built from the vendor documentation linked below, as read on 2026-11-20. A vendor can change its stream later.
+
+| Preset | Use it for | Output Mapping to start from | Source |
+|--------|------------|------------------------------|--------|
+| `OPENAI_CHATKIT` | A self-hosted [ChatKit server](https://openai.github.io/chatkit-python/) (chatkit-python). | `output: $.text`, `session_id: $.byEvent['thread.created'][0].thread.id` | [Thread stream events](https://openai.github.io/chatkit-python/concepts/thread-stream-events/) |
+| `OPENAI_RESPONSES` | The OpenAI Responses API, or an agent that forwards its stream events, such as one built with the OpenAI Agents SDK. Only `response.output_text.delta` adds text. The reply ends with the stream, so an agent that calls a tool before it answers still gives the whole answer, and `$.final` is its last event. | `output: $.text`, `session_id: $.final.response.id` | [Streaming responses](https://developers.openai.com/api/docs/guides/streaming-responses) |
+| `OPENAI_CHAT_COMPLETIONS` | The OpenAI Chat Completions API, or a server compatible with it. The reply ends at `[DONE]`. | `output: $.text` | [Create chat completion](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create) |
+| `ANTHROPIC_MESSAGES` | The Anthropic Messages API. The reply ends at `message_stop`. | `output: $.text` | [Streaming messages](https://platform.claude.com/docs/en/build-with-claude/streaming) |
+| `GOOGLE_ADK` | A Google Agent Development Kit server at `/run_sse`. Keeps the text of the last event that has one, which holds the whole answer. It reads the first part of that event, so the agent must not send thought summaries. | `output: $.text` | [API server](https://adk.dev/runtime/api-server/) |
+| `VERCEL_AI_SDK` | A Vercel AI SDK UI message stream. Only `text-delta` adds text, so reasoning is skipped, and the reply ends at `[DONE]`. | `output: $.text` | [Stream protocol](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol) |
+
+**Google ADK** needs a session before the first turn. Create it with an Initialization connection, and send its id in the Input Template of the Conversation connection.
+
+The preset reads the first part of the last event. When the agent sends thought summaries (`include_thoughts=True`), that part is the thought, so the output holds the thought and not the answer. Turn them off, or use `CUSTOM` with the path of the answer part, such as `$.content.parts[1].text`.
+
+**OpenAI ChatKit** creates the thread on the first turn and names it only in that turn's `thread.created` event. The mapping above stores the thread id once. On a later turn the path finds nothing, and Galtea keeps the stored id. Branch the Input Template on `session_id`:
+
+```jinja Input Template
+{% if session_id %}{"type": "threads.add_user_message", "params": {"thread_id": "{{ session_id }}", "input": {"content": [{"type": "input_text", "text": "{{ input.user_message }}"}], "attachments": [], "inference_options": {}}}}{% else %}{"type": "threads.create", "params": {"input": {"content": [{"type": "input_text", "text": "{{ input.user_message }}"}], "attachments": [], "inference_options": {}}}}{% endif %}
+```
+
+Galtea joins the assistant text deltas of a ChatKit stream. A widget that streams text sends it in the same field, so Galtea joins that text too. A workflow item or a user message adds nothing. When a turn holds two assistant messages, their text is joined with no separator.
 
 ## Custom Headers
 

@@ -14,6 +14,8 @@ The REST API now answers an error with the body `{ "error": "NotFound", "message
 
 An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. Set `streamFormat` and `streamAssembly` on the connection through the API. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 
+To skip the other assembly settings for a known framework, set `streamFormat` to `SSE` and `streamAssembly` to a [stream preset](/concepts/product/endpoint-connection-configuration#stream-presets) such as `{ "preset": "OPENAI_RESPONSES" }`.
+
 ## Cost and Tokens of Each Span
 
 The span page now shows the cost of an LLM call as a bill: its input, cache read and output tokens, the price per million tokens of each, and the total. Check what one call cost without adding up the turn. The turn's metrics tab shows its cost in the same bill.

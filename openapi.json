@@ -3839,9 +3839,23 @@
             "type": "object",
             "nullable": true,
             "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "CUSTOM",
+                  "OPENAI_CHATKIT",
+                  "OPENAI_RESPONSES",
+                  "OPENAI_CHAT_COMPLETIONS",
+                  "ANTHROPIC_MESSAGES",
+                  "GOOGLE_ADK",
+                  "VERCEL_AI_SDK"
+                ],
+                "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
+                "example": "OPENAI_CHATKIT"
+              },
               "textPath": {
                 "type": "string",
-                "description": "JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
                 "example": "$.choices[0].delta.content"
               },
               "mode": {
@@ -3850,7 +3864,7 @@
                   "APPEND",
                   "LAST"
                 ],
-                "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "description": "Required with CUSTOM. APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
                 "example": "APPEND"
               },
               "eventField": {
@@ -3865,6 +3879,12 @@
                 "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
               },
+              "textEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The only event whose chunks give text, for a stack that puts other text (tool arguments, reasoning) at the same path. Unset takes text from every chunk.",
+                "example": "response.output_text.delta"
+              },
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
@@ -3873,7 +3893,7 @@
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused."
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "createdAt": {
             "type": "string",
@@ -4173,9 +4193,23 @@
             "type": "object",
             "nullable": true,
             "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "CUSTOM",
+                  "OPENAI_CHATKIT",
+                  "OPENAI_RESPONSES",
+                  "OPENAI_CHAT_COMPLETIONS",
+                  "ANTHROPIC_MESSAGES",
+                  "GOOGLE_ADK",
+                  "VERCEL_AI_SDK"
+                ],
+                "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
+                "example": "OPENAI_CHATKIT"
+              },
               "textPath": {
                 "type": "string",
-                "description": "JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
                 "example": "$.choices[0].delta.content"
               },
               "mode": {
@@ -4184,7 +4218,7 @@
                   "APPEND",
                   "LAST"
                 ],
-                "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "description": "Required with CUSTOM. APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
                 "example": "APPEND"
               },
               "eventField": {
@@ -4199,6 +4233,12 @@
                 "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
               },
+              "textEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The only event whose chunks give text, for a stack that puts other text (tool arguments, reasoning) at the same path. Unset takes text from every chunk.",
+                "example": "response.output_text.delta"
+              },
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
@@ -4206,12 +4246,8 @@
                 "example": "error"
               }
             },
-            "required": [
-              "textPath",
-              "mode"
-            ],
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused."
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "authToken": {
             "type": "string",
@@ -4232,6 +4268,116 @@
           "authType",
           "inputTemplate",
           "outputMapping"
+        ]
+      },
+      "StreamAssemblySettings": {
+        "type": "object",
+        "properties": {
+          "textPath": {
+            "type": "string",
+            "example": "$.update.delta"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "APPEND",
+              "LAST"
+            ],
+            "example": "APPEND"
+          },
+          "eventField": {
+            "type": "string",
+            "nullable": true,
+            "example": "$.type"
+          },
+          "terminalEvent": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "textEvent": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "errorEvent": {
+            "type": "string",
+            "nullable": true,
+            "example": "error"
+          }
+        },
+        "required": [
+          "textPath",
+          "mode",
+          "eventField",
+          "terminalEvent",
+          "textEvent",
+          "errorEvent"
+        ]
+      },
+      "StreamAssemblyPreset": {
+        "type": "object",
+        "properties": {
+          "preset": {
+            "type": "string",
+            "enum": [
+              "CUSTOM",
+              "OPENAI_CHATKIT",
+              "OPENAI_RESPONSES",
+              "OPENAI_CHAT_COMPLETIONS",
+              "ANTHROPIC_MESSAGES",
+              "GOOGLE_ADK",
+              "VERCEL_AI_SDK"
+            ],
+            "description": "The value to send as streamAssembly.preset.",
+            "example": "OPENAI_CHATKIT"
+          },
+          "name": {
+            "type": "string",
+            "example": "OpenAI ChatKit"
+          },
+          "description": {
+            "type": "string",
+            "description": "When to use the preset, in plain words."
+          },
+          "streamFormat": {
+            "type": "string",
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "The streamFormat the connection must have. A connection with another format is refused.",
+            "example": "SSE"
+          },
+          "assembly": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StreamAssemblySettings"
+              },
+              {
+                "description": "The settings the preset fills today. A connection follows the preset by name, so a change here reaches every connection that names it."
+              }
+            ]
+          },
+          "sourceUrl": {
+            "type": "string",
+            "description": "The vendor documentation the settings come from.",
+            "example": "https://openai.github.io/chatkit-python/concepts/thread-stream-events/"
+          },
+          "readOn": {
+            "type": "string",
+            "description": "The day the vendor documentation was read, as an ISO date.",
+            "example": "2026-11-20"
+          }
+        },
+        "required": [
+          "preset",
+          "name",
+          "description",
+          "streamFormat",
+          "assembly",
+          "sourceUrl",
+          "readOn"
         ]
       },
       "EndpointConnectionUpdate": {
@@ -4522,9 +4668,23 @@
             "type": "object",
             "nullable": true,
             "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "CUSTOM",
+                  "OPENAI_CHATKIT",
+                  "OPENAI_RESPONSES",
+                  "OPENAI_CHAT_COMPLETIONS",
+                  "ANTHROPIC_MESSAGES",
+                  "GOOGLE_ADK",
+                  "VERCEL_AI_SDK"
+                ],
+                "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
+                "example": "OPENAI_CHATKIT"
+              },
               "textPath": {
                 "type": "string",
-                "description": "JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
                 "example": "$.choices[0].delta.content"
               },
               "mode": {
@@ -4533,7 +4693,7 @@
                   "APPEND",
                   "LAST"
                 ],
-                "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "description": "Required with CUSTOM. APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
                 "example": "APPEND"
               },
               "eventField": {
@@ -4548,6 +4708,12 @@
                 "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
               },
+              "textEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The only event whose chunks give text, for a stack that puts other text (tool arguments, reasoning) at the same path. Unset takes text from every chunk.",
+                "example": "response.output_text.delta"
+              },
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
@@ -4555,12 +4721,8 @@
                 "example": "error"
               }
             },
-            "required": [
-              "textPath",
-              "mode"
-            ],
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused."
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. GET /endpointConnections/streamPresets lists the presets and their settings."
           }
         }
       },
@@ -21831,7 +21993,7 @@
                   "streamAssembly": {
                     "type": "object",
                     "nullable": true,
-                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (textPath, mode, eventField, terminalEvent, errorEvent). An unknown key is a 400. With an ID, the stored value applies when omitted."
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }
@@ -34232,6 +34394,47 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpointConnections/streamPresets": {
+      "get": {
+        "operationId": "listEndpointConnectionStreamPresets",
+        "tags": [
+          "endpoint-connections"
+        ],
+        "summary": "List stream assembly presets",
+        "description": "The agent stacks a streamed connection can name in streamAssembly.preset, each with the stream format it needs, the settings it fills today, and the vendor documentation and day they come from. See [Endpoint Connections](https://docs.galtea.ai/concepts/product/endpoint-connection).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list-stream-presets",
+        "responses": {
+          "200": {
+            "description": "The stream assembly presets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StreamAssemblyPreset"
+                  }
                 }
               }
             }
