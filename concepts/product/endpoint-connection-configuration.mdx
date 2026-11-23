@@ -235,7 +235,8 @@ If your agent streams its reply, Galtea reads the whole stream and joins its chu
 | `textPath` | **Required.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. |
 | `mode` | **Required.** `APPEND` joins the text of every chunk, for a stream of deltas. `LAST` keeps the text of the last chunk that has one, for a stream that resends the whole answer. |
 | `eventField` | The JSONPath of the event name inside each chunk, e.g. `$.type`. Leave it null to use the SSE `event:` name. A chunk with no name is a `message` event. |
-| `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. |
+| `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. With `SSE`, the event needs a `data:` line, which may be empty. |
+| `errorEvent` | The event name that reports a failure, e.g. `error`. That event fails the turn, with its data in the error. Leave it null to read every event as data. With `SSE`, the event needs a `data:` line, which may be empty. With `NDJSON`, set `eventField` too: an NDJSON line has no event name of its own. |
 
 The Output Mapping reads this object:
 
@@ -251,7 +252,8 @@ The Output Mapping reads this object:
   "textPath": "$.delta",
   "mode": "APPEND",
   "eventField": null,
-  "terminalEvent": "done"
+  "terminalEvent": "done",
+  "errorEvent": "error"
 }
 ```
 
@@ -266,11 +268,15 @@ The Output Mapping reads this object:
 
 - **SSE request header:** for `SSE`, Galtea sends `Accept: text/event-stream` unless a custom header sets `Accept`.
 - **Timeout:** the connection [timeout](#timeout) covers the whole stream, not only the first byte. Set it for your longest answer.
+- **Idle timeout:** once the agent has started its reply (its response headers have arrived), a stream that sends nothing for 60 seconds fails the turn with an idle timeout, even when the connection timeout has time left. Before that, only the connection timeout applies. Any bytes reset it, so an agent that runs a long tool can send an SSE comment line such as `: keep-alive` to stay live. A self-hosted deployment can change it with `ENDPOINT_STREAM_IDLE_TIMEOUT_SECONDS`.
+- **Cut stream:** with a `terminalEvent`, a stream that closes before it keeps the text it sent. The turn is not an error: it is marked truncated in the trace view and in the API (`streamTruncated`), and it is not retried. A cut stream with no text fails the turn. Without a `terminalEvent`, the end of the stream is the end of the reply.
+- **Error event:** with an `errorEvent`, that event fails the turn. Like an idle timeout, it is retried with the connection's [retry settings](#retry-configuration) when retry is on.
 - **Plain-text tokens in `SSE`:** with `textPath` set to `$`, a token that is a whole JSON string, such as `"sí"` with its quotes, loses its quotes: the text is `sí`. A token that is not a whole JSON string stays as sent.
 - **Size limit:** the limit is an approximate memory limit of the assembled reply, 32 MiB by default, not its raw size. Each chunk, and each `{`, `[` and `,` of its JSON, counts 64 bytes more than its size, so a stream of very many tiny chunks or small values reaches the limit sooner. An OpenAI-style stream of one token per event fits about 31,000 events. Each line of an event that has not ended yet, such as an `SSE` event with no blank line after it, also counts 64 bytes until the event ends. A longer stream fails the turn and is not retried. A self-hosted deployment can change the limit with `ENDPOINT_STREAM_MAX_BYTES`.
-- **Bad lines:** in `NDJSON`, a line that is not JSON fails the turn and is not retried, unless Galtea stopped reading at the terminal event before that line. Blank lines are skipped.
+- **Bad lines:** in `NDJSON`, a line that is not JSON fails the turn and is not retried, unless Galtea stopped reading at the terminal event before that line. Blank lines are skipped. A last line with no line break that is not JSON is read as a cut and dropped.
 - **Connection types:** Conversation and Initialization connections can stream. The API refuses both fields on a Finalization connection.
-- **Test Connection:** it accepts both fields, reads the stream the same way and shows the joined object. The health check before a run reads it the same way. Both read at most 1 MB of the reply (more when the output mapping reads output files), so a longer stream fails them even though a turn accepts up to the size limit.
+- **Test Connection:** it accepts both fields, reads the stream the same way and shows the joined object. The health check before a run reads it the same way. Both read at most 1 MB of the reply (more when the output mapping reads output files), so a longer stream fails them even though a turn accepts up to the size limit. It reports an idle timeout and an error event with the same message as a turn. For a cut stream it shows the partial text, says it is partial (`streamTruncated` in the API), and gives the same error as a turn when no output came.
+- **A stream on a plain connection:** when a connection with no `streamFormat` gets a reply that looks like SSE or NDJSON, the turn and Test Connection say so and name the fields to set.
 
 ## Custom Headers
 
@@ -410,7 +416,7 @@ When the limit is reached, Galtea reschedules the call for later. This wait does
 
 ## Retry Configuration
 
-Configure automatic retry behavior for failed requests. When enabled, Galtea retries requests that fail with a retryable HTTP status code, a timeout, or a network error. A retry wait does not block other runs: the job is rescheduled and the worker is freed while it waits.
+Configure automatic retry behavior for failed requests. When enabled, Galtea retries requests that fail with a retryable HTTP status code, a timeout, or a network error. On a [streamed](#streamed-replies) connection, an idle timeout and an error event are retried too. A retry wait does not block other runs: the job is rescheduled and the worker is freed while it waits.
 
 <ResponseField name="Retry Enabled" type="Boolean">
   Whether automatic retry is enabled. Default: `true`

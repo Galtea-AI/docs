@@ -928,6 +928,12 @@
             "example": "customer_42",
             "description": "The end user of this trace, set by OTel ingest from its own spans. Read-only. The session holds the first end user of all its traces."
           },
+          "streamTruncated": {
+            "type": "boolean",
+            "readOnly": true,
+            "example": false,
+            "description": "True when the agent's streamed reply closed before the terminal event of its endpoint connection, so the output is partial. Read-only."
+          },
           "conversationSimulatorVersion": {
             "type": "string",
             "nullable": true,
@@ -3852,6 +3858,12 @@
                 "nullable": true,
                 "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
+              },
+              "errorEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "example": "error"
               }
             },
             "additionalProperties": false,
@@ -4180,6 +4192,12 @@
                 "nullable": true,
                 "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
+              },
+              "errorEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "example": "error"
               }
             },
             "required": [
@@ -4523,6 +4541,12 @@
                 "nullable": true,
                 "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
+              },
+              "errorEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "example": "error"
               }
             },
             "required": [
@@ -21801,7 +21825,7 @@
                   "streamAssembly": {
                     "type": "object",
                     "nullable": true,
-                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (textPath, mode, eventField, terminalEvent). An unknown key is a 400. With an ID, the stored value applies when omitted."
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (textPath, mode, eventField, terminalEvent, errorEvent). An unknown key is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }
@@ -21938,6 +21962,10 @@
                     "extractionError": {
                       "type": "string",
                       "description": "Why the output mapping could not be applied."
+                    },
+                    "streamTruncated": {
+                      "type": "boolean",
+                      "description": "Present and true when the streamed reply closed before its terminal event, so `response` and `extractedOutput` hold the partial reply, as on a turn."
                     }
                   }
                 }
