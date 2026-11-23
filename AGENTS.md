@@ -7,7 +7,7 @@
 - Put a snippet's assertions after `# @end`, so readers do not copy them. An agent callback run by the simulator must not raise to signal a problem: the simulator turns the error into an empty reply and exits 0. Assert on an observable result instead.
 - The generated OpenAPI reference is the API contract, not a prose page. Check an "every", "always" or "never" claim against the API schema, not only the SDK, and confirm both sides of a contrast still exist.
 - A term one page defines keeps that meaning on every page that links to it.
-- A new page gets frontmatter (`title`, `description`, `icon`) and a `docs.json` navigation entry, except a hidden page whose comment says why. A renamed page gets a permanent redirect, and every internal link moves to the new path except in a changelog entry a release shipped. Never delete a redirect unless a new page must reclaim its path.
+- A new page gets frontmatter (`title`, `description`, `icon`) and a `docs.json` navigation entry, except a hidden page under `agents/`. A renamed page gets a permanent redirect, and every internal link moves to the new path except in a changelog entry a release shipped. Never delete a redirect unless a new page must reclaim its path.
 - A redirect cannot repair a `#fragment`. When a rename changes a heading, search the tree for the old fragment and update every hit. In a shipped changelog entry change the fragment token only.
 - Write a component tag as a block: the opening tag on its own line, never followed by body text.
 - `.build/docs.json` is rewritten from local env files. Read URLs from the committed `docs.json`.

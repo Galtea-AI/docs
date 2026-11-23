@@ -206,7 +206,22 @@ The CLI has no aliases. An old command fails with `unknown command`.
 
 ## Staying on 4.x
 
-4.x reached end of life when 5.0 shipped, on 24 Aug 2026. It gets no fixes, and the platform does not promise to work with it. Move to 5.x with this guide.
+Not ready to migrate the SDK? Pin it to the last version with the old names:
+
+```bash
+pip install "galtea<5"
+```
+
+Put that in `requirements.txt` or `pyproject.toml`, not only in one shell, because `pip install -U galtea` ignores a pin you never wrote down.
+
+<Warning>
+  **Pinning does not buy you time on the CLI.** The CLI does not carry its command names in the
+  binary. It reads them from the Galtea API's own specification and refreshes that copy by itself,
+  roughly once a day, without being asked. So `galtea inference-results` and `galtea tests` start
+  failing once the API ships the renames, whatever CLI version you installed. Update your CLI call
+  sites before you upgrade the SDK, and do not wait for a broken script to tell you. See
+  [CLI usage](/cli/usage).
+</Warning>
 
 ## Checklist
 
