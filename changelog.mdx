@@ -12,7 +12,7 @@ The REST API now answers an error with the body `{ "error": "NotFound", "message
 
 ## Endpoint Connections Read Streamed Replies
 
-An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. Set `streamFormat` and `streamAssembly` on the connection through the API. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. In the dashboard, choose **Streamed reply** in the connection form and pick your agent stack, or set `streamFormat` and `streamAssembly` through the API. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 
 To skip the other assembly settings for a known framework, set `streamFormat` to `SSE` and `streamAssembly` to a [stream preset](/concepts/product/endpoint-connection-configuration#stream-presets) such as `{ "preset": "OPENAI_RESPONSES" }`.
 

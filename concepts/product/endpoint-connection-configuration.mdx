@@ -230,6 +230,8 @@ If your agent streams its reply, Galtea reads the whole stream and joins its chu
 - **`streamFormat`**: `SSE` for [Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html), or `NDJSON` for one JSON value per line. Leave it empty for a plain reply.
 - **`streamAssembly`**: how the chunks become one object. Set both fields or neither: the API refuses one without the other.
 
+In the dashboard form, choose **Streamed reply** and pick your agent stack, or **Custom** to set the fields below yourself. The form sets both fields. On a Conversation connection it also sets the Output Mapping to `$.text` when it still holds the default. An Initialization connection keeps its `session_id` mapping.
+
 | `streamAssembly` field | Description |
 |------------------------|-------------|
 | `preset` | A named [stream preset](#stream-presets), or `CUSTOM` (the default) to set the fields below yourself. A named preset fills them, and the API refuses it with any of them. |
