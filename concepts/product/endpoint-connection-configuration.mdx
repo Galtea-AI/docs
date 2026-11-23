@@ -225,7 +225,7 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 
 ### Streamed Replies
 
-If your agent streams its reply, Galtea reads the whole stream and joins its chunks into one object. The Output Mapping then reads that object, so every special key works as on a plain reply. Set two fields on the connection:
+If your agent streams its reply, Galtea reads the whole stream and joins its chunks into one object. The Output Mapping then reads that object, so every special key works as on a plain reply. For a step-by-step setup with worked examples, see [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent). Set two fields on the connection:
 
 - **`streamFormat`**: `SSE` for [Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html), or `NDJSON` for one JSON value per line. Leave it empty for a plain reply.
 - **`streamAssembly`**: how the chunks become one object. Set both fields or neither: the API refuses one without the other.
@@ -549,5 +549,8 @@ The rule is status code `409`, Body JSONPath `$.error.code`, and Expected Value 
   </Card>
   <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
     Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+  <Card title="Connect a Streaming Agent" icon="wave-pulse" href="/sdk/tutorials/connect-a-streaming-agent">
+    Set up a connection for an agent that streams its reply, step by step.
   </Card>
 </CardGroup>

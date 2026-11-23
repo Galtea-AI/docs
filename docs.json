@@ -103,7 +103,8 @@
               "sdk/tutorials/create-dataset",
               "sdk/tutorials/run-dataset-based-evaluations",
               "sdk/tutorials/evaluate-document-inputs",
-              "sdk/tutorials/direct-inferences-and-evaluations-from-platform"
+              "sdk/tutorials/direct-inferences-and-evaluations-from-platform",
+              "sdk/tutorials/connect-a-streaming-agent"
             ]
           },
           {

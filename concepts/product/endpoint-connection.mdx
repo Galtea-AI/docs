@@ -152,7 +152,7 @@ Before each run starts, Galtea runs a health check through the same steps, as on
 </ResponseField>
 
 <ResponseField name="Output Mapping" type="JSON" required>
-  A JSON object defining how to extract values from the response using JSONPath. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) for special keys and examples. If your agent streams its reply, see [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+  A JSON object defining how to extract values from the response using JSONPath. See [Templates & Mapping](/concepts/product/endpoint-connection-configuration#output-mapping) for special keys and examples. If your agent streams its reply, see [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies) and the guide [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent).
 </ResponseField>
 
 <ResponseField name="Timeout" type="Number">
@@ -225,5 +225,8 @@ A self-hosted deployment can allow `http://` for every connection by setting
   </Card>
   <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
     Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+  <Card title="Connect a Streaming Agent" icon="wave-pulse" href="/sdk/tutorials/connect-a-streaming-agent">
+    Set up a connection for an agent that streams its reply, step by step.
   </Card>
 </CardGroup>
