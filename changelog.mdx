@@ -6,6 +6,12 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## The Health Check Sends the First Turn Like a Run
+
+The health check before a run now sends no `session_id` until a step returns one, as the first turn of a run does. An Input Template that branches on `{% if session_id %}`, such as one for an OpenAI ChatKit agent, now starts a new conversation in the check too, so the run is no longer refused before it starts.
+
+A template that puts `session_id` in a field that must not be empty can now fail the check with a 400 `Unresponsive or unhealthy endpoint connection`, where the check passed and the run failed on its first turn. This also applies to a launch from `evaluations.run()` in the SDK.
+
 ## Long Traces Fit the Judge
 
 A metric that reads `traces` now sends the judge at most 120,000 characters of traces by default, so a long session is scored instead of failing. Over that budget, the judge shortens the longest span texts to one common length and marks each cut. The evaluation details show the trace size and, when the judge shortened it, the budget and the characters sent.

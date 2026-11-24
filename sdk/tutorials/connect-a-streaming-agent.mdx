@@ -289,7 +289,7 @@ When the stream closes before its End marker, the test shows the text that came,
 Test Connection reads at most 1 MB of the reply. A very long sample answer can fail the test and still work in a run.
 
 <Note>
-  Test Connection sends a random `session_id`, so the `{% if session_id %}` branch of your Input Template is taken, and your agent receives an id it does not know. In a run, the first turn has no id. If your agent rejects an unknown id, test with a template that leaves the id out, then put it back.
+  Test Connection sends a random `session_id`, so the `{% if session_id %}` branch of your Input Template is taken, and your agent receives an id it does not know. In a run, the first turn has no id, and the health check before a run sends no id either, until a step returns one. If your agent rejects an unknown id, test with a template that leaves the id out, then put it back.
 </Note>
 
 ## Troubleshooting
