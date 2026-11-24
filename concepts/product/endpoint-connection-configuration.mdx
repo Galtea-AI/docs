@@ -366,6 +366,8 @@ The preset reads the first part of the last event. When the agent sends thought 
 {% if session_id %}{"type": "threads.add_user_message", "params": {"thread_id": "{{ session_id }}", "input": {"content": [{"type": "input_text", "text": "{{ input.user_message }}"}], "attachments": [], "inference_options": {}}}}{% else %}{"type": "threads.create", "params": {"input": {"content": [{"type": "input_text", "text": "{{ input.user_message }}"}], "attachments": [], "inference_options": {}}}}{% endif %}
 ```
 
+Test Connection sends a random `session_id`, so with this template it calls `threads.add_user_message` on a thread that does not exist, and the test fails. A run sends no id on its first turn, so the run works. To pass Test Connection too, branch on `{% if session_id and past_turns[0] %}`: Test Connection sends no past turns, so it takes the `threads.create` branch.
+
 Galtea joins the assistant text deltas of a ChatKit stream. A widget that streams text sends it in the same field, so Galtea joins that text too. A workflow item or a user message adds nothing. When a turn holds two assistant messages, their text is joined with no separator.
 
 ## Custom Headers
