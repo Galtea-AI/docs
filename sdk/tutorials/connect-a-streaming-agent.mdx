@@ -1,6 +1,6 @@
 ---
 title: "Connect a Streaming Agent"
-description: "Connect an agent that streams its reply (SSE or NDJSON) to Galtea with an Endpoint Connection, map the answer, the retrieved context and the conversation id, and test it."
+description: "Connect an agent that streams its reply (SSE, NDJSON or WebSocket) to Galtea with an Endpoint Connection, map the answer, the retrieved context and the conversation id, and test it."
 icon: "wave-pulse"
 ---
 
@@ -35,6 +35,8 @@ Look at the `Content-Type` header of the response:
 | `application/json` | One JSON body | **JSON reply**. You do not need this guide |
 
 The header only helps you choose. Galtea reads the stream with the **Format** you set, whatever the header says. Some servers send NDJSON as `text/plain`: pick NDJSON when each line is one JSON value.
+
+If your agent's URL starts with `wss://`, it answers over a WebSocket. Pick format **WebSocket** and see [Example 3](#example-3-a-websocket-agent).
 
 Most agent stacks stream when you ask them to: the OpenAI and Anthropic APIs with `"stream": true`, a Google ADK server at `/run_sse`, and a Vercel AI SDK route that returns a UI message stream. If your agent can answer both ways, a JSON reply is the simpler choice. Pick streaming when the stream is the only way your agent answers, or when you want to test the exact endpoint your users call.
 
@@ -173,8 +175,9 @@ Use **Custom** when no preset matches your agent. This example reads the in-hous
     | **Event field** | *(empty)* | The agent names each event on its SSE `event:` line. Set a JSONPath such as `$.type` when the name is inside the data, which is always the case for NDJSON. |
     | **End marker** | `done` | Galtea stops reading at this event, even if the connection stays open. Leave it empty to read until the stream closes. |
     | **Text event** | `delta` | Only `delta` chunks add text. Set it when other events could hold a field at the same path. |
+    | **Error event** | *(empty)* | This agent sends no error event. Set the event name when your agent reports a failure in its stream, such as `error`: that event fails the turn with its data. |
 
-    When you switch to **Custom** from a preset, the form keeps that preset's settings as a start. Clear the ones your agent does not need. The form also keeps the preset's error event, and has no field for it yet.
+    When you switch to **Custom** from a preset, the form keeps that preset's settings as a start. Clear the ones your agent does not need. This includes **Error event**: clear it if your agent never sends that event.
   </Step>
   <Step title="Map the fields">
     ```json Output Mapping
@@ -193,8 +196,38 @@ Use **Custom** when no preset matches your agent. This example reads the in-hous
 </Steps>
 
 <Frame>
-  <img src="/images/guides/stream-reply-custom.png" alt="Endpoint connection form with the Custom preset: format SSE, text path $.text, mode Append, and under More options the end marker done and the text event delta" />
+  <img src="/images/guides/stream-reply-custom.png" alt="Endpoint connection form with the Custom preset: format SSE, text path $.text, mode Append, and under More options the end marker done, the text event delta and an empty error event" />
 </Frame>
+
+## Example 3: A WebSocket Agent
+
+A WebSocket agent gets the question as one message and answers in several messages on the same socket. It keeps the socket open for the next question, so Galtea needs a rule that tells it when the answer is complete.
+
+<Steps>
+  <Step title="Set the URL and the format">
+    Enter the `wss://` URL of your agent. Set **Reply type** to **Streamed reply**, **Format** to **WebSocket** and **Preset** to **Custom**. Galtea sends the rendered Input Template as one text message, and the headers on the opening request.
+  </Step>
+  <Step title="Read the messages">
+    Each message is one chunk. A JSON message is read as JSON, and any other message as plain text. For an agent that sends `{"delta": "..."}` pieces:
+
+    | Field | Value | Why |
+    |-------|-------|-----|
+    | **Text path** | `$.delta` | Each message holds a new piece of the answer in `delta`. Use `$` for plain text messages. |
+    | **Mode** | Append | Each message adds to the answer. |
+  </Step>
+  <Step title="Tell Galtea when the answer ends">
+    Set one or both of these fields. They sit next to each other, outside **More options**:
+
+    | Field | Value | Why |
+    |-------|-------|-----|
+    | **End marker** | `done` | Set it when your agent sends a last message, such as `{"type": "done"}`, with **Event field** `$.type`. |
+    | **Quiet period (seconds)** | `2` | The answer ends after this many seconds with no message, from 1 to 30. Set it when your agent sends no last message. |
+
+    The quiet period starts at the first message that gives text, so a slow first token is never cut, even after an acknowledgement message. Before the first text, only the idle timeout and the connection timeout apply. Pick a quiet period longer than the longest pause inside one answer, such as a tool call. A pause inside the reply that is longer than the quiet period ends the reply there with no warning, so set an end marker when your agent sends one. If your agent sends heartbeat messages during a reply, or can answer with no text, set an End marker: each message restarts the quiet period.
+  </Step>
+</Steps>
+
+Galtea opens a new socket for each turn and closes it when the answer ends. An agent that keeps the conversation state only on the socket starts a new conversation on every turn. Sending the conversation id helps only when your agent can resume its state from that id on a new socket. Return the id in a message and send it back on the next turn, as in the [next section](#the-conversation-id). The close codes and limits are in [WebSocket Agents](/concepts/product/endpoint-connection-configuration#websocket-agents).
 
 ## The Conversation Id
 
@@ -235,8 +268,8 @@ Test Connection reads at most 1 MB of the reply. A very long sample answer can f
 
 | Symptom | Error text | Fix |
 |---------|------------|-----|
-| The turn fails after a pause | `The streamed reply sent nothing for 60 seconds (idle timeout)` | Your agent went silent after it started, for example during a long tool call. Send an SSE comment line such as `: keep-alive` while it works. 60 seconds is the default; a self-hosted deployment can change it with `ENDPOINT_STREAM_IDLE_TIMEOUT_SECONDS`. With retry on, the turn is retried. |
-| The turn fails with your agent's error | `The streamed reply sent an error event "<name>": <data>` | Your agent reported a failure in its stream. Read the data and fix the agent. Galtea fails a turn on this event only when the connection names it in `streamAssembly.errorEvent` (SDK: `error_event`). The OpenAI ChatKit, OpenAI Responses API, Anthropic Messages API and Vercel AI SDK presets name `error` for you. With Custom settings, set it through the API or the SDK: the Dashboard form has no field for it. With retry on, the turn is retried. |
+| The turn fails after a pause | `The streamed reply sent nothing for 60 seconds (idle timeout)` | Your agent went silent after it started, for example during a long tool call. Send an SSE comment line such as `: keep-alive` while it works. A WebSocket agent sends a ping frame or a message instead; a ping or a pong restarts the idle timeout, until the first text starts the quiet period. 60 seconds is the default; a self-hosted deployment can change it with `ENDPOINT_STREAM_IDLE_TIMEOUT_SECONDS`. With retry on, the turn is retried. |
+| The turn fails with your agent's error | `The streamed reply sent an error event "<name>": <data>` | Your agent reported a failure in its stream. Read the data and fix the agent. Galtea fails a turn on this event only when the connection names it in `streamAssembly.errorEvent` (SDK: `error_event`). The OpenAI ChatKit, OpenAI Responses API, Anthropic Messages API and Vercel AI SDK presets name `error` for you. With Custom settings, set it in **Error event** under **More options**. With retry on, the turn is retried. |
 | The answer is cut short and marked partial | `The streamed reply closed before its terminal event, so this output is partial` | The stream closed before the End marker. Check that the End marker is the real last event of your agent, and that no proxy in front of it closes long responses. The turn keeps its text and is not retried. |
 | The turn fails with no answer | `The streamed reply closed before its terminal event "<end marker>" and carried no output` | The same cut, before any text came. Check the same two things. |
 | The turn fails on a long reply | `The streamed reply exceeded the stream limit of <N> bytes (ENDPOINT_STREAM_MAX_BYTES). The limit is an approximate memory limit of the assembled reply, not its raw size.` | The stream is over the [size limit](/concepts/product/endpoint-connection-configuration#streamed-replies). Stop forwarding events you do not map, such as reasoning tokens. A self-hosted deployment can raise the limit. |
@@ -245,10 +278,12 @@ Test Connection reads at most 1 MB of the reply. A very long sample answer can f
 | A JSON reply connection gets no output | `Failed to extract "output" from response using outputMapping: the reply looks like a stream (SSE). Set "streamFormat" and "streamAssembly" on this connection to read it.` | Your agent streams. Set **Reply type** to **Streamed reply** and follow this guide. The message says NDJSON for a line stream. |
 | `output` is empty, but the stream looks right | Required — no value extracted | Open **Raw Response**. If `text` is empty, the **Text path** or the **Text event** does not match your chunks. |
 | `session_id` stays empty | No value extracted | Check the path in **Raw Response**. An event name with a dot needs the [bracket form](#the-conversation-id). |
+| A WebSocket turn fails on close | `The WebSocket closed with code <N>: <reason>` | Your agent closed the socket with an error code. Only `1000`, `1001` or a close with no code is a normal close. |
+| A WebSocket turn fails on a message | `The agent sent a binary WebSocket message. Only text messages are read.` or `The agent sent a WebSocket text message that is not valid UTF-8.` | Send each piece as a text message of valid UTF-8. The turn is not retried. |
 
 ## Not Supported
 
-Galtea reads streams over HTTP only, as SSE or NDJSON. **gRPC** and **WebSocket** agents are not supported today. If your agent speaks one of them:
+Galtea reads streams as SSE, NDJSON or WebSocket messages. **gRPC** agents are not supported today. If your agent speaks gRPC:
 
 - **Put a small adapter in front of it.** It takes Galtea's HTTP request, calls your agent, and answers with one JSON body or an SSE stream. Galtea then connects to the adapter like to any agent.
 - **Check for a gateway you already run.** gRPC services are often exposed through gRPC-Web, Connect or a JSON transcoding gateway (for example Envoy), which already speak HTTP and JSON.

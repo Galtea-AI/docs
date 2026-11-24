@@ -95,6 +95,29 @@ assert custom_streaming_connection.stream_assembly.text_path == "$.delta"
 assert custom_streaming_connection.stream_assembly.mode == StreamAssemblyMode.APPEND
 assert custom_streaming_connection.stream_assembly.terminal_event == "done"
 
+# @start create_websocket
+websocket_connection = galtea.endpoint_connections.create(
+    name="websocket-chat-api-" + run_identifier,
+    product_id=product_id,
+    url="wss://api.example.com/v1/chat",
+    type=EndpointConnectionType.CONVERSATION,
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    # Sent as one text message on the socket.
+    input_template='{"message": "{{ input.user_message }}"}',
+    output_mapping={"output": "$.text"},
+    stream_format=StreamFormat.WEBSOCKET,
+    # Each message holds a piece of the answer in "delta". The reply ends after 2 seconds with no message.
+    stream_assembly=StreamAssembly(text_path="$.delta", mode="APPEND", quiet_period_seconds=2),
+)
+# @end create_websocket
+
+if websocket_connection is None:
+    raise ValueError("websocket_connection is None")
+assert websocket_connection.stream_format == StreamFormat.WEBSOCKET
+assert websocket_connection.stream_assembly.quiet_period_seconds == 2
+galtea.endpoint_connections.delete(endpoint_connection_id=websocket_connection.id)
+
 # @start list
 endpoint_connections = galtea.endpoint_connections.list(
     product_ids=[product_id],

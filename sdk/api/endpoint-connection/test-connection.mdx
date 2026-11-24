@@ -118,10 +118,10 @@ This method can be called in two ways:
   Request timeout in seconds.
 </ResponseField>
 <ResponseField name="acknowledged_insecure_http" type="bool" optional>
-  Set to `true` to test an `http://` URL that is not saved yet. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+  Set to `true` to test an `http://` or `ws://` URL that is not saved yet. Required when `url` is not encrypted (HTTPS or WSS), unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
 </ResponseField>
 <ResponseField name="stream_format" type="string" optional>
-  How your agent frames a streamed reply: `SSE` or `NDJSON`. With an `id`, the stored value applies when omitted. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+  How your agent frames a streamed reply: `SSE`, `NDJSON` or `WEBSOCKET`. With an `id`, the stored value applies when omitted. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 
   <Requires sdk=">5.20">
   </Requires>
