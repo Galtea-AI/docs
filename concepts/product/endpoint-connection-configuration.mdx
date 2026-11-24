@@ -232,6 +232,11 @@ If your agent streams its reply, Galtea reads the whole stream and joins its chu
 
 In the dashboard form, choose **Streamed reply** and pick your agent stack, or **Custom** to set the fields below yourself. The form sets both fields. On a Conversation connection it also sets the Output Mapping to `$.text` when it still holds the default. An Initialization connection keeps its `session_id` mapping.
 
+You can always fill `streamAssembly` in one of two ways:
+
+- **A preset**, when your agent uses a [stack that Galtea knows](#stream-presets). Send its name and no other field.
+- **`CUSTOM`**, for an agent with no preset, or when one setting of a preset does not fit yours. Set the fields below yourself. A preset is a saved set of these same fields, so `CUSTOM` reads every stream that a preset reads. Its one need: each chunk holds the answer text at the same JSONPath.
+
 | `streamAssembly` field | Description |
 |------------------------|-------------|
 | `preset` | A named [stream preset](#stream-presets), or `CUSTOM` (the default) to set the fields below yourself. A named preset fills them, and the API refuses it with any of them. |
@@ -253,6 +258,7 @@ The Output Mapping reads this object:
 <CodeGroup>
 ```json Stream Assembly
 {
+  "preset": "CUSTOM",
   "textPath": "$.delta",
   "mode": "APPEND",
   "eventField": null,
@@ -290,9 +296,18 @@ A preset sets `streamAssembly` for a known agent framework, so you pick its name
 { "streamFormat": "SSE", "streamAssembly": { "preset": "OPENAI_RESPONSES" } }
 ```
 
+No preset for your agent? Use `CUSTOM` and set the [fields](#streamed-replies) yourself. This body reads an agent that sends its text in `delta` chunks and ends with a `done` event:
+
+```json Custom Stream Assembly
+{
+  "streamFormat": "SSE",
+  "streamAssembly": { "preset": "CUSTOM", "textPath": "$.delta", "mode": "APPEND", "terminalEvent": "done" }
+}
+```
+
 - **Follows the name:** the connection stores the preset name, and Galtea reads its settings at each call. A read of the connection returns `{ "preset": "OPENAI_RESPONSES" }` only. `GET /endpointConnections/streamPresets` lists every preset with its settings.
 - **Fixed format:** every preset below streams `SSE`. Set `streamFormat` yourself: the API does not fill it, and it refuses a preset with another format.
-- **Your own settings:** to change one field, use `CUSTOM` and copy the preset's settings from the list.
+- **Your own settings:** to change one field of a preset, use `CUSTOM` and copy the preset's settings from the list. `CUSTOM` takes every setting a preset has.
 - **Error event:** `OPENAI_CHATKIT`, `OPENAI_RESPONSES`, `ANTHROPIC_MESSAGES` and `VERCEL_AI_SDK` set `errorEvent` to `error`, so that event fails the turn with the vendor's error text. `OPENAI_CHAT_COMPLETIONS` and `GOOGLE_ADK` set none: their documentation names no error event.
 - **Refusals:** `OPENAI_RESPONSES` and `OPENAI_CHAT_COMPLETIONS` read the answer text only. A model refusal comes in its own event (`response.refusal.delta`) or field (`delta.refusal`), so such a turn has an empty output. `CUSTOM` reads the refusal alone when `textEvent` is `response.refusal.delta`. With `textEvent` unset, every chunk that matches `textPath` joins the output, so a refusal joins the answer text.
 - **Retrieval context:** no preset has a `retrieval_context` mapping, because Galtea has not tested one for these stacks. If your agent sends the passages it retrieved in an event of its own, map them from `$.byEvent`, as in the [example above](#streamed-replies).

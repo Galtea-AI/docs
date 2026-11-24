@@ -7,7 +7,7 @@ icon: "wave-pulse"
 Many agents send their answer piece by piece as they write it, instead of one JSON body at the end. This guide takes such an agent from "it streams" to a tested [Endpoint Connection](/concepts/product/endpoint-connection). It starts from your stack, not from Galtea terms, and ends with a working Output Mapping for the answer, the retrieved context and the conversation id.
 
 <Info>
-  This guide uses the Dashboard. To create the same connection in code, see the [SDK streaming example](/sdk/api/endpoint-connection/create#streaming-example) or the [CLI guide](/cli/usage#connecting-a-streaming-agent). Every field is listed in [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+  This guide uses the Dashboard. To create the same connection in code, see the [SDK streaming example](/sdk/api/endpoint-connection/create#streaming-example) or the request body in the [REST API reference](/api-reference/endpoint-connections/create-endpoint-connection), which the CLI sends too. Every field is listed in [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 </Info>
 
 ## Prerequisites
@@ -266,7 +266,7 @@ Galtea reads streams over HTTP only, as SSE or NDJSON. **gRPC** and **WebSocket*
   <Card title="SDK: create a streaming connection" icon="code" href="/sdk/api/endpoint-connection/create#streaming-example">
     The same connection in Python.
   </Card>
-  <Card title="CLI: connect a streaming agent" icon="terminal" href="/cli/usage#connecting-a-streaming-agent">
-    The same connection from the command line.
+  <Card title="REST API: create a streaming connection" icon="terminal" href="/api-reference/endpoint-connections/create-endpoint-connection">
+    The request body with a preset and with `CUSTOM` settings, for the API and the CLI.
   </Card>
 </CardGroup>

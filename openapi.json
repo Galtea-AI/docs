@@ -3786,12 +3786,12 @@
                   "VERCEL_AI_SDK"
                 ],
                 "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
-                "example": "OPENAI_CHATKIT"
+                "example": "CUSTOM"
               },
               "textPath": {
                 "type": "string",
                 "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
-                "example": "$.choices[0].delta.content"
+                "example": "$.delta"
               },
               "mode": {
                 "type": "string",
@@ -3828,7 +3828,7 @@
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "createdAt": {
             "type": "string",
@@ -4140,12 +4140,12 @@
                   "VERCEL_AI_SDK"
                 ],
                 "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
-                "example": "OPENAI_CHATKIT"
+                "example": "CUSTOM"
               },
               "textPath": {
                 "type": "string",
                 "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
-                "example": "$.choices[0].delta.content"
+                "example": "$.delta"
               },
               "mode": {
                 "type": "string",
@@ -4182,7 +4182,7 @@
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "authToken": {
             "type": "string",
@@ -4210,6 +4210,7 @@
         "properties": {
           "textPath": {
             "type": "string",
+            "description": "JSONPath to the text in each chunk, starting with $.",
             "example": "$.update.delta"
           },
           "mode": {
@@ -4218,26 +4219,31 @@
               "APPEND",
               "LAST"
             ],
+            "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
             "example": "APPEND"
           },
           "eventField": {
             "type": "string",
             "nullable": true,
+            "description": "JSONPath to the event name in each chunk. Null uses the SSE event name, or \"message\" when a chunk names none.",
             "example": "$.type"
           },
           "terminalEvent": {
             "type": "string",
             "nullable": true,
+            "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Null reads the reply to the end of the stream.",
             "example": null
           },
           "textEvent": {
             "type": "string",
             "nullable": true,
+            "description": "The only event whose chunks give text. Null takes text from every chunk.",
             "example": null
           },
           "errorEvent": {
             "type": "string",
             "nullable": true,
+            "description": "The event name that fails the turn, with the event data in the error. Null reads every event as data.",
             "example": "error"
           }
         },
@@ -4290,7 +4296,7 @@
                 "$ref": "#/components/schemas/StreamAssemblySettings"
               },
               {
-                "description": "The settings the preset fills today. A connection follows the preset by name, so a change here reaches every connection that names it."
+                "description": "The settings the preset fills today. A connection follows the preset by name, so a change here reaches every connection that names it. To change one of them, send these settings as streamAssembly with the preset CUSTOM."
               }
             ]
           },
@@ -4615,12 +4621,12 @@
                   "VERCEL_AI_SDK"
                 ],
                 "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
-                "example": "OPENAI_CHATKIT"
+                "example": "CUSTOM"
               },
               "textPath": {
                 "type": "string",
                 "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
-                "example": "$.choices[0].delta.content"
+                "example": "$.delta"
               },
               "mode": {
                 "type": "string",
@@ -4657,7 +4663,7 @@
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           }
         }
       },
@@ -22595,6 +22601,52 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/EndpointConnectionUpdate"
+              },
+              "examples": {
+                "Change a few fields": {
+                  "summary": "Change a few fields",
+                  "value": {
+                    "name": "My API Connection v2",
+                    "timeout": 60
+                  }
+                },
+                "Streamed reply, preset": {
+                  "summary": "Read a streamed reply with a preset",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "OPENAI_RESPONSES"
+                    }
+                  }
+                },
+                "Streamed reply, CUSTOM": {
+                  "summary": "Read a streamed reply with CUSTOM settings",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Back to a plain JSON reply": {
+                  "summary": "Read one JSON reply again",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.response"
+                    },
+                    "streamFormat": null,
+                    "streamAssembly": null
+                  }
+                }
               }
             }
           }
@@ -34574,6 +34626,67 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/EndpointConnectionCreate"
+              },
+              "examples": {
+                "Plain JSON reply": {
+                  "summary": "An agent that answers with one JSON reply",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.response"
+                    }
+                  }
+                },
+                "Streamed reply, preset": {
+                  "summary": "A streaming agent of a stack that has a preset",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/responses",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"model\": \"my-agent\", \"stream\": true, \"input\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "OPENAI_RESPONSES"
+                    }
+                  }
+                },
+                "Streamed reply, CUSTOM": {
+                  "summary": "A streaming agent with no preset: CUSTOM settings",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "terminalEvent": "done"
+                    }
+                  }
+                }
               }
             }
           }
