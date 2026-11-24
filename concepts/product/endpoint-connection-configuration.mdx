@@ -227,7 +227,7 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 
 If your agent streams its reply, Galtea reads the whole stream and joins its chunks into one object. The Output Mapping then reads that object, so every special key works as on a plain reply. For a step-by-step setup with worked examples, see [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent). Set two fields on the connection:
 
-- **`streamFormat`**: `SSE` for [Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html), or `NDJSON` for one JSON value per line. Leave it empty for a plain reply.
+- **`streamFormat`**: `SSE` for [Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html), `NDJSON` for one JSON value per line, or `WEBSOCKET` for an agent that answers over a [WebSocket](#websocket-agents). Leave it empty for a plain reply.
 - **`streamAssembly`**: how the chunks become one object. Set both fields or neither: the API refuses one without the other.
 
 In the dashboard form, choose **Streamed reply** and pick your agent stack, or **Custom** to set the fields below yourself. The form sets both fields. On a Conversation connection it also sets the Output Mapping to `$.text` when it still holds the default. An Initialization connection keeps its `session_id` mapping.
@@ -240,12 +240,13 @@ You can always fill `streamAssembly` in one of two ways:
 | `streamAssembly` field | Description |
 |------------------------|-------------|
 | `preset` | A named [stream preset](#stream-presets), or `CUSTOM` (the default) to set the fields below yourself. A named preset fills them, and the API refuses it with any of them. |
-| `textPath` | **Required with `CUSTOM`.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. |
+| `textPath` | **Required with `CUSTOM`.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. A path that returns a list of strings, such as `$.content.parts[*].text`, adds them joined in order. |
 | `mode` | **Required with `CUSTOM`.** `APPEND` joins the text of every chunk, for a stream of deltas. `LAST` keeps the text of the last chunk that has one, for a stream that resends the whole answer. |
 | `eventField` | The JSONPath of the event name inside each chunk, e.g. `$.type`. Leave it null to use the SSE `event:` name. A chunk with no name is a `message` event. |
-| `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. With `SSE`, the event needs a `data:` line, which may be empty. |
+| `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. With `SSE`, the event needs a `data:` line, which may be empty. With `WEBSOCKET`, an unset `terminalEvent` ends the reply at the `quietPeriodSeconds` instead, because a socket does not close after a reply. |
 | `textEvent` | The only event whose chunks add text, e.g. `response.output_text.delta`. Use it when other events carry a field at the same `textPath`. Leave it null to read text from every event. |
-| `errorEvent` | The event name that reports a failure, e.g. `error`. That event fails the turn, with its data in the error. Leave it null to read every event as data. With `SSE`, the event needs a `data:` line, which may be empty. With `NDJSON`, set `eventField` too: an NDJSON line has no event name of its own. |
+| `errorEvent` | The event name that reports a failure, e.g. `error`. That event fails the turn, with its data in the error. Leave it null to read every event as data. With `SSE`, the event needs a `data:` line, which may be empty. With `NDJSON` or `WEBSOCKET`, set `eventField` too: an NDJSON line or a WebSocket message has no event name of its own. |
+| `quietPeriodSeconds` | `WEBSOCKET` only. The reply ends after this many whole seconds (1 to 30) with no message. Leave it null to end only at the `terminalEvent`. See [WebSocket agents](#websocket-agents). |
 
 The Output Mapping reads this object:
 
@@ -254,6 +255,7 @@ The Output Mapping reads this object:
 | `$.text` | The joined text. |
 | `$.byEvent.<name>` | Every chunk of that event, in order, e.g. `$.byEvent.source[*].content`. Use the bracket form for a name with a dot. |
 | `$.final` | The last chunk that holds a JSON object or list, e.g. `$.final.conversation_id`. A raw end marker such as `[DONE]` is not kept. |
+| `$.json` | The joined text parsed, when it is one JSON object or list, e.g. `$.json.answer`. It is `null` for plain text, for a stream cut before its end, for a value nested deeper than 32 levels, and for a text whose parse does not fit the [size limit](#streamed-replies). |
 
 <CodeGroup>
 ```json Stream Assembly
@@ -282,12 +284,43 @@ The Output Mapping reads this object:
 - **Time to first token:** a streamed turn stores how long the agent took to start its answer, when its stream carries text. The time runs from the moment Galtea sends the request to the first chunk that carries text. The trace view shows it beside the latency. The API answers it as [`timeToFirstToken`](/concepts/product/version/session/trace). It is never above the latency. A turn that did not stream, or whose stream carried no text, has none.
 - **Cut stream:** with a `terminalEvent`, a stream that closes before it keeps the text it sent. The turn is not an error. It is marked truncated in the trace view and in the API (`streamTruncated`). It is not retried. A cut stream with no text fails the turn. Without a `terminalEvent`, the end of the stream is the end of the reply.
 - **Error event:** with an `errorEvent`, that event fails the turn. Like an idle timeout, it is retried with the connection's [retry settings](#retry-configuration) when retry is on.
-- **Plain-text tokens in `SSE`:** with `textPath` set to `$`, a token that is a whole JSON string, such as `"sí"` with its quotes, loses its quotes: the text is `sí`. A token that is not a whole JSON string stays as sent.
-- **Size limit:** the limit is an approximate memory limit of the assembled reply, not its raw size. The default is 32 MiB. Each chunk, and each `{`, `[` and `,` of its JSON, counts 64 bytes more than its size. So a stream of very many tiny chunks or small values reaches the limit sooner. An OpenAI-style stream of one token per event fits about 31,000 events. Each line of an event that has not ended yet, such as an `SSE` event with no blank line after it, also counts 64 bytes until the event ends. A longer stream fails the turn and is not retried. A self-hosted deployment can change the limit with `ENDPOINT_STREAM_MAX_BYTES`.
+- **Plain-text tokens in `SSE` and `WEBSOCKET`:** with `textPath` set to `$`, a token that is a whole JSON string, such as `"sí"` with its quotes, loses its quotes: the text is `sí`. A token that is not a whole JSON string stays as sent.
+- **Size limit:** the limit is an approximate memory limit of the assembled reply, not its raw size. The default is 32 MiB. Each chunk, and each `{`, `[` and `,` of its JSON, counts 64 bytes more than its size. Reading the joined text as `json` counts its `{`, `[` and `,` once more. When that does not fit, `json` is `null` and `text` is kept. So a stream of very many tiny chunks or small values reaches the limit sooner. An OpenAI-style stream of one token per event fits about 31,000 events. Each line of an event that has not ended yet, such as an `SSE` event with no blank line after it, also counts 64 bytes until the event ends. A longer stream fails the turn and is not retried. A self-hosted deployment can change the limit with `ENDPOINT_STREAM_MAX_BYTES`.
 - **Bad lines:** in `NDJSON`, a line that is not JSON fails the turn and is not retried. A bad line after the terminal event does not fail the turn, because Galtea stops reading there. Blank lines are skipped. A last line with no line break that is not JSON is read as a cut and dropped.
 - **Connection types:** Conversation and Initialization connections can stream. The API refuses both fields on a Finalization connection.
 - **Test Connection:** it accepts both fields, reads the stream the same way and shows the joined object. The health check before a run reads it the same way. Both read at most 1 MB of the reply. They read more when the output mapping reads output files. A longer stream fails them, even though a turn accepts up to the size limit. It reports an idle timeout and an error event with the same message as a turn. For a cut stream it shows the partial text and says it is partial (`streamTruncated` in the API). When no output came, it gives the same error as a turn. It also shows the time to first token of a streamed reply (`timeToFirstToken` in the API).
 - **A stream on a plain connection:** a connection with no `streamFormat` can get a reply that looks like SSE or NDJSON. The turn and Test Connection then say so. They name the fields to set.
+
+#### WebSocket Agents
+
+Set `streamFormat` to `WEBSOCKET` for an agent that answers over a WebSocket. Galtea opens one socket for each turn and closes it when the reply ends. This body reads an agent that sends its text in `delta` messages and no last message:
+
+```json WebSocket Stream Assembly
+{
+  "url": "wss://api.example.com/v1/chat",
+  "streamFormat": "WEBSOCKET",
+  "streamAssembly": { "preset": "CUSTOM", "textPath": "$.delta", "mode": "APPEND", "quietPeriodSeconds": 2 }
+}
+```
+
+- **URL:** it starts with `wss://`. A `ws://` URL needs the same risk acceptance as an [`http://` URL](/concepts/product/endpoint-connection#http-endpoints). The API refuses a `ws://` or `wss://` URL with another format, and `WEBSOCKET` with an `https://` URL. Test Connection and each run check the URL again after they fill its template.
+- **Request:** the headers and the authentication go on the opening request. A `Sec-WebSocket-Protocol` header goes out as you write it, and Galtea ignores the subprotocol that the agent picks. When your headers hold no `User-Agent`, Galtea sends `User-Agent: Galtea-Endpoint-Connection/1`, because some load balancers refuse a request without one. The rendered input template is sent as one text message. The HTTP method is not used.
+- **Reply:** each text message is one chunk. A message that holds JSON is read as JSON, and any other message as text. A binary message, or a text message that is not UTF-8, fails the turn and is not retried. One message can hold at most 1 MiB.
+- **Presets:** every [stream preset](#stream-presets) streams `SSE`, so use `CUSTOM` with your own `textPath` and `mode`.
+- **End of the reply:** a WebSocket agent keeps its socket open after it answers. So set a `terminalEvent`, a `quietPeriodSeconds`, or both. The API refuses `WEBSOCKET` with neither. The reply ends at the first one reached.
+- **Quiet period:** it starts at the first message that gives text, and each later message starts it again. A slow first token is never cut, even after an acknowledgement or a "typing" message: before the first text, only the idle timeout and the connection [timeout](#timeout) apply. Pick a quiet period longer than the longest pause between two messages of one answer. A pause inside the reply that is longer than the quiet period ends the reply there with no warning, so set an end marker when your agent sends one. An agent that sends heartbeat messages during a reply needs an end marker, because each message restarts the quiet period. A reply with no text needs an end marker too.
+- **Idle timeout:** it starts when the socket opens. A socket with no message for 60 seconds fails the turn, as on an [SSE or NDJSON stream](#streamed-replies). A ping or a pong from the agent restarts it, but it does not restart the quiet period. Once the first text arrives and a quiet period is set, the quiet period ends a silent reply and the idle timeout no longer applies.
+- **Refused socket:** when the agent answers the opening request with an HTTP status, Galtea reads it as a plain reply with that status. So retries and `Retry-After` work as on any connection. Galtea does not follow a redirect.
+- **Conversation end rules:** a socket that opened and gave a reply counts as status `200`, not as the `101` of the handshake. So a rule for the reply of a WebSocket agent has status code `200` and a body match, as on an SSE stream. See [Conversation End Rules](#conversation-end-rules).
+
+The close code of the socket decides the turn:
+
+| Close | Turn |
+|-------|------|
+| The end marker or the quiet period came first | The reply ends there. Galtea closes the socket. |
+| `1000`, `1001` or no code, with a `terminalEvent` not yet seen | A [cut stream](#streamed-replies): the turn keeps the text it got and is marked truncated. |
+| `1000`, `1001` or no code, with no `terminalEvent` | The reply ends there. |
+| Any other code | The turn fails with the code and the reason, as a network error. |
 
 #### Stream Presets
 
@@ -541,7 +574,7 @@ The rule is status code `409`, Body JSONPath `$.error.code`, and Expected Value 
 - Galtea checks the rules **before** the [retry policy](#retry-configuration). A matching reply is never retried, even when its status code is in Retryable Status Codes.
 - A reply matches when the status code is equal and, if the rule has a body match, the first value the JSONPath finds is a string, number, or boolean whose text equals the Expected Value. So the number `42` matches the Expected Value `42`.
 - A missing field, an object, an array, `null`, or a body that is not JSON never matches.
-- On a [streamed](#streamed-replies) connection, the body of a `2xx` reply is the joined object, so the path reads `$.text`, `$.byEvent` or `$.final`. The body of any other status stays as your agent sent it.
+- On a [streamed](#streamed-replies) connection, the body of a `2xx` reply is the joined object, so the path reads `$.text`, `$.byEvent`, `$.final` or `$.json`. The body of any other status stays as your agent sent it.
 - Rules apply only to the conversation calls of text sessions. Initialization and finalization calls, voice sessions, and the connection test ignore them.
 
 ### What happens to the session

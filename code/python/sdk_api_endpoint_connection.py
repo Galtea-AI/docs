@@ -55,7 +55,7 @@ streaming_connection = galtea.endpoint_connections.create(
     auth_type="BEARER",
     auth_token="YOUR_AUTH_TOKEN",
     input_template='{"model": "my-agent", "stream": true, "messages": [{"role": "user", "content": "{{ input.user_message }}"}]}',
-    # The output mapping reads the joined reply: { text, byEvent, final }.
+    # The output mapping reads the joined reply: { text, byEvent, final, json }.
     output_mapping={"output": "$.text"},
     stream_format=StreamFormat.SSE,
     stream_assembly=StreamAssembly(preset=StreamAssemblyPreset.OPENAI_CHAT_COMPLETIONS),
@@ -94,6 +94,29 @@ assert custom_streaming_connection.stream_assembly.preset == StreamAssemblyPrese
 assert custom_streaming_connection.stream_assembly.text_path == "$.delta"
 assert custom_streaming_connection.stream_assembly.mode == StreamAssemblyMode.APPEND
 assert custom_streaming_connection.stream_assembly.terminal_event == "done"
+
+# @start create_websocket
+websocket_connection = galtea.endpoint_connections.create(
+    name="websocket-chat-api-" + run_identifier,
+    product_id=product_id,
+    url="wss://api.example.com/v1/chat",
+    type=EndpointConnectionType.CONVERSATION,
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    # Sent as one text message on the socket.
+    input_template='{"message": "{{ input.user_message }}"}',
+    output_mapping={"output": "$.text"},
+    stream_format=StreamFormat.WEBSOCKET,
+    # Each message holds a piece of the answer in "delta". The reply ends after 2 seconds with no message.
+    stream_assembly=StreamAssembly(text_path="$.delta", mode="APPEND", quiet_period_seconds=2),
+)
+# @end create_websocket
+
+if websocket_connection is None:
+    raise ValueError("websocket_connection is None")
+assert websocket_connection.stream_format == StreamFormat.WEBSOCKET
+assert websocket_connection.stream_assembly.quiet_period_seconds == 2
+galtea.endpoint_connections.delete(endpoint_connection_id=websocket_connection.id)
 
 # @start list
 endpoint_connections = galtea.endpoint_connections.list(
@@ -147,7 +170,7 @@ try:
 
     # @start test_streaming
     test_result = galtea.endpoint_connections.test(id=streaming_connection.id)
-    # On a streamed reply, test_result.response is the joined object { text, byEvent, final }.
+    # On a streamed reply, test_result.response is the joined object { text, byEvent, final, json }.
     # @end test_streaming
 except Exception as error:
     print(f"test() did not reach the example endpoint: {error}")

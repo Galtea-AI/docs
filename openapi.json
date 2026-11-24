@@ -3724,7 +3724,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
+            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -3776,7 +3776,7 @@
               "NDJSON",
               "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly. WEBSOCKET means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -3819,7 +3819,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -3831,12 +3831,20 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
                 "example": "error"
+              },
+              "quietPeriodSeconds": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "maximum": 30,
+                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
+                "example": 2
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final, json } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "createdAt": {
             "type": "string",
@@ -4078,7 +4086,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
+            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -4128,9 +4136,10 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -4173,7 +4182,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -4185,12 +4194,20 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
                 "example": "error"
+              },
+              "quietPeriodSeconds": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "maximum": 30,
+                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
+                "example": 2
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final, json } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "authToken": {
             "type": "string",
@@ -4293,7 +4310,8 @@
             "type": "string",
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
             "description": "The streamFormat the connection must have. A connection with another format is refused.",
             "example": "SSE"
@@ -4559,7 +4577,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
+            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -4609,9 +4627,10 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -4654,7 +4673,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -4666,12 +4685,20 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
                 "example": "error"
+              },
+              "quietPeriodSeconds": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "maximum": 30,
+                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
+                "example": 2
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final, json } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           }
         }
       },
@@ -22186,7 +22213,7 @@
                   },
                   "acknowledgedInsecureHttp": {
                     "type": "boolean",
-                    "description": "Required true to test an http:// URL. With an ID, the stored value applies when omitted. It is ignored for an https:// URL."
+                    "description": "Required true to test an http:// or ws:// URL. With an ID, the stored value applies when omitted. It is ignored for an https:// or wss:// URL."
                   },
                   "outputMapping": {
                     "type": "object",
@@ -22201,6 +22228,7 @@
                     "enum": [
                       "SSE",
                       "NDJSON",
+                      "WEBSOCKET",
                       ""
                     ],
                     "description": "How the agent frames a streamed reply. Null or an empty string reads one plain reply. Set together with streamAssembly. With an ID, the stored value applies when omitted."
@@ -22208,7 +22236,7 @@
                   "streamAssembly": {
                     "type": "object",
                     "nullable": true,
-                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent, quietPeriodSeconds). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }
@@ -22740,6 +22768,30 @@
                       "textPath": "$.delta",
                       "mode": "APPEND",
                       "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Streamed reply, structured JSON": {
+                  "summary": "Map a field of a streamed reply that is one JSON object",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.json.answer"
+                    }
+                  }
+                },
+                "Streamed reply, WebSocket": {
+                  "summary": "Read the reply of a WebSocket agent that sends no last message",
+                  "value": {
+                    "url": "wss://api.example.com/v1/chat",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "WEBSOCKET",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "quietPeriodSeconds": 2
                     }
                   }
                 },
@@ -34790,6 +34842,79 @@
                       "textPath": "$.delta",
                       "mode": "APPEND",
                       "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Streamed reply, CUSTOM with event names": {
+                  "summary": "An agent whose lines carry an event type: text-delta gives text, finish ends the reply, error fails the turn",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "NDJSON",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "eventField": "$.type",
+                      "textEvent": "text-delta",
+                      "terminalEvent": "finish",
+                      "errorEvent": "error"
+                    }
+                  }
+                },
+                "Streamed reply, structured JSON": {
+                  "summary": "A streaming agent that answers with one JSON object, sent as text pieces",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.json.answer",
+                      "retrieval_context": "$.json.sources[*].content"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Streamed reply, WebSocket": {
+                  "summary": "An agent that answers over a WebSocket and sends no last message",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "wss://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "WEBSOCKET",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "quietPeriodSeconds": 2
                     }
                   }
                 }
