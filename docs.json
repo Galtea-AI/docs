@@ -528,6 +528,7 @@
                   "concepts/metric",
                   "concepts/metric/evaluation-types",
                   "concepts/metric/evaluation-parameters",
+                  "concepts/metric/judge-traces",
                   "concepts/metric/ai-generation",
                   "concepts/metric/decision-model",
                   {
