@@ -6,6 +6,14 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Trace Metrics Show Repeated Text Once
+
+A metric that reads `traces` now shows the judge each repeated block of lines once in a text of 200 characters or more, such as a system prompt that the agent sends on every LLM call, so long sessions fit and read better. A later copy becomes a short note that names the block it stands for, and the trace view still keeps every copy.
+
+## Trace Metrics Send the Judge Only Spans With Content
+
+The judge of a metric that reads `traces` now reads a cleaner trace: only the spans that did something, with an input, an output, an error, or metadata that is not the same on every span of the turn. A span left out does not hide its children, and infrastructure attributes are left out. The trace view still keeps every span and attribute.
+
 ## Invalid Session Status Answers 400
 
 Creating or updating a [session](/concepts/product/version/session) with a `status` other than `PENDING`, `COMPLETED` or `FAILED` now answers `400`, with a message that names the field and the accepted values. It answered `500` before. Nothing is written, and a session created with `productId` alone no longer creates the product's default version when the status is refused.

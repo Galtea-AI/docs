@@ -54,7 +54,7 @@ When creating or configuring a metric, you select which parameters are relevant 
     </tr>
     <tr>
       <td>**traces**</td>
-      <td>Execution traces from the agent, including tool calls, LLM invocations, and other internal operations. A Galtea file in a span of any type reads as `[File N]`. On deployments that send files to the judge, it is also sent to the judge: an image or a PDF as a file, a text file as its text.</td>
+      <td>Execution traces from the agent, including tool calls, LLM invocations, and other internal operations. The judge reads each span as JSON, and only the spans with an input, an output, an error, or a metadata key whose value is not the same on every span of the turn; the children of a span left out still appear. Infrastructure attributes (Kubernetes, OpenTelemetry resource and SDK, Temporal identifiers, Galtea's own `galtea.*` keys) and span timestamps are left out. In a text of 200 characters or more, a block of lines that the judge already read earlier in the traces, in the same order, is shown once: a later copy becomes a note such as `[… 37 lines left out, identical to lines shown earlier in the traces, from "…" to "…" …]`. The trace view keeps every span. A Galtea file in a span of any type reads as `[File N]`. On deployments that send files to the judge, it is also sent to the judge: an image or a PDF as a file, a text file as its text.</td>
       <td>All metrics</td>
     </tr>
     <tr>
