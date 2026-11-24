@@ -30,13 +30,13 @@ manual_span = galtea.spans.create(
   SpanType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Span Types](/concepts/product/version/session/span#span-types) for details. Other string values are sent to the API unchanged. The API never drops a span for an unrecognized type. It normalizes the value to a known span type and keeps your original label in the span's `metadata`, under the key `galtea.span.original_type`.
 </ResponseField>
 <ResponseField name="description" type="string" optional>
-  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1MB.
+  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 <ResponseField name="input_data" type="any" optional>
-  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB. A Galtea file in its `content` list is checked as in a trace: one of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
+  The input data passed to the tool/function. Accepts any JSON-serializable value. Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)). A Galtea file in its `content` list is checked as in a trace: one of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
 </ResponseField>
 <ResponseField name="output_data" type="any" optional>
-  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 10MB. A Galtea file in its `content` list is checked as in a trace: one of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
+  The output data returned by the tool/function. Accepts any JSON-serializable value. Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)). A Galtea file in its `content` list is checked as in a trace: one of another organization fails the call with a `400`. See [Content Parts](/concepts/product/version/session/content-parts).
 </ResponseField>
 <ResponseField name="error" type="string" optional>
   Error message if the tool call failed.
@@ -45,7 +45,7 @@ manual_span = galtea.spans.create(
   The time in milliseconds the tool call took.
 </ResponseField>
 <ResponseField name="metadata" type="any" optional>
-  Additional metadata about the span. Accepts any JSON-serializable value. Maximum size: 10MB.
+  Additional metadata about the span. Accepts any JSON-serializable value. Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 <ResponseField name="start_time" type="string" optional>
   ISO 8601 timestamp when the span started.

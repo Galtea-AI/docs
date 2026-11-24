@@ -39,7 +39,7 @@ These launches create a Run:
 - An evaluation of a single inference result.
 - A single-turn evaluation.
 - An inference generation, with or without metrics.
-- A metric replay. One call creates one Run per product, for the same reason.
+- A metric replay, onto a revision from the evaluations of its metric or from its annotated cases. One call creates one Run per product, for the same reason.
 - A test case replay. One call creates one Run per version, because each version runs as its own job.
 
 A launch rejected on its own contents, such as an unknown metric, creates no Run. You get the error in the response, so there is nothing to record.
@@ -203,7 +203,7 @@ The [CLI](/cli/usage) mirrors those operations: `galtea runs list`, `galtea runs
   - `GENERATE_INFERENCES`: the platform generated sessions from test cases, and scored them when the request named a metric. `POST /evaluations/fromVersion`, `POST /evaluations/fromTestCases` and `POST /inferenceResults/generate` reach it.
   - `EVALUATE_SESSION`: the platform scored one existing session, inference result or single turn. `POST /evaluations/fromSession`, `POST /evaluations/fromInferenceResult` and `POST /evaluations/singleTurn` reach it.
   - `EVALUATE_SESSION_BATCH`: the platform scored several existing sessions in one call. `POST /evaluations/fromSessions` reaches it.
-  - `REPLAY_METRIC`: the platform scored existing sessions again with a metric. `POST /evaluations/fromMetrics` reaches it.
+  - `REPLAY_METRIC`: the platform scored existing sessions again with a metric. `POST /evaluations/fromMetrics` and `POST /v2/revisions/{id}/evaluate-annotated-cases` reach it.
 </ResponseField>
 
 <ResponseField name="jobId" type="string" optional>

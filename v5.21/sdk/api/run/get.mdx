@@ -1,0 +1,31 @@
+---
+title: "Get Run"
+sidebarTitle: "Get"
+description: "Retrieve a run by its ID."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.21. [Read this page in the latest version](/sdk/api/run/get).
+</Warning>
+
+## Returns
+
+Returns a [Run](/v5.21/concepts/product/run) object.
+
+A run the platform launched usually names the work it carried out: `kind`, `request`,
+`resolved_inputs`, `job_id` and `error`. All five are `None` on a run you opened with
+[`runs.start()`](/v5.21/sdk/api/run/start), which performs no such work, and on a platform run whose
+sessions were scored in several calls, where no single call describes the run. Read `opened_by` to
+tell your own run from the platform's; a `None` kind does not.
+
+## Example
+```python
+run = galtea.runs.get(run_id=run.id)
+# `kind` names the work the platform launched. It is empty on a run you opened yourself.
+print(f"{run.kind or 'opened by the client'}: {run.status}")
+```
+
+## Parameters
+<ResponseField name="run_id" type="string" required>
+  The ID of the run to retrieve.
+</ResponseField>

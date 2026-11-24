@@ -67,7 +67,7 @@ reused = galtea.test_cases.create(
 <ResponseField name="input_file_paths" type="list[string]" optional>
   Files to attach to the input, for a product that reads documents. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, which is attached without uploading the file again. Any other URL raises a `ValueError` before anything is uploaded. `input` stays optional, so a test case may hold files and no text at all. Galtea sends each attachment to your endpoint when the [endpoint connection template](/concepts/product/endpoint-connection-template-syntax#attached-files-and-audio) names `input_files`.
 
-  At most 20 files totalling 20 MB, of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. To attach one already-uploaded file to several test cases, use [Upload Input File](/sdk/api/test-case/upload-input-file) instead.
+  At most 20 files totalling 20 MB by default ([configurable on request](/concepts/product/version/session/content-parts)), of these types: `pdf`, `docx`, `xlsx`, `pptx`, `rtf`, `png`, `jpg`, `jpeg`, `tiff`, `tif`, `bmp`, `webp`, `heic`, `heif`, `gif`, `txt`, `csv`, `md`, `html`, `xml`, `json`, `eml`. To attach one already-uploaded file to several test cases, use [Upload Input File](/sdk/api/test-case/upload-input-file) instead.
 
   The rule below holds for both run styles: your own pipeline, and Galtea calling your endpoint. See [File inputs](/concepts/product/dataset/test-case#file-inputs).
 

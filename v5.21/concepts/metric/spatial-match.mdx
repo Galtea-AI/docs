@@ -1,0 +1,58 @@
+---
+title: "Spatial Match"
+description: "Performs a binary evaluation of the spatial alignment between a predicted bounding box and one or more reference boxes using the best Intersection over Union (IoU) score. Returns a pass/fail signal based on a threshold, making it ideal for layout-sensitive validation tasks."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.21. [Read this page in the latest version](/concepts/metric/spatial-match).
+</Warning>
+
+The Spatial Match metric is part of the [Deterministic Metric](/v5.21/concepts/metric) options in Galtea. It determines whether a predicted bounding box sufficiently overlaps with any of the reference boxes by computing the Intersection over Union ([IOU](/v5.21/concepts/metric/iou)) and applying a threshold. This binary variant of the [IOU](/v5.21/concepts/metric/iou) metric is particularly useful when an exact spatial match is not required, but a minimum quality of alignment must be enforced.
+
+## Evaluation Parameters
+
+To compute the spatial\_match metric, the following parameters must be provided:
+
+- **`actual_output`**: A list of predicted bounding boxes. Each box must be in `[x1, y1, x2, y2]` format (coordinates of top-left and bottom-right corners). Accepts two formats:
+  - **JSON array**: `"[[10, 10, 50, 50], [100, 100, 120, 120]]"`
+  - **JSON object with "bboxes" key**: `'{"bboxes": [[10, 10, 50, 50], [100, 100, 120, 120]]}'`
+
+- **`expected_output`**: A single ground truth bounding box in `[x1, y1, x2, y2]` format. Accepts two formats:
+  - **JSON array**: `"[10, 10, 50, 50]"`
+  - **JSON object with "bbox" key** (singular): `'{"bbox": [10, 10, 50, 50]}'`
+
+**Important**: Both `actual_output` and `expected_output` must be raw JSON. Unlike [JSON Field Match](/v5.21/concepts/metric/json-field-match), these metrics do not strip markdown code fences, so a fenced block is not read as JSON. The two sides then behave differently:
+
+- **`actual_output` is not a list of boxes** (malformed JSON, no `bboxes` field, the wrong number of coordinates, or a coordinate that is not a finite number): the evaluation is **skipped**, and its error message says what could not be read. Retrying the evaluation re-scores the same stored output and skips again, so fix the pipeline and send a new inference result. An empty box list is not an error: it scores 0.
+- **`expected_output` is not a valid box**: the evaluation **fails**, because a reference box comes from your dataset and you are the one who can fix it. Unparseable JSON, a missing `bbox` field, and a coordinate that is not a finite number all fail. One case still scores: a box with the wrong number of coordinates (`[10, 10, 50]`) scores 0 instead of failing, so check your reference box before reading a 0 as a real mismatch.
+
+A coordinate may be a number or a string that spells one, so `"10"` and `10` score the same. `NaN` and `Infinity` are not readable coordinates on either side.
+
+## How Is It Calculated?
+
+1. The predicted box is compared against each reference box.
+
+2. The **IoU** is calculated for each pair:
+
+   $$
+   \text{IoU} = \frac{\text{Area of Intersection}}{\text{Area of Union}}
+   $$
+
+3. The **highest IoU score** among all comparisons is selected as the final score.
+
+4. If this score is greater than or equal to a predefined threshold (0.5), the metric returns 100% (pass). Otherwise, it returns 0% (fail).
+
+This approach accommodates situations where reference answers span multiple boxes (e.g., one box per word), and only the best alignment needs to be evaluated.
+
+## Interpretation of Scores
+
+- **1.0** – Strong spatial match; high alignment.
+- **0.0** – Low spatial match; poor alignment.
+
+## Suggested Test Case Types
+
+Use Spatial Match when evaluating:
+
+- **Document layout tasks** requiring accurate box alignment.
+- **OCR or form field extraction** where exact box positioning matters.
+- **Visual QA and multi-box alignment tasks** that benefit from flexible but spatially aware comparisons.

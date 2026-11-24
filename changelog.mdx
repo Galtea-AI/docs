@@ -4,6 +4,58 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="5.22.0" description="2026-11-24">
+
+## Trace Metrics Show Repeated Text Once
+
+A metric that reads `traces` now shows the judge each repeated block of lines once in a text of 200 characters or more, such as a system prompt that the agent sends on every LLM call, so long sessions fit and read better. A later copy becomes a short note that names the block it stands for, and the trace view still keeps every copy.
+
+## Trace Metrics Send the Judge Only Spans With Content
+
+The judge of a metric that reads `traces` now reads a cleaner trace: only the spans that did something, with an input, an output, an error, or metadata that is not the same on every span of the turn. A span left out does not hide its children, and infrastructure attributes are left out. The trace view still keeps every span and attribute.
+
+## Invalid Session Status Answers 400
+
+Creating or updating a [session](/concepts/product/version/session) with a `status` other than `PENDING`, `COMPLETED` or `FAILED` now answers `400`, with a message that names the field and the accepted values. It answered `500` before. Nothing is written, and a session created with `productId` alone no longer creates the product's default version when the status is refused.
+
+Through the API, `POST /sessions` and `PATCH /sessions/{id}` now return the session as `GET /sessions/{id}` returns it, with a `Content-Location` header, and `POST` adds a `Location` header. Send `Prefer: return=minimal` to get no body.
+
+## API Errors Share One Body
+
+The REST API now answers an error with the body `{ "error": "NotFound", "message": "Product not found" }`. `error` is the HTTP status name and `message` says what went wrong, so your code can read `message`. Before, some routes put the message text in `error`, and a rate-limited request or a request body that is not valid JSON answered plain text or an HTML page. The 404 for a route that does not exist (an HTML page) and the replies to webhooks keep their old shape.
+
+## See Who Activated Each Revision (Alpha)
+
+`GET /v2/revisions` now returns `activatedAt` and `activatedByUserId` for each revision: when it last became the active one, and who made it so. Creating a revision, **Mark as active** and applying an optimization all record them. Revisions activated before this release return `null` for both; see [Revisions and Analytics](/concepts/metric#revisions-and-analytics).
+
+## Time to First Token on Streamed Traces
+
+A trace that Galtea produces from a streamed reply now shows how long the agent took to start its answer. That is the time from the request to the first chunk that carries text. You see it beside the latency in the trace view and in Test Connection. Read it as `timeToFirstToken` in the API and `time_to_first_token` in the SDK. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+
+## Streaming Endpoint Connections in the SDK and the CLI
+
+The Python SDK and the CLI now create, update and test an Endpoint Connection that reads a [streamed reply](/concepts/product/endpoint-connection-configuration#streamed-replies). In the SDK, pass `stream_format="SSE"` and `stream_assembly=StreamAssembly(preset="OPENAI_CHAT_COMPLETIONS")`. In the CLI, send `streamFormat` and `streamAssembly` in the body, and run `galtea endpoint-connections list-stream-presets` to see the presets.
+
+## Endpoint Connections Read Streamed Replies
+
+An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. In the dashboard, choose **Streamed reply** in the connection form and pick your agent stack, or set `streamFormat` and `streamAssembly` through the API. See the guide [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent) and the [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies) reference.
+
+To skip the other assembly settings for a known framework, set `streamFormat` to `SSE` and `streamAssembly` to a [stream preset](/concepts/product/endpoint-connection-configuration#stream-presets) such as `{ "preset": "OPENAI_RESPONSES" }`.
+
+## File Limits Are Configurable on Request
+
+A test case input, a trace input and a trace output accept at most 20 files and 20 MB in total by default. If your files need more, contact [support@galtea.ai](mailto:support@galtea.ai) and ask for higher limits. See [Content Parts](/concepts/product/version/session/content-parts).
+
+## Evaluate a Metric on Your Annotations
+
+On a [metric](/concepts/metric) page, **Evaluate revision against annotated cases** scores every case you annotated with the revision you choose, so you can compare its scores with yours without running a full evaluation. The dialog selects the active revision first and lists the legacy ones too. It shows how many cases the revision scores and the credits they cost, and cases the revision already scored are skipped. The API offers the same on any revision with `POST /v2/revisions/{id}/evaluate-annotated-cases`.
+
+## Cost and Tokens of Each Span
+
+The span page now shows the cost of an LLM call as a bill: its input, cache read and output tokens, the price per million tokens of each, and the total. Check what one call cost without adding up the turn. The turn's metrics tab shows its cost in the same bill.
+
+</Update>
+
 <Update label="5.21.0" description="2026-11-23">
 
 ## See Your Organization's Usage by Product (Alpha)

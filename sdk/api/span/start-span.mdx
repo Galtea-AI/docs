@@ -23,13 +23,13 @@ with start_span("manual_span", type="SPAN") as span:
   SpanType value: `SPAN`, `GENERATION`, `EVENT`, `AGENT`, `TOOL`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`. See [Span Types](/concepts/product/version/session/span#span-types) for details. An unrecognized value emits a `UserWarning` and is sent as `SPAN`, so your original label is not stored. Pass the label to [`spans.create`](/sdk/api/span/create) instead when you need Galtea to keep it.
 </ResponseField>
 <ResponseField name="description" type="string" optional>
-  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1MB.
+  Human-readable description of what this operation does. Useful for documentation and debugging. Maximum size: 1 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 <ResponseField name="input" type="any" optional>
-  Input data for the span. Accepts any value (non-serializable objects are converted to string). Maximum size: 10MB.
+  Input data for the span. Accepts any value (non-serializable objects are converted to string). Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 <ResponseField name="metadata" type="any" optional>
-  Metadata for the span. Accepts any value (non-serializable objects are converted to string). Maximum size: 10MB.
+  Metadata for the span. Accepts any value (non-serializable objects are converted to string). Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 <ResponseField name="attributes" type="dict" optional>
   Custom OpenTelemetry attributes to add to the span.

@@ -147,7 +147,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Description" type="string" optional>
-  A human-readable description of the operation. Can be set manually via `start_span(description=...)` or automatically from function docstrings using `@traced(include_docstring=True)`. Maximum size: 1MB.
+  A human-readable description of the operation. Can be set manually via `start_span(description=...)` or automatically from function docstrings using `@traced(include_docstring=True)`. Maximum size: 1 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 
 <ResponseField name="Parent Span ID" type="string" optional>
@@ -155,11 +155,11 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Input Data" type="any" optional>
-  The input parameters passed to the operation. Maximum size: 10MB.
+  The input parameters passed to the operation. Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 
 <ResponseField name="Output Data" type="any" optional>
-  The result returned by the operation. Maximum size: 10MB.
+  The result returned by the operation. Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)).
 </ResponseField>
 
 <ResponseField name="Error" type="string" optional>
@@ -179,7 +179,7 @@ If your product uses RAG (retrieval-augmented generation, where the model reads 
 </ResponseField>
 
 <ResponseField name="Metadata" type="any" optional>
-  Additional custom metadata about the span. Maximum size: 10MB.
+  Additional custom metadata about the span. Maximum size: 10 MB by default ([configurable on request](mailto:support@galtea.ai)).
 
   Six keys are reserved for Galtea and removed from anything you send, on every path and without an error: `galtea.synthetic`, `galtea.span.original_name`, `galtea.span.input_from_source_rule`, `galtea.span.output_from_source_rule`, `galtea.span.model` and `galtea.span.cache_read_above_input`. Galtea writes them itself, to record what it changed or recovered, for `galtea.span.model`, the [model name](/sdk/tutorials/send-opentelemetry-traces-to-galtea#model) it read off the span, and for `galtea.span.cache_read_above_input`, that the span reported more cached tokens than input tokens. A seventh, `galtea.span.original_type`, is removed from a direct span write and kept on OpenTelemetry ingest, where a replayed export legitimately carries your original label in it.
 </ResponseField>

@@ -740,71 +740,6 @@
           "narrativeGeneratedByAi"
         ]
       },
-      "SessionInput": {
-        "type": "object",
-        "description": "Session creation input. `versionId` is optional: when omitted, provide `productId` and the API reuses the product's latest version (creating a default first version if the product has none). One of `versionId` or `productId` is required. `testCaseId` and `isProduction` are independent: a session can be production (no testCaseId), test-driven non-production (testCaseId set, isProduction defaults to false), or externally-ingested non-production (no testCaseId, isProduction explicitly false \u2014 typical for imported traces). The only forbidden combination is `testCaseId` set together with `isProduction=true`. When `testCaseId` is set, `context` is rejected because it would be derived from the test case.",
-        "properties": {
-          "versionId": {
-            "type": "string",
-            "description": "Version ID to create the session for. Optional when productId is provided; one of versionId or productId is required.",
-            "example": "ver_123"
-          },
-          "productId": {
-            "type": "string",
-            "description": "Product to anchor the session when versionId is omitted. The API reuses the product's latest version or creates a default one. Ignored when versionId is provided.",
-            "example": "prod_123"
-          },
-          "customId": {
-            "type": "string",
-            "description": "Optional caller-defined identifier for the session",
-            "example": "my-session-1"
-          },
-          "testCaseId": {
-            "type": "string",
-            "description": "Test case to link this session to. Forbidden when isProduction=true. Defaults to omitted, in which case isProduction defaults to true.",
-            "example": "tc_123"
-          },
-          "isProduction": {
-            "type": "boolean",
-            "nullable": true,
-            "description": "Whether the session represents real production traffic. Defaults to true when testCaseId is omitted and false when testCaseId is set. May be set explicitly to false without a testCaseId for externally-ingested sessions (e.g. trace imports)."
-          },
-          "context": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "additionalProperties": true
-              }
-            ],
-            "description": "Additional context for the session. Accepts a plain string or a structured JSON object. Forbidden when testCaseId is set (the context is derived from the test case)."
-          },
-          "metadata": {
-            "type": "object",
-            "description": "Arbitrary key-value metadata",
-            "example": {
-              "key": "value"
-            }
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "FAILED"
-            ],
-            "default": "PENDING",
-            "description": "Initial session status. Defaults to PENDING (open, accepts new turns); the session closes on an explicit finish or the product auto-close sweep (#3384)."
-          },
-          "runId": {
-            "type": "string",
-            "description": "Run to attribute this session to, so several sessions a client creates are grouped together. It must name a run you opened with POST /runs: a run a platform launch opened settles with that launch and is rejected here, as is a deleted, finished, other-product or other-version run. Forbidden when isProduction is true.",
-            "example": "run_123"
-          }
-        }
-      },
       "InferenceResult": {
         "type": "object",
         "description": "A trace: one conversation turn, holding the input and the agent output. The schema name, the `/inferenceResults` path and every `inferenceResult*` field still carry the old name of this entity, \"inference result\". Only the wording changed so far; the wire contract is renamed in a later API release.",
@@ -846,7 +781,7 @@
           "input": {
             "type": "object",
             "nullable": true,
-            "description": "Structured input data. For plain text input, format is { user_message: \"...\" }. A `content` array of parts (audio or file) can sit beside an optional `user_message`. Each element of a `content` array is read on its own. A file part is a Galtea file when its uri names a Galtea storage key (`files/<organization>/<32 hex>.<extension>`, on any host): it is stored signature-free and checked as on a test case input (at most 20 files and 20 MB, an accepted file type, a file of this organization), otherwise 400. A Galtea file missing from storage is stored signature-free without its sizeBytes, and every other element as sent. With `INLINE_MEDIA_COPY_ENABLED` on, a binary file of 1,024 base64 characters or more, held in a data URI or in the byte field of a provider object, is stored as a Galtea file token instead. A metric scores a Galtea file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads this side is skipped, except a human evaluation or self-hosted one, and the reason names the file.",
+            "description": "Structured input data. For plain text input, format is { user_message: \"...\" }. A `content` array of parts (audio or file) can sit beside an optional `user_message`. Each element of a `content` array is read on its own. A file part is a Galtea file when its uri names a Galtea storage key (`files/<organization>/<32 hex>.<extension>`, on any host): it is stored signature-free and checked as on a test case input (at most 20 files and 20 MB by default, an accepted file type, a file of this organization), otherwise 400. A Galtea file missing from storage is stored signature-free without its sizeBytes, and every other element as sent. With `INLINE_MEDIA_COPY_ENABLED` on, a binary file of 1,024 base64 characters or more, held in a data URI or in the byte field of a provider object, is stored as a Galtea file token instead. A metric scores a Galtea file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads this side is skipped, except a human evaluation or self-hosted one, and the reason names the file.",
             "example": {
               "user_message": "User input text"
             }
@@ -927,6 +862,19 @@
             "readOnly": true,
             "example": "customer_42",
             "description": "The end user of this trace, set by OTel ingest from its own spans. Read-only. The session holds the first end user of all its traces."
+          },
+          "streamTruncated": {
+            "type": "boolean",
+            "readOnly": true,
+            "example": false,
+            "description": "True when the agent's streamed reply closed before the terminal event of its endpoint connection, so the output is partial. Read-only."
+          },
+          "timeToFirstToken": {
+            "type": "number",
+            "nullable": true,
+            "readOnly": true,
+            "example": 412.5,
+            "description": "Milliseconds from the start of the request to the agent to the first chunk of its streamed reply that carried text. Null when the reply did not stream or carried no text, and for a user without the `evaluation.readInference` permission. Read-only."
           },
           "conversationSimulatorVersion": {
             "type": "string",
@@ -1409,13 +1357,19 @@
         "properties": {
           "error": {
             "type": "string",
-            "example": "Error type"
+            "example": "NotFound",
+            "description": "The HTTP status name in PascalCase, such as `BadRequest` or `NotFound`."
           },
           "message": {
             "type": "string",
-            "example": "Error message description"
+            "example": "Product not found",
+            "description": "What went wrong, for a person."
           }
-        }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
       },
       "TraceImportResponse": {
         "type": "object",
@@ -3681,7 +3635,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "JSONPath expressions to extract values from API response. Filter and script expressions are refused. Must include \"output\" key. Special keys: \"retrieval_context\", \"session_id\" (initialization), \"traces\", and \"output_files\". \"output_files\" matches one file or a list of files the endpoint answers with, each a data: URI, an http(s) URL, the storage URI of a Galtea file, or an object with \"base64\", \"url\" or \"uri\" plus optional \"mime_type\" and \"filename\". Each file is stored as a Galtea file on the turn output: at most 20 files and 20 MB per output, an accepted file type (the file extension decides it), and a URL is downloaded once without the connection headers or credentials, over plain http only when the connection acknowledged it. A Galtea file is linked rather than copied, and must be an uploaded file of the product organization. A file that cannot be stored fails the turn. A metric scores an output file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads the output is skipped, except a human evaluation or self-hosted one, and the reason names the file. Every other key is stored on the session metadata.",
+            "description": "JSONPath expressions to extract values from API response. Filter and script expressions are refused. Must include \"output\" key. Special keys: \"retrieval_context\", \"session_id\" (initialization), \"traces\", and \"output_files\". \"output_files\" matches one file or a list of files the endpoint answers with, each a data: URI, an http(s) URL, the storage URI of a Galtea file, or an object with \"base64\", \"url\" or \"uri\" plus optional \"mime_type\" and \"filename\". Each file is stored as a Galtea file on the turn output: at most 20 files and 20 MB per output by default (configurable on request), an accepted file type (the file extension decides it), and a URL is downloaded once without the connection headers or credentials, over plain http only when the connection acknowledged it. A Galtea file is linked rather than copied, and must be an uploaded file of the product organization. A file that cannot be stored fails the turn. A metric scores an output file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads the output is skipped, except a human evaluation or self-hosted one, and the reason names the file. Every other key is stored on the session metadata.",
             "example": {
               "output": "$.choices[0].message.content",
               "output_files": "$.files"
@@ -3813,6 +3767,76 @@
             "maxItems": 20,
             "default": [],
             "description": "Responses that mean the agent closed the conversation on its own. Only a CONVERSATION connection accepts rules. A rule matches a response with its status code and, when bodyMatch is set, a response body whose first JSONPath match equals the expected value as text. The rules are checked before the retry policy, and a matching response is never retried, even when its status code is in retryableStatusCodes. A matching 2xx response with an agent output keeps its turn as the last one, on any turn and in a single-turn test. A matching response with no agent output (a non-2xx response, or a 2xx response with no output) removes the rejected turn on a later turn of a scenario test. In both cases the session completes with the turns so far and is evaluated, with the stopping reason \"The agent ended the conversation (HTTP <code>)\". A match with no agent output on the first turn, or on a single-turn test, still fails the session. An empty list keeps the default behaviour."
+          },
+          "streamFormat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SSE",
+              "NDJSON",
+              "WEBSOCKET"
+            ],
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly. WEBSOCKET means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
+          },
+          "streamAssembly": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "CUSTOM",
+                  "OPENAI_CHATKIT",
+                  "OPENAI_RESPONSES",
+                  "OPENAI_CHAT_COMPLETIONS",
+                  "ANTHROPIC_MESSAGES",
+                  "GOOGLE_ADK",
+                  "VERCEL_AI_SDK"
+                ],
+                "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
+                "example": "CUSTOM"
+              },
+              "textPath": {
+                "type": "string",
+                "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "example": "$.delta"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "APPEND",
+                  "LAST"
+                ],
+                "description": "Required with CUSTOM. APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "example": "APPEND"
+              },
+              "eventField": {
+                "type": "string",
+                "nullable": true,
+                "description": "JSONPath to the event name in each chunk, starting with $. Unset uses the SSE event name, or \"message\" when a chunk names none.",
+                "example": "$.type"
+              },
+              "terminalEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "example": "response.completed"
+              },
+              "textEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The only event whose chunks give text, for a stack that puts other text (tool arguments, reasoning) at the same path. Unset takes text from every chunk.",
+                "example": "response.output_text.delta"
+              },
+              "errorEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "example": "error"
+              }
+            },
+            "additionalProperties": false,
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "createdAt": {
             "type": "string",
@@ -3965,7 +3989,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "JSONPath expressions to extract values from API response. Filter and script expressions are refused. Must include \"output\" key. Special keys: \"retrieval_context\", \"session_id\" (initialization), \"traces\", and \"output_files\". \"output_files\" matches one file or a list of files the endpoint answers with, each a data: URI, an http(s) URL, the storage URI of a Galtea file, or an object with \"base64\", \"url\" or \"uri\" plus optional \"mime_type\" and \"filename\". Each file is stored as a Galtea file on the turn output: at most 20 files and 20 MB per output, an accepted file type (the file extension decides it), and a URL is downloaded once without the connection headers or credentials, over plain http only when the connection acknowledged it. A Galtea file is linked rather than copied, and must be an uploaded file of the product organization. A file that cannot be stored fails the turn. A metric scores an output file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads the output is skipped, except a human evaluation or self-hosted one, and the reason names the file. Every other key is stored on the session metadata.",
+            "description": "JSONPath expressions to extract values from API response. Filter and script expressions are refused. Must include \"output\" key. Special keys: \"retrieval_context\", \"session_id\" (initialization), \"traces\", and \"output_files\". \"output_files\" matches one file or a list of files the endpoint answers with, each a data: URI, an http(s) URL, the storage URI of a Galtea file, or an object with \"base64\", \"url\" or \"uri\" plus optional \"mime_type\" and \"filename\". Each file is stored as a Galtea file on the turn output: at most 20 files and 20 MB per output by default (configurable on request), an accepted file type (the file extension decides it), and a URL is downloaded once without the connection headers or credentials, over plain http only when the connection acknowledged it. A Galtea file is linked rather than copied, and must be an uploaded file of the product organization. A file that cannot be stored fails the turn. A metric scores an output file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads the output is skipped, except a human evaluation or self-hosted one, and the reason names the file. Every other key is stored on the session metadata.",
             "example": {
               "output": "$.choices[0].message.content",
               "output_files": "$.files"
@@ -4099,6 +4123,75 @@
             "default": [],
             "description": "Responses that mean the agent closed the conversation on its own. Only a CONVERSATION connection accepts rules. A rule matches a response with its status code and, when bodyMatch is set, a response body whose first JSONPath match equals the expected value as text. The rules are checked before the retry policy, and a matching response is never retried, even when its status code is in retryableStatusCodes. A matching 2xx response with an agent output keeps its turn as the last one, on any turn and in a single-turn test. A matching response with no agent output (a non-2xx response, or a 2xx response with no output) removes the rejected turn on a later turn of a scenario test. In both cases the session completes with the turns so far and is evaluated, with the stopping reason \"The agent ended the conversation (HTTP <code>)\". A match with no agent output on the first turn, or on a single-turn test, still fails the session. An empty list keeps the default behaviour."
           },
+          "streamFormat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+          },
+          "streamAssembly": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "CUSTOM",
+                  "OPENAI_CHATKIT",
+                  "OPENAI_RESPONSES",
+                  "OPENAI_CHAT_COMPLETIONS",
+                  "ANTHROPIC_MESSAGES",
+                  "GOOGLE_ADK",
+                  "VERCEL_AI_SDK"
+                ],
+                "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
+                "example": "CUSTOM"
+              },
+              "textPath": {
+                "type": "string",
+                "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "example": "$.delta"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "APPEND",
+                  "LAST"
+                ],
+                "description": "Required with CUSTOM. APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "example": "APPEND"
+              },
+              "eventField": {
+                "type": "string",
+                "nullable": true,
+                "description": "JSONPath to the event name in each chunk, starting with $. Unset uses the SSE event name, or \"message\" when a chunk names none.",
+                "example": "$.type"
+              },
+              "terminalEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "example": "response.completed"
+              },
+              "textEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The only event whose chunks give text, for a stack that puts other text (tool arguments, reasoning) at the same path. Unset takes text from every chunk.",
+                "example": "response.output_text.delta"
+              },
+              "errorEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "example": "error"
+              }
+            },
+            "additionalProperties": false,
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+          },
           "authToken": {
             "type": "string",
             "nullable": true,
@@ -4118,6 +4211,122 @@
           "authType",
           "inputTemplate",
           "outputMapping"
+        ]
+      },
+      "StreamAssemblySettings": {
+        "type": "object",
+        "properties": {
+          "textPath": {
+            "type": "string",
+            "description": "JSONPath to the text in each chunk, starting with $.",
+            "example": "$.update.delta"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "APPEND",
+              "LAST"
+            ],
+            "description": "APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+            "example": "APPEND"
+          },
+          "eventField": {
+            "type": "string",
+            "nullable": true,
+            "description": "JSONPath to the event name in each chunk. Null uses the SSE event name, or \"message\" when a chunk names none.",
+            "example": "$.type"
+          },
+          "terminalEvent": {
+            "type": "string",
+            "nullable": true,
+            "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Null reads the reply to the end of the stream.",
+            "example": null
+          },
+          "textEvent": {
+            "type": "string",
+            "nullable": true,
+            "description": "The only event whose chunks give text. Null takes text from every chunk.",
+            "example": null
+          },
+          "errorEvent": {
+            "type": "string",
+            "nullable": true,
+            "description": "The event name that fails the turn, with the event data in the error. Null reads every event as data.",
+            "example": "error"
+          }
+        },
+        "required": [
+          "textPath",
+          "mode",
+          "eventField",
+          "terminalEvent",
+          "textEvent",
+          "errorEvent"
+        ]
+      },
+      "StreamAssemblyPreset": {
+        "type": "object",
+        "properties": {
+          "preset": {
+            "type": "string",
+            "enum": [
+              "CUSTOM",
+              "OPENAI_CHATKIT",
+              "OPENAI_RESPONSES",
+              "OPENAI_CHAT_COMPLETIONS",
+              "ANTHROPIC_MESSAGES",
+              "GOOGLE_ADK",
+              "VERCEL_AI_SDK"
+            ],
+            "description": "The value to send as streamAssembly.preset.",
+            "example": "OPENAI_CHATKIT"
+          },
+          "name": {
+            "type": "string",
+            "example": "OpenAI ChatKit"
+          },
+          "description": {
+            "type": "string",
+            "description": "When to use the preset, in plain words."
+          },
+          "streamFormat": {
+            "type": "string",
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "The streamFormat the connection must have. A connection with another format is refused.",
+            "example": "SSE"
+          },
+          "assembly": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StreamAssemblySettings"
+              },
+              {
+                "description": "The settings the preset fills today. A connection follows the preset by name, so a change here reaches every connection that names it. To change one of them, send these settings as streamAssembly with the preset CUSTOM."
+              }
+            ]
+          },
+          "sourceUrl": {
+            "type": "string",
+            "description": "The vendor documentation the settings come from.",
+            "example": "https://openai.github.io/chatkit-python/concepts/thread-stream-events/"
+          },
+          "readOn": {
+            "type": "string",
+            "description": "The day the vendor documentation was read, as an ISO date.",
+            "example": "2026-11-20"
+          }
+        },
+        "required": [
+          "preset",
+          "name",
+          "description",
+          "streamFormat",
+          "assembly",
+          "sourceUrl",
+          "readOn"
         ]
       },
       "EndpointConnectionUpdate": {
@@ -4261,7 +4470,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "JSONPath expressions to extract values from API response. Filter and script expressions are refused. Must include \"output\" key. Special keys: \"retrieval_context\", \"session_id\" (initialization), \"traces\", and \"output_files\". \"output_files\" matches one file or a list of files the endpoint answers with, each a data: URI, an http(s) URL, the storage URI of a Galtea file, or an object with \"base64\", \"url\" or \"uri\" plus optional \"mime_type\" and \"filename\". Each file is stored as a Galtea file on the turn output: at most 20 files and 20 MB per output, an accepted file type (the file extension decides it), and a URL is downloaded once without the connection headers or credentials, over plain http only when the connection acknowledged it. A Galtea file is linked rather than copied, and must be an uploaded file of the product organization. A file that cannot be stored fails the turn. A metric scores an output file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads the output is skipped, except a human evaluation or self-hosted one, and the reason names the file. Every other key is stored on the session metadata.",
+            "description": "JSONPath expressions to extract values from API response. Filter and script expressions are refused. Must include \"output\" key. Special keys: \"retrieval_context\", \"session_id\" (initialization), \"traces\", and \"output_files\". \"output_files\" matches one file or a list of files the endpoint answers with, each a data: URI, an http(s) URL, the storage URI of a Galtea file, or an object with \"base64\", \"url\" or \"uri\" plus optional \"mime_type\" and \"filename\". Each file is stored as a Galtea file on the turn output: at most 20 files and 20 MB per output by default (configurable on request), an accepted file type (the file extension decides it), and a URL is downloaded once without the connection headers or credentials, over plain http only when the connection acknowledged it. A Galtea file is linked rather than copied, and must be an uploaded file of the product organization. A file that cannot be stored fails the turn. A metric scores an output file only when its judge model reads that kind of file (PNG, JPEG, WebP, GIF or PDF, or a text file (TXT, CSV, Markdown, JSON, XML or HTML), read as its text); any other metric that reads the output is skipped, except a human evaluation or self-hosted one, and the reason names the file. Every other key is stored on the session metadata.",
             "example": {
               "output": "$.choices[0].message.content",
               "output_files": "$.files"
@@ -4394,6 +4603,75 @@
             "maxItems": 20,
             "default": [],
             "description": "Responses that mean the agent closed the conversation on its own. Only a CONVERSATION connection accepts rules. A rule matches a response with its status code and, when bodyMatch is set, a response body whose first JSONPath match equals the expected value as text. The rules are checked before the retry policy, and a matching response is never retried, even when its status code is in retryableStatusCodes. A matching 2xx response with an agent output keeps its turn as the last one, on any turn and in a single-turn test. A matching response with no agent output (a non-2xx response, or a 2xx response with no output) removes the rejected turn on a later turn of a scenario test. In both cases the session completes with the turns so far and is evaluated, with the stopping reason \"The agent ended the conversation (HTTP <code>)\". A match with no agent output on the first turn, or on a single-turn test, still fails the session. An empty list keeps the default behaviour."
+          },
+          "streamFormat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SSE",
+              "NDJSON"
+            ],
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+          },
+          "streamAssembly": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "CUSTOM",
+                  "OPENAI_CHATKIT",
+                  "OPENAI_RESPONSES",
+                  "OPENAI_CHAT_COMPLETIONS",
+                  "ANTHROPIC_MESSAGES",
+                  "GOOGLE_ADK",
+                  "VERCEL_AI_SDK"
+                ],
+                "description": "The agent stack whose stream settings to use. A named preset is refused with any other field. CUSTOM, or no preset, takes textPath, mode and the optional fields. A read always holds it.",
+                "example": "CUSTOM"
+              },
+              "textPath": {
+                "type": "string",
+                "description": "Required with CUSTOM. JSONPath to the text in each chunk, starting with $. Surrounding spaces are trimmed, and filter expressions are refused.",
+                "example": "$.delta"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "APPEND",
+                  "LAST"
+                ],
+                "description": "Required with CUSTOM. APPEND joins the text of every chunk. LAST keeps the text of the last chunk.",
+                "example": "APPEND"
+              },
+              "eventField": {
+                "type": "string",
+                "nullable": true,
+                "description": "JSONPath to the event name in each chunk, starting with $. Unset uses the SSE event name, or \"message\" when a chunk names none.",
+                "example": "$.type"
+              },
+              "terminalEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "example": "response.completed"
+              },
+              "textEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The only event whose chunks give text, for a stack that puts other text (tool arguments, reasoning) at the same path. Unset takes text from every chunk.",
+                "example": "response.output_text.delta"
+              },
+              "errorEvent": {
+                "type": "string",
+                "nullable": true,
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "example": "error"
+              }
+            },
+            "additionalProperties": false,
+            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           }
         }
       },
@@ -5581,6 +5859,46 @@
         },
         "required": [
           "score"
+        ]
+      },
+      "RevisionAnnotatedCasesEvaluation": {
+        "type": "object",
+        "properties": {
+          "revisionId": {
+            "type": "string",
+            "example": "revision_123",
+            "description": "The revision the run scores with."
+          },
+          "scheduled": {
+            "type": "integer",
+            "example": 11,
+            "description": "Evaluations admitted."
+          },
+          "skipped": {
+            "type": "integer",
+            "example": 1,
+            "description": "Cases that were not scored; `errors` says why."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "runIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The runs this call opened, one per product."
+          }
+        },
+        "required": [
+          "revisionId",
+          "scheduled",
+          "skipped",
+          "errors",
+          "runIds"
         ]
       },
       "EvaluatorModel": {
@@ -9162,6 +9480,18 @@
             "readOnly": true,
             "description": "User who excluded this revision from analytics. A repeated exclusion keeps the first user."
           },
+          "activatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When this revision last became the active one: at creation, by \"Mark as active\", or by applying an optimization. Null when unknown, for example for a revision activated before this was recorded. A revision copied from another organization keeps the time of the original."
+          },
+          "activatedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "example": "user_123",
+            "description": "User who last made this revision the active one, at `activatedAt`. Null when unknown: activated before this was recorded, by no signed-in user, by a deleted user, or copied from another organization."
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -9195,6 +9525,8 @@
           "userGroupIds",
           "excludedFromAnalyticsAt",
           "excludedByUserId",
+          "activatedAt",
+          "activatedByUserId",
           "createdAt"
         ]
       },
@@ -9535,6 +9867,25 @@
         "required": [
           "productId",
           "count"
+        ]
+      },
+      "RevisionAnnotatedCaseCount": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "example": 12,
+            "description": "Annotated cases of the revision's metric that the revision has not scored yet, in the products where the caller may read and create evaluations and create runs."
+          },
+          "credits": {
+            "type": "integer",
+            "example": 24,
+            "description": "The credits scoring those cases costs."
+          }
+        },
+        "required": [
+          "count",
+          "credits"
         ]
       },
       "MonitorAlert": {
@@ -12463,6 +12814,575 @@
         },
         "additionalProperties": false
       },
+      "UsageReportUser": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Only with `peopleDetail` `names`. Never an email."
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "UsageReportCreatedCounts": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "type": "integer",
+            "description": "Versions created in the window"
+          },
+          "tests": {
+            "type": "integer",
+            "description": "Tests created in the window"
+          },
+          "testCases": {
+            "type": "integer",
+            "description": "Test cases created in the window"
+          },
+          "specifications": {
+            "type": "integer",
+            "description": "Specifications created in the window"
+          },
+          "runs": {
+            "type": "integer",
+            "description": "Runs created in the window"
+          },
+          "sessions": {
+            "type": "integer",
+            "description": "Sessions created in the window, seed sessions left out"
+          },
+          "evaluations": {
+            "type": "integer",
+            "description": "Evaluations created in the window"
+          }
+        },
+        "required": [
+          "versions",
+          "tests",
+          "testCases",
+          "specifications",
+          "runs",
+          "sessions",
+          "evaluations"
+        ]
+      },
+      "UsageReportUserCount": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "user",
+          "count"
+        ]
+      },
+      "UsageReportSourceStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable",
+              "failed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "not_configured",
+              "not_requested",
+              "timeout",
+              "upstream_error"
+            ],
+            "description": "Why the source is not `ok`. `unavailable`: `not_configured` or `not_requested`. `failed`: `timeout` or `upstream_error`."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "UsageReportProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "The latest external activity before the window end, looking back 180 days."
+          },
+          "created": {
+            "$ref": "#/components/schemas/UsageReportCreatedCounts"
+          },
+          "sessionsByUser": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportUserCount"
+            },
+            "description": "Empty with `peopleDetail` `aggregate`."
+          },
+          "evaluationsByUser": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportUserCount"
+            },
+            "description": "Empty with `peopleDetail` `aggregate`."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "lastActivityAt",
+          "created",
+          "sessionsByUser",
+          "evaluationsByUser"
+        ]
+      },
+      "UsageReportClientTypes": {
+        "type": "object",
+        "properties": {
+          "dashboard": {
+            "type": "integer"
+          },
+          "sdk": {
+            "type": "integer"
+          },
+          "cli": {
+            "type": "integer"
+          },
+          "api": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dashboard",
+          "sdk",
+          "cli",
+          "api"
+        ]
+      },
+      "UsageReportPerson": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "isStaff": {
+            "type": "boolean",
+            "description": "Platform staff, or a staff email domain the deployment names."
+          },
+          "created": {
+            "$ref": "#/components/schemas/UsageReportCreatedCounts"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "clientTypes": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageReportClientTypes"
+              },
+              {
+                "description": "API requests per client, only when the `loki` source is `ok`."
+              }
+            ]
+          }
+        },
+        "required": [
+          "user",
+          "isStaff",
+          "created",
+          "lastActivityAt"
+        ]
+      },
+      "UsageReportVisitor": {
+        "type": "object",
+        "properties": {
+          "visitorRef": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "identified",
+              "high",
+              "low",
+              "conflict",
+              "none"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "posthog_identified",
+              "write_minutes",
+              "audit_minutes"
+            ]
+          },
+          "pageviews": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "visitorRef",
+          "confidence",
+          "method",
+          "pageviews"
+        ]
+      },
+      "UsageReportDashboard": {
+        "type": "object",
+        "properties": {
+          "visitors": {
+            "type": "integer"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "pageviews": {
+            "type": "integer"
+          },
+          "rageClicks": {
+            "type": "integer"
+          },
+          "errors": {
+            "type": "integer"
+          },
+          "visitorList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportVisitor"
+            },
+            "description": "Empty with `peopleDetail` `aggregate`."
+          }
+        },
+        "required": [
+          "visitors",
+          "sessions",
+          "pageviews",
+          "rageClicks",
+          "errors",
+          "visitorList"
+        ]
+      },
+      "UsageReportRecording": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activeSeconds": {
+            "type": "integer"
+          },
+          "durationSeconds": {
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UsageReportUser"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "identified",
+              "high",
+              "low",
+              "conflict",
+              "none"
+            ]
+          }
+        },
+        "required": [
+          "url",
+          "startedAt",
+          "activeSeconds",
+          "durationSeconds",
+          "confidence"
+        ]
+      },
+      "UsageReportOrganization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "client",
+              "self_serve",
+              null
+            ],
+            "description": "Client or self-serve, where the deployment names its clients; null elsewhere."
+          },
+          "dataRegion": {
+            "type": "string",
+            "description": "Where the organization keeps its data, for example `EU`."
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "The latest external activity before the window end, looking back 180 days."
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "first_evaluation",
+                "first_session_outside_run",
+                "back_after_quiet_week",
+                "quiet_14_days"
+              ]
+            },
+            "description": "`first_evaluation` and `first_session_outside_run`: the first in 180 days falls in the window. `back_after_quiet_week`: active in the window after 7 quiet days. `quiet_14_days`: no external activity in the 14 days before the window end."
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportProduct"
+            },
+            "description": "Products with external activity in the window, most active first, at most 200."
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportPerson"
+            },
+            "description": "Authors with activity in the window, staff included and marked, at most 200. Empty with `aggregate`."
+          },
+          "dashboard": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageReportDashboard"
+              },
+              {
+                "description": "Only when the `posthog` source is `ok`. Visitors the attribution names as staff (identified or high) are left out of every count and list."
+              }
+            ]
+          },
+          "recordings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportRecording"
+            },
+            "description": "Only when the `posthog` source is `ok`. Recordings of staff visitors are left out."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "segment",
+          "dataRegion",
+          "lastActivityAt",
+          "flags",
+          "products",
+          "people"
+        ]
+      },
+      "UsageReportV1": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "window": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "timeZone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "timeZone"
+            ]
+          },
+          "scope": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "organization",
+                  "all"
+                ]
+              },
+              "organizationId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "peopleDetail": {
+            "type": "string",
+            "enum": [
+              "aggregate",
+              "ids",
+              "names"
+            ]
+          },
+          "sources": {
+            "type": "object",
+            "properties": {
+              "db": {
+                "$ref": "#/components/schemas/UsageReportSourceStatus"
+              },
+              "posthog": {
+                "$ref": "#/components/schemas/UsageReportSourceStatus"
+              },
+              "loki": {
+                "$ref": "#/components/schemas/UsageReportSourceStatus"
+              }
+            },
+            "required": [
+              "db",
+              "posthog",
+              "loki"
+            ]
+          },
+          "excluded": {
+            "type": "object",
+            "properties": {
+              "organizations": {
+                "type": "integer",
+                "description": "Organizations the internal pattern left out that were active in the window"
+              },
+              "staffRows": {
+                "type": "integer",
+                "description": "Rows staff created in the window, left out of every organization and product count"
+              }
+            },
+            "required": [
+              "organizations",
+              "staffRows"
+            ],
+            "description": "Only for the `all` scope."
+          },
+          "organizations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportOrganization"
+            },
+            "description": "The organization asked for, or every organization with external activity in the window (and every client), most active first, then those only the `posthog` or `loki` source saw, at most 1,000. Counts leave out soft-deleted rows, seed sessions, demo clones and rows staff created."
+          },
+          "truncated": {
+            "type": "object",
+            "properties": {
+              "organizations": {
+                "type": "boolean"
+              },
+              "products": {
+                "type": "boolean"
+              },
+              "people": {
+                "type": "boolean"
+              },
+              "dashboard": {
+                "type": "boolean",
+                "description": "A `posthog` query answered its row limit, so some dashboard visits, or the evidence that names visitors, are missing."
+              },
+              "recordings": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "organizations",
+              "products",
+              "people",
+              "dashboard",
+              "recordings"
+            ]
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "generatedAt",
+          "window",
+          "scope",
+          "peopleDetail",
+          "sources",
+          "organizations",
+          "truncated"
+        ]
+      },
+      "UsageReportPdf": {
+        "type": "object",
+        "properties": {
+          "downloadUrl": {
+            "type": "string",
+            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
+            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
+          }
+        },
+        "required": [
+          "downloadUrl"
+        ]
+      },
+      "UsageReportWithPdf": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "$ref": "#/components/schemas/UsageReportV1"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
+            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
+          }
+        },
+        "required": [
+          "report",
+          "downloadUrl"
+        ]
+      },
       "Run": {
         "type": "object",
         "properties": {
@@ -12850,6 +13770,82 @@
           "max"
         ]
       },
+      "SessionCreate": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Version ID to create the session for. Optional when productId is provided; one of versionId or productId is required.",
+            "example": "ver_123"
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Product to anchor the session when versionId is omitted. The API reuses the product's latest version or creates a default one. Ignored when versionId is provided.",
+            "example": "prod_123"
+          },
+          "customId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional caller-defined identifier for the session",
+            "example": "my-session-1"
+          },
+          "testCaseId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Test case to link this session to. Forbidden when isProduction=true. Defaults to omitted, in which case isProduction defaults to true.",
+            "example": "tc_123"
+          },
+          "isProduction": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the session represents real production traffic. Defaults to true when testCaseId is omitted and false when testCaseId is set. May be set explicitly to false without a testCaseId for externally-ingested sessions (e.g. trace imports)."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "nullable": true
+                }
+              },
+              {
+                "nullable": true
+              }
+            ],
+            "description": "Additional context for the session. Accepts a plain string or a structured JSON object. Forbidden when testCaseId is set (the context is derived from the test case)."
+          },
+          "metadata": {
+            "nullable": true,
+            "description": "Arbitrary metadata, stored as sent.",
+            "example": {
+              "key": "value"
+            }
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "FAILED",
+              null
+            ],
+            "default": "PENDING",
+            "description": "Initial session status. Defaults to PENDING (open, accepts new turns); the session closes on an explicit finish or the product auto-close sweep."
+          },
+          "runId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Run to attribute this session to, so several sessions a client creates are grouped together. It must name a run you opened with POST /runs: a run a platform launch opened settles with that launch and is rejected here, as is a deleted, finished, other-product or other-version run. Forbidden when isProduction is true.",
+            "example": "run_123"
+          }
+        }
+      },
       "TraceImportUpload": {
         "type": "object",
         "properties": {
@@ -13051,110 +14047,6 @@
           "deletedAt"
         ]
       },
-      "SessionUpdate": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "session_123"
-          },
-          "customId": {
-            "type": "string",
-            "nullable": true,
-            "example": "custom_session_123"
-          },
-          "versionId": {
-            "type": "string",
-            "example": "ver_123"
-          },
-          "userId": {
-            "type": "string",
-            "nullable": true,
-            "example": "user_123"
-          },
-          "testCaseId": {
-            "type": "string",
-            "nullable": true,
-            "example": "tc_123"
-          },
-          "context": {
-            "type": "object",
-            "nullable": true,
-            "additionalProperties": {
-              "nullable": true
-            },
-            "description": "Structured context data. For plain text context, format is { value: \"...\" }",
-            "example": {
-              "value": "Session context information"
-            }
-          },
-          "stoppingReason": {
-            "type": "string",
-            "nullable": true,
-            "example": "GOAL_ACHIEVED"
-          },
-          "recordingUri": {
-            "type": "string",
-            "nullable": true,
-            "description": "Storage URI of the full-call recording for a telephony-evaluation session, returned under `STORAGE_PUBLIC_BASE_URL` when the deployment configures one. Null for non-telephony sessions or before the recording is processed. Resolve to a playable URL via GET /storage?uri=.",
-            "example": "https://files.galtea.ai/audio/org_123/session_abc-recording.mp3"
-          },
-          "error": {
-            "type": "string",
-            "nullable": true,
-            "example": "External API responded with HTTP 422: Unprocessable Entity \u2014 {\"detail\":\"model not found\"}"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "FAILED"
-            ],
-            "example": "PENDING"
-          },
-          "isProduction": {
-            "type": "boolean",
-            "description": "True when the session represents real production traffic (no associated test case).",
-            "example": false
-          },
-          "isSeed": {
-            "type": "boolean",
-            "readOnly": true,
-            "description": "True when the session holds the predefined conversation of a test case and is never executed. Server-managed and read-only.",
-            "example": false
-          },
-          "metadata": {
-            "nullable": true,
-            "description": "Arbitrary metadata, returned as stored. Usually an object, but any JSON value is accepted.",
-            "example": {
-              "key": "value"
-            }
-          },
-          "runId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The run that created this session. Null for a session created outside a launch (production traffic, an imported trace). A session a run only scored names no run here; filter with `involvedInRunIds` to reach those too.",
-            "example": "run_123"
-          },
-          "endUser": {
-            "type": "string",
-            "nullable": true,
-            "readOnly": true,
-            "description": "The end user of the session, set by OTel ingest from the first trace that names one. Read-only.",
-            "example": "customer_42"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          }
-        }
-      },
       "SessionListItem": {
         "type": "object",
         "properties": {
@@ -13282,6 +14174,117 @@
           "deletedAt",
           "turnCount"
         ]
+      },
+      "SessionUpdate": {
+        "type": "object",
+        "properties": {
+          "customId": {
+            "type": "string",
+            "nullable": true,
+            "example": "custom_session_123"
+          },
+          "stoppingReason": {
+            "type": "string",
+            "nullable": true,
+            "example": "GOAL_ACHIEVED"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": "External API responded with HTTP 422"
+          },
+          "recordingUri": {
+            "type": "string",
+            "nullable": true,
+            "example": "audio/org_123/session_abc-recording.mp3"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "FAILED"
+            ],
+            "example": "COMPLETED"
+          },
+          "metadata": {
+            "nullable": true,
+            "description": "Arbitrary metadata, stored as sent.",
+            "example": {
+              "key": "value"
+            }
+          },
+          "id": {
+            "type": "string",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "versionId": {
+            "type": "string",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "testCaseId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "context": {
+            "type": "object",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "isProduction": {
+            "type": "boolean",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "runId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          },
+          "deletedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Deprecated and ignored: an update never wrote this field.",
+            "deprecated": true,
+            "x-sunset": "2028-01-17",
+            "x-replacement": null
+          }
+        }
       },
       "BuildInfo": {
         "type": "object",
@@ -13420,6 +14423,29 @@
           "url"
         ]
       },
+      "FileLimits": {
+        "type": "object",
+        "properties": {
+          "turnTotalBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Largest total size, in bytes, of the files that one input or output of a turn may carry. The same value bounds each file, because the total is the only size check.",
+            "example": 20971520
+          },
+          "turnMaxFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Most files that one input or output of a turn may carry.",
+            "example": 20
+          }
+        },
+        "required": [
+          "turnTotalBytes",
+          "turnMaxFiles"
+        ]
+      },
       "PlatformCompatibility": {
         "type": "object",
         "properties": {
@@ -13431,6 +14457,16 @@
           },
           "docs": {
             "$ref": "#/components/schemas/PlatformDocs"
+          },
+          "fileLimits": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FileLimits"
+              },
+              {
+                "description": "What this deployment lets one turn carry in files. The defaults are 20 files and 20 MB in total, and they are configurable. A deployment older than this field has those two limits fixed, so a client that finds it absent may apply 20 files and 20 MB."
+              }
+            ]
           },
           "sdk": {
             "$ref": "#/components/schemas/ClientCompatibility"
@@ -14260,575 +15296,6 @@
           "userName",
           "userEmail",
           "createdAt"
-        ]
-      },
-      "UsageReportUser": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string",
-            "description": "Only with `peopleDetail` `names`. Never an email."
-          }
-        },
-        "required": [
-          "userId"
-        ]
-      },
-      "UsageReportCreatedCounts": {
-        "type": "object",
-        "properties": {
-          "versions": {
-            "type": "integer",
-            "description": "Versions created in the window"
-          },
-          "tests": {
-            "type": "integer",
-            "description": "Tests created in the window"
-          },
-          "testCases": {
-            "type": "integer",
-            "description": "Test cases created in the window"
-          },
-          "specifications": {
-            "type": "integer",
-            "description": "Specifications created in the window"
-          },
-          "runs": {
-            "type": "integer",
-            "description": "Runs created in the window"
-          },
-          "sessions": {
-            "type": "integer",
-            "description": "Sessions created in the window, seed sessions left out"
-          },
-          "evaluations": {
-            "type": "integer",
-            "description": "Evaluations created in the window"
-          }
-        },
-        "required": [
-          "versions",
-          "tests",
-          "testCases",
-          "specifications",
-          "runs",
-          "sessions",
-          "evaluations"
-        ]
-      },
-      "UsageReportUserCount": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "count": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "user",
-          "count"
-        ]
-      },
-      "UsageReportSourceStatus": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "ok",
-              "unavailable",
-              "failed"
-            ]
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "not_configured",
-              "not_requested",
-              "timeout",
-              "upstream_error"
-            ],
-            "description": "Why the source is not `ok`. `unavailable`: `not_configured` or `not_requested`. `failed`: `timeout` or `upstream_error`."
-          }
-        },
-        "required": [
-          "status"
-        ]
-      },
-      "UsageReportProduct": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "lastActivityAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "The latest external activity before the window end, looking back 180 days."
-          },
-          "created": {
-            "$ref": "#/components/schemas/UsageReportCreatedCounts"
-          },
-          "sessionsByUser": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportUserCount"
-            },
-            "description": "Empty with `peopleDetail` `aggregate`."
-          },
-          "evaluationsByUser": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportUserCount"
-            },
-            "description": "Empty with `peopleDetail` `aggregate`."
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "lastActivityAt",
-          "created",
-          "sessionsByUser",
-          "evaluationsByUser"
-        ]
-      },
-      "UsageReportClientTypes": {
-        "type": "object",
-        "properties": {
-          "dashboard": {
-            "type": "integer"
-          },
-          "sdk": {
-            "type": "integer"
-          },
-          "cli": {
-            "type": "integer"
-          },
-          "api": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "dashboard",
-          "sdk",
-          "cli",
-          "api"
-        ]
-      },
-      "UsageReportPerson": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "isStaff": {
-            "type": "boolean",
-            "description": "Platform staff, or a staff email domain the deployment names."
-          },
-          "created": {
-            "$ref": "#/components/schemas/UsageReportCreatedCounts"
-          },
-          "lastActivityAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          },
-          "clientTypes": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UsageReportClientTypes"
-              },
-              {
-                "description": "API requests per client, only when the `loki` source is `ok`."
-              }
-            ]
-          }
-        },
-        "required": [
-          "user",
-          "isStaff",
-          "created",
-          "lastActivityAt"
-        ]
-      },
-      "UsageReportVisitor": {
-        "type": "object",
-        "properties": {
-          "visitorRef": {
-            "type": "string"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "confidence": {
-            "type": "string",
-            "enum": [
-              "identified",
-              "high",
-              "low",
-              "conflict",
-              "none"
-            ]
-          },
-          "method": {
-            "type": "string",
-            "enum": [
-              "posthog_identified",
-              "write_minutes",
-              "audit_minutes"
-            ]
-          },
-          "pageviews": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "visitorRef",
-          "confidence",
-          "method",
-          "pageviews"
-        ]
-      },
-      "UsageReportDashboard": {
-        "type": "object",
-        "properties": {
-          "visitors": {
-            "type": "integer"
-          },
-          "sessions": {
-            "type": "integer"
-          },
-          "pageviews": {
-            "type": "integer"
-          },
-          "rageClicks": {
-            "type": "integer"
-          },
-          "errors": {
-            "type": "integer"
-          },
-          "visitorList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportVisitor"
-            },
-            "description": "Empty with `peopleDetail` `aggregate`."
-          }
-        },
-        "required": [
-          "visitors",
-          "sessions",
-          "pageviews",
-          "rageClicks",
-          "errors",
-          "visitorList"
-        ]
-      },
-      "UsageReportRecording": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          },
-          "startedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "activeSeconds": {
-            "type": "integer"
-          },
-          "durationSeconds": {
-            "type": "integer"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UsageReportUser"
-          },
-          "confidence": {
-            "type": "string",
-            "enum": [
-              "identified",
-              "high",
-              "low",
-              "conflict",
-              "none"
-            ]
-          }
-        },
-        "required": [
-          "url",
-          "startedAt",
-          "activeSeconds",
-          "durationSeconds",
-          "confidence"
-        ]
-      },
-      "UsageReportOrganization": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "segment": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "client",
-              "self_serve",
-              null
-            ],
-            "description": "Client or self-serve, where the deployment names its clients; null elsewhere."
-          },
-          "dataRegion": {
-            "type": "string",
-            "description": "Where the organization keeps its data, for example `EU`."
-          },
-          "lastActivityAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "The latest external activity before the window end, looking back 180 days."
-          },
-          "flags": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "first_evaluation",
-                "first_session_outside_run",
-                "back_after_quiet_week",
-                "quiet_14_days"
-              ]
-            },
-            "description": "`first_evaluation` and `first_session_outside_run`: the first in 180 days falls in the window. `back_after_quiet_week`: active in the window after 7 quiet days. `quiet_14_days`: no external activity in the 14 days before the window end."
-          },
-          "products": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportProduct"
-            },
-            "description": "Products with external activity in the window, most active first, at most 200."
-          },
-          "people": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportPerson"
-            },
-            "description": "Authors with activity in the window, staff included and marked, at most 200. Empty with `aggregate`."
-          },
-          "dashboard": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UsageReportDashboard"
-              },
-              {
-                "description": "Only when the `posthog` source is `ok`. Visitors the attribution names as staff (identified or high) are left out of every count and list."
-              }
-            ]
-          },
-          "recordings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportRecording"
-            },
-            "description": "Only when the `posthog` source is `ok`. Recordings of staff visitors are left out."
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "segment",
-          "dataRegion",
-          "lastActivityAt",
-          "flags",
-          "products",
-          "people"
-        ]
-      },
-      "UsageReportV1": {
-        "type": "object",
-        "properties": {
-          "schemaVersion": {
-            "type": "number",
-            "enum": [
-              1
-            ]
-          },
-          "generatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "window": {
-            "type": "object",
-            "properties": {
-              "from": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "to": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "timeZone": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "from",
-              "to",
-              "timeZone"
-            ]
-          },
-          "scope": {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "organization",
-                  "all"
-                ]
-              },
-              "organizationId": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "kind"
-            ]
-          },
-          "peopleDetail": {
-            "type": "string",
-            "enum": [
-              "aggregate",
-              "ids",
-              "names"
-            ]
-          },
-          "sources": {
-            "type": "object",
-            "properties": {
-              "db": {
-                "$ref": "#/components/schemas/UsageReportSourceStatus"
-              },
-              "posthog": {
-                "$ref": "#/components/schemas/UsageReportSourceStatus"
-              },
-              "loki": {
-                "$ref": "#/components/schemas/UsageReportSourceStatus"
-              }
-            },
-            "required": [
-              "db",
-              "posthog",
-              "loki"
-            ]
-          },
-          "excluded": {
-            "type": "object",
-            "properties": {
-              "organizations": {
-                "type": "integer",
-                "description": "Organizations the internal pattern left out that were active in the window"
-              },
-              "staffRows": {
-                "type": "integer",
-                "description": "Rows staff created in the window, left out of every organization and product count"
-              }
-            },
-            "required": [
-              "organizations",
-              "staffRows"
-            ],
-            "description": "Only for the `all` scope."
-          },
-          "organizations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageReportOrganization"
-            },
-            "description": "The organization asked for, or every organization with external activity in the window (and every client), most active first, then those only the `posthog` or `loki` source saw, at most 1,000. Counts leave out soft-deleted rows, seed sessions, demo clones and rows staff created."
-          },
-          "truncated": {
-            "type": "object",
-            "properties": {
-              "organizations": {
-                "type": "boolean"
-              },
-              "products": {
-                "type": "boolean"
-              },
-              "people": {
-                "type": "boolean"
-              },
-              "dashboard": {
-                "type": "boolean",
-                "description": "A `posthog` query answered its row limit, so some dashboard visits, or the evidence that names visitors, are missing."
-              },
-              "recordings": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "organizations",
-              "products",
-              "people",
-              "dashboard",
-              "recordings"
-            ]
-          }
-        },
-        "required": [
-          "schemaVersion",
-          "generatedAt",
-          "window",
-          "scope",
-          "peopleDetail",
-          "sources",
-          "organizations",
-          "truncated"
-        ]
-      },
-      "UsageReportPdf": {
-        "type": "object",
-        "properties": {
-          "downloadUrl": {
-            "type": "string",
-            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
-            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
-          }
-        },
-        "required": [
-          "downloadUrl"
-        ]
-      },
-      "UsageReportWithPdf": {
-        "type": "object",
-        "properties": {
-          "report": {
-            "$ref": "#/components/schemas/UsageReportV1"
-          },
-          "downloadUrl": {
-            "type": "string",
-            "description": "The stored PDF as a storage URI, not a link: exchange it for a short-lived link with `GET /storage/generate-get-presigned-url`. Only the caller's organization and cross-organization readers may.",
-            "example": "s3://galtea-files/reports/organization_abc/usage_0f1e2d.pdf"
-          }
-        },
-        "required": [
-          "report",
-          "downloadUrl"
         ]
       },
       "Prefer": {
@@ -19022,13 +19489,34 @@
             "description": "Datasets linked successfully"
           },
           "400": {
-            "description": "Invalid request body"
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Specification not found"
+            "description": "Specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -19083,13 +19571,34 @@
             "description": "Datasets unlinked successfully"
           },
           "400": {
-            "description": "Invalid request body"
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Specification not found"
+            "description": "Specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -19132,10 +19641,24 @@
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Specification not found"
+            "description": "Specification not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -21650,6 +22173,21 @@
                       "type": "string"
                     },
                     "description": "JSONPath expressions applied to a successful response. The result is returned in `extractedOutput`. It is not read from the stored connection."
+                  },
+                  "streamFormat": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "SSE",
+                      "NDJSON",
+                      ""
+                    ],
+                    "description": "How the agent frames a streamed reply. Null or an empty string reads one plain reply. Set together with streamAssembly. With an ID, the stored value applies when omitted."
+                  },
+                  "streamAssembly": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }
@@ -21786,6 +22324,14 @@
                     "extractionError": {
                       "type": "string",
                       "description": "Why the output mapping could not be applied."
+                    },
+                    "streamTruncated": {
+                      "type": "boolean",
+                      "description": "Present and true when the streamed reply closed before its terminal event, so `response` and `extractedOutput` hold the partial reply, as on a turn."
+                    },
+                    "timeToFirstToken": {
+                      "type": "number",
+                      "description": "Milliseconds from the start of the request to the first chunk of the streamed reply that carried text, as on a turn. Absent when the reply did not stream or carried no text."
                     }
                   }
                 }
@@ -22140,6 +22686,52 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/EndpointConnectionUpdate"
+              },
+              "examples": {
+                "Change a few fields": {
+                  "summary": "Change a few fields",
+                  "value": {
+                    "name": "My API Connection v2",
+                    "timeout": 60
+                  }
+                },
+                "Streamed reply, preset": {
+                  "summary": "Read a streamed reply with a preset",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "OPENAI_RESPONSES"
+                    }
+                  }
+                },
+                "Streamed reply, CUSTOM": {
+                  "summary": "Read a streamed reply with CUSTOM settings",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Back to a plain JSON reply": {
+                  "summary": "Read one JSON reply again",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.response"
+                    },
+                    "streamFormat": null,
+                    "streamAssembly": null
+                  }
+                }
               }
             }
           }
@@ -23578,663 +24170,6 @@
         }
       }
     },
-    "/sessions": {
-      "post": {
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Create session",
-        "description": "Create a new session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "operationId": "createSession",
-        "x-cli-name": "create",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Session created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "\"id\" was provided in the request body. Use \"customId\" instead; \"id\" is server-generated.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "operationId": "getSessions",
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Get sessions",
-        "description": "Get list of sessions with pagination and filtering. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cli-name": "list",
-        "parameters": [
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by session IDs"
-            },
-            "required": false,
-            "description": "Filter by session IDs",
-            "style": "form",
-            "explode": true,
-            "name": "ids",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by session custom IDs"
-            },
-            "required": false,
-            "description": "Filter by session custom IDs",
-            "style": "form",
-            "explode": true,
-            "name": "customIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by product IDs"
-            },
-            "required": false,
-            "description": "Filter by product IDs",
-            "style": "form",
-            "explode": true,
-            "name": "productIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test"
-            },
-            "required": false,
-            "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test",
-            "style": "form",
-            "explode": true,
-            "name": "testIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test"
-            },
-            "required": false,
-            "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test",
-            "style": "form",
-            "explode": true,
-            "name": "excludeTestIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by version IDs"
-            },
-            "required": false,
-            "description": "Filter by version IDs",
-            "style": "form",
-            "explode": true,
-            "name": "versionIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)"
-            },
-            "required": false,
-            "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)",
-            "style": "form",
-            "explode": true,
-            "name": "monitorIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
-              "maxItems": 10
-            },
-            "required": false,
-            "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
-            "style": "form",
-            "explode": true,
-            "name": "monitorAlertIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR."
-            },
-            "required": false,
-            "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR.",
-            "style": "form",
-            "explode": true,
-            "name": "specificationIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
-              "maxItems": 25
-            },
-            "required": false,
-            "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
-            "style": "form",
-            "explode": true,
-            "name": "failedSpecificationIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match."
-            },
-            "required": false,
-            "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match.",
-            "style": "form",
-            "explode": true,
-            "name": "userIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`."
-            },
-            "required": false,
-            "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`.",
-            "style": "form",
-            "explode": true,
-            "name": "runIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count."
-            },
-            "required": false,
-            "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count.",
-            "style": "form",
-            "explode": true,
-            "name": "involvedInRunIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by test case IDs"
-            },
-            "required": false,
-            "description": "Filter by test case IDs",
-            "style": "form",
-            "explode": true,
-            "name": "testCaseIds",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "maxLength": 255,
-              "description": "Only sessions whose end user is exactly this value. An empty value is no filter."
-            },
-            "required": false,
-            "description": "Only sessions whose end user is exactly this value. An empty value is no filter.",
-            "name": "endUser",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "boolean",
-              "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick."
-            },
-            "required": false,
-            "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick.",
-            "name": "isProduction",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "PENDING",
-                  "COMPLETED",
-                  "FAILED"
-                ]
-              },
-              "description": "Filter by session statuses. Multiple values combine as OR."
-            },
-            "required": false,
-            "description": "Filter by session statuses. Multiple values combine as OR.",
-            "style": "form",
-            "explode": true,
-            "name": "statuses",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label."
-            },
-            "required": false,
-            "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label.",
-            "style": "form",
-            "explode": true,
-            "name": "commentLabels",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters."
-            },
-            "required": false,
-            "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters.",
-            "style": "form",
-            "explode": true,
-            "name": "sort",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 9007199254740991,
-              "default": 10000,
-              "description": "Maximum number of results"
-            },
-            "required": false,
-            "description": "Maximum number of results",
-            "name": "limit",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "description": "Number of results to skip"
-            },
-            "required": false,
-            "description": "Number of results to skip",
-            "name": "offset",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "description": "Filter sessions created at or after this timestamp (ISO 8601 format)"
-            },
-            "required": false,
-            "description": "Filter sessions created at or after this timestamp (ISO 8601 format)",
-            "name": "fromCreatedAt",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "description": "Filter sessions created at or before this timestamp (ISO 8601 format)"
-            },
-            "required": false,
-            "description": "Filter sessions created at or before this timestamp (ISO 8601 format)",
-            "name": "toCreatedAt",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Sessions retrieved successfully",
-            "headers": {
-              "Content-Range": {
-                "schema": {
-                  "type": "string",
-                  "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
-                },
-                "required": true,
-                "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SessionListItem"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/sessions/{id}": {
-      "patch": {
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Update session",
-        "description": "Update an existing session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "operationId": "updateSession",
-        "x-cli-name": "update",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Session ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Session updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Session not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Delete session",
-        "description": "Soft delete a session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "operationId": "deleteSession",
-        "x-cli-name": "delete",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Session ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Session deleted successfully"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Session not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "operationId": "getSessionById",
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Get session by ID",
-        "description": "Get a specific session by ID. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cli-name": "get",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Session ID",
-              "example": "session_123"
-            },
-            "required": true,
-            "description": "Session ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Session retrieved successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/sessions/{id}/finish": {
       "patch": {
         "tags": [
@@ -24402,6 +24337,256 @@
         }
       }
     },
+    "/sessions/{id}": {
+      "delete": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Delete session",
+        "description": "Soft delete a session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "operationId": "deleteSession",
+        "x-cli-name": "delete",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Session ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getSessionById",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get session by ID",
+        "description": "Get a specific session by ID. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Session ID",
+              "example": "session_123"
+            },
+            "required": true,
+            "description": "Session ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateSession",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Update session",
+        "description": "Update an existing session. A field the body leaves out keeps its value. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "update",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Session ID",
+              "example": "session_123"
+            },
+            "required": true,
+            "description": "Session ID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated successfully. The body is the resource as its GET answers it.",
+            "headers": {
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No body: the client sent `Prefer: return=minimal`, or the read after the write failed.",
+            "headers": {
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: a malformed field, or a status outside the session statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/inferenceResults": {
       "get": {
         "tags": [
@@ -24514,7 +24699,7 @@
           {
             "name": "restoreFiles",
             "in": "query",
-            "description": "When true, each Galtea file token in the input and actualOutput of a returned trace is replaced by the file it names, read from the trace's organization, in the form it was sent in (a data URI, or raw base64 for a provider byte field). A file that is missing or over 20 MB keeps its token. The restored text of one response is at most 50 MB, else 400; ask for fewer traces with limit. By default each token is returned as stored text.\n",
+            "description": "When true, each Galtea file token in the input and actualOutput of a returned trace is replaced by the file it names, read from the trace's organization, in the form it was sent in (a data URI, or raw base64 for a provider byte field). A file that is missing or over the total file limit (20 MB by default) keeps its token. The restored text of one response is at most 50 MB, or the base64 size of the total file limit plus 1 MB when that is more, and the whole response is at most 512 MB, else 400; ask for fewer traces with limit. By default each token is returned as stored text.\n",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -24537,7 +24722,7 @@
             }
           },
           "400": {
-            "description": "Invalid sort, a sort on a field the caller sees as null, or restored files over the 50 MB budget",
+            "description": "Invalid sort, a sort on a field the caller sees as null, or restored files over the restore budget of the deployment (50 MB at the default limit), or restored files that take the whole response over 512 MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -24627,7 +24812,7 @@
                   "input": {
                     "type": "object",
                     "nullable": true,
-                    "description": "Structured input data. For plain text, use { user_message: \"...\" }. Each element of a `content` array is read on its own. A file part is a Galtea file when its uri names a Galtea storage key (`files/<organization>/<32 hex>.<extension>`, on any host): it is stored signature-free and checked as on a test case input (at most 20 files and 20 MB, an accepted file type, a file of this organization), otherwise 400. A Galtea file missing from storage is stored signature-free without its sizeBytes, and every other element as sent. With `INLINE_MEDIA_COPY_ENABLED` on, a binary file of 1,024 base64 characters or more, held in a data URI or in the byte field of a provider object, is stored as a Galtea file token instead."
+                    "description": "Structured input data. For plain text, use { user_message: \"...\" }. Each element of a `content` array is read on its own. A file part is a Galtea file when its uri names a Galtea storage key (`files/<organization>/<32 hex>.<extension>`, on any host): it is stored signature-free and checked as on a test case input (at most 20 files and 20 MB by default, an accepted file type, a file of this organization), otherwise 400. A Galtea file missing from storage is stored signature-free without its sizeBytes, and every other element as sent. With `INLINE_MEDIA_COPY_ENABLED` on, a binary file of 1,024 base64 characters or more, held in a data URI or in the byte field of a provider object, is stored as a Galtea file token instead."
                   },
                   "actualOutput": {
                     "oneOf": [
@@ -25040,7 +25225,7 @@
                       }
                     ],
                     "nullable": true,
-                    "description": "Agent input for this turn. Plain text by default; for voice, an envelope carrying audio content parts. Each element of a `content` array is read on its own. A file part is a Galtea file when its uri names a Galtea storage key (`files/<organization>/<32 hex>.<extension>`, on any host): it is stored signature-free and checked as on a test case input (at most 20 files and 20 MB, an accepted file type, a file of this organization), otherwise 400. A Galtea file missing from storage is stored signature-free without its sizeBytes, and every other element as sent. With `INLINE_MEDIA_COPY_ENABLED` on, a binary file of 1,024 base64 characters or more, held in a data URI or in the byte field of a provider object, is stored as a Galtea file token instead."
+                    "description": "Agent input for this turn. Plain text by default; for voice, an envelope carrying audio content parts. Each element of a `content` array is read on its own. A file part is a Galtea file when its uri names a Galtea storage key (`files/<organization>/<32 hex>.<extension>`, on any host): it is stored signature-free and checked as on a test case input (at most 20 files and 20 MB by default, an accepted file type, a file of this organization), otherwise 400. A Galtea file missing from storage is stored signature-free without its sizeBytes, and every other element as sent. With `INLINE_MEDIA_COPY_ENABLED` on, a binary file of 1,024 base64 characters or more, held in a data URI or in the byte field of a provider object, is stored as a Galtea file token instead."
                   },
                   "status": {
                     "type": "string",
@@ -25718,7 +25903,7 @@
             }
           },
           "400": {
-            "description": "A field is invalid, or a `file` part of `inputData` or `outputData` names a Galtea file the rules refuse: a file of another organization, more than 20 files or 20 MB, or a refused type.",
+            "description": "A field is invalid, or a `file` part of `inputData` or `outputData` names a Galtea file the rules refuse: a file of another organization, more than the files or bytes the deployment allows (20 files and 20 MB by default), or a refused type.",
             "content": {
               "application/json": {
                 "schema": {
@@ -30695,7 +30880,7 @@
         "operationId": "getPlatformCompatibility",
         "tags": [],
         "summary": "Platform compatibility",
-        "description": "The platform release this API runs, the address of its docs, the latest SDK and CLI releases built with it, and the SDK and CLI major versions it supports, so a client can tell whether it is compatible. Requires authentication; open to every authenticated user.",
+        "description": "The platform release this API runs, the address of its docs, the total size and number of files one turn may carry, the latest SDK and CLI releases built with it, and the SDK and CLI major versions it supports, so a client can tell whether it is compatible. Requires authentication; open to every authenticated user.",
         "security": [
           {
             "bearerAuth": []
@@ -33455,6 +33640,536 @@
         }
       }
     },
+    "/sessions": {
+      "get": {
+        "operationId": "getSessions",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get sessions",
+        "description": "Get list of sessions with pagination and filtering. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list",
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by session IDs"
+            },
+            "required": false,
+            "description": "Filter by session IDs",
+            "style": "form",
+            "explode": true,
+            "name": "ids",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by session custom IDs"
+            },
+            "required": false,
+            "description": "Filter by session custom IDs",
+            "style": "form",
+            "explode": true,
+            "name": "customIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by product IDs"
+            },
+            "required": false,
+            "description": "Filter by product IDs",
+            "style": "form",
+            "explode": true,
+            "name": "productIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test"
+            },
+            "required": false,
+            "description": "Filter by test IDs (include only). Use an empty string (\"\") to select sessions without a test",
+            "style": "form",
+            "explode": true,
+            "name": "testIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test"
+            },
+            "required": false,
+            "description": "Omit sessions linked to the specified test IDs. Use an empty string (\"\") to omit sessions without a test",
+            "style": "form",
+            "explode": true,
+            "name": "excludeTestIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by version IDs"
+            },
+            "required": false,
+            "description": "Filter by version IDs",
+            "style": "form",
+            "explode": true,
+            "name": "versionIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)"
+            },
+            "required": false,
+            "description": "Filter by monitor IDs (returns only sessions scored by the given monitors)",
+            "style": "form",
+            "explode": true,
+            "name": "monitorIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
+              "maxItems": 10
+            },
+            "required": false,
+            "description": "Filter by monitor alert IDs (returns only the sessions the alert linked when it opened (its bad sessions, or its sessions with no score); a session deleted since is left out). At most 10 IDs.",
+            "style": "form",
+            "explode": true,
+            "name": "monitorAlertIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR."
+            },
+            "required": false,
+            "description": "Filter by the specifications a session relates to. A session relates to a specification in two ways, and either one matches: it runs a test case of a test linked to that specification, or it carries an evaluation whose metric is linked to that specification. Multiple values combine as OR.",
+            "style": "form",
+            "explode": true,
+            "name": "specificationIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
+              "maxItems": 25
+            },
+            "required": false,
+            "description": "Filter by the specifications a session failed, with the rule of the analytics reads: the session carries a scored evaluation of a metric linked to the specification that did not pass the metric's threshold, where a reviewer's score wins over the judge's. Metric revisions excluded from analytics and versions that are deleted, or of another product than the specification's, do not count. Multiple values combine as OR. At most 25 IDs. Answers 400 when the specifications failed more than 10000 sessions within the caller's read scope, `ids`, `productIds`, `versionIds`, `isProduction`, `fromCreatedAt` and `toCreatedAt`, so narrow the period. Deleted sessions do not count, and seed sessions count only when named in `ids`.",
+            "style": "form",
+            "explode": true,
+            "name": "failedSpecificationIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match."
+            },
+            "required": false,
+            "description": "Filter by the id of the user who launched the session. A production session has no launcher and never matches this filter. An OTel-ingested session is production unless its spans name a test case; that one records the user of the API key that sent the traces, so it does match.",
+            "style": "form",
+            "explode": true,
+            "name": "userIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`."
+            },
+            "required": false,
+            "description": "Filter by the runs that CREATED the sessions. A session created outside a launch (production traffic, an imported trace) has no run and never matches. To also reach the sessions a run only scored, use `involvedInRunIds`.",
+            "style": "form",
+            "explode": true,
+            "name": "runIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count."
+            },
+            "required": false,
+            "description": "Filter by the runs a session relates to either way, as an OR: the run created the session, or the run scored it through one of its evaluations. This is the set a run reports as its session count.",
+            "style": "form",
+            "explode": true,
+            "name": "involvedInRunIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by test case IDs"
+            },
+            "required": false,
+            "description": "Filter by test case IDs",
+            "style": "form",
+            "explode": true,
+            "name": "testCaseIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "Only sessions whose end user is exactly this value. An empty value is no filter."
+            },
+            "required": false,
+            "description": "Only sessions whose end user is exactly this value. An empty value is no filter.",
+            "name": "endUser",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick."
+            },
+            "required": false,
+            "description": "Filter by the session's `isProduction` flag. Prefer this over the legacy `testIds`/`excludeTestIds` empty-string trick.",
+            "name": "isProduction",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "COMPLETED",
+                  "FAILED"
+                ]
+              },
+              "description": "Filter by session statuses. Multiple values combine as OR."
+            },
+            "required": false,
+            "description": "Filter by session statuses. Multiple values combine as OR.",
+            "style": "form",
+            "explode": true,
+            "name": "statuses",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label."
+            },
+            "required": false,
+            "description": "Filter by comment state. `__any__` matches sessions with at least one comment, `__none__` matches sessions with no comment, and any other value matches sessions with a comment carrying that label. All values combine as OR, so `__none__` plus a label returns sessions that have no comment OR carry that label.",
+            "style": "form",
+            "explode": true,
+            "name": "commentLabels",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters."
+            },
+            "required": false,
+            "description": "Sort instructions (field and direction pairs). A sort that names `turnCount` may name only these fields: `turnCount`, `createdAt`, `id`, `stoppingReason`, `testCaseId`, `versionId`, `context`. It answers 400 when more than 50000 sessions match the filters.",
+            "style": "form",
+            "explode": true,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 10000,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Filter sessions created at or after this timestamp (ISO 8601 format)"
+            },
+            "required": false,
+            "description": "Filter sessions created at or after this timestamp (ISO 8601 format)",
+            "name": "fromCreatedAt",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Filter sessions created at or before this timestamp (ISO 8601 format)"
+            },
+            "required": false,
+            "description": "Filter sessions created at or before this timestamp (ISO 8601 format)",
+            "name": "toCreatedAt",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved successfully",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `sessions <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionListItem"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createSession",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Create session",
+        "description": "Create a new session. See [Sessions](https://docs.galtea.ai/concepts/product/version/session).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "create",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Prefer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SessionCreate"
+                  },
+                  {
+                    "description": "Session creation input. `versionId` is optional: when omitted, provide `productId` and the API reuses the product's latest version (creating a default first version if the product has none). One of `versionId` or `productId` is required. `testCaseId` and `isProduction` are independent: a session can be production (no testCaseId), test-driven non-production (testCaseId set, isProduction defaults to false), or externally-ingested non-production (no testCaseId, isProduction explicitly false, typical for imported traces). The only forbidden combination is `testCaseId` set together with `isProduction=true`. When `testCaseId` is set, `context` is rejected because it would be derived from the test case."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session created successfully. On `Prefer: return=minimal`, or when the read after the write fails, the answer has no body.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the new resource"
+                },
+                "required": true,
+                "description": "The path of the new resource"
+              },
+              "Content-Location": {
+                "schema": {
+                  "type": "string",
+                  "description": "The path of the resource in the body; absent when there is no body"
+                },
+                "required": false,
+                "description": "The path of the resource in the body; absent when there is no body"
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "return=minimal"
+                  ],
+                  "description": "Present when the API honored `Prefer: return=minimal`"
+                },
+                "required": false,
+                "description": "Present when the API honored `Prefer: return=minimal`"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: a malformed field, a status outside the session statuses, or an internal field (\"id\", \"launchedRunId\")",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Version, product, test case or run not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/sessions/import": {
       "post": {
         "operationId": "importSessions",
@@ -33996,6 +34711,67 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/EndpointConnectionCreate"
+              },
+              "examples": {
+                "Plain JSON reply": {
+                  "summary": "An agent that answers with one JSON reply",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.response"
+                    }
+                  }
+                },
+                "Streamed reply, preset": {
+                  "summary": "A streaming agent of a stack that has a preset",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/responses",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"model\": \"my-agent\", \"stream\": true, \"input\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "OPENAI_RESPONSES"
+                    }
+                  }
+                },
+                "Streamed reply, CUSTOM": {
+                  "summary": "A streaming agent with no preset: CUSTOM settings",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "terminalEvent": "done"
+                    }
+                  }
+                }
               }
             }
           }
@@ -34046,6 +34822,47 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpointConnections/streamPresets": {
+      "get": {
+        "operationId": "listEndpointConnectionStreamPresets",
+        "tags": [
+          "endpoint-connections"
+        ],
+        "summary": "List stream assembly presets",
+        "description": "The agent stacks a streamed connection can name in streamAssembly.preset, each with the stream format it needs, the settings it fills today, and the vendor documentation and day they come from. See [Endpoint Connections](https://docs.galtea.ai/concepts/product/endpoint-connection).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "list-stream-presets",
+        "responses": {
+          "200": {
+            "description": "The stream assembly presets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StreamAssemblyPreset"
+                  }
                 }
               }
             }
@@ -38105,6 +38922,79 @@
         }
       }
     },
+    "/v2/revisions/{id}/annotated-case-count": {
+      "get": {
+        "operationId": "getRevisionAnnotatedCaseCount",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Count the annotated cases a revision would score",
+        "description": "How many annotated cases of the revision's metric the revision has not scored yet, in the products where the caller may read and create evaluations and create runs, and the credits scoring them costs. A case whose evaluation by this revision succeeded or is pending is not counted. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get-annotated-case-count",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The cases to score and their credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionAnnotatedCaseCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The revision's metric is outside the products the caller's user groups grant, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/revisions/{id}/exclude-from-analytics": {
       "post": {
         "operationId": "excludeRevisionFromAnalytics",
@@ -38546,6 +39436,89 @@
           },
           "404": {
             "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/evaluate-annotated-cases": {
+      "post": {
+        "operationId": "evaluateRevisionOnAnnotatedCases",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Evaluate a revision on the annotated cases of its metric",
+        "description": "Score every annotated case of the revision's metric that the revision has not scored yet, in the products where the caller may read and create evaluations and create runs. A case whose evaluation by this revision succeeded or is pending is left alone, so a repeated call charges nothing twice, and a call made while another one is still running answers 409. Each evaluation costs credits as any evaluation does. Opens one run per product; follow the evaluations of `runIds` to see the scores arrive. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "evaluate-annotated-cases",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read its active revision under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read its active revision under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "The evaluations were admitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionAnnotatedCasesEvaluation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The revision's metric is outside the products the caller's user groups grant, or the caller may create evaluations in no product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another call is already evaluating the annotated cases of this revision",
             "content": {
               "application/json": {
                 "schema": {

@@ -12,7 +12,6 @@ Calls in this release that behave differently from the API reference, and what w
 
 - **Some `--help` input examples list fields the call refuses.** They show read-only fields such as `id`, `createdAt` or `metricIds`, and the API refuses them with a `400`. On `specifications update`, link metrics with `specifications link-metrics` instead. {/* #6126 */}
 - **A list field sent as one string can answer `500` instead of `400`.** For example `testIds` on `traces generate`. Send a list, such as `[<id>]`. {/* #7502 */}
-- **Error bodies are not uniform.** Most routes put the error text in `message`, some in `error`. {/* #6227 */}
 
 ## Datasets
 

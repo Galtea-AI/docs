@@ -1,0 +1,75 @@
+---
+title: 'Version Service'
+sidebarTitle: "Service"
+description: "Version Service API methods in the Galtea SDK"
+---
+
+import VersionCard from '/v5.21/snippets/cards/version-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.21. [Read this page in the latest version](/sdk/api/version/service).
+</Warning>
+
+The Version Service in the Galtea SDK allows you to manage different iterations of your [products](/v5.21/concepts/product) through [versions](/v5.21/concepts/product/version).
+This Service is exposed by the `galtea.versions` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.21/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Get the version that holds an agent state, or create it:
+```python
+nightly_facts = {"model": "gpt-4o-mini", "prompt_version": "12"}
+
+nightly_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    name="Nightly build " + run_identifier,
+    auto_detect_commit_hash=True,
+)
+
+# The same facts always answer the same version, so a second job reuses the first one.
+same_version = galtea.versions.get_or_create(
+    product_id=product_id,
+    facts=nightly_facts,
+    auto_detect_commit_hash=True,
+)
+```
+
+Create a version when you need to set other fields, such as a system prompt or an endpoint connection:
+```python
+version = galtea.versions.create(
+    product_id=product_id,
+    description="Demo version created via SDK",
+)
+```
+
+List versions for a product:
+```python
+versions = galtea.versions.list(product_id=product_id, limit=5)
+```
+
+Get a version by ID:
+```python
+version = galtea.versions.get(version_id=version_id)
+```
+
+## Service Methods
+- [Get or Create Version](/v5.21/sdk/api/version/get-or-create)
+- [Create Version](/v5.21/sdk/api/version/create)
+- [Listing Versions](/v5.21/sdk/api/version/list)
+- [Retrieving Version](/v5.21/sdk/api/version/get)
+- [Retrieving Version By Name](/v5.21/sdk/api/version/get-by-name)
+- [Updating Version](/v5.21/sdk/api/version/update)
+- [Deleting Version](/v5.21/sdk/api/version/delete)
+
+## Related
+
+<VersionCard />

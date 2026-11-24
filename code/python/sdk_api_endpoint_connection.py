@@ -6,7 +6,14 @@ Demonstrates how to create, list, get, update, delete, and test endpoint connect
 from datetime import datetime
 
 from _test_helpers import create_test_product
-from galtea import EndpointConnectionType, Galtea
+from galtea import (
+    EndpointConnectionType,
+    Galtea,
+    StreamAssembly,
+    StreamAssemblyMode,
+    StreamAssemblyPreset,
+    StreamFormat,
+)
 
 run_identifier = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
@@ -38,6 +45,55 @@ if endpoint_connection is None:
     raise ValueError("endpoint_connection is None")
 
 endpoint_connection_id = endpoint_connection.id
+
+# @start create_streaming
+streaming_connection = galtea.endpoint_connections.create(
+    name="streaming-chat-api-" + run_identifier,
+    product_id=product_id,
+    url="https://api.example.com/v1/chat/completions",
+    type=EndpointConnectionType.CONVERSATION,
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    input_template='{"model": "my-agent", "stream": true, "messages": [{"role": "user", "content": "{{ input.user_message }}"}]}',
+    # The output mapping reads the joined reply: { text, byEvent, final }.
+    output_mapping={"output": "$.text"},
+    stream_format=StreamFormat.SSE,
+    stream_assembly=StreamAssembly(preset=StreamAssemblyPreset.OPENAI_CHAT_COMPLETIONS),
+)
+# @end create_streaming
+
+if streaming_connection is None:
+    raise ValueError("streaming_connection is None")
+assert streaming_connection.stream_format == StreamFormat.SSE
+assert streaming_connection.stream_assembly.preset == StreamAssemblyPreset.OPENAI_CHAT_COMPLETIONS
+
+# @start create_streaming_custom
+custom_streaming_connection = galtea.endpoint_connections.create(
+    name="custom-streaming-api-" + run_identifier,
+    product_id=product_id,
+    url="https://api.example.com/v1/chat",
+    type=EndpointConnectionType.CONVERSATION,
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    input_template='{"message": "{{ input.user_message }}"}',
+    output_mapping={"output": "$.text"},
+    stream_format=StreamFormat.SSE,
+    # No preset fits this agent, so the settings say where the text is and how to join it.
+    stream_assembly=StreamAssembly(
+        preset=StreamAssemblyPreset.CUSTOM,
+        text_path="$.delta",
+        mode=StreamAssemblyMode.APPEND,
+        terminal_event="done",
+    ),
+)
+# @end create_streaming_custom
+
+if custom_streaming_connection is None:
+    raise ValueError("custom_streaming_connection is None")
+assert custom_streaming_connection.stream_assembly.preset == StreamAssemblyPreset.CUSTOM
+assert custom_streaming_connection.stream_assembly.text_path == "$.delta"
+assert custom_streaming_connection.stream_assembly.mode == StreamAssemblyMode.APPEND
+assert custom_streaming_connection.stream_assembly.terminal_event == "done"
 
 # @start list
 endpoint_connections = galtea.endpoint_connections.list(
@@ -88,12 +144,30 @@ try:
         timeout=30,
     )
     # @end test_no_id
-except Exception:
-    pass
+
+    # @start test_streaming
+    test_result = galtea.endpoint_connections.test(id=streaming_connection.id)
+    # On a streamed reply, test_result.response is the joined object { text, byEvent, final }.
+    # @end test_streaming
+except Exception as error:
+    print(f"test() did not reach the example endpoint: {error}")
+
+# @start update_streaming_off
+streaming_connection = galtea.endpoint_connections.update(
+    endpoint_connection_id=streaming_connection.id,
+    stream_format=None,
+    stream_assembly=None,
+)
+# @end update_streaming_off
+
+assert streaming_connection.stream_format is None
+assert streaming_connection.stream_assembly is None
 
 # @start delete
 galtea.endpoint_connections.delete(endpoint_connection_id=endpoint_connection_id)
 # @end delete
+galtea.endpoint_connections.delete(endpoint_connection_id=streaming_connection.id)
+galtea.endpoint_connections.delete(endpoint_connection_id=custom_streaming_connection.id)
 
 # === Cleanup ===
 galtea.products.delete(product_id=product_id)

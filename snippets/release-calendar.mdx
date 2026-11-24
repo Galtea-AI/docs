@@ -1,0 +1,127 @@
+{/* `MajorsTable`, `NextWindows` and `LifecycleChart` draw `releaseCalendar` from snippets/release-calendar-data.mdx, which scripts/release_calendar.py writes at build time; they only place and format its dates. The data changes when a release ships or a window passes. */}
+
+export const formatDay = (iso) => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const [year, month, day] = iso.split("-").map(Number);
+  return `${day} ${months[month - 1]} ${year}`;
+};
+
+{/* A snippet component cannot render another snippet component in Mintlify, so each one inlines this note. */}
+export const calendarMissing = "This copy of the docs has no release calendar. The dates are on docs.galtea.ai/release-calendar.";
+
+export const NextWindows = ({ calendar }) =>
+  calendar ? (
+    <p>
+      The next two release windows are on <strong>{formatDay(calendar.nextWindows[0])}</strong> and{" "}
+      <strong>{formatDay(calendar.nextWindows[1])}</strong>.
+    </p>
+  ) : (
+    <Note>
+      {calendarMissing}
+    </Note>
+  );
+
+export const MajorsTable = ({ calendar }) =>
+  calendar && calendar.majors.length > 0 ? (
+    <table>
+      <thead>
+        <tr>
+          <th>Major</th>
+          <th>Released</th>
+          <th>Maintained version</th>
+          <th>Fixes ship as</th>
+          <th>End of life</th>
+        </tr>
+      </thead>
+      <tbody>
+        {calendar.majors.map((entry) => (
+          <tr key={entry.major}>
+            <td>
+              <strong>{entry.major}</strong>
+            </td>
+            <td>{formatDay(entry.released)}</td>
+            <td>
+              <code>{entry.maintained}</code>
+            </td>
+            <td>{entry.newest ? "New minors" : "Monthly patches"}</td>
+            <td>
+              {entry.endsOn
+                ? formatDay(entry.endsOn)
+                : `Not before ${formatDay(entry.worksUntilAtLeast)}. Set when the next major ships.`}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ) : (
+    <Note>
+      {calendarMissing}
+    </Note>
+  );
+
+export const LifecycleChart = ({ calendar }) => {
+  if (!calendar || calendar.majors.length === 0) {
+    return (
+      <Note>
+        {calendarMissing}
+      </Note>
+    );
+  }
+  const newestColor = "#1f6f8b";
+  const olderColor = "#8cc4d6";
+  const windowColor = "#c2610c";
+  const day = (iso) => Date.parse(`${iso}T00:00:00Z`);
+  const first = calendar.majors[0].released;
+  const last = calendar.windows[calendar.windows.length - 1];
+  const left = 70;
+  const width = 640;
+  const right = 210;
+  const top = 18;
+  const rowHeight = 36;
+  const height = top + calendar.majors.length * rowHeight + 26;
+  const x = (iso) => left + ((day(iso) - day(first)) / (day(last) - day(first))) * (width - left - right);
+  const short = (iso) => formatDay(iso).split(" ").slice(1).join(" ");
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ minWidth: "560px", width: "100%", height: "auto", fontSize: "12px" }}
+        role="img"
+        aria-label="Each compatible major from its release to its end of life, against the release windows"
+      >
+        {calendar.windows.map((iso) => (
+          <g key={iso}>
+            <line x1={x(iso)} x2={x(iso)} y1={top - 6} y2={height - 22} stroke={windowColor} strokeDasharray="3 3" />
+            <text x={x(iso)} y={height - 6} textAnchor="middle" fill="currentColor" fillOpacity="0.7">
+              {short(iso)}
+            </text>
+          </g>
+        ))}
+        {calendar.majors.map((entry, index) => {
+          const y = top + index * rowHeight;
+          const newestUntil = entry.nextMajorReleased || entry.worksUntilAtLeast;
+          const end = entry.endsOn || entry.worksUntilAtLeast;
+          return (
+            <g key={entry.major}>
+              <text x="0" y={y + 16} fill="currentColor">
+                {`Major ${entry.major}`}
+              </text>
+              <rect x={x(entry.released)} y={y} width={x(newestUntil) - x(entry.released)} height="22" fill={newestColor} />
+              {entry.nextMajorReleased ? (
+                <rect x={x(newestUntil)} y={y} width={x(end) - x(newestUntil)} height="22" fill={olderColor} />
+              ) : null}
+              <text x={x(end) + 6} y={y + 16} fill="currentColor">
+                {entry.endsOn ? `EOL ${short(end)}` : `EOL not before ${short(end)}`}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <p style={{ fontSize: "0.85em" }}>
+        <span style={{ color: newestColor }}>■</span> Newest major: new minors.{" "}
+        <span style={{ color: olderColor }}>■</span> Older major: every minor compatible, monthly patches on the latest
+        minor. <span style={{ color: windowColor }}>┆</span> Release window.
+      </p>
+    </div>
+  );
+};

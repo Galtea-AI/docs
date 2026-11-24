@@ -4,6 +4,8 @@ sidebarTitle: "Update"
 description: "Update an existing session with metadata and status information"
 ---
 
+import { Deprecated } from '/snippets/version-tags.mdx';
+
 ## Overview
 
 The `update()` method allows you to modify an existing session after it has been created. This is useful when you need to update session metadata, status, or other properties.
@@ -23,7 +25,11 @@ The `update()` method allows you to modify an existing session after it has been
 </ResponseField>
 
 <ResponseField name="context" type="string" optional>
-  The context provided to the AI product during the session or ground-truth related context.
+  Ignored. The API never stored a context sent on an update. Set the context when you [create the session](/sdk/api/session/create).
+
+  <Deprecated name="context" removal="2028-01-17">
+    Passing it warns, and the API deprecates it on `PATCH /sessions/{id}`.
+  </Deprecated>
 </ResponseField>
 
 <ResponseField name="stopping_reason" type="string" optional>
@@ -90,7 +96,8 @@ galtea.sessions.update(
 <Note>
   All fields except `session_id` default to `PydanticUndefined` (from `pydantic_core`).
   Omit a field (or pass `PydanticUndefined`) to leave it unchanged.
-  Pass `None` to explicitly clear an optional field.
+  Pass `None` to clear `custom_id`, `stopping_reason`, `metadata` or `error`.
+  A session always has a status, so `status=None` is refused with a 400.
   Pass a value to update it.
 </Note>
 

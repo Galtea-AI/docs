@@ -1,0 +1,157 @@
+---
+title: 'Create Trace'
+sidebarTitle: "Create"
+description: "Create a new trace log in a session."
+---
+
+import JudgeFileRule from '/v5.21/snippets/judge-file-rule.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.21. [Read this page in the latest version](/sdk/api/trace/create).
+</Warning>
+
+## Returns
+Returns a [Trace](/v5.21/concepts/product/version/session/trace) object.
+
+## Example
+```python
+trace = galtea.traces.create(
+    session_id=session_id,
+    input="What is the capital of France?",
+    output="Paris",
+    latency=150.5,
+)
+```
+
+### Answering with a file
+
+For a product whose answer is a document, name the local files and the SDK uploads them:
+
+```python
+trace = galtea.traces.create(
+    session_id=session.id,
+    input="Draft the lease agreement we discussed",
+    output="Here is the draft you asked for.",
+    output_file_paths=["path/to/lease-agreement.pdf"],
+)
+```
+
+Leave `output` out when the file is the whole answer:
+
+```python
+document_only = galtea.traces.create(
+    session_id=session.id,
+    input="Send me the signed copy",
+    output_file_paths=["path/to/lease-agreement.pdf"],
+)
+```
+
+### Reading a document as input
+
+For a product that reads documents, name the local files and the SDK uploads them. Galtea stores each file without its upload signature, so the trace keeps working after the upload link expires:
+
+```python
+trace = galtea.traces.create(
+    session_id=session.id,
+    input="Who is the tenant in this lease agreement?",
+    input_file_paths=["path/to/lease-agreement.pdf"],
+    output="The tenant is Marta Ruiz.",
+)
+```
+
+Leave `input` out when the file is the whole input:
+
+```python
+document_only = galtea.traces.create(
+    session_id=session.id,
+    input_file_paths=["path/to/lease-agreement.pdf"],
+    output="This is a residential lease agreement.",
+)
+```
+
+## Parameters
+<ResponseField name="session_id" type="string" optional>
+  The session ID to log the trace to.
+
+  <Note>Instead of a `session_id`, you can reference an existing session by its own conversation id (see the section below). Provide exactly one of the two.</Note>
+</ResponseField>
+
+<Accordion title="Log to an existing session by your own conversation ID">
+  If you already created the session via the [sessions API](/v5.21/sdk/api/session/service) with your own `custom_id`, reference it here with `session_custom_id` plus a `version_id` or `product_id` to append traces to it. If no matching session exists, the call returns a `400` error — create it first via the sessions API.
+
+  <ResponseField name="session_custom_id" type="string" optional>
+    Your own conversation id, as an alternative to `session_id`. Galtea finds an existing session with this id (per version); the session is not created here. Requires `version_id` or `product_id`.
+  </ResponseField>
+  <ResponseField name="version_id" type="string" optional>
+    The version the session is anchored to when using `session_custom_id`.
+
+    <Note>Provide `version_id` or `product_id` (at least one) when using `session_custom_id`. If both are given, `version_id` wins and `product_id` is ignored.</Note>
+  </ResponseField>
+  <ResponseField name="product_id" type="string" optional>
+    Product anchor used when no `version_id` is given with `session_custom_id`: Galtea finds the session with this custom id under the product (across its versions).
+  </ResponseField>
+
+  <Note>If no session matches the `session_custom_id` and anchor, the call returns a `400` error. Create the session first via the [sessions API](/v5.21/sdk/api/session/service).</Note>
+</Accordion>
+
+<ResponseField name="input" type="string | object" optional>
+  The input text/prompt. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent, except inline media (a binary `data:` URI or a provider byte field) where the platform copy is on. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/v5.21/concepts/product/version/session/content-parts).
+</ResponseField>
+<ResponseField name="output" type="string | object" optional>
+  The generated output/response. A dict is stored as sent. Galtea reads each element of its `content` list on its own: a Galtea file is stored without its upload signature and must be an accepted type, with at most 20 files and 20 MB. Every other element, such as a file URL on your own host, is stored as sent, except inline media (a binary `data:` URI or a provider byte field) where the platform copy is on. A Galtea file of another organization fails the call with a `400`. A metric scores a Galtea file only when its judge model reads that kind of file. See [Content Parts](/v5.21/concepts/product/version/session/content-parts).
+</ResponseField>
+<ResponseField name="input_file_paths" type="list[str]" optional>
+  Files the turn received, for a product that reads documents. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, such as `trace.input_files[0].uri`, which is attached without uploading it again. Any other URL raises a `ValueError` before anything is uploaded.
+
+  `input` stays optional, so a turn can receive files and no text. The input is then the files alone.
+
+  One input accepts at most 20 files, 20 MB in total, of the same types a test case input accepts. See [Upload Output File](/v5.21/sdk/api/trace/upload-output-file) for the list.
+
+  <JudgeFileRule />
+</ResponseField>
+<ResponseField name="output_file_paths" type="list[str]" optional>
+  Files the turn answers with, for a product whose reply is a document. Each entry is a local path the SDK uploads, or a Galtea file reference from an earlier upload, which is attached without uploading it again. Any other URL raises a `ValueError` before anything is uploaded.
+
+  `output` stays optional, so a turn can answer with files and no text. Its `actual_output` then reads back as `None`, and the envelope is in `actual_output_data`.
+
+  One output accepts at most 20 files, 20 MB in total, of the same types an input accepts. See [Upload Output File](/v5.21/sdk/api/trace/upload-output-file) for the list and for reusing one upload across turns.
+
+  Output files follow the same rule as `input_file_paths` above.
+</ResponseField>
+<ResponseField name="retrieval_context" type="string" optional>
+  Context retrieved for RAG systems.
+
+  <Note>When you set `retrieval_context`, Galtea also records it as a `RETRIEVER` span on this trace.</Note>
+</ResponseField>
+<ResponseField name="latency" type="float" optional>
+  Latency in milliseconds.
+</ResponseField>
+<ResponseField name="usage_info" type="dict[str, int]" optional>
+  Information about token usage during the model call.
+  Possible keys include:
+  - `input_tokens`: Number of input tokens sent to the model, cached input included.
+  - `output_tokens`: Number of output tokens generated by the model.
+  - `cache_read_input_tokens`: Number of those input tokens read from the cache. They are priced at the cache-read rate, the rest of the input at the input rate.
+</ResponseField>
+<ResponseField name="cost_info" type="dict[str, float]" optional>
+  Information about the cost per token during the model call.
+  Possible keys include:
+  - `cost_per_input_token`: Cost per input token sent to the model.
+  - `cost_per_output_token`: Cost per output token generated by the model.
+  - `cost_per_cache_read_input_token`: Cost per input token read from the cache.
+
+  Once the turn's spans report token usage, the span prices replace a per-token price sent on the turn. Send `cost` to keep your own figure.
+</ResponseField>
+
+<ResponseField name="conversation_simulator_version" type="string" optional>
+  The version of Galtea's conversation simulator used to generate the user message (input). This should only be provided when logging a conversation that was generated using the simulator.
+</ResponseField>
+<ResponseField name="status" type="str | TraceStatus" optional>
+  The initial status of the trace. Accepts a case-insensitive string or a `TraceStatus` enum value. Valid values: `PENDING`, `GENERATED`, `FAILED`, `SKIPPED`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones.
+
+  The two typical SDK flows are:
+  - **Omit (default)** to create the trace as `GENERATED` — the right choice when the output is already known at create time.
+  - **Pass `PENDING`** to log the trace before the model call completes, then transition to `GENERATED` or `FAILED` via [`update()`](/v5.21/sdk/api/trace/update) once the call resolves.
+
+  Passing `FAILED` or `SKIPPED` directly is supported for callers that want to log a terminal-state trace explicitly (e.g. recording a known-bad turn or a skipped step).
+</ResponseField>

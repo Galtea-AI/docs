@@ -86,6 +86,18 @@ galtea help
 
 For parameter, request body, and response shape details, see the [**REST API**](/api-reference) tab.
 
+A command that creates or updates takes its body in one of two forms: `key: value` pairs on the command line, or JSON on stdin.
+
+```bash
+# A short body: key: value pairs, with a comma between them
+galtea versions create productId: YOUR_PRODUCT_ID, name: "v2"
+
+# Any body: JSON on stdin
+galtea versions create < version.json
+```
+
+Use JSON on stdin when a value holds a comma or a brace, such as a prompt or an input template. The `key: value` form reads a comma as the start of the next field.
+
 ### Finding the docs of your platform
 
 Run `galtea docs` to see where the docs of your platform version live.

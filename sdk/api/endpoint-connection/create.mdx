@@ -4,6 +4,8 @@ sidebarTitle: "Create"
 description: "Create a new endpoint connection for a product."
 ---
 
+import { Requires } from '/snippets/version-tags.mdx';
+
 ## Returns
 Returns an [Endpoint Connection](/concepts/product/endpoint-connection) object for the given parameters, or `None` if an error occurs. When the platform stores it but cannot return it, `create` raises [`WrittenResourceUnreadableException`](/sdk/api/galtea#errors) instead: do not create it again.
 
@@ -101,3 +103,67 @@ endpoint_connection = galtea.endpoint_connections.create(
 <ResponseField name="conversation_end_rules" type="list[ConversationEndRule]" optional>
   Replies that mean your agent ended the conversation. On a match, the session completes and is evaluated instead of failing, and the match is never retried. Each `ConversationEndRule` has a `status_code` (100–599) and an optional `body_match`, a `ConversationEndBodyMatch` with a JSONPath `path` and the expected value `equals`. A `2xx` rule needs a `body_match`. At most 20 rules, and only for `CONVERSATION` type. Defaults to no rules. For example, `ConversationEndRule(status_code=409, body_match=ConversationEndBodyMatch(path="$.error.code", equals="conversation_ended"))`. See [Conversation End Rules](/concepts/product/endpoint-connection-configuration#conversation-end-rules).
 </ResponseField>
+<ResponseField name="stream_format" type="string" optional>
+  How your agent frames a streamed reply: `SSE` (Server-Sent Events) or `NDJSON` (one JSON object per line). Defaults to `None`, which reads one plain JSON reply. Set it together with `stream_assembly`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+
+  <Requires sdk=">5.20">
+  </Requires>
+</ResponseField>
+<ResponseField name="stream_assembly" type="StreamAssembly" optional>
+  How a streamed reply becomes one object `{ text, byEvent, final }` that `output_mapping` reads, so `output` is usually `$.text`. Required when `stream_format` is set.
+
+  Use a named preset alone, for example `StreamAssembly(preset="OPENAI_CHAT_COMPLETIONS")`. The presets are `OPENAI_CHATKIT`, `OPENAI_RESPONSES`, `OPENAI_CHAT_COMPLETIONS`, `ANTHROPIC_MESSAGES`, `GOOGLE_ADK` and `VERCEL_AI_SDK`. They come from `GET /endpointConnections/streamPresets`, which also gives the stream format each preset needs and the settings it fills. A preset name that a newer API adds can be passed as a plain string.
+
+  For any other stack, use `CUSTOM` (or no preset) with these settings:
+  - `text_path`: JSONPath to the text in each chunk, for example `$.delta.text`. Required.
+  - `mode`: `APPEND` joins the text of every chunk; `LAST` keeps the text of the last chunk. Required.
+  - `event_field`: JSONPath to the event name in each chunk. Unset uses the SSE event name.
+  - `terminal_event`: the event name, or the raw chunk data (for example `[DONE]`), that ends the reply. Unset reads to the end of the stream.
+  - `text_event`: the only event whose chunks give text. Unset takes text from every chunk.
+  - `error_event`: the event name that fails the turn, with the event data in the error. With `NDJSON`, set `event_field` too. A named preset fills its own `error_event`, so the API answers `400` to a preset sent with `error_event` beside it.
+
+  <Requires sdk=">5.20">
+  </Requires>
+</ResponseField>
+
+## Streaming Example
+With a preset, for an agent stack that Galtea knows:
+
+```python
+streaming_connection = galtea.endpoint_connections.create(
+    name="streaming-chat-api-" + run_identifier,
+    product_id=product_id,
+    url="https://api.example.com/v1/chat/completions",
+    type=EndpointConnectionType.CONVERSATION,
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    input_template='{"model": "my-agent", "stream": true, "messages": [{"role": "user", "content": "{{ input.user_message }}"}]}',
+    # The output mapping reads the joined reply: { text, byEvent, final }.
+    output_mapping={"output": "$.text"},
+    stream_format=StreamFormat.SSE,
+    stream_assembly=StreamAssembly(preset=StreamAssemblyPreset.OPENAI_CHAT_COMPLETIONS),
+)
+```
+
+With `CUSTOM`, for an agent with no preset. This one sends its text in `delta` chunks and ends with a `done` event:
+
+```python
+custom_streaming_connection = galtea.endpoint_connections.create(
+    name="custom-streaming-api-" + run_identifier,
+    product_id=product_id,
+    url="https://api.example.com/v1/chat",
+    type=EndpointConnectionType.CONVERSATION,
+    auth_type="BEARER",
+    auth_token="YOUR_AUTH_TOKEN",
+    input_template='{"message": "{{ input.user_message }}"}',
+    output_mapping={"output": "$.text"},
+    stream_format=StreamFormat.SSE,
+    # No preset fits this agent, so the settings say where the text is and how to join it.
+    stream_assembly=StreamAssembly(
+        preset=StreamAssemblyPreset.CUSTOM,
+        text_path="$.delta",
+        mode=StreamAssemblyMode.APPEND,
+        terminal_event="done",
+    ),
+)
+```

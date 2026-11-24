@@ -1,0 +1,57 @@
+---
+title: 'Listing Metrics'
+sidebarTitle: "List"
+description: "List all metrics."
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.21. [Read this page in the latest version](/sdk/api/metric/list).
+</Warning>
+
+## Returns
+Returns a list of [Metric](/v5.21/concepts/metric) objects.
+
+## Example
+```python
+metrics = galtea.metrics.list(limit=20)
+```
+
+## Parameters
+<ResponseField name="from_created_at" type="str | int" default="None">
+  Filter metrics created at or after this timestamp. Accepts ISO 8601 string (e.g., `'2024-01-01T00:00:00Z'`) or Unix timestamp in seconds. Can be used independently or together with `to_created_at`.
+</ResponseField>
+<ResponseField name="to_created_at" type="str | int" default="None">
+  Filter metrics created at or before this timestamp. Accepts ISO 8601 string (e.g., `'2024-12-31T23:59:59Z'`) or Unix timestamp in seconds. Can be used independently or together with `from_created_at`.
+</ResponseField>
+<ResponseField name="sort_by_created_at" type="string" optional>
+  Sort metrics by creation date. Valid values are "asc" and "desc".
+</ResponseField>
+<ResponseField name="offset" type="int" default="0" optional>
+  Number of metrics to skip before starting to collect results. Use for pagination.
+  
+  **Default:** `0` (start from the beginning)
+</ResponseField>
+
+<ResponseField name="limit" type="int" default="10000" optional>
+  Maximum number of metrics to return in a single request.
+
+  **Default:** `10000`
+</ResponseField>
+
+<ResponseField name="include_legacy" type="bool" default="False">
+  Whether to include deprecated (legacy) metrics in the results.
+
+  **Default:** `False` — deprecated metrics are excluded. Set to `True` to also retrieve metrics that have been deprecated.
+</ResponseField>
+<ResponseField name="id" type="string | list[string]" default="None">
+  The ID or IDs of the metric(s) to retrieve.
+</ResponseField>
+<ResponseField name="tags" type="list[string]" optional>
+  Filter metrics by tags. Returns metrics that have at least one of the provided tags (match-any semantics).
+</ResponseField>
+
+<ResponseField name="include_excluded_from_analytics" type="bool" default="False">
+  Keyword-only. Whether to include metric revisions [excluded from analytics](/v5.21/concepts/metric#revisions-and-analytics) in the results.
+
+  **Default:** `False` — excluded revisions are hidden. Set to `True` to also retrieve them. A lookup by `id` always returns the metric, excluded or not.
+</ResponseField>

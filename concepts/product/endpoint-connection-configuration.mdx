@@ -128,6 +128,7 @@ A JSON object defining how to extract values from the API response using [JSONPa
 | `[*]` | Wildcard (all elements) |
 | `[0]` | First array element |
 | `[-1:]` | The last array element, as a one-element list |
+| `['a.b']` | A child whose name holds a dot or another special character, e.g. `$.byEvent['response.output_text.delta']` |
 
 Filter and script expressions such as `[?(...)]` and `[(...)]` are refused when you save the mapping, because they would run code on every response.
 
@@ -176,7 +177,7 @@ The text still comes from `output`. A response with files and no text is also a 
 
 The rules:
 
-- **Limits:** at most 20 files and 20 MB in total for one output, Galtea files included. The file extension decides the type, and it must be one a [test case input accepts](/concepts/product/dataset/test-case#file-inputs), such as `pdf`, `docx`, `png` or `csv`. A file with no extension takes one from its `mime_type`, or, for a URL, from the `Content-Type` the file host sends. A name that ends in digits only, such as `invoice_2026.09.23`, counts as having no extension.
+- **Limits:** at most 20 files and 20 MB in total for one output (Galtea files included) by default ([configurable on request](/concepts/product/version/session/content-parts)). The file extension decides the type, and it must be one a [test case input accepts](/concepts/product/dataset/test-case#file-inputs), such as `pdf`, `docx`, `png` or `csv`. A file with no extension takes one from its `mime_type`, or, for a URL, from the `Content-Type` the file host sends. A name that ends in digits only, such as `invoice_2026.09.23`, counts as having no extension.
 - **Download time:** all the URL downloads of one output share one time limit, the connection's [timeout](#timeout). A URL file that has not started when that time runs out is refused.
 - **No credentials to the file host:** Galtea sends none of the connection's headers or credentials with the download. A file that needs authentication must come back as bytes, or as a presigned URL that carries its own access.
 - **Galtea files belong to your organization:** a Galtea file must be an uploaded file of the organization that owns the product. A file of another organization, or a storage URI that does not name an uploaded file, fails the turn. The same holds for a file that no longer exists.
@@ -221,6 +222,118 @@ If your API returns values that need to be sent in subsequent requests (e.g., `s
 }
 ```
 </CodeGroup>
+
+### Streamed Replies
+
+If your agent streams its reply, Galtea reads the whole stream and joins its chunks into one object. The Output Mapping then reads that object, so every special key works as on a plain reply. For a step-by-step setup with worked examples, see [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent). Set two fields on the connection:
+
+- **`streamFormat`**: `SSE` for [Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html), or `NDJSON` for one JSON value per line. Leave it empty for a plain reply.
+- **`streamAssembly`**: how the chunks become one object. Set both fields or neither: the API refuses one without the other.
+
+In the dashboard form, choose **Streamed reply** and pick your agent stack, or **Custom** to set the fields below yourself. The form sets both fields. On a Conversation connection it also sets the Output Mapping to `$.text` when it still holds the default. An Initialization connection keeps its `session_id` mapping.
+
+You can always fill `streamAssembly` in one of two ways:
+
+- **A preset**, when your agent uses a [stack that Galtea knows](#stream-presets). Send its name and no other field.
+- **`CUSTOM`**, for an agent with no preset, or when one setting of a preset does not fit yours. Set the fields below yourself. A preset is a saved set of these same fields, so `CUSTOM` reads every stream that a preset reads. Its one need: each chunk holds the answer text at the same JSONPath.
+
+| `streamAssembly` field | Description |
+|------------------------|-------------|
+| `preset` | A named [stream preset](#stream-presets), or `CUSTOM` (the default) to set the fields below yourself. A named preset fills them, and the API refuses it with any of them. |
+| `textPath` | **Required with `CUSTOM`.** The JSONPath of the text in each chunk, e.g. `$.choices[0].delta.content`. Use `$` when each chunk is plain text. |
+| `mode` | **Required with `CUSTOM`.** `APPEND` joins the text of every chunk, for a stream of deltas. `LAST` keeps the text of the last chunk that has one, for a stream that resends the whole answer. |
+| `eventField` | The JSONPath of the event name inside each chunk, e.g. `$.type`. Leave it null to use the SSE `event:` name. A chunk with no name is a `message` event. |
+| `terminalEvent` | The event name, or the raw data such as `[DONE]`, that ends the reply. Galtea stops reading there, even if the connection stays open. Leave it null to read until the stream closes. With `SSE`, the event needs a `data:` line, which may be empty. |
+| `textEvent` | The only event whose chunks add text, e.g. `response.output_text.delta`. Use it when other events carry a field at the same `textPath`. Leave it null to read text from every event. |
+| `errorEvent` | The event name that reports a failure, e.g. `error`. That event fails the turn, with its data in the error. Leave it null to read every event as data. With `SSE`, the event needs a `data:` line, which may be empty. With `NDJSON`, set `eventField` too: an NDJSON line has no event name of its own. |
+
+The Output Mapping reads this object:
+
+| Path | Value |
+|------|-------|
+| `$.text` | The joined text. |
+| `$.byEvent.<name>` | Every chunk of that event, in order, e.g. `$.byEvent.source[*].content`. Use the bracket form for a name with a dot. |
+| `$.final` | The last chunk that holds a JSON object or list, e.g. `$.final.conversation_id`. A raw end marker such as `[DONE]` is not kept. |
+
+<CodeGroup>
+```json Stream Assembly
+{
+  "preset": "CUSTOM",
+  "textPath": "$.delta",
+  "mode": "APPEND",
+  "eventField": null,
+  "terminalEvent": "done",
+  "errorEvent": "error"
+}
+```
+
+```json Output Mapping
+{
+  "output": "$.text",
+  "retrieval_context": "$.byEvent.source[*].content",
+  "session_id": "$.final.conversation_id"
+}
+```
+</CodeGroup>
+
+- **SSE request header:** for `SSE`, Galtea sends `Accept: text/event-stream` unless a custom header sets `Accept`.
+- **Timeout:** the connection [timeout](#timeout) covers the whole stream, not only the first byte. Set it for your longest answer.
+- **Idle timeout:** once the agent has started its reply (its response headers have arrived), the idle timeout applies. A stream that sends nothing for 60 seconds then fails the turn with an idle timeout. This holds even when the connection timeout has time left. Before that, only the connection timeout applies. Any bytes reset it. An agent that runs a long tool can send an SSE comment line such as `: keep-alive` to stay live. A self-hosted deployment can change it with `ENDPOINT_STREAM_IDLE_TIMEOUT_SECONDS`.
+- **Time to first token:** a streamed turn stores how long the agent took to start its answer, when its stream carries text. The time runs from the moment Galtea sends the request to the first chunk that carries text. The trace view shows it beside the latency. The API answers it as [`timeToFirstToken`](/concepts/product/version/session/trace). It is never above the latency. A turn that did not stream, or whose stream carried no text, has none.
+- **Cut stream:** with a `terminalEvent`, a stream that closes before it keeps the text it sent. The turn is not an error. It is marked truncated in the trace view and in the API (`streamTruncated`). It is not retried. A cut stream with no text fails the turn. Without a `terminalEvent`, the end of the stream is the end of the reply.
+- **Error event:** with an `errorEvent`, that event fails the turn. Like an idle timeout, it is retried with the connection's [retry settings](#retry-configuration) when retry is on.
+- **Plain-text tokens in `SSE`:** with `textPath` set to `$`, a token that is a whole JSON string, such as `"sí"` with its quotes, loses its quotes: the text is `sí`. A token that is not a whole JSON string stays as sent.
+- **Size limit:** the limit is an approximate memory limit of the assembled reply, not its raw size. The default is 32 MiB. Each chunk, and each `{`, `[` and `,` of its JSON, counts 64 bytes more than its size. So a stream of very many tiny chunks or small values reaches the limit sooner. An OpenAI-style stream of one token per event fits about 31,000 events. Each line of an event that has not ended yet, such as an `SSE` event with no blank line after it, also counts 64 bytes until the event ends. A longer stream fails the turn and is not retried. A self-hosted deployment can change the limit with `ENDPOINT_STREAM_MAX_BYTES`.
+- **Bad lines:** in `NDJSON`, a line that is not JSON fails the turn and is not retried. A bad line after the terminal event does not fail the turn, because Galtea stops reading there. Blank lines are skipped. A last line with no line break that is not JSON is read as a cut and dropped.
+- **Connection types:** Conversation and Initialization connections can stream. The API refuses both fields on a Finalization connection.
+- **Test Connection:** it accepts both fields, reads the stream the same way and shows the joined object. The health check before a run reads it the same way. Both read at most 1 MB of the reply. They read more when the output mapping reads output files. A longer stream fails them, even though a turn accepts up to the size limit. It reports an idle timeout and an error event with the same message as a turn. For a cut stream it shows the partial text and says it is partial (`streamTruncated` in the API). When no output came, it gives the same error as a turn. It also shows the time to first token of a streamed reply (`timeToFirstToken` in the API).
+- **A stream on a plain connection:** a connection with no `streamFormat` can get a reply that looks like SSE or NDJSON. The turn and Test Connection then say so. They name the fields to set.
+
+#### Stream Presets
+
+A preset sets `streamAssembly` for a known agent framework, so you pick its name and add no other `streamAssembly` field. Send `streamFormat` with it:
+
+```json Stream Assembly
+{ "streamFormat": "SSE", "streamAssembly": { "preset": "OPENAI_RESPONSES" } }
+```
+
+No preset for your agent? Use `CUSTOM` and set the [fields](#streamed-replies) yourself. This body reads an agent that sends its text in `delta` chunks and ends with a `done` event:
+
+```json Custom Stream Assembly
+{
+  "streamFormat": "SSE",
+  "streamAssembly": { "preset": "CUSTOM", "textPath": "$.delta", "mode": "APPEND", "terminalEvent": "done" }
+}
+```
+
+- **Follows the name:** the connection stores the preset name, and Galtea reads its settings at each call. A read of the connection returns `{ "preset": "OPENAI_RESPONSES" }` only. `GET /endpointConnections/streamPresets` lists every preset with its settings.
+- **Fixed format:** every preset below streams `SSE`. Set `streamFormat` yourself: the API does not fill it, and it refuses a preset with another format.
+- **Your own settings:** to change one field of a preset, use `CUSTOM` and copy the preset's settings from the list. `CUSTOM` takes every setting a preset has.
+- **Error event:** `OPENAI_CHATKIT`, `OPENAI_RESPONSES`, `ANTHROPIC_MESSAGES` and `VERCEL_AI_SDK` set `errorEvent` to `error`, so that event fails the turn with the vendor's error text. `OPENAI_CHAT_COMPLETIONS` and `GOOGLE_ADK` set none: their documentation names no error event.
+- **Refusals:** `OPENAI_RESPONSES` and `OPENAI_CHAT_COMPLETIONS` read the answer text only. A model refusal comes in its own event (`response.refusal.delta`) or field (`delta.refusal`), so such a turn has an empty output. `CUSTOM` reads the refusal alone when `textEvent` is `response.refusal.delta`. With `textEvent` unset, every chunk that matches `textPath` joins the output, so a refusal joins the answer text.
+- **Retrieval context:** no preset has a `retrieval_context` mapping, because Galtea has not tested one for these stacks. If your agent sends the passages it retrieved in an event of its own, map them from `$.byEvent`, as in the [example above](#streamed-replies).
+- **Source:** each preset is built from the vendor documentation linked below, as read on 2026-11-20. A vendor can change its stream later.
+
+| Preset | Use it for | Output Mapping to start from | Source |
+|--------|------------|------------------------------|--------|
+| `OPENAI_CHATKIT` | A self-hosted [ChatKit server](https://openai.github.io/chatkit-python/) (chatkit-python). | `output: $.text`, `session_id: $.byEvent['thread.created'][0].thread.id` | [Thread stream events](https://openai.github.io/chatkit-python/concepts/thread-stream-events/) |
+| `OPENAI_RESPONSES` | The OpenAI Responses API, or an agent that forwards its stream events, such as one built with the OpenAI Agents SDK. Only `response.output_text.delta` adds text. The reply ends with the stream, so an agent that calls a tool before it answers still gives the whole answer, and `$.final` is its last event. | `output: $.text`, `session_id: $.final.response.id` | [Streaming responses](https://developers.openai.com/api/docs/guides/streaming-responses) |
+| `OPENAI_CHAT_COMPLETIONS` | The OpenAI Chat Completions API, or a server compatible with it. The reply ends at `[DONE]`. | `output: $.text` | [Create chat completion](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create) |
+| `ANTHROPIC_MESSAGES` | The Anthropic Messages API. The reply ends at `message_stop`. | `output: $.text` | [Streaming messages](https://platform.claude.com/docs/en/build-with-claude/streaming) |
+| `GOOGLE_ADK` | A Google Agent Development Kit server at `/run_sse`. Keeps the text of the last event that has one, which holds the whole answer. It reads the first part of that event, so the agent must not send thought summaries. | `output: $.text` | [API server](https://adk.dev/runtime/api-server/) |
+| `VERCEL_AI_SDK` | A Vercel AI SDK UI message stream. Only `text-delta` adds text, so reasoning is skipped, and the reply ends at `[DONE]`. | `output: $.text` | [Stream protocol](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol) |
+
+**Google ADK** needs a session before the first turn. Create it with an Initialization connection, and send its id in the Input Template of the Conversation connection.
+
+The preset reads the first part of the last event. When the agent sends thought summaries (`include_thoughts=True`), that part is the thought, so the output holds the thought and not the answer. Turn them off, or use `CUSTOM` with the path of the answer part, such as `$.content.parts[1].text`.
+
+**OpenAI ChatKit** creates the thread on the first turn and names it only in that turn's `thread.created` event. The mapping above stores the thread id once. On a later turn the path finds nothing, and Galtea keeps the stored id. Branch the Input Template on `session_id`:
+
+```jinja Input Template
+{% if session_id %}{"type": "threads.add_user_message", "params": {"thread_id": "{{ session_id }}", "input": {"content": [{"type": "input_text", "text": "{{ input.user_message }}"}], "attachments": [], "inference_options": {}}}}{% else %}{"type": "threads.create", "params": {"input": {"content": [{"type": "input_text", "text": "{{ input.user_message }}"}], "attachments": [], "inference_options": {}}}}{% endif %}
+```
+
+Galtea joins the assistant text deltas of a ChatKit stream. A widget that streams text sends it in the same field, so Galtea joins that text too. A workflow item or a user message adds nothing. When a turn holds two assistant messages, their text is joined with no separator.
 
 ## Custom Headers
 
@@ -344,6 +457,8 @@ How long Galtea waits for a single HTTP call to your endpoint before giving up. 
   Per-attempt request timeout in seconds. Default: `15`. Maximum: `120` (values above this are rejected at the API).
 </ResponseField>
 
+For a [streamed reply](#streamed-replies), it covers the whole stream.
+
 A timeout counts as a retryable failure. If retry is enabled, a timed-out call is retried like any other transient error.
 
 ## Rate Limit
@@ -358,7 +473,7 @@ When the limit is reached, Galtea reschedules the call for later. This wait does
 
 ## Retry Configuration
 
-Configure automatic retry behavior for failed requests. When enabled, Galtea retries requests that fail with a retryable HTTP status code, a timeout, or a network error. A retry wait does not block other runs: the job is rescheduled and the worker is freed while it waits.
+Configure automatic retry behavior for failed requests. When enabled, Galtea retries requests that fail with a retryable HTTP status code, a timeout, or a network error. On a [streamed](#streamed-replies) connection, an idle timeout and an error event are retried too. A retry wait does not block other runs: the job is rescheduled and the worker is freed while it waits.
 
 <ResponseField name="Retry Enabled" type="Boolean">
   Whether automatic retry is enabled. Default: `true`
@@ -426,6 +541,7 @@ The rule is status code `409`, Body JSONPath `$.error.code`, and Expected Value 
 - Galtea checks the rules **before** the [retry policy](#retry-configuration). A matching reply is never retried, even when its status code is in Retryable Status Codes.
 - A reply matches when the status code is equal and, if the rule has a body match, the first value the JSONPath finds is a string, number, or boolean whose text equals the Expected Value. So the number `42` matches the Expected Value `42`.
 - A missing field, an object, an array, `null`, or a body that is not JSON never matches.
+- On a [streamed](#streamed-replies) connection, the body of a `2xx` reply is the joined object, so the path reads `$.text`, `$.byEvent` or `$.final`. The body of any other status stays as your agent sent it.
 - Rules apply only to the conversation calls of text sessions. Initialization and finalization calls, voice sessions, and the connection test ignore them.
 
 ### What happens to the session
@@ -449,5 +565,8 @@ The rule is status code `409`, Body JSONPath `$.error.code`, and Expected Value 
   </Card>
   <Card title="Direct Inferences Tutorial" icon="play" href="/sdk/tutorials/direct-inferences-and-evaluations-from-platform">
     Run evaluations from the dashboard using your endpoint connection.
+  </Card>
+  <Card title="Connect a Streaming Agent" icon="wave-pulse" href="/sdk/tutorials/connect-a-streaming-agent">
+    Set up a connection for an agent that streams its reply, step by step.
   </Card>
 </CardGroup>

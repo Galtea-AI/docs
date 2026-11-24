@@ -1,0 +1,95 @@
+---
+title: 'Span Service'
+sidebarTitle: "Service"
+description: "Span Service API methods in the Galtea SDK"
+---
+
+import SpanCard from '/v5.21/snippets/cards/span-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.21. [Read this page in the latest version](/sdk/api/span/service).
+</Warning>
+
+The Span Service in the Galtea SDK allows you to collect, manage, and persist [spans](/v5.21/concepts/product/version/session/span) that capture the internal operations of your AI agents during inference.
+
+This Service is exposed by the `galtea.spans` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.21/sdk/api/galtea).
+</Info>
+
+## Two Approaches to Span Collection
+
+The SDK provides two ways to collect spans:
+
+### 1. Automatic Collection with with `generate()`
+
+When using `galtea.traces.generate()`, span collection is handled automatically:
+
+```python
+@traced(type=SpanType.TOOL)
+def fetch_user_data(user_id: str) -> dict:
+    return {"name": "John Doe", "email": "john@example.com"}
+
+
+@traced(type=SpanType.GENERATION)
+def generate_response(prompt: str) -> str:
+    return "Generated response..."
+
+
+def my_overview_agent(input_data: AgentInput) -> AgentResponse:
+    user = fetch_user_data("user_123")
+    response = generate_response("Hello")
+    return AgentResponse(content=response)
+
+
+# Use generate() for automatic span context management
+trace = galtea.traces.generate(
+    agent=my_overview_agent,
+    session=session,
+    input="Show me user data",
+)
+```
+
+### 2. Manual Collection with Context Management
+
+For full control over the span lifecycle, use `set_context()` and `clear_context()`:
+
+Set context before running traced functions:
+```python
+span_context = set_context(trace_id=trace_id)
+```
+
+Then run your traced functions within this context set/open.
+
+Once done, clear the context to [flush](/v5.21/sdk/api/span/clear-context#param-flush) and detach:
+```python
+clear_context(span_context)
+```
+
+<Tip>
+  Use `galtea.traces.generate()` for automatic span collection instead of manual collection.
+</Tip>
+
+<Note>
+  One process exports collected spans (from `@traced`, `start_span`, or `traces.generate()`) through one client: the most recently created `Galtea` object. `spans.create()` and `spans.create_batch()` are not affected: they always use their own object's settings. To change the API key, the [API URL or the extra headers](/v5.21/sdk/installation#custom-api-url-and-headers) in a running process such as a notebook, create a new `Galtea` object. Spans then go out with the new settings, including spans not sent yet. Calling `shutdown()` on an older object only flushes pending spans; span export stops only when the latest object shuts down. Do not use two `Galtea` objects with API keys of different organizations in one process: spans of the older object's traces are sent with the newer key, the API refuses them, and they are lost.
+</Note>
+
+## Service Methods
+
+### Context Management
+- [@traced Decorator](/v5.21/sdk/api/span/traced-decorator)
+- [start_span](/v5.21/sdk/api/span/start-span)
+- [set_context](/v5.21/sdk/api/span/set-context)
+- [clear_context](/v5.21/sdk/api/span/clear-context)
+
+### Direct API Methods
+- [Create Span](/v5.21/sdk/api/span/create)
+- [Create Span Batch](/v5.21/sdk/api/span/create-batch)
+- [List Spans](/v5.21/sdk/api/span/list)
+- [Get Span](/v5.21/sdk/api/span/get)
+- [Delete Span](/v5.21/sdk/api/span/delete)
+
+## Related
+
+<SpanCard />
