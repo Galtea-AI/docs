@@ -3774,9 +3774,10 @@
             "enum": [
               "SSE",
               "NDJSON",
-              "WEBSOCKET"
+              "WEBSOCKET",
+              "GRPC"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null reads one plain JSON reply. Set together with streamAssembly. GRPC means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
           },
           "streamAssembly": {
             "type": "object",
