@@ -91,6 +91,10 @@ You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (
   The latency in milliseconds for the model's response. `null` for a user without the `evaluation.readInference` permission.
 </ResponseField>
 
+<ResponseField name="timeToFirstToken" type="float" optional>
+  For a trace that Galtea produced from a [streamed reply](/concepts/product/endpoint-connection-configuration#streamed-replies), the time in milliseconds until the agent started to answer. It starts when Galtea sends the request to the agent. It ends when the first chunk that carries text reaches Galtea. A chunk with no text, such as a keep-alive comment or a metadata event, does not count. The measure starts a little after the latency starts. It ends no later than the reply ends. So it is never above the latency. With retries, it is the value of the attempt that produced the stored answer. A cut stream that carried text keeps it. It is empty when the reply did not stream or carried no text. It is also empty for a trace sent through the SDK or OpenTelemetry. A user without the `evaluation.readInference` permission gets none. Read-only.
+</ResponseField>
+
 <ResponseField name="inputTokens, outputTokens, cacheReadInputTokens, tokens" type="int" optional>
   Token counts for the trace: input, output, cache-read input and total. The input count includes the cache-read input, and the total is input plus output, plus the cache read when the source counted it apart from the input (a cache read above the input count). They are `null` for a user without the `evaluation.readInference` permission.
 </ResponseField>

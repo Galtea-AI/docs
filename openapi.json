@@ -869,6 +869,13 @@
             "example": false,
             "description": "True when the agent's streamed reply closed before the terminal event of its endpoint connection, so the output is partial. Read-only."
           },
+          "timeToFirstToken": {
+            "type": "number",
+            "nullable": true,
+            "readOnly": true,
+            "example": 412.5,
+            "description": "Milliseconds from the start of the request to the agent to the first chunk of its streamed reply that carried text. Null when the reply did not stream or carried no text, and for a user without the `evaluation.readInference` permission. Read-only."
+          },
           "conversationSimulatorVersion": {
             "type": "string",
             "nullable": true,
@@ -3766,9 +3773,10 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly. WEBSOCKET means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
           },
           "streamAssembly": {
             "type": "object",
@@ -22261,6 +22269,10 @@
                     "streamTruncated": {
                       "type": "boolean",
                       "description": "Present and true when the streamed reply closed before its terminal event, so `response` and `extractedOutput` hold the partial reply, as on a turn."
+                    },
+                    "timeToFirstToken": {
+                      "type": "number",
+                      "description": "Milliseconds from the start of the request to the first chunk of the streamed reply that carried text, as on a turn. Absent when the reply did not stream or carried no text."
                     }
                   }
                 }

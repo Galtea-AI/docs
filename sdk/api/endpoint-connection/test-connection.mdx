@@ -18,6 +18,9 @@ Returns a `TestConnectionResult` object containing:
 - `stream_truncated` (bool | None): `True` when a streamed reply closed before its terminal event, so `response` and `extracted_output` hold the partial reply, and `success` stays `True`. `None` when the reply was complete, or when the API does not report it. A stream that stalls or sends its error event gives `success` `False` and an `error` text.
   <Requires sdk=">5.20">
   </Requires>
+- `time_to_first_token` (float | None): On a [streamed](/concepts/product/endpoint-connection-configuration#streamed-replies) connection, the milliseconds from the request to the first chunk that carried text. None when the reply did not stream or carried no text.
+  <Requires sdk=">5.20">
+  </Requires>
 
 For example, a streamed reply that sent its text in two `reply.delta` chunks and ended with a `reply.done` chunk gives this `response`:
 

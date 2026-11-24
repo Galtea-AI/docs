@@ -28,6 +28,10 @@ The REST API now answers an error with the body `{ "error": "NotFound", "message
 
 `GET /v2/revisions` now returns `activatedAt` and `activatedByUserId` for each revision: when it last became the active one, and who made it so. Creating a revision, **Mark as active** and applying an optimization all record them. Revisions activated before this release return `null` for both; see [Revisions and Analytics](/concepts/metric#revisions-and-analytics).
 
+## Time to First Token on Streamed Traces
+
+A trace that Galtea produces from a streamed reply now shows how long the agent took to start its answer. That is the time from the request to the first chunk that carries text. You see it beside the latency in the trace view and in Test Connection. Read it as `timeToFirstToken` in the API and `time_to_first_token` in the SDK. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+
 ## Streaming Endpoint Connections in the SDK and the CLI
 
 The Python SDK and the CLI now create, update and test an Endpoint Connection that reads a [streamed reply](/concepts/product/endpoint-connection-configuration#streamed-replies). In the SDK, pass `stream_format="SSE"` and `stream_assembly=StreamAssembly(preset="OPENAI_CHAT_COMPLETIONS")`. In the CLI, send `streamFormat` and `streamAssembly` in the body, and run `galtea endpoint-connections list-stream-presets` to see the presets.
