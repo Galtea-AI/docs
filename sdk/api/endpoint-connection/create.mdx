@@ -33,7 +33,7 @@ endpoint_connection = galtea.endpoint_connections.create(
   ID of the product this connection belongs to.
 </ResponseField>
 <ResponseField name="url" type="string" required>
-  The endpoint URL (HTTPS, or WSS for a WebSocket agent). For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), the URL supports a `{{ session_id }}` placeholder for dynamic session IDs (e.g., `https://api.example.com/v1/threads/{{ session_id }}/messages`). Only available when an `INITIALIZATION` endpoint connection returns a `session_id`.
+  The endpoint URL (HTTPS only). For [multi-step session lifecycles](/concepts/product/endpoint-connection#multi-step-session-lifecycle-advanced), the URL supports a `{{ session_id }}` placeholder for dynamic session IDs (e.g., `https://api.example.com/v1/threads/{{ session_id }}/messages`). Only available when an `INITIALIZATION` endpoint connection returns a `session_id`.
 </ResponseField>
 <ResponseField name="type" type="string" required>
   Type of endpoint connection. Valid values: `INITIALIZATION`, `CONVERSATION`, `FINALIZATION`.
@@ -98,13 +98,13 @@ endpoint_connection = galtea.endpoint_connections.create(
   HTTP status codes that trigger retry. Defaults to `[429, 500, 502, 503, 504]`. Each value must be a valid HTTP status code (100–599).
 </ResponseField>
 <ResponseField name="acknowledged_insecure_http" type="bool" optional>
-  Set to `true` to accept an `http://` or `ws://` URL. Required when `url` is not encrypted (HTTPS or WSS), unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+  Set to `true` to accept an `http://` URL. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
 </ResponseField>
 <ResponseField name="conversation_end_rules" type="list[ConversationEndRule]" optional>
   Replies that mean your agent ended the conversation. On a match, the session completes and is evaluated instead of failing, and the match is never retried. Each `ConversationEndRule` has a `status_code` (100–599) and an optional `body_match`, a `ConversationEndBodyMatch` with a JSONPath `path` and the expected value `equals`. A `2xx` rule needs a `body_match`. At most 20 rules, and only for `CONVERSATION` type. Defaults to no rules. For example, `ConversationEndRule(status_code=409, body_match=ConversationEndBodyMatch(path="$.error.code", equals="conversation_ended"))`. See [Conversation End Rules](/concepts/product/endpoint-connection-configuration#conversation-end-rules).
 </ResponseField>
 <ResponseField name="stream_format" type="string" optional>
-  How your agent frames a streamed reply: `SSE` (Server-Sent Events), `NDJSON` (one JSON object per line) or `WEBSOCKET` (one message per chunk, on a `wss://` or `ws://` URL). Defaults to `None`, which reads one plain JSON reply. Set it together with `stream_assembly`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+  How your agent frames a streamed reply: `SSE` (Server-Sent Events) or `NDJSON` (one JSON object per line). Defaults to `None`, which reads one plain JSON reply. Set it together with `stream_assembly`. Other string values are sent to the API unchanged, so values added in newer API versions can be used; the API rejects invalid ones. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 
   <Requires sdk=">5.20">
   </Requires>
@@ -118,10 +118,9 @@ endpoint_connection = galtea.endpoint_connections.create(
   - `text_path`: JSONPath to the text in each chunk, for example `$.delta.text`. Required.
   - `mode`: `APPEND` joins the text of every chunk; `LAST` keeps the text of the last chunk. Required.
   - `event_field`: JSONPath to the event name in each chunk. Unset uses the SSE event name.
-  - `terminal_event`: the event name, or the raw chunk data (for example `[DONE]`), that ends the reply. Unset reads to the end of the stream. With `WEBSOCKET`, unset ends the reply at `quiet_period_seconds` instead.
+  - `terminal_event`: the event name, or the raw chunk data (for example `[DONE]`), that ends the reply. Unset reads to the end of the stream.
   - `text_event`: the only event whose chunks give text. Unset takes text from every chunk.
-  - `error_event`: the event name that fails the turn, with the event data in the error. With `NDJSON` or `WEBSOCKET`, set `event_field` too. A named preset fills its own `error_event`, so the API answers `400` to a preset sent with `error_event` beside it.
-  - `quiet_period_seconds`: `WEBSOCKET` only. The reply ends after this many whole seconds (1 to 30) with no message. It starts at the first message that gives text, so a slow first token is never cut. An agent that sends heartbeat messages, or a reply with no text, needs `terminal_event`. A `WEBSOCKET` connection needs it or `terminal_event`. It needs an SDK newer than 5.21.
+  - `error_event`: the event name that fails the turn, with the event data in the error. With `NDJSON`, set `event_field` too. A named preset fills its own `error_event`, so the API answers `400` to a preset sent with `error_event` beside it.
 
   <Requires sdk=">5.20">
   </Requires>
@@ -166,24 +165,5 @@ custom_streaming_connection = galtea.endpoint_connections.create(
         mode=StreamAssemblyMode.APPEND,
         terminal_event="done",
     ),
-)
-```
-
-## WebSocket Example
-An agent that answers over a WebSocket gets the rendered `input_template` as one message. Every [stream preset](/concepts/product/endpoint-connection-configuration#stream-presets) streams `SSE`, so set `text_path` and `mode` yourself, and say when the reply ends. See [WebSocket Agents](/concepts/product/endpoint-connection-configuration#websocket-agents).
-```python
-websocket_connection = galtea.endpoint_connections.create(
-    name="websocket-chat-api-" + run_identifier,
-    product_id=product_id,
-    url="wss://api.example.com/v1/chat",
-    type=EndpointConnectionType.CONVERSATION,
-    auth_type="BEARER",
-    auth_token="YOUR_AUTH_TOKEN",
-    # Sent as one text message on the socket.
-    input_template='{"message": "{{ input.user_message }}"}',
-    output_mapping={"output": "$.text"},
-    stream_format=StreamFormat.WEBSOCKET,
-    # Each message holds a piece of the answer in "delta". The reply ends after 2 seconds with no message.
-    stream_assembly=StreamAssembly(text_path="$.delta", mode="APPEND", quiet_period_seconds=2),
 )
 ```

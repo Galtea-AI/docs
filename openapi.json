@@ -3724,7 +3724,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
+            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -3776,7 +3776,7 @@
               "NDJSON",
               "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly. WEBSOCKET means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
           },
           "streamAssembly": {
             "type": "object",
@@ -3819,7 +3819,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -3831,16 +3831,8 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
                 "example": "error"
-              },
-              "quietPeriodSeconds": {
-                "type": "integer",
-                "nullable": true,
-                "minimum": 1,
-                "maximum": 30,
-                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
-                "example": 2
               }
             },
             "additionalProperties": false,
@@ -4086,7 +4078,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
+            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -4136,10 +4128,9 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON",
-              "WEBSOCKET"
+              "NDJSON"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -4182,7 +4173,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -4194,16 +4185,8 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
                 "example": "error"
-              },
-              "quietPeriodSeconds": {
-                "type": "integer",
-                "nullable": true,
-                "minimum": 1,
-                "maximum": 30,
-                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
-                "example": 2
               }
             },
             "additionalProperties": false,
@@ -4310,8 +4293,7 @@
             "type": "string",
             "enum": [
               "SSE",
-              "NDJSON",
-              "WEBSOCKET"
+              "NDJSON"
             ],
             "description": "The streamFormat the connection must have. A connection with another format is refused.",
             "example": "SSE"
@@ -4577,7 +4559,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
+            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -4627,10 +4609,9 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON",
-              "WEBSOCKET"
+              "NDJSON"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -4673,7 +4654,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -4685,16 +4666,8 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
                 "example": "error"
-              },
-              "quietPeriodSeconds": {
-                "type": "integer",
-                "nullable": true,
-                "minimum": 1,
-                "maximum": 30,
-                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
-                "example": 2
               }
             },
             "additionalProperties": false,
@@ -22213,7 +22186,7 @@
                   },
                   "acknowledgedInsecureHttp": {
                     "type": "boolean",
-                    "description": "Required true to test an http:// or ws:// URL. With an ID, the stored value applies when omitted. It is ignored for an https:// or wss:// URL."
+                    "description": "Required true to test an http:// URL. With an ID, the stored value applies when omitted. It is ignored for an https:// URL."
                   },
                   "outputMapping": {
                     "type": "object",
@@ -22228,7 +22201,6 @@
                     "enum": [
                       "SSE",
                       "NDJSON",
-                      "WEBSOCKET",
                       ""
                     ],
                     "description": "How the agent frames a streamed reply. Null or an empty string reads one plain reply. Set together with streamAssembly. With an ID, the stored value applies when omitted."
@@ -22236,7 +22208,7 @@
                   "streamAssembly": {
                     "type": "object",
                     "nullable": true,
-                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent, quietPeriodSeconds). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }
