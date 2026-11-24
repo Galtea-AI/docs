@@ -5861,6 +5861,46 @@
           "score"
         ]
       },
+      "RevisionAnnotatedCasesEvaluation": {
+        "type": "object",
+        "properties": {
+          "revisionId": {
+            "type": "string",
+            "example": "revision_123",
+            "description": "The revision the run scores with."
+          },
+          "scheduled": {
+            "type": "integer",
+            "example": 11,
+            "description": "Evaluations admitted."
+          },
+          "skipped": {
+            "type": "integer",
+            "example": 1,
+            "description": "Cases that were not scored; `errors` says why."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "runIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The runs this call opened, one per product."
+          }
+        },
+        "required": [
+          "revisionId",
+          "scheduled",
+          "skipped",
+          "errors",
+          "runIds"
+        ]
+      },
       "EvaluatorModel": {
         "type": "object",
         "properties": {
@@ -9827,6 +9867,25 @@
         "required": [
           "productId",
           "count"
+        ]
+      },
+      "RevisionAnnotatedCaseCount": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "example": 12,
+            "description": "Annotated cases of the revision's metric that the revision has not scored yet, in the products where the caller may read and create evaluations and create runs."
+          },
+          "credits": {
+            "type": "integer",
+            "example": 24,
+            "description": "The credits scoring those cases costs."
+          }
+        },
+        "required": [
+          "count",
+          "credits"
         ]
       },
       "MonitorAlert": {
@@ -38863,6 +38922,79 @@
         }
       }
     },
+    "/v2/revisions/{id}/annotated-case-count": {
+      "get": {
+        "operationId": "getRevisionAnnotatedCaseCount",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Count the annotated cases a revision would score",
+        "description": "How many annotated cases of the revision's metric the revision has not scored yet, in the products where the caller may read and create evaluations and create runs, and the credits scoring them costs. A case whose evaluation by this revision succeeded or is pending is not counted. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "get-annotated-case-count",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The cases to score and their credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionAnnotatedCaseCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The revision's metric is outside the products the caller's user groups grant, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/revisions/{id}/exclude-from-analytics": {
       "post": {
         "operationId": "excludeRevisionFromAnalytics",
@@ -39304,6 +39436,89 @@
           },
           "404": {
             "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/evaluate-annotated-cases": {
+      "post": {
+        "operationId": "evaluateRevisionOnAnnotatedCases",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Evaluate a revision on the annotated cases of its metric",
+        "description": "Score every annotated case of the revision's metric that the revision has not scored yet, in the products where the caller may read and create evaluations and create runs. A case whose evaluation by this revision succeeded or is pending is left alone, so a repeated call charges nothing twice, and a call made while another one is still running answers 409. Each evaluation costs credits as any evaluation does. Opens one run per product; follow the evaluations of `runIds` to see the scores arrive. The id is a revision id. A metric id answers 404.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "evaluate-annotated-cases",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read its active revision under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read its active revision under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "The evaluations were admitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionAnnotatedCasesEvaluation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The revision's metric is outside the products the caller's user groups grant, or the caller may create evaluations in no product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another call is already evaluating the annotated cases of this revision",
             "content": {
               "application/json": {
                 "schema": {
