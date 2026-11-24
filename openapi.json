@@ -9432,6 +9432,18 @@
             "readOnly": true,
             "description": "User who excluded this revision from analytics. A repeated exclusion keeps the first user."
           },
+          "activatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When this revision last became the active one: at creation, by \"Mark as active\", or by applying an optimization. Null when unknown, for example for a revision activated before this was recorded. A revision copied from another organization keeps the time of the original."
+          },
+          "activatedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "example": "user_123",
+            "description": "User who last made this revision the active one, at `activatedAt`. Null when unknown: activated before this was recorded, by no signed-in user, by a deleted user, or copied from another organization."
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -9465,6 +9477,8 @@
           "userGroupIds",
           "excludedFromAnalyticsAt",
           "excludedByUserId",
+          "activatedAt",
+          "activatedByUserId",
           "createdAt"
         ]
       },
