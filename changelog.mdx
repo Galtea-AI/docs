@@ -4,6 +4,48 @@ description: "The updates for Galtea"
 icon: "newspaper"
 ---
 
+<Update label="5.23.0" description="2026-11-25">
+
+## Data Augmentation Keeps Generated Cases When the Model Breaks the Format Once
+
+When the model returns a batch that does not match the seed schema, augmentation now sends it the schema errors with the failed answer and asks again, within the existing retry budget. The batch then returns corrected rows, where it used to end with an empty CSV and a SUCCESS status. Credits are charged for the rows you receive.
+
+## Long Inputs Wrap in the Test Case Overview
+
+The Overview tab of a test case now wraps a long unbroken line, such as a URL, at the edge of the panel. Before, the content was cut off on both sides and could not be scrolled.
+
+## Onboarding No Longer Fails to Generate Metrics at Random
+
+Onboarding could fail for every specification at once with "Metric generation failed" when it generated metrics from specifications. It now always adds the `input` and `actual_output` parameters the judge needs, so the generated metrics are created. A rare failure on our side now returns a 502 instead of a 400 that blamed the request, and the CLI retries a 502 twice by default, so such a call may run the generator up to three times.
+
+## The Health Check Sends the First Turn Like a Run
+
+The health check before a run now sends no `session_id` until a step returns one, as the first turn of a run does. An Input Template that branches on `{% if session_id %}`, such as one for an OpenAI ChatKit agent, now starts a new conversation in the check too, so the run is no longer refused before it starts.
+
+A template that puts `session_id` in a field that must not be empty can now fail the check with a 400 `Unresponsive or unhealthy endpoint connection`, where the check passed and the run failed on its first turn. This also applies to a launch from `evaluations.run()` in the SDK.
+
+## Long Traces Fit the Judge
+
+A metric that reads `traces` now sends the judge at most 120,000 characters of traces by default, so a long session is scored instead of failing. Over that budget, the judge shortens the longest span texts to one common length and marks each cut. The evaluation details show the trace size and, when the judge shortened it, the budget and the characters sent.
+
+## Compare Revisions by Agreement With Humans and Judge Tokens
+
+`GET /v2/revisions?metricId=` now returns, for each revision, how many of its evaluations carry a human annotation, its agreement with those annotations, and its judge's average tokens per evaluation. Agreement is 100% minus the average distance between the judge's and the human's scores, shows from 10 annotated evaluations, and is null for a Human Evaluation metric. The token average needs `evaluation.readInference`, as judge tokens do on each evaluation. `GET /metrics/{id}/human-annotation-count` now counts only the evaluations of your organization for a Galtea metric, so its counts can fall for the same data.
+
+## Structured Replies in Streamed Endpoint Connections
+
+When a streamed reply is one JSON object sent as text pieces, Galtea now parses it into `json`, so the Output Mapping can read its fields, for example `output: $.json.answer` and `retrieval_context: $.json.sources[*].content`. A text path that finds a list of strings, such as `$.content.parts[*].text`, now joins them in order. See [Structured Replies](/sdk/tutorials/connect-a-streaming-agent#structured-replies).
+
+## WebSocket Agents in Endpoint Connections
+
+An endpoint connection can now reach an agent that answers over a WebSocket. Set `streamFormat` to `WEBSOCKET` with a `wss://` URL: Galtea sends the rendered input template as one message and joins the messages of the answer, like any streamed reply. The reply ends at your end marker, or after a quiet period of 1 to 30 seconds with no message, which never cuts a slow first token. Set it in the dashboard, the SDK (`StreamFormat.WEBSOCKET`, `quiet_period_seconds`) or the CLI. See [WebSocket Agents](/concepts/product/endpoint-connection-configuration#websocket-agents).
+
+## The Metric Library Lists Each Metric Once
+
+The metric list now shows one row per metric, with its live revision in the new **Active revision** column. Open a metric to reach its earlier revisions. The **Status** column and the **Include legacy** filter are gone, because every row is the active revision. `GET /v2/metrics` also filters by description, creation date, user group, and maintainer, and returns each metric's active revision in `activeRevision`.
+
+</Update>
+
 <Update label="5.22.0" description="2026-11-24">
 
 ## Trace Metrics Show Repeated Text Once
@@ -38,7 +80,7 @@ The Python SDK and the CLI now create, update and test an Endpoint Connection th
 
 ## Endpoint Connections Read Streamed Replies
 
-An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. In the dashboard, choose **Streamed reply** in the connection form and pick your agent stack, or set `streamFormat` and `streamAssembly` through the API. See the guide [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent) and the [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies) reference.
+An Endpoint Connection can now call an agent that streams its reply, as Server-Sent Events (SSE) or as one JSON value per line (NDJSON). Galtea joins the chunks into one object, so your Output Mapping reads the full text, the chunks of each event and the last event. In the dashboard, choose **Streamed reply** in the connection form and pick your agent stack, or set `streamFormat` and `streamAssembly` through the API. With **Custom** settings, you can view, change and clear **Error event**, the event name that fails a turn with its data. See the guide [Connect a Streaming Agent](/sdk/tutorials/connect-a-streaming-agent) and the [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies) reference.
 
 To skip the other assembly settings for a known framework, set `streamFormat` to `SSE` and `streamAssembly` to a [stream preset](/concepts/product/endpoint-connection-configuration#stream-presets) such as `{ "preset": "OPENAI_RESPONSES" }`.
 

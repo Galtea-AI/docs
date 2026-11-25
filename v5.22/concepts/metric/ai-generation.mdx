@@ -1,0 +1,141 @@
+---
+title: "AI Metric Generation"
+sidebarTitle: "AI Generation"
+description: "Automatically generate evaluation metrics from your product specifications using AI"
+icon: "sparkles"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/concepts/metric/ai-generation).
+</Warning>
+
+## Overview
+
+AI Metric Generation lets you automatically create evaluation metrics from your product's [specifications](/v5.22/concepts/product/specification). Instead of manually crafting judge prompts and configuring evaluation parameters, the AI analyzes your specifications and generates ready-to-use metrics.
+
+<Info>
+  Evaluation parameters are automatically selected based on each specification's description and test type. The generated judge prompt follows a format optimized for reliable LLM-based evaluation across different evaluator models.
+</Info>
+
+<video
+  controls
+  muted
+  playsInline
+  className="w-full aspect-video rounded-xl"
+  src="/videos/metrics-generation.mp4"
+></video>
+
+## Requirements
+
+- A [product](/v5.22/concepts/product) with a description
+- At least one [specification](/v5.22/concepts/product/specification) of type **POLICY** or **CAPABILITY** with a test type assigned (Accuracy, Security, or Behavior)
+
+<Warning>
+  INABILITY specifications cannot be used for AI metric generation. They are the only type with no test type, and a
+  metric is generated from that test type. POLICY and CAPABILITY specifications can both be linked to metrics
+  (a CAPABILITY always carries the `BEHAVIOR` test type).
+</Warning>
+
+## How to Generate Metrics
+
+There are two ways to trigger AI metric generation from the dashboard:
+
+### From the Specifications Section (Single Specification)
+
+1. Open your product and pick **Specifications** in the sidebar
+2. Open the dropdown menu on the specification you want to generate metrics for
+3. Click **Generate Metrics** — this takes you to the generation page with that specification pre-selected
+4. Click **Generate** and wait for the AI to process
+5. Review the generated candidates — edit, save, or discard each one
+
+### From the Specifications Section (Multiple Specifications)
+
+1. Open your product and pick **Specifications** in the sidebar
+2. Select the checkboxes for the specifications you want to generate metrics for
+3. Open the bulk actions menu and click **Generate Metrics**
+4. Click **Generate** and wait for the AI to process
+5. Review the generated candidates — edit, save, or discard each one
+
+In both cases, the AI analyzes your product name, description, and the selected specifications to generate tailored metrics.
+
+## Complete a Metric with AI
+
+When you already know **what** you want to measure but don't want to write the judge prompt by hand, use **Complete with AI**. You provide the metric's name, description, and evaluation type as the source of truth, and the AI fills in the rest: the judge prompt and the evaluation parameters. For AI Evaluation, the metric gets the platform's default evaluator model for generated metrics, which you can change before saving.
+
+This is available in two places:
+
+- **The manual metric form** — when creating a metric from scratch (**Metric library** in the sidebar → **New Metric** → blank), fill in the name, description, and evaluation type, then click **Complete with AI**.
+- **The AI generation review step** — when editing a generated candidate, click **Complete with AI** to regenerate its judge prompt and evaluation parameters from the candidate's current name, description, and tags.
+
+<Info>
+  Your name, description, and tags are never modified — they are the inputs the AI completes from. If you have already written a judge prompt, the dashboard asks for confirmation before replacing it.
+</Info>
+
+Complete with AI is available for **AI Evaluation** and **Human Evaluation** metrics:
+
+- For **AI Evaluation**, it produces a binary LLM-judge prompt and sets the platform's default evaluator model, which you can change before saving.
+- For **Human Evaluation**, it produces annotator guidelines on a 0–100 scoring scale (no evaluator model, since a human assigns the score).
+
+For **AI Evaluation** with the **Decision model** judge, it builds the metric's one question from the description:
+
+- One condition that always applies gets a Yes/No question with its **Good answer**, or a Scale question for a graded quality.
+- One condition that applies only sometimes gets a Scale question with a **Does not apply** level.
+- Several conditions that always apply get one Yes/No question that lists them all.
+- Several conditions where some do not always apply get no question. Create one metric per condition.
+- Any part it could not turn into a question (counting, dates, exact text) is listed with a suggested alternative.
+
+The question is a draft for you to review. See [Decision model](/v5.22/concepts/metric/decision-model#complete-with-ai).
+
+**Self-Hosted** metrics are not supported because they have no judge prompt. See [Evaluation Types](/v5.22/concepts/metric/evaluation-types) for the differences between these scoring methods.
+
+## Update a Metric with AI
+
+Once a metric already has a judge prompt, **Update with AI** (**Revise with AI** in the dashboard) revises it from one line of written feedback instead of you editing the prompt by hand. You give it the metric's current name, description, evaluation type, judge prompt, and evaluation parameters, plus a short instruction describing what to change (for example, "it should not penalise a short answer"). The AI returns a revised judge prompt, evaluation parameters, and description.
+
+The endpoint **persists nothing** — you review the revision and decide whether to apply it.
+
+In the dashboard it is available only from the **New Revision** form (open a metric → **New Revision**), not from a blank or template create form. It is a panel beside the form fields, on screen for as long as the form is: you write the instruction in it and the revised values land in the fields next to it.
+
+<Info>
+  Revise with AI requires the source metric to already have a judge prompt, and is not available for **Self-Hosted** metrics, which have no judge prompt. A metric with no description is still revisable. Decision metrics have no judge prompt, so they cannot be revised with AI.
+</Info>
+
+Applying a revision only fills in the form: the judge prompt and evaluation parameters each get an "AI Generated" badge. The **New Revision** form does not show the description, so the revised description is not applied. Nothing is saved until you submit the **New Revision** form.
+
+The endpoint is also available directly via the [REST API](/v5.22/api-reference) and the CLI (`galtea metrics update-config`).
+
+## Evaluation Parameter Selection
+
+In both spec-driven generation and completion mode, the AI automatically selects the evaluation parameters each metric needs. In spec mode these are inferred from the specification description; in completion mode they are inferred from the metric description you provided. With Update with AI, the AI starts from the parameters you send and revises them only if your feedback calls for it. For example:
+
+- A specification about **citation accuracy** or **knowledge-grounded answers** will include `retrieval_context` so the judge can verify answers against retrieved source material.
+- A specification about **internal processes, workflows, or tool orchestration** will include `traces` (and often `tools_used`) so the judge can inspect the execution path — not just the final output.
+- A specification about **refusal or safety boundaries** typically only needs `input` and `actual_output`, since compliance is fully observable from what was asked and answered.
+
+<Warning>
+  If a metric includes `traces` or `retrieval_context` as evaluation parameters, the product under test must capture that data during test execution (e.g., via tracing integrations). If the data is not available at evaluation time, the evaluation will fail.
+</Warning>
+
+## Generated Metric Properties
+
+Each AI-generated metric candidate includes:
+
+| Property | Description |
+| --- | --- |
+| **Name** | A descriptive name for the metric |
+| **Description** | What the metric evaluates |
+| **Judge Prompt** | The evaluation prompt with placeholders for dynamic data |
+| **Evaluation Parameters** | The data parameters the judge needs for evaluation (automatically selected based on the specification in spec mode, or from the metric description in completion mode) |
+| **Tags** | Categorization tags |
+| **Evaluator Model** | The platform's default evaluator model for generated metrics. You can change it before saving. Null for Human Evaluation metrics. |
+| **Test Type** | Inherited from the source specification (null in completion mode when no specification is provided) |
+
+## Specification Linking
+
+When you save a metric generated from a specification, it is automatically linked to that specification. This creates a traceable connection between your requirements and your evaluation criteria.
+
+Metrics created via **Complete with AI** are not automatically linked to a specification — you can link them manually from the [Specification Hub](/v5.22/concepts/product/specification) if needed.
+
+You can view linked specifications directly from a metric's detail page, and manage metric-specification links from the [Specification Hub](/v5.22/concepts/product/specification).
+
+You can also set the links from the metric side with the [REST API](/v5.22/api-reference). Send `specificationIds` in `PATCH /metrics/{id}` (`galtea metrics update`). The field is the full list of POLICY or CAPABILITY specifications the metric links to. A link missing from the list is removed, `[]` removes every link, and leaving the field out keeps the links. A specification must belong to the metric's organization. To link a Galtea default metric, start from the specification instead: `POST /specifications/{id}/metrics` (`galtea specifications link-metrics`) links it to a specification of your organization.

@@ -51,6 +51,8 @@ A question can use only these names. Any other name is refused, including the de
 
 See [Evaluation Parameters](/concepts/metric/evaluation-parameters) for what each name holds.
 
+The decision model reads `traces` within the same [trace budget](/concepts/metric/judge-traces) as the other judges, 120,000 characters by default. Unlike a gateway judge, it does not lower that budget to the room its context window leaves. When the decision model refuses an input with traces as too long, the evaluation is skipped with a reason that gives the trace size, the budget and the characters sent. An input of more than 1,000,000 characters in all is skipped before it reaches the model, with the same reason and without these numbers.
+
 ### Yes/No
 
 A question with a yes or no answer. You must set the **Good answer**: Yes or No.
@@ -193,7 +195,7 @@ A new revision keeps the evaluation type of its metric, so it cannot switch a me
 ## Limits
 
 - **Text only**: the decision model does not read images, audio, PDFs or other binary files. It reads a text [Galtea file](/concepts/product/version/session/content-parts#galtea-files) (TXT, CSV, Markdown, JSON, XML or HTML) as its text, under the file's name and number. Any other Galtea file on a side the metric reads skips the evaluation, and no credits are charged. A file on your own host is not sent as a file: the decision model reads its entry as JSON text, in its place in the turn. See [Troubleshooting skipped evaluations](/concepts/metric/evaluation-parameters#troubleshooting-skipped-evaluations).
-- **Input size**: the decision model accepts about 32,000 tokens of conversation plus the question. File text counts toward this limit. A longer input is skipped, not scored, and no credits are charged for a skipped evaluation.
+- **Input size**: the decision model accepts about 32,000 tokens of conversation plus the question. File text counts toward this limit. Traces count only up to the [trace budget](/concepts/metric/judge-traces). Any other input over the limit is skipped, not scored, and no credits are charged for a skipped evaluation.
 - **Long input**: when the decision model reads more than about 2,000 tokens and no reviewer has scored the evaluation, the result is marked **Long input** and left out of pass rates and score averages. The evaluation keeps its score.
 - **Skipped evaluations**: analytics show how many evaluations were skipped, next to the passed and not passed counts.
 - **Decision model**: the metric stores its decision model, such as `jev-1.13.0`. To change it, create a revision with another decision model. Every result records the model that answered in `score_breakdown.model`. It is the name the metric stores, such as `microsoft-decision-1`, also when an EU deployment answered.

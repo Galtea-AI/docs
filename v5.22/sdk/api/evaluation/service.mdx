@@ -1,0 +1,75 @@
+---
+title: 'Evaluation Service'
+sidebarTitle: "Service"
+description: "Evaluation Service API methods in the Galtea SDK"
+---
+
+import EvaluationCard from '/v5.22/snippets/cards/evaluation-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/sdk/api/evaluation/service).
+</Warning>
+
+The Evaluation Service in the Galtea SDK allows you to manage [evaluations](/v5.22/concepts/product/version/session/evaluation) for assessing your products.
+This Service is exposed by the `galtea.evaluations` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.22/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create evaluations of a session (one per metric):
+```python
+evaluations = galtea.evaluations.create(
+    session_id=session_id,
+    metrics=[{"name": "Role Adherence"}, {"name": "Conversation Relevancy"}],
+)
+```
+
+At some point later, you will be able to list all evaluations for that session:
+
+```python
+evaluations = galtea.evaluations.list(session_id=session_id)
+```
+
+Display the results:
+
+<Tip>
+  Evaluations start in `PENDING` status while the evaluation engine processes them. Use [`wait_for()`](/v5.22/sdk/api/evaluation/wait-for) to poll until all evaluations have completed before reading results.
+</Tip>
+```python
+print(f"Total evaluations: {len(evaluations)}")
+scores = [ev.score for ev in evaluations if ev.score is not None]
+if len(scores) > 0:
+    average_score = sum(scores) / len(scores)
+    print(f"Average Score: {average_score}")
+else:
+    print("No scores available yet")
+
+print("Detailed Results:")
+for evaluation in evaluations:
+    metric = galtea.metrics.get(metric_id=evaluation.metric_id)
+    print(f"Metric: {metric}")
+    print(f"    Score: {evaluation.score}")
+    print(f"    Reason: {evaluation.reason}")
+```
+
+## Service Methods
+- [Run Evaluation](/v5.22/sdk/api/evaluation/run)
+- [Create Single-Turn Evaluation](/v5.22/sdk/api/evaluation/create-single-turn)
+- [Create Evaluations](/v5.22/sdk/api/evaluation/create)
+- [Wait for Evaluations](/v5.22/sdk/api/evaluation/wait-for)
+- [Listing Evaluations](/v5.22/sdk/api/evaluation/list)
+- [Retrieving Evaluation](/v5.22/sdk/api/evaluation/get)
+- [Deleting Evaluation](/v5.22/sdk/api/evaluation/delete)
+- [Retrying Evaluations](/v5.22/sdk/api/evaluation/retry)
+
+## Related
+
+<EvaluationCard />

@@ -3724,7 +3724,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
+            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -3774,9 +3774,10 @@
             "enum": [
               "SSE",
               "NDJSON",
-              "WEBSOCKET"
+              "WEBSOCKET",
+              "GRPC"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null reads one plain JSON reply. Set together with streamAssembly. WEBSOCKET means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null reads one plain JSON reply. Set together with streamAssembly. GRPC means a newer API release saved the connection: this release reads it, and refuses to call, test or edit it."
           },
           "streamAssembly": {
             "type": "object",
@@ -3819,7 +3820,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -3831,12 +3832,20 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
                 "example": "error"
+              },
+              "quietPeriodSeconds": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "maximum": 30,
+                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
+                "example": 2
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final, json } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "createdAt": {
             "type": "string",
@@ -4078,7 +4087,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
+            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -4128,9 +4137,10 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -4173,7 +4183,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -4185,12 +4195,20 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
                 "example": "error"
+              },
+              "quietPeriodSeconds": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "maximum": 30,
+                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
+                "example": 2
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final, json } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           },
           "authToken": {
             "type": "string",
@@ -4293,7 +4311,8 @@
             "type": "string",
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
             "description": "The streamFormat the connection must have. A connection with another format is refused.",
             "example": "SSE"
@@ -4559,7 +4578,7 @@
           "acknowledgedInsecureHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Required true to use an http:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay on https. It is stored as false for an https:// URL, whatever the request sends."
+            "description": "Required true to use an http:// or ws:// URL. It records that the creator accepted that traffic to this endpoint is not encrypted, so anyone on the network path can read prompts, responses and credentials. The acceptance covers the connection, not one host: a redirect may send an acknowledged request to any public http:// host, carrying the connection credentials with it. Without it every hop the platform makes to the endpoint must stay encrypted. It is stored as false for an https:// or wss:// URL, whatever the request sends."
           },
           "conversationEndRules": {
             "type": "array",
@@ -4609,9 +4628,10 @@
             "nullable": true,
             "enum": [
               "SSE",
-              "NDJSON"
+              "NDJSON",
+              "WEBSOCKET"
             ],
-            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events) or NDJSON (one JSON object per line). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
+            "description": "How the agent frames a streamed reply: SSE (Server-Sent Events), NDJSON (one JSON object per line), or WEBSOCKET (one text message per chunk, on a ws:// or wss:// URL, which no other format takes). Null or an empty string (what the dashboard sends for a cleared field) reads one plain JSON reply. Set together with streamAssembly."
           },
           "streamAssembly": {
             "type": "object",
@@ -4654,7 +4674,7 @@
               "terminalEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream.",
+                "description": "The event name, or the raw chunk data (for example [DONE]), that ends the reply. Unset reads the reply to the end of the stream. With WEBSOCKET, unset ends the reply at quietPeriodSeconds instead, and WEBSOCKET needs one of the two.",
                 "example": "response.completed"
               },
               "textEvent": {
@@ -4666,12 +4686,20 @@
               "errorEvent": {
                 "type": "string",
                 "nullable": true,
-                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON, set eventField too.",
+                "description": "The event name that fails the turn, with the event data in the error. Unset reads every event as data. With NDJSON or WEBSOCKET, set eventField too.",
                 "example": "error"
+              },
+              "quietPeriodSeconds": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "maximum": 30,
+                "description": "WEBSOCKET only, and refused on another format. Seconds with no message after which the reply ends, counted from the first message that gives text. A WebSocket agent keeps its socket open after a reply, so WEBSOCKET needs this or terminalEvent. Absent from a read when unset.",
+                "example": 2
               }
             },
             "additionalProperties": false,
-            "description": "How a streamed reply becomes one object { text, byEvent, final } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
+            "description": "How a streamed reply becomes one object { text, byEvent, final, json } that the output mapping reads. Required when streamFormat is set, and refused without it. Unknown keys are refused. There are two ways to fill it. A named preset fills every other field: send it with streamFormat and no other streamAssembly field. CUSTOM, or no preset, takes the fields from you: use it for an agent stack with no preset, or to change one setting of a preset. GET /endpointConnections/streamPresets lists the presets and their settings."
           }
         }
       },
@@ -4759,6 +4787,24 @@
             "nullable": true,
             "example": 12400,
             "description": "Reasoning tokens, a subset of judgeOutputTokens"
+          },
+          "judgeTraceChars": {
+            "type": "integer",
+            "nullable": true,
+            "example": 5000000,
+            "description": "Characters of the traces the judge read, before any shortening. Null when it read no traces"
+          },
+          "judgeTraceBudgetChars": {
+            "type": "integer",
+            "nullable": true,
+            "example": 120000,
+            "description": "The judge's trace budget, in characters. Set only when the judge shortened the traces"
+          },
+          "judgeTraceSentChars": {
+            "type": "integer",
+            "nullable": true,
+            "example": 119950,
+            "description": "Characters of traces the judge received. Set only when the judge shortened the traces"
           },
           "conversationSimulatorVersion": {
             "type": "string",
@@ -4982,6 +5028,9 @@
           "judgeInputTokens",
           "judgeOutputTokens",
           "judgeReasoningTokens",
+          "judgeTraceChars",
+          "judgeTraceBudgetChars",
+          "judgeTraceSentChars",
           "conversationSimulatorVersion",
           "humanEvaluatorId",
           "humanEvaluatorStartedAt",
@@ -8542,6 +8591,85 @@
         },
         "additionalProperties": false
       },
+      "MetricV2ActiveRevision": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "revision_123",
+            "description": "Revision ID."
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "example": 3,
+            "description": "The revision number within its metric. The revision shows as \"R\" followed by it, so 3 is \"R3\"."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Stricter rubric",
+            "description": "The revision's own name, or null when it has none."
+          },
+          "evaluatorModelName": {
+            "type": "string",
+            "nullable": true,
+            "example": "gpt-4"
+          },
+          "evaluationParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "input",
+              "actual_output",
+              "expected_output"
+            ],
+            "description": "Ordered list of trace fields the evaluator needs, written in snake_case (e.g. `input`, `actual_output`, `expected_output`, `retrieval_context`). Determines which data the evaluation engine extracts from each trace. Full list of accepted values: https://docs.galtea.ai/concepts/metric/evaluation-parameters"
+          },
+          "disabledAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Earliest non-null of the metric's disabled date and this revision's evaluator model's `disabledAt`."
+          },
+          "optimizationStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "OPTIMIZING",
+              "READY_FOR_REVIEW",
+              "FAILED",
+              "NO_IMPROVEMENT",
+              "DECLINED",
+              "ACTIVATED"
+            ],
+            "readOnly": true,
+            "example": "READY_FOR_REVIEW",
+            "description": "Where an optimization attempt stands. Null for a metric that did not come from an optimization. A candidate waiting for review is legacy until it is activated."
+          },
+          "excludedFromAnalyticsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "When this revision was excluded from analytics. Null when its results still count. The other revisions of the metric are unaffected."
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "name",
+          "evaluatorModelName",
+          "evaluationParams",
+          "disabledAt",
+          "optimizationStatus",
+          "excludedFromAnalyticsAt"
+        ]
+      },
       "MetricV2": {
         "type": "object",
         "properties": {
@@ -8609,6 +8737,18 @@
             "example": "revision_123",
             "description": "The revision that evaluations of this metric run. Null when no revision is active."
           },
+          "activeRevision": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MetricV2ActiveRevision"
+              },
+              {
+                "nullable": true,
+                "readOnly": true,
+                "description": "The label, judge settings and dates of the active revision, so a list shows them without reading each revision. Null when no revision is active."
+              }
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -8631,6 +8771,7 @@
           "documentationUrl",
           "source",
           "activeRevisionId",
+          "activeRevision",
           "createdAt",
           "disabledAt"
         ]
@@ -9528,6 +9669,559 @@
           "activatedAt",
           "activatedByUserId",
           "createdAt"
+        ]
+      },
+      "RevisionListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "revision_123",
+            "description": "Revision ID."
+          },
+          "metricId": {
+            "type": "string",
+            "example": "metric_123",
+            "description": "The metric this revision belongs to."
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "example": 3,
+            "description": "The revision number within its metric, allocated once when the revision is created and never reused. The revision shows as \"R\" followed by this number, so 3 is \"R3\"."
+          },
+          "parentRevisionId": {
+            "type": "string",
+            "nullable": true,
+            "example": "revision_122",
+            "description": "The revision this one was revised from. Null for the first revision of a metric."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Accuracy (strict judge)",
+            "description": "The name this revision was saved under, when it differs from its metric's name. Null otherwise: read the metric for its name."
+          },
+          "isActive": {
+            "type": "boolean",
+            "readOnly": true,
+            "description": "Whether this is the active revision of its metric: its own legacy date is unset, it is not deleted and it is not being optimized."
+          },
+          "legacyAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Earliest non-null of this revision's own legacy date and its evaluator model's `unselectableAt`, once that date has passed."
+          },
+          "disabledAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Earliest non-null of the metric's disabled date and this revision's evaluator model's `disabledAt`."
+          },
+          "definition": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of the built-in evaluator the metric runs, for example `json_field_match`. Null when the metric names none."
+          },
+          "judgePrompt": {
+            "type": "string",
+            "nullable": true,
+            "example": "Evaluate the accuracy of the response"
+          },
+          "evaluatorModelName": {
+            "type": "string",
+            "nullable": true,
+            "example": "gpt-4"
+          },
+          "evaluationParams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "input",
+              "actual_output",
+              "expected_output"
+            ],
+            "description": "Ordered list of trace fields the evaluator needs, written in snake_case (e.g. `input`, `actual_output`, `expected_output`, `retrieval_context`). Determines which data the evaluation engine extracts from each trace. Full list of accepted values: https://docs.galtea.ai/concepts/metric/evaluation-parameters"
+          },
+          "areEvalParamsTop": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the parameters block precedes the judge prompt. Unset reads as true."
+          },
+          "judgeGenerationSettings": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "temperature": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "example": 0.3
+              },
+              "topP": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "maximum": 1,
+                "example": 0.9
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "example": 512,
+                "description": "A new metric needs at least 256, so the judge's structured answer fits. A metric stored before that floor keeps its cap."
+              },
+              "reasoningEffort": {
+                "type": "string",
+                "nullable": true,
+                "example": "low"
+              }
+            },
+            "additionalProperties": false,
+            "description": "The generation settings this metric's judge runs with. Null runs the platform defaults. Immutable: changing one creates a revision."
+          },
+          "passThreshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "Score from 0 to 1 at or above which an evaluation of this metric passes. Immutable: changing it creates a revision."
+          },
+          "applicabilityScope": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "DEVELOPMENT",
+              "PRODUCTION",
+              "ALL"
+            ],
+            "example": "PRODUCTION",
+            "description": "Which sessions get the applicability check before this metric is judged. `NONE` for a metric the platform does not score. A metric that scores only `traces` is never checked, so it takes `NONE` and refuses any other value. A metric that also scores another field is checked without `traces`: on each turn's input and actual output and its other fields. A FULL_PROMPT metric with empty evaluationParams whose judge prompt reads only `traces` is stored as checked, yet the evaluator judges it without the check. A FULL_PROMPT metric whose evaluationParams list only `traces` takes NONE even when its judge prompt reads another field: list that field in evaluationParams to get the check. Immutable: changing it creates a revision. The check runs only where the deployment enables it."
+          },
+          "applicabilityThreshold": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.7,
+            "description": "The lowest probability that the metric applies to a session at which it is judged. Null means the platform default, 0.5. Immutable: changing it creates a revision."
+          },
+          "decisionQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestion"
+              },
+              {
+                "nullable": true,
+                "description": "The one question of a DECISION metric; null for every other source."
+              }
+            ]
+          },
+          "classifierQuestion": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionQuestion"
+              },
+              {
+                "nullable": true,
+                "description": "Deprecated, read `decisionQuestion`. The same value.",
+                "deprecated": true,
+                "x-sunset": "2028-01-17",
+                "x-replacement": "decisionQuestion"
+              }
+            ]
+          },
+          "isBeingOptimized": {
+            "type": "boolean",
+            "readOnly": true,
+            "description": "Whether the metric is currently being optimized."
+          },
+          "optimizationStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "OPTIMIZING",
+              "READY_FOR_REVIEW",
+              "FAILED",
+              "NO_IMPROVEMENT",
+              "DECLINED",
+              "ACTIVATED"
+            ],
+            "readOnly": true,
+            "example": "READY_FOR_REVIEW",
+            "description": "Where an optimization attempt stands. Null for a metric that did not come from an optimization. A candidate waiting for review is legacy until it is activated."
+          },
+          "optimizationValidation": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "used": {
+                "type": "boolean",
+                "description": "Whether any evaluation was held out for validation. False when none was: too few annotated evaluations and no session kept from an earlier attempt, or no session was eligible for the hold-out."
+              },
+              "heldOutEvaluationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Evaluations held out of the search. Empty when no validation set was used.",
+                "example": [
+                  "evaluation_123"
+                ]
+              },
+              "results": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "optimization": {
+                    "type": "object",
+                    "properties": {
+                      "rowsScored": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows both prompts scored. Only these rows are compared.",
+                        "example": 25
+                      },
+                      "rowsTotal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows in the set.",
+                        "example": 25
+                      },
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "candidate": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "rowsScored",
+                      "rowsTotal",
+                      "source",
+                      "candidate"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "validation": {
+                    "type": "object",
+                    "properties": {
+                      "rowsScored": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows both prompts scored. Only these rows are compared.",
+                        "example": 25
+                      },
+                      "rowsTotal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Rows in the set.",
+                        "example": 25
+                      },
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "candidate": {
+                        "type": "object",
+                        "properties": {
+                          "correct": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Rows where the AI verdict matches the human label. A score at or above the metric's pass threshold is a positive verdict.",
+                            "example": 20
+                          },
+                          "alignment": {
+                            "type": "number",
+                            "nullable": true,
+                            "description": "Alignment between the AI scores and the human labels on the compared rows. Null when undefined.",
+                            "example": 0.71
+                          }
+                        },
+                        "required": [
+                          "correct",
+                          "alignment"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "rowsScored",
+                      "rowsTotal",
+                      "source",
+                      "candidate"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "optimization",
+                  "validation"
+                ],
+                "additionalProperties": false,
+                "description": "Both prompts scored on the rows the search used and on the held-out rows. Null when the optimizer reported nothing."
+              },
+              "rows": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "evaluationId": {
+                      "type": "string",
+                      "example": "evaluation_123"
+                    },
+                    "humanScore": {
+                      "type": "number",
+                      "description": "The human label.",
+                      "example": 1
+                    },
+                    "sourceScore": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "The source prompt's judge score on this row, or null when it failed. A score at or above the metric's pass threshold is a positive verdict.",
+                      "example": 0
+                    },
+                    "candidateScore": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "The optimized prompt's judge score on this row, or null when it failed. A score at or above the metric's pass threshold is a positive verdict.",
+                      "example": 1
+                    }
+                  },
+                  "required": [
+                    "evaluationId",
+                    "humanScore",
+                    "sourceScore",
+                    "candidateScore"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "One entry per held-out row the optimizer reported; a score is null when that prompt failed on the row. Null when the optimizer reported nothing."
+              }
+            },
+            "required": [
+              "used",
+              "heldOutEvaluationIds",
+              "results",
+              "rows"
+            ],
+            "additionalProperties": false,
+            "readOnly": true,
+            "description": "How an optimization attempt was validated: the held-out evaluations and, once the optimizer reported, both prompts scored on the search rows and on the held-out rows. Set on an optimization attempt only, and null for any other metric, for an attempt that predates it, and for an attempt copied from another organization."
+          },
+          "optimizationRun": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "strategies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "FIX_FALSE_POSITIVES",
+                    "FIX_FALSE_NEGATIVES",
+                    "ADD_RUBRIC",
+                    "SIMPLIFY",
+                    "BROADEN"
+                  ]
+                },
+                "description": "The strategies the run wrote candidates with.",
+                "example": [
+                  "ADD_RUBRIC",
+                  "SIMPLIFY"
+                ]
+              },
+              "maxSteps": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The run's step budget, after the optimizer applied its own ceiling.",
+                "example": 6
+              },
+              "stepsUsed": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The search steps the run took. 0 when the source prompt already met the target.",
+                "example": 4
+              }
+            },
+            "required": [
+              "strategies",
+              "maxSteps",
+              "stepsUsed"
+            ],
+            "additionalProperties": false,
+            "readOnly": true,
+            "description": "What an optimization attempt ran: the strategies, the step budget and the steps used. Null while the attempt runs, and when it was not reported: an attempt from before the report existed, one run by an older optimizer, a failed run, an attempt copied from another organization, or a metric that is not an optimization attempt. Null never means a run of 0 steps."
+          },
+          "specificationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specifications linked to this revision. A MEMBER caller sees only the specifications of the products it can read.",
+            "example": [
+              "spec_123"
+            ]
+          },
+          "userGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "ug_123"
+            ],
+            "description": "User groups of the caller's organization linked to this revision."
+          },
+          "excludedFromAnalyticsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "readOnly": true,
+            "description": "When this revision was excluded from analytics. Null when its results still count. The other revisions of the metric are unaffected."
+          },
+          "excludedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "User who excluded this revision from analytics. A repeated exclusion keeps the first user."
+          },
+          "activatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When this revision last became the active one: at creation, by \"Mark as active\", or by applying an optimization. Null when unknown, for example for a revision activated before this was recorded. A revision copied from another organization keeps the time of the original."
+          },
+          "activatedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "example": "user_123",
+            "description": "User who last made this revision the active one, at `activatedAt`. Null when unknown: activated before this was recorded, by no signed-in user, by a deleted user, or copied from another organization."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "annotationCount": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 24,
+            "description": "Evaluations of this revision that carry both the judge's score and a human annotation, on the products the caller reads. An annotation counts for every revision of its metric that judged the same case."
+          },
+          "agreement": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "example": 87.5,
+            "description": "How close the judge's scores are to the human annotations, in percent: 100 minus the average distance between the two scores, where \"Partially correct\" is 0.5. Higher is better. Null below 10 annotated evaluations, and for a Human Evaluation metric, which has no judge."
+          },
+          "averageJudgeTokens": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "example": 1830.5,
+            "description": "The judge's average input plus output tokens per evaluation of this revision, on the products the caller reads. Null when no evaluation reported usage, for a Human Evaluation metric, or without `evaluation.readInference` on every product behind it."
+          }
+        },
+        "required": [
+          "id",
+          "metricId",
+          "number",
+          "parentRevisionId",
+          "name",
+          "isActive",
+          "legacyAt",
+          "disabledAt",
+          "definition",
+          "judgePrompt",
+          "evaluatorModelName",
+          "evaluationParams",
+          "areEvalParamsTop",
+          "judgeGenerationSettings",
+          "passThreshold",
+          "applicabilityScope",
+          "applicabilityThreshold",
+          "decisionQuestion",
+          "classifierQuestion",
+          "isBeingOptimized",
+          "optimizationStatus",
+          "optimizationValidation",
+          "optimizationRun",
+          "specificationIds",
+          "userGroupIds",
+          "excludedFromAnalyticsAt",
+          "excludedByUserId",
+          "activatedAt",
+          "activatedByUserId",
+          "createdAt",
+          "annotationCount",
+          "agreement",
+          "averageJudgeTokens"
         ]
       },
       "CreateRevisionBody": {
@@ -18614,7 +19308,7 @@
             }
           },
           "502": {
-            "description": "The metrics generator failed, or returned a metric for a specification outside the request",
+            "description": "The metrics generator failed, returned a metric for a specification outside the request, or, with automatic creation, returned a metric that breaks a domain invariant. Nothing is saved. A client that retries a 502 (the CLI does, twice by default) runs the generator again on each try.",
             "content": {
               "application/json": {
                 "schema": {
@@ -22165,7 +22859,7 @@
                   },
                   "acknowledgedInsecureHttp": {
                     "type": "boolean",
-                    "description": "Required true to test an http:// URL. With an ID, the stored value applies when omitted. It is ignored for an https:// URL."
+                    "description": "Required true to test an http:// or ws:// URL. With an ID, the stored value applies when omitted. It is ignored for an https:// or wss:// URL."
                   },
                   "outputMapping": {
                     "type": "object",
@@ -22180,6 +22874,7 @@
                     "enum": [
                       "SSE",
                       "NDJSON",
+                      "WEBSOCKET",
                       ""
                     ],
                     "description": "How the agent frames a streamed reply. Null or an empty string reads one plain reply. Set together with streamAssembly. With an ID, the stored value applies when omitted."
@@ -22187,7 +22882,7 @@
                   "streamAssembly": {
                     "type": "object",
                     "nullable": true,
-                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
+                    "description": "How the chunks of a streamed reply become one object for `outputMapping`, with the same keys as on a save (preset, textPath, mode, eventField, terminalEvent, textEvent, errorEvent, quietPeriodSeconds). An unknown key, or a named preset with any other key or another streamFormat, is a 400. With an ID, the stored value applies when omitted."
                   }
                 }
               }
@@ -22719,6 +23414,30 @@
                       "textPath": "$.delta",
                       "mode": "APPEND",
                       "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Streamed reply, structured JSON": {
+                  "summary": "Map a field of a streamed reply that is one JSON object",
+                  "value": {
+                    "outputMapping": {
+                      "output": "$.json.answer"
+                    }
+                  }
+                },
+                "Streamed reply, WebSocket": {
+                  "summary": "Read the reply of a WebSocket agent that sends no last message",
+                  "value": {
+                    "url": "wss://api.example.com/v1/chat",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "WEBSOCKET",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "quietPeriodSeconds": 2
                     }
                   }
                 },
@@ -34771,6 +35490,79 @@
                       "terminalEvent": "done"
                     }
                   }
+                },
+                "Streamed reply, CUSTOM with event names": {
+                  "summary": "An agent whose lines carry an event type: text-delta gives text, finish ends the reply, error fails the turn",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "NDJSON",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "eventField": "$.type",
+                      "textEvent": "text-delta",
+                      "terminalEvent": "finish",
+                      "errorEvent": "error"
+                    }
+                  }
+                },
+                "Streamed reply, structured JSON": {
+                  "summary": "A streaming agent that answers with one JSON object, sent as text pieces",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "https://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.json.answer",
+                      "retrieval_context": "$.json.sources[*].content"
+                    },
+                    "streamFormat": "SSE",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "terminalEvent": "done"
+                    }
+                  }
+                },
+                "Streamed reply, WebSocket": {
+                  "summary": "An agent that answers over a WebSocket and sends no last message",
+                  "value": {
+                    "productId": "prod_123",
+                    "name": "My API Connection",
+                    "url": "wss://api.example.com/v1/chat",
+                    "httpMethod": "POST",
+                    "type": "CONVERSATION",
+                    "authType": "BEARER",
+                    "authToken": "YOUR_AUTH_TOKEN",
+                    "inputTemplate": "{\"message\": \"{{ input.user_message }}\"}",
+                    "outputMapping": {
+                      "output": "$.text"
+                    },
+                    "streamFormat": "WEBSOCKET",
+                    "streamAssembly": {
+                      "preset": "CUSTOM",
+                      "textPath": "$.delta",
+                      "mode": "APPEND",
+                      "quietPeriodSeconds": 2
+                    }
+                  }
                 }
               }
             }
@@ -36934,7 +37726,7 @@
           "metrics"
         ],
         "summary": "Get human annotation count and optimization eligibility",
-        "description": "Returns the optimization-eligibility snapshot for a metric.\n\n`count` is the number of evaluations that have both an AI score and a human-provided score (annotation). For FULL_PROMPT/PARTIAL_PROMPT metrics this means the AI judged the evaluation and a human later reviewed it. For HUMAN_EVALUATION metrics both fields hold the same human-provided value (for analytics compatibility).\n\n`disagreementCount` is the subset of `count` where the human verdict flips the AI's verdict. Both are binarized at the metric's pass threshold (a score at or above it is class 1, anything below is class 0) and the row counts only when the two classes differ. These are the rows the optimizer learns from.\n\n`minAnnotations` and `minDisagreements` are the api-enforced thresholds (mirrored from the metrics-generator hard thresholds). Optimize is rejected early unless `count >= minAnnotations` AND `disagreementCount >= minDisagreements`.\n\n`plannedSplit` is the split the next optimize would make, from the same count gates and split the run applies: the training and validation row counts, or the refusal text when optimize would answer a 400 (too few annotations, too few disagreements, or too few left to train on after the evaluations earlier attempts kept for validation).\n\nA caller limited to the products its user groups grant gets counts and a split from the evaluations of those products only.",
+        "description": "Returns the optimization-eligibility snapshot for a metric.\n\n`count` is the number of evaluations that have both an AI score and a human-provided score (annotation). For FULL_PROMPT/PARTIAL_PROMPT metrics this means the AI judged the evaluation and a human later reviewed it. For HUMAN_EVALUATION metrics both fields hold the same human-provided value (for analytics compatibility).\n\n`disagreementCount` is the subset of `count` where the human verdict flips the AI's verdict. Both are binarized at the metric's pass threshold (a score at or above it is class 1, anything below is class 0) and the row counts only when the two classes differ. These are the rows the optimizer learns from.\n\n`minAnnotations` and `minDisagreements` are the api-enforced thresholds (mirrored from the metrics-generator hard thresholds). Optimize is rejected early unless `count >= minAnnotations` AND `disagreementCount >= minDisagreements`.\n\n`plannedSplit` is the split the next optimize would make, from the same count gates and split the run applies: the training and validation row counts, or the refusal text when optimize would answer a 400 (too few annotations, too few disagreements, or too few left to train on after the evaluations earlier attempts kept for validation).\n\nA caller limited to the products its user groups grant gets counts and a split from the evaluations of those products only. Counts and the split also read only the evaluations of the caller's organization, for a Galtea metric too, unless the caller can read across organizations.",
         "security": [
           {
             "bearerAuth": []
@@ -37448,7 +38240,7 @@
           "metrics-v2"
         ],
         "summary": "List metrics",
-        "description": "List metrics, each once, with the id of its active revision and no revision inline. The list holds the metrics of the caller's organization and the Galtea metrics. A caller limited to the products its user groups grant also sees only the metrics those products use, and the Galtea metrics. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "description": "List metrics, each once, with the id of its active revision and no revision inline. The list holds the metrics of the caller's organization and the Galtea metrics. An admin names another organization with `organizationId`. A caller limited to the products its user groups grant also sees only the metrics those products use, and the Galtea metrics. See [Metrics](https://docs.galtea.ai/concepts/metric).",
         "security": [
           {
             "bearerAuth": []
@@ -37564,6 +38356,73 @@
           },
           {
             "schema": {
+              "type": "string",
+              "description": "Filter by metric description (partial match, case insensitive)"
+            },
+            "required": false,
+            "description": "Filter by metric description (partial match, case insensitive)",
+            "name": "description",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Filter metrics created at or after this timestamp (ISO 8601 format)"
+            },
+            "required": false,
+            "description": "Filter metrics created at or after this timestamp (ISO 8601 format)",
+            "name": "fromCreatedAt",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Filter metrics created at or before this timestamp (ISO 8601 format)"
+            },
+            "required": false,
+            "description": "Filter metrics created at or before this timestamp (ISO 8601 format)",
+            "name": "toCreatedAt",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "List the metrics of the caller's organization. When this or `includeDefaultEntities` is true, the list holds only the kinds set to true; when neither is, it holds both."
+            },
+            "required": false,
+            "description": "List the metrics of the caller's organization. When this or `includeDefaultEntities` is true, the list holds only the kinds set to true; when neither is, it holds both.",
+            "name": "includeOwnEntities",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "boolean",
+              "description": "List the Galtea metrics. When this or `includeOwnEntities` is true, the list holds only the kinds set to true; when neither is, it holds both."
+            },
+            "required": false,
+            "description": "List the Galtea metrics. When this or `includeOwnEntities` is true, the list holds only the kinds set to true; when neither is, it holds both.",
+            "name": "includeDefaultEntities",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by user groups; a metric matches when one of them links it"
+            },
+            "required": false,
+            "description": "Filter by user groups; a metric matches when one of them links it",
+            "style": "form",
+            "explode": true,
+            "name": "userGroupIds",
+            "in": "query"
+          },
+          {
+            "schema": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -37600,6 +38459,17 @@
             "required": false,
             "description": "Number of results to skip",
             "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "List the metrics of this organization and the Galtea metrics, instead of the caller's organization. Only a caller who may read another organization (ADMIN, ADMIN_READER) names one; any other caller answers 403. Cannot be combined with allOrganizations."
+            },
+            "required": false,
+            "description": "List the metrics of this organization and the Galtea metrics, instead of the caller's organization. Only a caller who may read another organization (ADMIN, ADMIN_READER) names one; any other caller answers 403. Cannot be combined with allOrganizations.",
+            "name": "organizationId",
             "in": "query"
           }
         ],
@@ -37648,7 +38518,7 @@
             }
           },
           "403": {
-            "description": "No user group of the caller lists metric.read",
+            "description": "No user group of the caller lists metric.read, or `organizationId` names another organization and the caller may not read it",
             "content": {
               "application/json": {
                 "schema": {
@@ -38145,7 +39015,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Revision"
+                    "$ref": "#/components/schemas/RevisionListItem"
                   }
                 }
               }

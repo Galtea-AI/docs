@@ -83,19 +83,19 @@ endpoint_connection = galtea.endpoint_connections.update(
   New HTTP status codes that trigger retry. Each value must be a valid HTTP status code (100–599).
 </ResponseField>
 <ResponseField name="acknowledged_insecure_http" type="bool" optional>
-  Set to `true` to accept an `http://` URL. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+  Set to `true` to accept an `http://` or `ws://` URL. Required when `url` is not encrypted (HTTPS or WSS), unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
 </ResponseField>
 <ResponseField name="conversation_end_rules" type="list[ConversationEndRule]" optional>
   New list of replies that mean your agent ended the conversation. It replaces the stored list; pass an empty list to remove every rule. Each `ConversationEndRule` has a `status_code` (100–599) and an optional `body_match` (`ConversationEndBodyMatch` with `path` and `equals`). A `2xx` rule needs a `body_match`. At most 20 rules, and only for `CONVERSATION` type. See [Conversation End Rules](/concepts/product/endpoint-connection-configuration#conversation-end-rules).
 </ResponseField>
 <ResponseField name="stream_format" type="string" optional>
-  New stream format: `SSE` or `NDJSON`. Pass `None` together with `stream_assembly=None` to read one plain JSON reply again. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+  New stream format: `SSE`, `NDJSON` or `WEBSOCKET`. `WEBSOCKET` needs a `wss://` or `ws://` URL. Pass `None` together with `stream_assembly=None` to read one plain JSON reply again. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 
   <Requires sdk=">5.20">
   </Requires>
 </ResponseField>
 <ResponseField name="stream_assembly" type="StreamAssembly" optional>
-  New stream assembly settings: a named preset alone, or `CUSTOM` with `text_path` and `mode`. `GET /endpointConnections/streamPresets` lists every preset with its settings. See [Stream Presets](/concepts/product/endpoint-connection-configuration#stream-presets). It replaces the stored settings, so a setting you leave out (or set to `None`) is removed. A preset must match its stream format, so send `stream_format` too when you change the format.
+  New stream assembly settings: a named preset alone, or `CUSTOM` with `text_path` and `mode`. `CUSTOM` takes the same fields as [`create`](/sdk/api/endpoint-connection/create), such as `error_event` and `quiet_period_seconds`. `GET /endpointConnections/streamPresets` lists every preset with its settings. See [Stream Presets](/concepts/product/endpoint-connection-configuration#stream-presets). It replaces the stored settings, so a setting you leave out (or set to `None`) is removed. A preset must match its stream format, so send `stream_format` too when you change the format.
 
   <Requires sdk=">5.20">
   </Requires>

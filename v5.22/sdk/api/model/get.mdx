@@ -1,0 +1,26 @@
+---
+title: 'Get Model'
+sidebarTitle: "Get"
+description: "Retrieve a specific model by its ID."
+---
+
+import EntityNotFound from '/v5.22/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/sdk/api/model/get).
+</Warning>
+
+## Returns
+Returns a [Model](/v5.22/concepts/model) object for the given ID.
+
+## Example
+```python
+model = galtea.models.get(model_id=model_id)
+```
+
+## Parameters
+<ResponseField name="model_id" type="string" required>
+  The ID of the model to retrieve.
+</ResponseField>
+
+<EntityNotFound />

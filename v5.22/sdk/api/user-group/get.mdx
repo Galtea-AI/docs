@@ -1,0 +1,26 @@
+---
+title: "Retrieving User Group"
+sidebarTitle: "Get"
+description: "Get a user group by its ID."
+---
+
+import EntityNotFound from '/v5.22/snippets/entity-not-found.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/sdk/api/user-group/get).
+</Warning>
+
+## Returns
+Returns a [User Group](/v5.22/concepts/user-group) object.
+
+## Example
+```python
+user_group = galtea.user_groups.get(user_group_id=user_group_id)
+```
+
+## Parameters
+<ResponseField name="user_group_id" type="string" required>
+  The ID of the user group to retrieve.
+</ResponseField>
+
+<EntityNotFound />

@@ -1,0 +1,139 @@
+---
+title: "Trace"
+sidebarTitle: "Overview"
+description: "A single turn in a conversation between a user and an AI system"
+---
+
+import JudgeFileRule from '/v5.22/snippets/judge-file-rule.mdx';
+
+import ConceptsOverviewCard from '/v5.22/snippets/cards/concepts-overview-card.mdx';
+import SDKTraceServiceCard from '/v5.22/snippets/cards/sdk-trace-service-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/concepts/product/version/session/trace).
+</Warning>
+
+## What is a Trace?
+
+A trace is a single turn in a conversation — one user input paired with one AI output. It belongs to a [session](/v5.22/concepts/product/version/session) and can optionally include metadata like latency, token usage, cost, and retrieval context (for RAG evaluations).
+
+You can create traces from the [Galtea dashboard](https://platform.galtea.ai/) (using [Endpoint Connections](/v5.22/concepts/product/endpoint-connection)) or programmatically using the [Galtea SDK](/v5.22/sdk/api/trace/service).
+
+<Note>
+  **This entity was called Inference Result before SDK 5.0.0**, and `galtea.traces` used to mean what
+  is now a [Span](/v5.22/concepts/product/version/session/span). See
+  [Dataset, Trace, and Span Renames](/v5.22/sdk/migration-guides/entity-renames) for what to change in
+  your code.
+</Note>
+
+<Info>
+  **Two things are called "trace" here.** A Galtea Trace is the turn described on this page, and its
+  own id is `id`. An OpenTelemetry trace is a distributed-tracing correlation id, the API field
+  `traceId`. The [OpenTelemetry Trace ID](#trace-properties) property below holds that one, not the id
+  of this Trace. The dashboard uses the same two names: "Galtea Trace ID" for this turn's id and
+  "OpenTelemetry Trace ID" for the correlation id.
+</Info>
+
+## SDK Integration
+
+<SDKTraceServiceCard />
+
+## Trace Properties
+
+<ResponseField name="Session" type="Session" required>
+  The session to which the trace belongs.
+</ResponseField>
+
+<ResponseField name="Input" type="string | object" optional>
+  The input text or prompt for the trace. For most runs this is a plain string. For phone (voice) runs, when the simulated user's audio was captured, this is a content-parts envelope `{"user_message": "<transcript>", "content": [{"type": "audio", "uri": "...", "transcript": "..."}]}` — the `user_message` field is the canonical scored scalar. Evaluations score the `user_message` together with any other key you add beside `content`. When `user_message` is empty, the audio transcript takes its place. A `{"type": "text"}` part in `content`, the shape OpenAI-style messages use, is scored as text after `user_message`, unless it repeats it. The judge cannot hear a turn whose audio has no transcript and no `user_message`, so a metric that reads the input is skipped when no turn of the session has text. Access the envelope via the SDK's `.input_data` field and the spoken transcript via `.input`. A document turn adds `file` parts to `content`, which the Input Files field below lists.
+</ResponseField>
+
+<ResponseField name="Input Files" type="AttachedFile[]" optional>
+  The files attached to the input. They come from the test case, or from `input_file_paths` on a trace you log yourself with [Create Trace](/v5.22/sdk/api/trace/create), [Update Trace](/v5.22/sdk/api/trace/update) or [Create and Evaluate Trace](/v5.22/sdk/api/trace/create-and-evaluate). Galtea stores each file without its upload signature. Read them with the SDK's `.input_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/v5.22/sdk/api/storage/download) or [`galtea.storage.read()`](/v5.22/sdk/api/storage/read), except a [file part of your own](/v5.22/concepts/product/version/session/content-parts#your-own-parts). An agent callback receives the same objects as [`input_data.input_files`](/v5.22/sdk/api/agent/input#reading-attached-files).
+
+  One input accepts at most 20 Galtea files, 20 MB in total by default ([configurable on request](/v5.22/concepts/product/version/session/content-parts)), of the same types a test case input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/v5.22/concepts/product/version/session/content-parts).
+
+  <JudgeFileRule />
+
+  <Note>
+    `AttachedFile` used to be called `InputFile`, back when only an input could carry files. The same four fields now describe a file on either side. `InputFile` still works as a name for it, so code you already wrote keeps running, but it now warns with a `GalteaDeprecationWarning`. Switch to `AttachedFile` when you next touch that code.
+  </Note>
+</ResponseField>
+
+<ResponseField name="Output" type="string | object" optional>
+  The generated output or response for the trace. For most runs this is a plain string.
+
+  It becomes a content-parts envelope, `{"assistant_message": "<text>", "content": [...]}`, when the turn answers with more than text. The `content` list holds one part per attachment: an `audio` part for a phone (voice) run whose agent audio was captured, or a `file` part for a product whose answer is a document. The `assistant_message` field is the canonical scored scalar. Evaluations score it together with any other key you add beside `content`, and with the text of any `{"type": "text"}` part.
+
+  A document answer may carry no `assistant_message` at all, because the file is the whole answer. The SDK's `.actual_output` is then `None`, unless a `{"type": "text"}` part carries text. Read the envelope through `.actual_output_data` in every case, and the output text through `.actual_output`.
+</ResponseField>
+
+<ResponseField name="Output Files" type="AttachedFile[]" optional>
+  The files the turn answered with, for a product whose reply is a document: a generated report, a filled form, a redacted contract. Read them with the SDK's `.actual_output_files` field, which returns one `AttachedFile` per attached file, ready for [`galtea.storage.download()`](/v5.22/sdk/api/storage/download) or [`galtea.storage.read()`](/v5.22/sdk/api/storage/read), except a [file part of your own](/v5.22/concepts/product/version/session/content-parts#your-own-parts).
+
+  Attach them by naming local paths in `output_file_paths` on [Create Trace](/v5.22/sdk/api/trace/create), [Update Trace](/v5.22/sdk/api/trace/update) or [Create and Evaluate Trace](/v5.22/sdk/api/trace/create-and-evaluate). An agent callback answers with files through `AgentResponse.output_file_paths`. To reuse one upload across turns, call [`galtea.traces.upload_output_file()`](/v5.22/sdk/api/trace/upload-output-file) and build the envelope yourself.
+
+  On a run Galtea makes through an endpoint connection, the files come from the response instead: the connection's `output_files` key names them, and Galtea stores a copy of each, or links a file already in Galtea. See [Files in the Response](/v5.22/concepts/product/endpoint-connection-configuration#files-in-the-response).
+
+  One output accepts at most 20 Galtea files, 20 MB in total by default ([configurable on request](/v5.22/concepts/product/version/session/content-parts)), of the same types an input accepts. Galtea refuses a Galtea file that breaks a rule, and stores every other element of the `content` list as sent. See [Content Parts](/v5.22/concepts/product/version/session/content-parts).
+
+  Output files follow the same rule as [Input Files](#param-input-files): a metric scores a file only when its judge model reads that kind of file.
+</ResponseField>
+
+<Note>
+  Retrieval context is not a stored field on the trace. It is derived from the trace's
+  [`RETRIEVER` spans](/v5.22/concepts/product/version/session/span#retrieval-context-in-retriever-spans).
+  You can still supply `retrieval_context` when logging (on create, update, or an agent response); Galtea
+  records it as a `RETRIEVER` span.
+
+  If your agent already emits spans, we recommend sending `RETRIEVER` spans directly instead. This keeps
+  one source of truth and lets you capture several retrieval steps per turn, which a single
+  `retrieval_context` value cannot.
+</Note>
+
+<ResponseField name="Latency" type="float" optional>
+  The latency in milliseconds for the model's response. `null` for a user without the `evaluation.readInference` permission.
+</ResponseField>
+
+<ResponseField name="timeToFirstToken" type="float" optional>
+  For a trace that Galtea produced from a [streamed reply](/v5.22/concepts/product/endpoint-connection-configuration#streamed-replies), the time in milliseconds until the agent started to answer. It starts when Galtea sends the request to the agent. It ends when the first chunk that carries text reaches Galtea. A chunk with no text, such as a keep-alive comment or a metadata event, does not count. The measure starts a little after the latency starts. It ends no later than the reply ends. So it is never above the latency. With retries, it is the value of the attempt that produced the stored answer. A cut stream that carried text keeps it. It is empty when the reply did not stream or carried no text. It is also empty for a trace sent through the SDK or OpenTelemetry. A user without the `evaluation.readInference` permission gets none. Read-only.
+</ResponseField>
+
+<ResponseField name="inputTokens, outputTokens, cacheReadInputTokens, tokens" type="int" optional>
+  Token counts for the trace: input, output, cache-read input and total. The input count includes the cache-read input, and the total is input plus output, plus the cache read when the source counted it apart from the input (a cache read above the input count). They are `null` for a user without the `evaluation.readInference` permission.
+</ResponseField>
+
+<ResponseField name="costPerInputToken, costPerOutputToken, costPerCacheReadInputToken, cost, creditsUsed" type="float" optional>
+  The price of one input, output and cache-read token, the total cost, and the credits used. The cost values and `creditsUsed` are `null` for a user without the `evaluation.readInference` permission. See [Roles and permissions](/v5.22/security/roles-and-permissions).
+</ResponseField>
+
+<ResponseField name="Dropped Span Count" type="int" optional>
+  How many spans sent with this trace were not stored. Empty when none were. A span is dropped when its data is invalid, for example an empty name or a negative latency, and each drop adds to this count as more spans arrive. An unrecognized span **type** never causes a drop; Galtea [normalizes it](/v5.22/concepts/product/version/session/span#span-types) instead. The dashboard shows the count on the trace so you do not have to read a log to learn a span is missing.
+</ResponseField>
+
+<ResponseField name="OpenTelemetry Trace ID" type="string" optional>
+  The W3C trace ID that Galtea sends to your endpoint in the `traceparent` header on this [Direct Inference](/v5.22/concepts/product/endpoint-connection) turn. Galtea stores it when the turn starts. This is the OpenTelemetry trace id, not the id of this Trace, which is `id`. It lets you correlate the turn with your OTEL-instrumented service. Present on every conversation turn that Galtea generates through an HTTP endpoint connection (Direct Inference), including turns that failed. Phone and WebRTC turns do not have it.
+</ResponseField>
+
+<ResponseField name="End User" type="string" optional>
+  The customer of your agent who sent this turn. It is not a Galtea user. Read-only: OpenTelemetry ingest sets it from the spans of this trace only, so two traces of one session can name different end users. Spans that arrive later fill it while it is empty, and never change a stored value. Null when no span of the trace names one. Spans of an existing Trace, such as a Direct Inference turn, set none. A trace file import never sets it. The [session](/v5.22/concepts/product/version/session) keeps the first end user of all its traces. See [End user](/v5.22/sdk/tutorials/monitor-real-user-traffic-with-opentelemetry#end-user-optional).
+</ResponseField>
+
+<ResponseField name="Stream Truncated" type="bool" optional>
+  True when the streamed reply of your agent closed before the terminal event of its [endpoint connection](/v5.22/concepts/product/endpoint-connection-configuration#streamed-replies), so the output is partial. Read-only. Null when the API does not report it. In the SDK it is `Trace.stream_truncated`.
+</ResponseField>
+
+## Related
+
+<CardGroup cols={3}>
+  <ConceptsOverviewCard />
+  <Card title="Session" icon="comments" href="/v5.22/concepts/product/version/session">
+    The conversation that groups traces together.
+  </Card>
+  <Card title="Evaluation" icon="clipboard-check" href="/v5.22/concepts/product/version/session/evaluation">
+    Score traces using metrics.
+  </Card>
+  <Card title="Span" icon="sitemap" href="/v5.22/concepts/product/version/session/span">
+    Capture internal operations linked to traces.
+  </Card>
+</CardGroup>

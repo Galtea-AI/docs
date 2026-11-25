@@ -11,7 +11,7 @@ Returns a `TestConnectionResult` object containing:
 - `success` (bool): Whether the test request succeeded.
 - `status_code` (int): The HTTP status code returned by the endpoint.
 - `latency` (float): Round-trip latency in milliseconds.
-- `response` (any): The raw response body from the endpoint. On a [streamed](/concepts/product/endpoint-connection-configuration#streamed-replies) connection, the body of a `2xx` reply is the joined object (`text`, `byEvent`, `final`).
+- `response` (any): The raw response body from the endpoint. On a [streamed](/concepts/product/endpoint-connection-configuration#streamed-replies) connection, the body of a `2xx` reply is the joined object (`text`, `byEvent`, `final`, `json`).
 - `error` (string | None): Error message if the request failed.
 - `extracted_output` (dict | None): Values extracted via `output_mapping`, if provided.
 - `extraction_error` (string | None): Error message if extraction failed.
@@ -34,7 +34,8 @@ For example, a streamed reply that sent its text in two `reply.delta` chunks and
     ],
     "reply.done": [{ "kind": "reply.done", "conversation_id": "conv_1" }]
   },
-  "final": { "kind": "reply.done", "conversation_id": "conv_1" }
+  "final": { "kind": "reply.done", "conversation_id": "conv_1" },
+  "json": null
 }
 ```
 
@@ -66,7 +67,7 @@ This method can be called in two ways:
 **A streaming connection.** The call is the same, and `response` holds the joined reply:
 ```python
     test_result = galtea.endpoint_connections.test(id=streaming_connection.id)
-    # On a streamed reply, test_result.response is the joined object { text, byEvent, final }.
+    # On a streamed reply, test_result.response is the joined object { text, byEvent, final, json }.
 ```
 
 ## Parameters
@@ -118,10 +119,10 @@ This method can be called in two ways:
   Request timeout in seconds.
 </ResponseField>
 <ResponseField name="acknowledged_insecure_http" type="bool" optional>
-  Set to `true` to test an `http://` URL that is not saved yet. Required when `url` is not HTTPS, unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
+  Set to `true` to test an `http://` or `ws://` URL that is not saved yet. Required when `url` is not encrypted (HTTPS or WSS), unless the deployment allows plain HTTP for every connection. See [HTTP Endpoints](/concepts/product/endpoint-connection#http-endpoints).
 </ResponseField>
 <ResponseField name="stream_format" type="string" optional>
-  How your agent frames a streamed reply: `SSE` or `NDJSON`. With an `id`, the stored value applies when omitted. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
+  How your agent frames a streamed reply: `SSE`, `NDJSON` or `WEBSOCKET`. With an `id`, the stored value applies when omitted. See [Streamed Replies](/concepts/product/endpoint-connection-configuration#streamed-replies).
 
   <Requires sdk=">5.20">
   </Requires>

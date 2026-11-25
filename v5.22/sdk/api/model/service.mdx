@@ -1,0 +1,63 @@
+---
+title: 'Model Service'
+sidebarTitle: "Service"
+description: "Model Service API methods in the Galtea SDK"
+---
+
+import ModelCard from '/v5.22/snippets/cards/model-card.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/sdk/api/model/service).
+</Warning>
+
+The Model Service in the Galtea SDK allows you to manage [models](/v5.22/concepts/model) for cost tracking and estimation across your products and evaluations.
+This Service is exposed by the `galtea.models` object.
+
+<Info>
+  Remember that we will be using the `galtea` object. More information [here](/v5.22/sdk/api/galtea).
+</Info>
+
+## Quick Example
+
+First, initialize the Galtea SDK:
+```python
+galtea = Galtea(api_key="YOUR_API_KEY")
+```
+
+Create a model:
+```python
+model = galtea.models.create(
+    name="gpt-5.5-pro " + run_identifier,
+    input_cost_per_token=0.00001,
+    output_cost_per_token=0.00003,
+    cache_read_input_token_cost=0.000005,
+    cache_creation_input_token_cost=0.0000125,
+    tokenizer_provider="OpenAI",
+    source="https://openai.com/api/pricing/",
+)
+```
+
+List models:
+```python
+models = galtea.models.list(
+    sort_by_created_at="desc",
+    limit=10,
+)
+```
+
+Get a model by ID:
+```python
+model = galtea.models.get(model_id=model_id)
+```
+
+## Service Methods
+- [Create Model](/v5.22/sdk/api/model/create)
+- [List Models](/v5.22/sdk/api/model/list)
+- [Get Model](/v5.22/sdk/api/model/get)
+- [Get Model By Name](/v5.22/sdk/api/model/get-by-name)
+- [Update Model](/v5.22/sdk/api/model/update)
+- [Delete Model](/v5.22/sdk/api/model/delete)
+
+## Related
+
+<ModelCard />

@@ -1,0 +1,24 @@
+---
+title: 'Deleting Dataset'
+sidebarTitle: "Delete"
+description: "Delete a specific dataset by its ID."
+---
+
+import { Deprecated } from '/v5.22/snippets/version-tags.mdx';
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/sdk/api/dataset/delete).
+</Warning>
+
+## Example
+```python
+galtea.datasets.delete(dataset_id=dataset_id)
+```
+
+## Parameters
+<ResponseField name="dataset_id" type="string" required>
+  The ID of the dataset you want to delete.
+
+  <Deprecated name="test_id" removal="2028-01-17" replacement="dataset_id">
+  </Deprecated>
+</ResponseField>

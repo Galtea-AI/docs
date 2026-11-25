@@ -1,0 +1,26 @@
+---
+title: "Known issues"
+description: "Calls that behave differently from the API reference in this release, and what works instead."
+icon: "triangle-exclamation"
+---
+
+<Warning>
+  You are reading the docs of Galtea 5.22. [Read this page in the latest version](/agents/known-issues).
+</Warning>
+
+{/* Hidden on purpose: no docs.json navigation entry, so the page stays out of the sidebar, search and llms.txt. The Galtea agent skill reads it at this path, so never rename it. List facts only, never agent behaviour. Each entry names its open issue in a comment, which the build strips; remove the entry when that issue closes. */}
+
+Calls in this release that behave differently from the API reference, and what works instead.
+
+## Requests
+
+- **Some `--help` input examples list fields the call refuses.** They show read-only fields such as `id`, `createdAt` or `metricIds`, and the API refuses them with a `400`. On `specifications update`, link metrics with `specifications link-metrics` instead. {/* #6126 */}
+- **A list field sent as one string can answer `500` instead of `400`.** For example `testIds` on `traces generate`. Send a list, such as `[<id>]`. {/* #7502 */}
+
+## Datasets
+
+- **A CSV with a missing required column or an empty required cell answers a bare `500`.** The error names neither the column nor the row. The required columns of each type are in [Dataset File Formats](/v5.22/concepts/product/dataset#dataset-file-formats). {/* #7501 */}
+
+## Python SDK
+
+- **The SDK cannot create or read metric revisions.** Use `galtea revisions create` and `galtea revisions list` in the CLI, or the dashboard. {/* #7648 */}

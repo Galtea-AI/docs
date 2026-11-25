@@ -108,7 +108,7 @@ In this setup:
 - Your **Conversation** connection can reuse it in the URL/body using `{{ session_id }}`.
 - Any additional fields extracted via `outputMapping` are stored in **session metadata** and can also be reused in later turns.
 
-Before each run starts, Galtea runs a health check through the same steps, as one short session with sample input. Each check starts with new `session_id` and `galtea_session_id` values, so no two checks share an id. The steps of one check share them, as in a real run. As in a real run, each step returns metadata that the check carries forward, and the latest `session_id` a step returns replaces the previous one. If the Initialization response returns no `session_id`, the run does not start. When a test case attaches a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) and the Conversation template uses `input_files`, the check skips the Conversation step, because it has no real file to send. Those turns are checked by the run itself. If a step fails after Initialization succeeded, the check still calls your Finalization connection once, to close the session it opened.
+Before each run starts, Galtea runs a health check through the same steps, as one short session with sample input. Each check starts with a new `galtea_session_id`, so no two checks share an id. It starts with no `session_id`, as the first turn of a run does, so an Input Template that branches on `session_id` takes the same branch as the run. The steps of one check share these values, as in a real run. As in a real run, each step returns metadata that the check carries forward, and the latest `session_id` a step returns replaces the previous one. If the Initialization response returns no `session_id`, the run does not start. When a test case attaches a [Galtea file](/concepts/product/version/session/content-parts#galtea-files) and the Conversation template uses `input_files`, the check skips the Conversation step, because it has no real file to send. Those turns are checked by the run itself. If it skips the Conversation step and holds no `session_id`, it skips the Finalization step too, because the run gets that id from its turns. If a step fails after Initialization succeeded, the check still calls your Finalization connection once, to close the session it opened.
 
 ## Endpoint Connection Properties
 
@@ -124,7 +124,7 @@ Before each run starts, Galtea runs a health check through the same steps, as on
 </ResponseField>
 
 <ResponseField name="URL" type="Text" required>
-  The full URL of the endpoint. Must be a valid HTTPS URL that resolves to a public address. **Example**: "https://api.company.com/v1/chat"
+  The full URL of the endpoint. Must be a valid HTTPS URL that resolves to a public address. A [WebSocket agent](/concepts/product/endpoint-connection-configuration#websocket-agents) uses a `wss://` URL. **Example**: "https://api.company.com/v1/chat"
 </ResponseField>
 
 <ResponseField name="HTTP Method" type="Enum" required>
@@ -165,11 +165,11 @@ Before each run starts, Galtea runs a health check through the same steps, as on
 
 ## HTTP endpoints
 
-HTTPS is required by default. An `http://` URL is allowed only when the connection
-acknowledges the risk: check the box in the dashboard, or pass
-`acknowledged_insecure_http=True` in the SDK.
+HTTPS is required by default, and so is WSS for a WebSocket agent. An `http://` or
+`ws://` URL is allowed only when the connection acknowledges the risk: check the box
+in the dashboard, or pass `acknowledged_insecure_http=True` in the SDK.
 
-The risk: an `http://` connection sends traffic unencrypted. Anyone on the network
+The risk: an `http://` or `ws://` connection sends traffic unencrypted. Anyone on the network
 path can read the prompts, the responses, and the credentials it sends.
 
 The acceptance covers the connection, not one address. On an inference call the
