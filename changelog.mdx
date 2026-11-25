@@ -16,6 +16,10 @@ A template that puts `session_id` in a field that must not be empty can now fail
 
 A metric that reads `traces` now sends the judge at most 120,000 characters of traces by default, so a long session is scored instead of failing. Over that budget, the judge shortens the longest span texts to one common length and marks each cut. The evaluation details show the trace size and, when the judge shortened it, the budget and the characters sent.
 
+## Compare Revisions by Agreement With Humans and Judge Tokens
+
+`GET /v2/revisions?metricId=` now returns, for each revision, how many of its evaluations carry a human annotation, its agreement with those annotations, and its judge's average tokens per evaluation. Agreement is 100% minus the average distance between the judge's and the human's scores, shows from 10 annotated evaluations, and is null for a Human Evaluation metric. The token average needs `evaluation.readInference`, as judge tokens do on each evaluation. `GET /metrics/{id}/human-annotation-count` now counts only the evaluations of your organization for a Galtea metric, so its counts can fall for the same data.
+
 ## Structured Replies in Streamed Endpoint Connections
 
 When a streamed reply is one JSON object sent as text pieces, Galtea now parses it into `json`, so the Output Mapping can read its fields, for example `output: $.json.answer` and `retrieval_context: $.json.sources[*].content`. A text path that finds a list of strings, such as `$.content.parts[*].text`, now joins them in order. See [Structured Replies](/sdk/tutorials/connect-a-streaming-agent#structured-replies).
