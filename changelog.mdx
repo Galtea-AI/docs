@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Data Augmentation Keeps Generated Cases When the Model Breaks the Format Once
+
+When the model returns a batch that does not match the seed schema, augmentation now sends it the schema errors with the failed answer and asks again, within the existing retry budget. The batch then returns corrected rows, where it used to end with an empty CSV and a SUCCESS status. Credits are charged for the rows you receive.
+
 ## Long Inputs Wrap in the Test Case Overview
 
 The Overview tab of a test case now wraps a long unbroken line, such as a URL, at the edge of the panel. Before, the content was cut off on both sides and could not be scrolled.
