@@ -19308,7 +19308,7 @@
             }
           },
           "502": {
-            "description": "The metrics generator failed, or returned a metric for a specification outside the request",
+            "description": "The metrics generator failed, returned a metric for a specification outside the request, or, with automatic creation, returned a metric that breaks a domain invariant. Nothing is saved. A client that retries a 502 (the CLI does, twice by default) runs the generator again on each try.",
             "content": {
               "application/json": {
                 "schema": {

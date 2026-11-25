@@ -14,6 +14,10 @@ When the model returns a batch that does not match the seed schema, augmentation
 
 The Overview tab of a test case now wraps a long unbroken line, such as a URL, at the edge of the panel. Before, the content was cut off on both sides and could not be scrolled.
 
+## Onboarding No Longer Fails to Generate Metrics at Random
+
+Onboarding could fail for every specification at once with "Metric generation failed" when it generated metrics from specifications. It now always adds the `input` and `actual_output` parameters the judge needs, so the generated metrics are created. A rare failure on our side now returns a 502 instead of a 400 that blamed the request, and the CLI retries a 502 twice by default, so such a call may run the generator up to three times.
+
 ## The Health Check Sends the First Turn Like a Run
 
 The health check before a run now sends no `session_id` until a step returns one, as the first turn of a run does. An Input Template that branches on `{% if session_id %}`, such as one for an OpenAI ChatKit agent, now starts a new conversation in the check too, so the run is no longer refused before it starts.
