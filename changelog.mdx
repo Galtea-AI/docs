@@ -28,6 +28,10 @@ When a streamed reply is one JSON object sent as text pieces, Galtea now parses 
 
 An endpoint connection can now reach an agent that answers over a WebSocket. Set `streamFormat` to `WEBSOCKET` with a `wss://` URL: Galtea sends the rendered input template as one message and joins the messages of the answer, like any streamed reply. The reply ends at your end marker, or after a quiet period of 1 to 30 seconds with no message, which never cuts a slow first token. Set it in the dashboard, the SDK (`StreamFormat.WEBSOCKET`, `quiet_period_seconds`) or the CLI. See [WebSocket Agents](/concepts/product/endpoint-connection-configuration#websocket-agents).
 
+## The Metric Library Lists Each Metric Once
+
+The metric list now shows one row per metric, with its live revision in the new **Active revision** column. Open a metric to reach its earlier revisions. The **Status** column and the **Include legacy** filter are gone, because every row is the active revision. `GET /v2/metrics` also filters by description, creation date, user group, and maintainer, and returns each metric's active revision in `activeRevision`.
+
 </Update>
 
 <Update label="5.22.0" description="2026-11-24">
