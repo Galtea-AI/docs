@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Long Inputs Wrap in the Test Case Overview
+
+The Overview tab of a test case now wraps a long unbroken line, such as a URL, at the edge of the panel. Before, the content was cut off on both sides and could not be scrolled.
+
 ## The Health Check Sends the First Turn Like a Run
 
 The health check before a run now sends no `session_id` until a step returns one, as the first turn of a run does. An Input Template that branches on `{% if session_id %}`, such as one for an OpenAI ChatKit agent, now starts a new conversation in the check too, so the run is no longer refused before it starts.
