@@ -8657,6 +8657,33 @@
             "format": "date-time",
             "readOnly": true,
             "description": "When this revision was excluded from analytics. Null when its results still count. The other revisions of the metric are unaffected."
+          },
+          "agreement": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "example": 87.5,
+            "description": "How close the judge's scores are to the human annotations, in percent: 100 minus the average distance between the two scores, where \"Partially correct\" is 0.5. Higher is better. Null below `minAnnotationsForAgreement` annotated evaluations, and for a Human Evaluation metric, which has no judge."
+          },
+          "annotationCount": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 24,
+            "description": "Evaluations of this revision that carry both the judge's score and a human annotation, on the products the caller reads. An annotation counts for every revision of its metric that judged the same case."
+          },
+          "evaluationCount": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 310,
+            "description": "Successful evaluations of this revision, annotated or not, on the products the caller reads."
+          },
+          "minAnnotationsForAgreement": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "example": 10,
+            "description": "The fewest annotated evaluations that show an `agreement`."
           }
         },
         "required": [
@@ -8667,7 +8694,11 @@
           "evaluationParams",
           "disabledAt",
           "optimizationStatus",
-          "excludedFromAnalyticsAt"
+          "excludedFromAnalyticsAt",
+          "agreement",
+          "annotationCount",
+          "evaluationCount",
+          "minAnnotationsForAgreement"
         ]
       },
       "MetricV2": {
@@ -8745,7 +8776,7 @@
               {
                 "nullable": true,
                 "readOnly": true,
-                "description": "The label, judge settings and dates of the active revision, so a list shows them without reading each revision. Null when no revision is active."
+                "description": "The label, judge settings, dates and judge figures of the active revision, so a list shows them without reading each revision. Null when no revision is active."
               }
             ]
           },
@@ -38280,7 +38311,7 @@
           "metrics-v2"
         ],
         "summary": "List metrics",
-        "description": "List metrics, each once, with the id of its active revision and no revision inline. The list holds the metrics of the caller's organization and the Galtea metrics. An admin names another organization with `organizationId`. A caller limited to the products its user groups grant also sees only the metrics those products use, and the Galtea metrics. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "description": "List metrics, each once, with the id of its active revision and no revision inline. The list holds the metrics of the caller's organization and the Galtea metrics. An admin names another organization with `organizationId`. A caller limited to the products its user groups grant also sees only the metrics those products use, and the Galtea metrics. The active revision carries its agreement with human annotations and its annotation and evaluation counts, over the evaluations of the products the caller reads. A Galtea metric counts only the caller's organization, or the one an admin names. See [Metrics](https://docs.galtea.ai/concepts/metric).",
         "security": [
           {
             "bearerAuth": []
@@ -38467,10 +38498,10 @@
               "items": {
                 "type": "string"
               },
-              "description": "Sort instructions (field and direction pairs). The fields are `name` and `createdAt`."
+              "description": "Sort instructions (field and direction pairs). The fields are `name`, `createdAt`, and the active revision's `agreement` and `annotationCount`. Sorted by `agreement`, a metric with no agreement comes last in both directions. Sorted by `agreement` or `annotationCount`, a metric with no active revision comes last in both directions."
             },
             "required": false,
-            "description": "Sort instructions (field and direction pairs). The fields are `name` and `createdAt`.",
+            "description": "Sort instructions (field and direction pairs). The fields are `name`, `createdAt`, and the active revision's `agreement` and `annotationCount`. Sorted by `agreement`, a metric with no agreement comes last in both directions. Sorted by `agreement` or `annotationCount`, a metric with no active revision comes last in both directions.",
             "style": "form",
             "explode": true,
             "name": "sort",
