@@ -14374,12 +14374,12 @@
                     "error"
                   ]
                 },
-                "description": "One entry per failed session, naming why it failed"
+                "description": "One entry per failed session. A metric replay lists one per refused or skipped case instead, so a session can appear more than once. Each entry names its session and why it failed"
               },
               "message": {
                 "type": "string",
                 "example": "28 sessions evaluated, 56 evaluations created. 2 skipped: 2 whose specification the run being repeated did not score.",
-                "description": "Human-readable outcome. A skipped session counts toward neither total, so this is the only place its cause is named."
+                "description": "Human-readable outcome. When sessions are scored, a skipped session counts toward neither total, so this is the only place its cause is named. A metric replay counts a session whose cases were all skipped or refused as failed, and names each cause in failures."
               }
             },
             "required": [
@@ -42314,7 +42314,7 @@
           "runs"
         ],
         "summary": "Run a run again",
-        "description": "Repeats a run and answers with the new one, which names the run it came from. The kind of the source decides the form: a run the platform launched drives the agent again and scores the new sessions, while a run that scored sessions which already existed scores them again and creates none. A run the client performed carries no kind to read, so its own evaluations name the sessions and metrics to score again; no new session is created, because only that client can produce one. A repetition that scores sessions answers with a \"report\" of what it scored, skipped and failed; one that drives the agent again reports null there, because that work is queued.",
+        "description": "Repeats a run and answers with the new one, which names the run it came from. The kind of the source decides the form: a run the platform launched drives the agent again and scores the new sessions, while a run that replayed a metric repeats each of its cases, a turn by its id and a session as a whole, and is refused with a 400 above 1000 cases. Any other run that scored sessions which already existed scores them again and creates none. A run the client performed carries no kind to read, so its own evaluations name the sessions and metrics to score again; no new session is created, because only that client can produce one. A repetition that scores sessions answers with a \"report\" of what it scored, skipped and failed; one that drives the agent again reports null there, because that work is queued.",
         "security": [
           {
             "bearerAuth": []

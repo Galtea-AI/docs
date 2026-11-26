@@ -103,6 +103,7 @@ The `kind` of the source decides what "again" means. You do not choose:
 
 - A Run of kind `GENERATE_INFERENCES` is **re-launched**. Galtea drives the version again, creates new sessions, and scores them.
 - A Run of any other kind is **re-evaluated**. Galtea scores sessions that already exist again, with the same metrics, and creates no session.
+- A Run of kind `REPLAY_METRIC` is re-evaluated case by case. A turn the replay scored is scored again on that turn only, and a session it scored as a whole is scored again as a whole, with the same metric revision. Above 1000 cases, it is refused.
 - A Run you performed yourself carries no `kind`. It is re-evaluated too. Galtea reads the Run's own evaluations for the sessions and the metrics to score again. No session is created, because only you can produce one.
 
 Two bodies are accepted, both optional:
@@ -110,7 +111,7 @@ Two bodies are accepted, both optional:
 - `versionId` runs the same tests against a different version. It is accepted only on a re-launch, because a re-evaluation scores sessions that already belong to a version.
 - `useCurrentTestCases` resolves the inputs again instead of repeating the recorded ones. On a re-launch it uses every test case the same datasets hold today. On a re-evaluation of a version it uses every session that version holds today. It changes nothing where the original request listed its test cases or sessions one by one, because there is no container to resolve again.
 
-A Run whose evaluations name no session is refused, because there is nothing to score again. So is one that scored more sessions than a single repetition can cover; score those from the sessions list instead, in batches. The answer names the reason.
+A Run whose evaluations name no session is refused, because there is nothing to score again. So is one that scored more sessions than a single repetition can cover, or a `REPLAY_METRIC` Run with more than 1000 cases; score those from the sessions list instead, in batches. The answer names the reason.
 
 ## Cancelling a run
 
