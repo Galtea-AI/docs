@@ -478,7 +478,13 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "metric_123"
+            "example": "revision_123",
+            "description": "The revision id."
+          },
+          "metricId": {
+            "type": "string",
+            "example": "metric_123",
+            "description": "The metric the revision belongs to, as annotations take it."
           },
           "name": {
             "type": "string",
@@ -528,6 +534,7 @@
         },
         "required": [
           "id",
+          "metricId",
           "name",
           "isCompatible",
           "relevance"
@@ -36801,7 +36808,7 @@
           "annotations"
         ],
         "summary": "Create annotation",
-        "description": "Score a session, or one turn of it, on a metric. The caller becomes the annotator. The metricId is a metric id, never a revision id. A Human Evaluation metric is scored on its evaluation instead and answers 400. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Score a session, or one turn of it, on a metric. The caller becomes the annotator. The metricId is a metric id, never a revision id. A Human Evaluation metric is scored on its evaluation instead and answers 400. A seed session, a test case's predefined conversation, is never annotated and answers 400. An annotation belongs to a case (a session, or one turn of it) and a metric, not to an evaluation: every revision of the metric shows it. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -36865,7 +36872,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, a score outside 0 to 1, a turn that is not a turn of the session, or a Human Evaluation metric",
+            "description": "Invalid request body, a score outside 0 to 1, a turn that is not a turn of the session, a Human Evaluation metric, or a seed session",
             "content": {
               "application/json": {
                 "schema": {
@@ -36995,7 +37002,7 @@
           "annotations"
         ],
         "summary": "Update annotation",
-        "description": "Correct the score and reason of an annotation, for every revision of its metric. The caller becomes the annotator. The id is an annotation id. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
+        "description": "Correct the score and reason of an annotation, for every revision of its metric. The caller becomes the annotator. An annotation of a seed session answers 400. The id is an annotation id. See [Evaluations](https://docs.galtea.ai/concepts/product/version/session/evaluation).",
         "security": [
           {
             "bearerAuth": []
@@ -37079,7 +37086,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, or a score outside 0 to 1",
+            "description": "Invalid request body, a score outside 0 to 1, or a seed session",
             "content": {
               "application/json": {
                 "schema": {

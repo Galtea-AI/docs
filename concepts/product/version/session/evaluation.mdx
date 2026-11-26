@@ -32,7 +32,9 @@ Exclusion belongs to the metric revision, not to one evaluation. Restoring that 
 
 ## Human Annotations
 
-An annotator can annotate an evaluation of a metric a judge scores. The annotation holds a human score and an optional reason. It belongs to the case and the metric, not to one evaluation. The case is the session, or one turn for a turn-level evaluation.
+An annotator can annotate a case on a metric a judge scores. The case is a session, or one of its turns. The annotation holds a human score and an optional reason. It belongs to the case and the metric, not to one evaluation.
+
+To annotate, open the session page. Its **Human annotations** card lists the AI-judged metrics that an evaluation of the session uses, with their scores. It also lists the metrics you already annotated. A metric you annotated that can no longer score the session stays listed with its score. Its row says it is no longer compatible, and it cannot be edited. Each metric name opens the page of that metric. Select **Add annotation**, pick another metric in its table, and fill in the form. The table shows the type and description of each metric. You can search it, or filter it by type. For one turn, select the turn and open its **Annotations** tab, which works the same way. A case needs no evaluation first, so you can annotate a session that no revision of the metric has scored. A seed conversation of a test case cannot be annotated. The **Annotate** action of an evaluation opens the same annotation for its case. An annotated case opens with its score, to edit.
 
 Annotating needs no claim, so nothing locks the case. A later annotation of the same case replaces the earlier one.
 

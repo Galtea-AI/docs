@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Annotate a Session or a Turn From Its Page
+
+The session page lists the AI-judged metrics that evaluate it or that you annotated, with their human scores. The turn view has an **Annotations** tab that works the same way. **Add annotation** scores the case on any other metric, picked from a table you can search. A metric that can no longer score the case keeps its score, read-only. You can annotate a case from either without opening an evaluation, even one no revision has scored. Before you save, the dialog names the case and the metric, and says every revision shows the score. Annotating from an evaluation opens the same annotation to edit.
+
 ## See Which Judges Disagree Most With Humans
 
 The Metric library now shows, for each metric's active revision, its agreement with human annotations, the number of annotations, and the number of evaluations, and opens on the worst agreement first. **Sort by** also orders it by the best agreement, the fewest annotations or the name. `GET /v2/metrics` returns the same figures on each active revision and sorts by `agreement` and `annotationCount`.
