@@ -32243,6 +32243,46 @@
           {
             "schema": {
               "type": "number",
+              "description": "Keep evaluations whose agreement with the human review is greater than this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400."
+            },
+            "required": false,
+            "description": "Keep evaluations whose agreement with the human review is greater than this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400.",
+            "name": "agreementGt",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "description": "Keep evaluations whose agreement with the human review is greater than or equal to this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400."
+            },
+            "required": false,
+            "description": "Keep evaluations whose agreement with the human review is greater than or equal to this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400.",
+            "name": "agreementGte",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "description": "Keep evaluations whose agreement with the human review is less than this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400."
+            },
+            "required": false,
+            "description": "Keep evaluations whose agreement with the human review is less than this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400.",
+            "name": "agreementLt",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "description": "Keep evaluations whose agreement with the human review is less than or equal to this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400."
+            },
+            "required": false,
+            "description": "Keep evaluations whose agreement with the human review is less than or equal to this value (0 to 1). Agreement is 1 minus the distance between the judge score and the human score, so 1 means the same score. An evaluation with no judge score or no human score never matches. A value outside 0 to 1 returns 400.",
+            "name": "agreementLte",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
               "description": "Keep evaluations whose decision confidence is greater than this value (0 to 1). An evaluation with no confidence never matches. A value outside 0 to 1 returns 400."
             },
             "required": false,

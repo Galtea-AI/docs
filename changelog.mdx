@@ -10,6 +10,10 @@ icon: "newspaper"
 
 [Running a Run again](/concepts/product/run#running-a-run-again) on a metric replay now scores each turn the replay scored, instead of each whole session. The repeat holds the same cases, evaluation count and credit charge as the Run it repeats, so you can compare the two. A replay of more than 1000 cases, which the same request used to repeat as whole sessions, is now refused with a 400 that names the limit, so repeat it from the sessions list in batches.
 
+## See How Close a Metric's Judge Is to Human Scores
+
+A metric's **Evaluations** tab now shows, for the revision you pick, its agreement with human scores and how many evaluations carry one. It opens on the evaluations where the judge and the person disagree most, with an **Agreement** column and filter in place of **Score gap**. The **Details** tab shows the same agreement on the **Revision** card, and `GET /evaluations` takes `agreementGt`, `agreementGte`, `agreementLt` and `agreementLte`.
+
 </Update>
 
 <Update label="5.23.0" description="2026-11-25">
