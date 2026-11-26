@@ -14,6 +14,10 @@ The Metric library now shows, for each metric's active revision, its agreement w
 
 [Running a Run again](/concepts/product/run#running-a-run-again) on a metric replay now scores each turn the replay scored, instead of each whole session. The repeat holds the same cases, evaluation count and credit charge as the Run it repeats, so you can compare the two. A replay of more than 1000 cases, which the same request used to repeat as whole sessions, is now refused with a 400 that names the limit, so repeat it from the sessions list in batches.
 
+## Compare Two Revisions of a Metric on the Same Evaluations
+
+On a metric's **Evaluations** tab, **+ Compare with** picks a second revision. The tab then lists the evaluations both revisions judged and a person annotated. It marks each one Better, Worse or Same, by whether the second revision's judge scored closer to the human score. Same means both agreements show the same percent. Two cards show each revision's agreement with the difference, and how many evaluations got worse, better or stayed the same. The alpha API reads the same comparison at `GET /v2/revisions/{id}/comparison`.
+
 ## Mark an Older Revision Active from the Dashboard
 
 An older [revision](/concepts/metric#revisions-and-analytics) of a metric now shows a yellow band with **Mark as active**. A **Now active** banner then offers **Undo**, which makes the former revision active again.

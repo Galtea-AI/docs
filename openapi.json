@@ -10594,6 +10594,140 @@
           "count"
         ]
       },
+      "RevisionComparisonJudgment": {
+        "type": "object",
+        "properties": {
+          "evaluationId": {
+            "type": "string",
+            "description": "The revision's latest judgment of the case."
+          },
+          "score": {
+            "type": "number",
+            "example": 0.5,
+            "description": "The judge's score, 0 to 1."
+          },
+          "judgeInputTokens": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Tokens the judge received. Null when it reported no usage, or without `evaluation.readInference` on the product."
+          },
+          "judgeOutputTokens": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Tokens the judge produced, reasoning included. Null as `judgeInputTokens`."
+          },
+          "judgeReasoningTokens": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Reasoning tokens, counted inside `judgeOutputTokens`. Null as `judgeInputTokens`."
+          }
+        },
+        "required": [
+          "evaluationId",
+          "score",
+          "judgeInputTokens",
+          "judgeOutputTokens",
+          "judgeReasoningTokens"
+        ]
+      },
+      "RevisionComparisonRow": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string",
+            "description": "The product of the case's session."
+          },
+          "inferenceResultId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The turn of a turn-level case. Null for a session-level case."
+          },
+          "humanScore": {
+            "type": "number",
+            "example": 1,
+            "description": "The case's human annotation, 0 to 1."
+          },
+          "from": {
+            "$ref": "#/components/schemas/RevisionComparisonJudgment"
+          },
+          "to": {
+            "$ref": "#/components/schemas/RevisionComparisonJudgment"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "worse",
+              "better",
+              "same"
+            ],
+            "description": "`better` when the `with` judge is closer to the human score than the path revision's judge, `worse` when further, `same` when both agreements show as the same percent, at one decimal."
+          }
+        },
+        "required": [
+          "sessionId",
+          "productId",
+          "inferenceResultId",
+          "humanScore",
+          "from",
+          "to",
+          "change"
+        ]
+      },
+      "RevisionComparisonSummary": {
+        "type": "object",
+        "properties": {
+          "paired": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Annotated cases that both revisions judged, on the products the caller reads. Each revision counts its latest live judgment of a case."
+          },
+          "better": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "worse": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "same": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "paired",
+          "better",
+          "worse",
+          "same"
+        ]
+      },
+      "RevisionComparison": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RevisionComparisonRow"
+            }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/RevisionComparisonSummary"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Cases that match `changes`, across every page."
+          }
+        },
+        "required": [
+          "rows",
+          "summary",
+          "total"
+        ]
+      },
       "RevisionAnnotatedCaseCount": {
         "type": "object",
         "properties": {
@@ -39852,6 +39986,156 @@
           },
           "404": {
             "description": "Revision or product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/revisions/{id}/comparison": {
+      "get": {
+        "operationId": "compareRevisions",
+        "tags": [
+          "revisions"
+        ],
+        "summary": "Compare the judges of two revisions on the same annotated cases",
+        "description": "For each annotated case that both revisions judged, the human score, each revision's latest judgment and whether the `with` revision's judge got closer to the human score (`better`), further (`worse`) or stayed as close (`same`). Ordered worse first, then better, then same, the largest change first. The summary counts every change, whatever `changes` lists. Both ids are revision ids of the same metric; a metric id answers 404. See [Metrics](https://docs.galtea.ai/concepts/metric).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cli-name": "compare",
+        "x-stability-level": "alpha",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+              "example": "revision_123"
+            },
+            "required": true,
+            "description": "Revision ID. A metric ID answers 404; read a metric under /v2/metrics.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The revision to compare with, of the same metric. Better and Worse say how its judge moved against the judge of the revision in the path. A metric ID answers 404.",
+              "example": "revision_456"
+            },
+            "required": true,
+            "description": "The revision to compare with, of the same metric. Better and Worse say how its judge moved against the judge of the revision in the path. A metric ID answers 404.",
+            "name": "with",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "worse",
+                  "better",
+                  "same"
+                ]
+              },
+              "description": "List only the cases of these changes. Empty lists every change."
+            },
+            "required": false,
+            "description": "List only the cases of these changes. Empty lists every change.",
+            "style": "form",
+            "explode": true,
+            "name": "changes",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 20,
+              "description": "Maximum number of results"
+            },
+            "required": false,
+            "description": "Maximum number of results",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of results to skip"
+            },
+            "required": false,
+            "description": "Number of results to skip",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The compared cases",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string",
+                  "description": "Pagination range as `rows <offset>-<upperBound>/<total>`."
+                },
+                "required": true,
+                "description": "Pagination range as `rows <offset>-<upperBound>/<total>`."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionComparison"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameter, a missing `with`, `with` equal to the path revision, revisions of different metrics, or a Human Evaluation metric, which has no judge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A revision's metric is outside the products the caller's user groups grant, or no user group of the caller lists metric.read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Revision not found",
             "content": {
               "application/json": {
                 "schema": {
