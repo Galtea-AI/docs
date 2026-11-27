@@ -14,6 +14,10 @@ The session page lists the AI-judged metrics that evaluate it or that you annota
 
 The Metric library now shows, for each metric's active revision, its agreement with human annotations, the number of annotations, and the number of evaluations, and opens on the worst agreement first. **Sort by** also orders it by the best agreement, the fewest annotations or the name. `GET /v2/metrics` returns the same figures on each active revision and sorts by `agreement` and `annotationCount`.
 
+## Turns Show the Message Text of Chat Payloads
+
+A Trace now shows the user's message and the assistant's reply. This holds for a Trace built from OpenTelemetry spans or a trace import, when a span holds a list of chat messages or a raw model response. Before, it showed the whole list as JSON. This covers OpenTelemetry GenAI and OpenLLMetry message lists. It also covers raw OpenAI, Anthropic and Gemini responses, such as MLflow autolog stores. Metrics now score that text, and each Span still keeps the full value.
+
 ## Run again on a metric replay scores the same turns
 
 [Running a Run again](/concepts/product/run#running-a-run-again) on a metric replay now scores each turn the replay scored, instead of each whole session. The repeat holds the same cases, evaluation count and credit charge as the Run it repeats, so you can compare the two. A replay of more than 1000 cases, which the same request used to repeat as whole sessions, is now refused with a 400 that names the limit, so repeat it from the sessions list in batches.
