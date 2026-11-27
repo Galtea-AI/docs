@@ -9659,6 +9659,13 @@
             "readOnly": true,
             "description": "User who excluded this revision from analytics. A repeated exclusion keeps the first user."
           },
+          "unavailableReason": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Why the caller's organization cannot run this revision, or null when it can. Set only for an organization whose data region is EU and a revision whose judge, or, for a decision metric, whose decision model, has no healthy EU deployment.",
+            "example": null
+          },
           "activatedAt": {
             "type": "string",
             "nullable": true,
@@ -9704,6 +9711,7 @@
           "userGroupIds",
           "excludedFromAnalyticsAt",
           "excludedByUserId",
+          "unavailableReason",
           "activatedAt",
           "activatedByUserId",
           "createdAt"
@@ -10188,6 +10196,13 @@
             "readOnly": true,
             "description": "User who excluded this revision from analytics. A repeated exclusion keeps the first user."
           },
+          "unavailableReason": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Why the caller's organization cannot run this revision, or null when it can. Set only for an organization whose data region is EU and a revision whose judge, or, for a decision metric, whose decision model, has no healthy EU deployment.",
+            "example": null
+          },
           "activatedAt": {
             "type": "string",
             "nullable": true,
@@ -10254,6 +10269,7 @@
           "userGroupIds",
           "excludedFromAnalyticsAt",
           "excludedByUserId",
+          "unavailableReason",
           "activatedAt",
           "activatedByUserId",
           "createdAt",
