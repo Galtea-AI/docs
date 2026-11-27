@@ -6,6 +6,10 @@ icon: "newspaper"
 
 <Update label="Unreleased">
 
+## Mail Failures in the Self-Check Say Why
+
+When the API cannot reach your SMTP relay, the self-check row now names the kind of failure: `connect failed`, `timed out`, `tls failed`, `auth rejected` or `failed`, followed by the driver's message. An Admin also sees the relay `host:port`, and the installer Verify output shows the reason without it. The configured SMTP user and password are removed from the text, in clear text and in their base64 forms, and the probe gives up after 8 seconds instead of reporting that the relay did not answer in time.
+
 ## Sort a Metric's Evaluations by Agreement
 
 On a metric's **Evaluations** tab, click the **Agreement** header to sort every evaluation that the filters match, lowest agreement first. The evaluations where the judge and the person disagree most come first, ready to fix in the judge prompt. Evaluations with no human score come last. `GET /evaluations` takes `sort=agreement` too.
