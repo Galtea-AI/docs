@@ -102,6 +102,7 @@ Once an evaluation completes, the following fields are available:
     - The judge's answer was cut off by the metric's own `max_output_tokens`. This covers a metric that an LLM judge scores with a full prompt or a partial prompt. A retry uses the same metric and the same limit, so create a revision of the metric with a higher `max_output_tokens`, or none, and evaluate the session again with that revision.
     - A [decision](/concepts/metric/decision-model) question's **Does not apply** level was the most probable answer, the input was too long for the decision model, or the decision model's content safety filter blocked the request. After a block, a retry uses the same model, so evaluate the session with a metric that uses a different decision model.
     - The [applicability check](/concepts/metric#applicability-check) found that the metric does not apply to the session. The message gives the probability that it applies and the metric's threshold. No credits are charged, and `canRetry` is `false`, because a retry asks the same question about the same session.
+    - The session is too large to send to the evaluator. This is rare and usually comes from large files sent inline in the traces. The message gives the size and the limit, and `canRetry` is `false`, because a retry sends the same session.
 
     Check the `canRetry` field to see whether the evaluation is eligible for a retry. A retry re-scores the output already stored on the session. When the cause is that output, send a new inference result instead.
 

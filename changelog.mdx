@@ -14,6 +14,10 @@ The session page lists the AI-judged metrics that evaluate it or that you annota
 
 The Metric library now shows, for each metric's active revision, its agreement with human annotations, the number of annotations, and the number of evaluations, and opens on the worst agreement first. **Sort by** also orders it by the best agreement, the fewest annotations or the name. `GET /v2/metrics` returns the same figures on each active revision and sorts by `agreement` and `annotationCount`.
 
+## A Session Too Large to Evaluate Is Skipped at Once, With the Reason
+
+An evaluation whose session is too large to send to the evaluator now ends **Skipped** right away, with a message that gives the size and the limit. It used to stay **Pending** for 24 hours and then fail with a message that only said no result arrived. A retry sends the same session, so these evaluations cannot be retried. When the message broker does not answer, an evaluation now ends **Failed** right away instead of staying **Pending**, and it can be retried.
+
 ## Turns Show the Message Text of Chat Payloads
 
 A Trace now shows the user's message and the assistant's reply. This holds for a Trace built from OpenTelemetry spans or a trace import, when a span holds a list of chat messages or a raw model response. Before, it showed the whole list as JSON. This covers OpenTelemetry GenAI and OpenLLMetry message lists. It also covers raw OpenAI, Anthropic and Gemini responses, such as MLflow autolog stores. Metrics now score that text, and each Span still keeps the full value.
