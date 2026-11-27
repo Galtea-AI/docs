@@ -72,11 +72,13 @@ RUN npm install --no-audit --no-fund
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
     /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /root/.npm
 
-# Run as the image's existing `node` user (UID 1000), numerically, so a pod can
-# enforce runAsNonRoot (Pod Security "restricted"). /app is node-owned because
-# mint writes under it (e.g. /app/.mintlify) at runtime.
-RUN chown node:node /app
-USER 1000
+# Run as UID/GID 10001 like every other Galtea image, so a pod can enforce
+# runAsNonRoot (Pod Security "restricted"). /app is app-owned because mint writes
+# under it (e.g. /app/.mintlify) at runtime.
+RUN addgroup -g 10001 app \
+  && adduser -D -u 10001 -G app -h /home/app app \
+  && chown app:app /app
+USER app
 
 # Pin the Mintlify client (the Next.js app `mint dev` serves). Pinning the CLI
 # does not pin it: without --client-version, every container start fetches
@@ -86,15 +88,15 @@ USER 1000
 # page"). With --client-version the CLI re-downloads exactly this version on
 # start, and falls back to the copy baked here if the download fails. That
 # baked path depends on the port, so --port 3000 uses ~/.mintlify/previews/3000
-# (HOME is /home/node).
+# (HOME is /home/app).
 ENV MINT_CLIENT_VERSION=0.0.3965
-RUN mkdir -p /home/node/.mintlify/previews/3000 \
+RUN mkdir -p /home/app/.mintlify/previews/3000 \
   && wget -qO- "https://releases.mintlify.com/mint-${MINT_CLIENT_VERSION}.tar.gz" \
-    | tar -xz -C /home/node/.mintlify/previews/3000 \
-  && printf '%s' "$MINT_CLIENT_VERSION" > /home/node/.mintlify/previews/3000/mint/mint-version.txt
+    | tar -xz -C /home/app/.mintlify/previews/3000 \
+  && printf '%s' "$MINT_CLIENT_VERSION" > /home/app/.mintlify/previews/3000/mint/mint-version.txt
 
 # Copy the embedded docs output from the builder stage
-COPY --from=builder --chown=node:node /docs-src/.build .
+COPY --from=builder --chown=app:app /docs-src/.build .
 
 EXPOSE 3000
 
